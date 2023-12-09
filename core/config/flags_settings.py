@@ -1,6 +1,12 @@
 from dataclasses import dataclass, field
 
-from core.flags import HighResFixFlag, SDXLFlag, SDXLRefinerFlag, DeepshrinkFlag
+from core.flags import (
+    HighResFixFlag,
+    SDXLFlag,
+    SDXLRefinerFlag,
+    DeepshrinkFlag,
+    ScalecrafterFlag,
+)
 
 
 @dataclass
@@ -11,3 +17,4 @@ class FlagsConfig:
     refiner: SDXLRefinerFlag = field(default_factory=SDXLRefinerFlag)
     sdxl: SDXLFlag = field(default_factory=SDXLFlag)
     deepshrink: DeepshrinkFlag = field(default_factory=DeepshrinkFlag)
+    scalecrafter: ScalecrafterFlag = field(default_factory=ScalecrafterFlag)

@@ -78,6 +78,12 @@ export interface ISettings {
       scaler: string;
       early_out: boolean;
     };
+    scalecrafter: {
+      enabled: boolean;
+      base: string;
+      unsafe_resolutions: boolean;
+      disperse: boolean;
+    };
   };
   aitDim: {
     width: number[] | undefined;
@@ -311,6 +317,12 @@ export const defaultSettings: ISettings = {
       early_out: false,
       base_scale: 0.5,
       scaler: "bislerp",
+    },
+    scalecrafter: {
+      enabled: false,
+      base: "sd15",
+      unsafe_resolutions: true,
+      disperse: false,
     },
   },
   aitDim: {

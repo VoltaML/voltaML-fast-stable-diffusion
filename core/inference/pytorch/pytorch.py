@@ -22,7 +22,7 @@ from api.websockets import Data
 from api.websockets.notification import Notification
 from core import shared
 from core.config import config
-from core.flags import HighResFixFlag, DeepshrinkFlag
+from core.flags import HighResFixFlag, DeepshrinkFlag, ScalecrafterFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.pytorch.pipeline import StableDiffusionLongPromptWeightingPipeline
@@ -310,7 +310,10 @@ class PyTorchStableDiffusion(InferenceModel):
         deepshrink = None
         if "deepshrink" in job.flags:
             deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
-        print(deepshrink)
+
+        scalecrafter = None
+        if "scalecrafter" in job.flags:
+            scalecrafter = ScalecrafterFlag.from_dict(job.flags["scalecrafter"])
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = (
@@ -322,7 +325,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 else "pil"
             )
 
-            data = pipe.text2img(
+            data = pipe(
                 generator=generator,
                 prompt=job.data.prompt,
                 height=job.data.height,
@@ -337,6 +340,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 seed=job.data.seed,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
                 deepshrink=deepshrink,
+                scalecrafter=scalecrafter,
             )
 
             if "highres_fix" in job.flags:
@@ -353,7 +357,7 @@ class PyTorchStableDiffusion(InferenceModel):
                         latent_scale_mode=flag.latent_scale_mode,
                     )
 
-                    data = pipe.img2img(
+                    data = pipe(
                         generator=generator,
                         prompt=job.data.prompt,
                         image=latents,
@@ -394,7 +398,7 @@ class PyTorchStableDiffusion(InferenceModel):
                         )
                         upscaled_images.append(output[0])
 
-                    data = pipe.img2img(
+                    data = pipe(
                         generator=generator,
                         prompt=job.data.prompt,
                         image=upscaled_images[0],
@@ -457,7 +461,7 @@ class PyTorchStableDiffusion(InferenceModel):
             deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            data = pipe.img2img(
+            data = pipe(
                 generator=generator,
                 prompt=job.data.prompt,
                 image=input_image,
@@ -529,7 +533,7 @@ class PyTorchStableDiffusion(InferenceModel):
             deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            data = pipe.inpaint(
+            data = pipe(
                 generator=generator,
                 prompt=job.data.prompt,
                 image=input_image,

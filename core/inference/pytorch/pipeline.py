@@ -39,9 +39,14 @@ from core.inference.utilities import (
     preprocess_image,
     modify_kohya,
     postprocess_kohya,
+    get_scalecrafter_config,
+    post_scalecrafter,
+    step_scalecrafter,
+    setup_scalecrafter,
+    ScalecrafterSettings,
 )
 from core.inference.utilities.philox import PhiloxGenerator
-from core.flags import DeepshrinkFlag
+from core.flags import DeepshrinkFlag, ScalecrafterFlag
 from core.optimizations import ensure_correct_device, inference_context, unload_all
 from core.scheduling import KdiffusionSchedulerAdapter
 
@@ -291,6 +296,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         adapter_conditioning_scale: Union[float, List[float]] = 1.0,
         adapter_conditioning_factor: float = 1.0,
         deepshrink: Optional[DeepshrinkFlag] = None,
+        scalecrafter: Optional[ScalecrafterFlag] = None,  # type: ignore
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -366,11 +372,22 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-
         with inference_context(self.unet, self.vae, height, width) as inf:
             # 0. Modify unet and vae to the (optionally) modified versions from inf
             self.unet = inf.unet  # type: ignore
             self.vae = inf.vae  # type: ignore
+
+            if scalecrafter is not None:
+                unsafe = scalecrafter.unsafe_resolutions  # type: ignore
+                scalecrafter: ScalecrafterSettings = get_scalecrafter_config("sd15", height, width, scalecrafter.disperse)  # type: ignore
+                logger.info(
+                    f'Applying ScaleCrafter with (base="{scalecrafter.base}", res="{scalecrafter.height * 8}x{scalecrafter.width * 8}", dis="{scalecrafter.disperse is not None}")'
+                )
+                if not unsafe and (
+                    (scalecrafter.height * 8) != height
+                    or (scalecrafter.width * 8) != width
+                ):
+                    height, width = scalecrafter.height * 8, scalecrafter.width * 8
 
             height, width = self._default_height_width(height, width, image)
 
@@ -497,6 +514,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
             extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta, generator)  # type: ignore
 
+            setup_scalecrafter(self.unet, scalecrafter)  # type: ignore
+
             if hasattr(self, "adapter"):
                 if isinstance(self.adapter, MultiAdapter):
                     adapter_state = self.adapter(
@@ -559,6 +578,10 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                 if num_channels_unet == 9:
                     latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
+
+                self.unet = step_scalecrafter(
+                    self.unet, scalecrafter, j, num_inference_steps
+                )
 
                 # predict the noise residual
                 down_intrablock_additional_residuals = None
@@ -645,12 +668,26 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         down_intrablock_additional_residuals=down_intrablock_additional_residuals,
                     )
 
+                self.unet, noise_pred_vanilla = post_scalecrafter(
+                    self.unet,
+                    scalecrafter,
+                    j,
+                    num_inference_steps,
+                    call,
+                    latent_model_input,
+                    t,
+                    cond=text_embeddings,
+                    down_block_additional_residuals=down_block_res_samples,
+                    mid_block_additional_residual=mid_block_res_sample,
+                    down_intrablock_additional_residuals=down_intrablock_additional_residuals,
+                )
+
                 # perform guidance
                 if do_classifier_free_guidance:
                     if not split_latents_into_two:
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
                     noise_pred = calculate_cfg(
-                        j, noise_pred_text, noise_pred_uncond, guidance_scale, t  # type: ignore
+                        j, noise_pred_text, noise_pred_uncond, guidance_scale, t, noise_pred_vanilla  # type: ignore
                     )
 
                 if do_self_attention_guidance:
@@ -769,328 +806,3 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             return StableDiffusionPipelineOutput(
                 images=converted_image, nsfw_content_detected=False  # type: ignore
             )
-
-    def text2img(
-        self,
-        prompt: Union[str, List[str]],
-        generator: Union[PhiloxGenerator, torch.Generator],
-        negative_prompt: Optional[Union[str, List[str]]] = None,
-        height: int = 512,
-        width: int = 512,
-        num_inference_steps: int = 50,
-        guidance_scale: float = 7.5,
-        self_attention_scale: float = 0.0,
-        num_images_per_prompt: Optional[int] = 1,
-        eta: float = 0.0,
-        latents: Optional[torch.FloatTensor] = None,
-        max_embeddings_multiples: Optional[int] = 100,
-        output_type: Literal["pil", "latent"] = "pil",
-        return_dict: bool = True,
-        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
-        is_cancelled_callback: Optional[Callable[[], bool]] = None,
-        callback_steps: int = 1,
-        seed: int = 1,
-        prompt_expansion_settings: Optional[Dict] = None,
-        deepshrink: Optional[DeepshrinkFlag] = None,
-    ):
-        r"""
-        Function for text-to-image generation.
-        Args:
-            prompt (`str` or `List[str]`):
-                The prompt or prompts to guide the image generation.
-            negative_prompt (`str` or `List[str]`, *optional*):
-                The prompt or prompts not to guide the image generation. Ignored when not using guidance (i.e., ignored
-                if `guidance_scale` is less than `1`).
-            height (`int`, *optional*, defaults to 512):
-                The height in pixels of the generated image.
-            width (`int`, *optional*, defaults to 512):
-                The width in pixels of the generated image.
-            num_inference_steps (`int`, *optional*, defaults to 50):
-                The number of denoising steps. More denoising steps usually lead to a higher quality image at the
-                expense of slower inference.
-            guidance_scale (`float`, *optional*, defaults to 7.5):
-                Guidance scale as defined in [Classifier-Free Diffusion Guidance](https://arxiv.org/abs/2207.12598).
-                `guidance_scale` is defined as `w` of equation 2. of [Imagen
-                Paper](https://arxiv.org/pdf/2205.11487.pdf). Guidance scale is enabled by setting `guidance_scale >
-                1`. Higher guidance scale encourages to generate images that are closely linked to the text `prompt`,
-                usually at the expense of lower image quality.
-            num_images_per_prompt (`int`, *optional*, defaults to 1):
-                The number of images to generate per prompt.
-            eta (`float`, *optional*, defaults to 0.0):
-                Corresponds to parameter eta (η) in the DDIM paper: https://arxiv.org/abs/2010.02502. Only applies to
-                [`schedulers.DDIMScheduler`], will be ignored for others.
-            generator (`torch.Generator`, *optional*):
-                A [torch generator](https://pytorch.org/docs/stable/generated/torch.Generator.html) to make generation
-                deterministic.
-            latents (`torch.FloatTensor`, *optional*):
-                Pre-generated noisy latents, sampled from a Gaussian distribution, to be used as inputs for image
-                generation. Can be used to tweak the same generation with different prompts. If not provided, a latents
-                tensor will ge generated by sampling using the supplied random `generator`.
-            max_embeddings_multiples (`int`, *optional*, defaults to `100`):
-                The max multiple length of prompt embeddings compared to the max output length of text encoder.
-            output_type (`str`, *optional*, defaults to `"pil"`):
-                The output format of the generate image. Choose between
-                [PIL](https://pillow.readthedocs.io/en/stable/): `PIL.Image.Image` or `np.array`.
-            return_dict (`bool`, *optional*, defaults to `True`):
-                Whether or not to return a [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] instead of a
-                plain tuple.
-            callback (`Callable`, *optional*):
-                A function that will be called every `callback_steps` steps during inference. The function will be
-                called with the following arguments: `callback(step: int, timestep: int, latents: torch.FloatTensor)`.
-            is_cancelled_callback (`Callable`, *optional*):
-                A function that will be called every `callback_steps` steps during inference. If the function returns
-                `True`, the inference will be cancelled.
-            callback_steps (`int`, *optional*, defaults to 1):
-                The frequency at which the `callback` function will be called. If not specified, the callback will be
-                called at every step.
-        Returns:
-            [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] or `tuple`:
-            [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] if `return_dict` is True, otherwise a `tuple.
-            When returning a tuple, the first element is a list with the generated images, and the second element is a
-            list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
-            (nsfw) content, according to the `safety_checker`.
-        """
-        return self.__call__(
-            prompt=prompt,
-            generator=generator,
-            negative_prompt=negative_prompt,
-            height=height,
-            width=width,
-            num_inference_steps=num_inference_steps,
-            guidance_scale=guidance_scale,
-            self_attention_scale=self_attention_scale,
-            num_images_per_prompt=num_images_per_prompt,
-            eta=eta,
-            latents=latents,
-            max_embeddings_multiples=max_embeddings_multiples,
-            output_type=output_type,
-            return_dict=return_dict,
-            callback=callback,
-            is_cancelled_callback=is_cancelled_callback,
-            callback_steps=callback_steps,
-            seed=seed,
-            prompt_expansion_settings=prompt_expansion_settings,
-            deepshrink=deepshrink,
-        )
-
-    def img2img(
-        self,
-        image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
-        prompt: Union[str, List[str]],
-        generator: Union[PhiloxGenerator, torch.Generator],
-        height: int = 512,
-        width: int = 512,
-        negative_prompt: Optional[Union[str, List[str]]] = None,
-        strength: float = 0.8,
-        num_inference_steps: Optional[int] = 50,
-        guidance_scale: Optional[float] = 7.5,
-        self_attention_scale: float = 0.0,
-        num_images_per_prompt: Optional[int] = 1,
-        eta: Optional[float] = 0.0,
-        max_embeddings_multiples: Optional[int] = 100,
-        output_type: Literal["pil", "latent"] = "pil",
-        return_dict: bool = True,
-        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
-        is_cancelled_callback: Optional[Callable[[], bool]] = None,
-        callback_steps: int = 1,
-        seed: int = 1,
-        prompt_expansion_settings: Optional[Dict] = None,
-        deepshrink: Optional[DeepshrinkFlag] = None,
-    ):
-        r"""
-        Function for image-to-image generation.
-        Args:
-            image (`torch.FloatTensor` or `PIL.Image.Image`):
-                `Image`, or tensor representing an image batch, that will be used as the starting point for the
-                process.
-            prompt (`str` or `List[str]`):
-                The prompt or prompts to guide the image generation.
-            negative_prompt (`str` or `List[str]`, *optional*):
-                The prompt or prompts not to guide the image generation. Ignored when not using guidance (i.e., ignored
-                if `guidance_scale` is less than `1`).
-            strength (`float`, *optional*, defaults to 0.8):
-                Conceptually, indicates how much to transform the reference `image`. Must be between 0 and 1.
-                `image` will be used as a starting point, adding more noise to it the larger the `strength`. The
-                number of denoising steps depends on the amount of noise initially added. When `strength` is 1, added
-                noise will be maximum and the denoising process will run for the full number of iterations specified in
-                `num_inference_steps`. A value of 1, therefore, essentially ignores `image`.
-            num_inference_steps (`int`, *optional*, defaults to 50):
-                The number of denoising steps. More denoising steps usually lead to a higher quality image at the
-                expense of slower inference. This parameter will be modulated by `strength`.
-            guidance_scale (`float`, *optional*, defaults to 7.5):
-                Guidance scale as defined in [Classifier-Free Diffusion Guidance](https://arxiv.org/abs/2207.12598).
-                `guidance_scale` is defined as `w` of equation 2. of [Imagen
-                Paper](https://arxiv.org/pdf/2205.11487.pdf). Guidance scale is enabled by setting `guidance_scale >
-                1`. Higher guidance scale encourages to generate images that are closely linked to the text `prompt`,
-                usually at the expense of lower image quality.
-            num_images_per_prompt (`int`, *optional*, defaults to 1):
-                The number of images to generate per prompt.
-            eta (`float`, *optional*, defaults to 0.0):
-                Corresponds to parameter eta (η) in the DDIM paper: https://arxiv.org/abs/2010.02502. Only applies to
-                [`schedulers.DDIMScheduler`], will be ignored for others.
-            generator (`torch.Generator`, *optional*):
-                A [torch generator](https://pytorch.org/docs/stable/generated/torch.Generator.html) to make generation
-                deterministic.
-            max_embeddings_multiples (`int`, *optional*, defaults to `100`):
-                The max multiple length of prompt embeddings compared to the max output length of text encoder.
-            output_type (`str`, *optional*, defaults to `"pil"`):
-                The output format of the generate image. Choose between
-                [PIL](https://pillow.readthedocs.io/en/stable/): `PIL.Image.Image` or `np.array`.
-            return_dict (`bool`, *optional*, defaults to `True`):
-                Whether or not to return a [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] instead of a
-                plain tuple.
-            callback (`Callable`, *optional*):
-                A function that will be called every `callback_steps` steps during inference. The function will be
-                called with the following arguments: `callback(step: int, timestep: int, latents: torch.FloatTensor)`.
-            is_cancelled_callback (`Callable`, *optional*):
-                A function that will be called every `callback_steps` steps during inference. If the function returns
-                `True`, the inference will be cancelled.
-            callback_steps (`int`, *optional*, defaults to 1):
-                The frequency at which the `callback` function will be called. If not specified, the callback will be
-                called at every step.
-        Returns:
-            [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] or `tuple`:
-            [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] if `return_dict` is True, otherwise a `tuple.
-            When returning a tuple, the first element is a list with the generated images, and the second element is a
-            list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
-            (nsfw) content, according to the `safety_checker`.
-        """
-        return self.__call__(
-            prompt=prompt,
-            generator=generator,
-            negative_prompt=negative_prompt,
-            image=image,
-            height=height,
-            width=width,
-            num_inference_steps=num_inference_steps,  # type: ignore
-            guidance_scale=guidance_scale,  # type: ignore
-            self_attention_scale=self_attention_scale,
-            strength=strength,
-            num_images_per_prompt=num_images_per_prompt,
-            eta=eta,  # type: ignore
-            max_embeddings_multiples=max_embeddings_multiples,
-            output_type=output_type,
-            return_dict=return_dict,
-            callback=callback,
-            is_cancelled_callback=is_cancelled_callback,
-            callback_steps=callback_steps,
-            seed=seed,
-            prompt_expansion_settings=prompt_expansion_settings,
-            deepshrink=deepshrink,
-        )
-
-    def inpaint(
-        self,
-        image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
-        mask_image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
-        prompt: Union[str, List[str]],
-        generator: Union[PhiloxGenerator, torch.Generator],
-        negative_prompt: Optional[Union[str, List[str]]] = None,
-        strength: float = 0.8,
-        num_inference_steps: Optional[int] = 50,
-        guidance_scale: Optional[float] = 7.5,
-        self_attention_scale: float = 0.0,
-        num_images_per_prompt: Optional[int] = 1,
-        eta: Optional[float] = 0.0,
-        max_embeddings_multiples: Optional[int] = 100,
-        output_type: Literal["pil", "latent"] = "pil",
-        return_dict: bool = True,
-        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
-        is_cancelled_callback: Optional[Callable[[], bool]] = None,
-        callback_steps: int = 1,
-        width: int = 512,
-        height: int = 512,
-        seed: int = 1,
-        prompt_expansion_settings: Optional[Dict] = None,
-        deepshrink: Optional[DeepshrinkFlag] = None,
-    ):
-        r"""
-        Function for inpaint.
-        Args:
-            image (`torch.FloatTensor` or `PIL.Image.Image`):
-                `Image`, or tensor representing an image batch, that will be used as the starting point for the
-                process. This is the image whose masked region will be inpainted.
-            mask_image (`torch.FloatTensor` or `PIL.Image.Image`):
-                `Image`, or tensor representing an image batch, to mask `image`. White pixels in the mask will be
-                replaced by noise and therefore repainted, while black pixels will be preserved. If `mask_image` is a
-                PIL image, it will be converted to a single channel (luminance) before use. If it's a tensor, it should
-                contain one color channel (L) instead of 3, so the expected shape would be `(B, H, W, 1)`.
-            prompt (`str` or `List[str]`):
-                The prompt or prompts to guide the image generation.
-            negative_prompt (`str` or `List[str]`, *optional*):
-                The prompt or prompts not to guide the image generation. Ignored when not using guidance (i.e., ignored
-                if `guidance_scale` is less than `1`).
-            strength (`float`, *optional*, defaults to 0.8):
-                Conceptually, indicates how much to inpaint the masked area. Must be between 0 and 1. When `strength`
-                is 1, the denoising process will be run on the masked area for the full number of iterations specified
-                in `num_inference_steps`. `image` will be used as a reference for the masked area, adding more
-                noise to that region the larger the `strength`. If `strength` is 0, no inpainting will occur.
-            num_inference_steps (`int`, *optional*, defaults to 50):
-                The reference number of denoising steps. More denoising steps usually lead to a higher quality image at
-                the expense of slower inference. This parameter will be modulated by `strength`, as explained above.
-            guidance_scale (`float`, *optional*, defaults to 7.5):
-                Guidance scale as defined in [Classifier-Free Diffusion Guidance](https://arxiv.org/abs/2207.12598).
-                `guidance_scale` is defined as `w` of equation 2. of [Imagen
-                Paper](https://arxiv.org/pdf/2205.11487.pdf). Guidance scale is enabled by setting `guidance_scale >
-                1`. Higher guidance scale encourages to generate images that are closely linked to the text `prompt`,
-                usually at the expense of lower image quality.
-            num_images_per_prompt (`int`, *optional*, defaults to 1):
-                The number of images to generate per prompt.
-            eta (`float`, *optional*, defaults to 0.0):
-                Corresponds to parameter eta (η) in the DDIM paper: https://arxiv.org/abs/2010.02502. Only applies to
-                [`schedulers.DDIMScheduler`], will be ignored for others.
-            generator (`torch.Generator`, *optional*):
-                A [torch generator](https://pytorch.org/docs/stable/generated/torch.Generator.html) to make generation
-                deterministic.
-            max_embeddings_multiples (`int`, *optional*, defaults to `100`):
-                The max multiple length of prompt embeddings compared to the max output length of text encoder.
-            output_type (`str`, *optional*, defaults to `"pil"`):
-                The output format of the generate image. Choose between
-                [PIL](https://pillow.readthedocs.io/en/stable/): `PIL.Image.Image` or `np.array`.
-            return_dict (`bool`, *optional*, defaults to `True`):
-                Whether or not to return a [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] instead of a
-                plain tuple.
-            callback (`Callable`, *optional*):
-                A function that will be called every `callback_steps` steps during inference. The function will be
-                called with the following arguments: `callback(step: int, timestep: int, latents: torch.FloatTensor)`.
-            is_cancelled_callback (`Callable`, *optional*):
-                A function that will be called every `callback_steps` steps during inference. If the function returns
-                `True`, the inference will be cancelled.
-            callback_steps (`int`, *optional*, defaults to 1):
-                The frequency at which the `callback` function will be called. If not specified, the callback will be
-                called at every step.
-            width (`int`, *optional*, defaults to 512):
-                The width of the generated image.
-            height (`int`, *optional*, defaults to 512):
-                The height of the generated image.
-        Returns:
-            [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] or `tuple`:
-            [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] if `return_dict` is True, otherwise a `tuple.
-            When returning a tuple, the first element is a list with the generated images, and the second element is a
-            list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
-            (nsfw) content, according to the `safety_checker`.
-        """
-        return self.__call__(
-            prompt=prompt,
-            generator=generator,
-            negative_prompt=negative_prompt,
-            image=image,
-            mask_image=mask_image,
-            num_inference_steps=num_inference_steps,  # type: ignore
-            guidance_scale=guidance_scale,  # type: ignore
-            self_attention_scale=self_attention_scale,
-            strength=strength,
-            num_images_per_prompt=num_images_per_prompt,
-            eta=eta,  # type: ignore
-            max_embeddings_multiples=max_embeddings_multiples,
-            output_type=output_type,
-            return_dict=return_dict,
-            callback=callback,
-            is_cancelled_callback=is_cancelled_callback,
-            callback_steps=callback_steps,
-            width=width,
-            height=height,
-            seed=seed,
-            prompt_expansion_settings=prompt_expansion_settings,
-            deepshrink=deepshrink,
-        )

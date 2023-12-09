@@ -23,7 +23,7 @@ from api.websockets.notification import Notification
 from core import shared
 from core.config import config
 from core.files import get_full_model_path
-from core.flags import SDXLFlag, SDXLRefinerFlag, DeepshrinkFlag
+from core.flags import SDXLFlag, SDXLRefinerFlag, DeepshrinkFlag, ScalecrafterFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.utilities import change_scheduler, create_generator
@@ -227,6 +227,10 @@ class SDXLStableDiffusion(InferenceModel):
         if "deepshrink" in job.flags:
             deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
 
+        scalecrafter = None
+        if "scalecrafter" in job.flags:
+            scalecrafter = ScalecrafterFlag.from_dict(job.flags["scalecrafter"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = "pil"
 
@@ -250,7 +254,7 @@ class SDXLStableDiffusion(InferenceModel):
                     xl_flag.original_size.width,
                 ]
 
-            data = pipe.text2img(
+            data = pipe(
                 original_size=original_size,
                 generator=generator,
                 prompt=job.data.prompt,
@@ -268,6 +272,7 @@ class SDXLStableDiffusion(InferenceModel):
                 refiner=refiner,
                 refiner_model=refiner_model,
                 deepshrink=deepshrink,
+                scalecrafter=scalecrafter,
             )
 
             if refiner is not None and config.api.sdxl_refiner == "separate":
@@ -382,7 +387,7 @@ class SDXLStableDiffusion(InferenceModel):
             deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            data = pipe.img2img(
+            data = pipe(
                 original_size=original_size,
                 generator=generator,
                 prompt=job.data.prompt,
@@ -461,7 +466,7 @@ class SDXLStableDiffusion(InferenceModel):
             deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            data = pipe.inpaint(
+            data = pipe(
                 original_size=original_size,
                 generator=generator,
                 prompt=job.data.prompt,

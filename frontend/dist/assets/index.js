@@ -40723,6 +40723,12 @@ const defaultSettings = {
       early_out: false,
       base_scale: 0.5,
       scaler: "bislerp"
+    },
+    scalecrafter: {
+      enabled: false,
+      base: "sd15",
+      unsafe_resolutions: true,
+      disperse: false
     }
   },
   aitDim: {

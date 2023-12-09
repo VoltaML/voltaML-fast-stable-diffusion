@@ -7,3 +7,4 @@ export { default as SamplerPicker } from "./SamplerPicker.vue";
 export { default as XLRefiner } from "./XLRefiner.vue";
 export { default as CFGScale } from "./CFGScaleInput.vue";
 export { default as SAGInput } from "./SAGInput.vue";
+export { default as Scalecrafter } from "./Scalecrafter.vue";

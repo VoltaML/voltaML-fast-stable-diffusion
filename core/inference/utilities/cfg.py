@@ -1,3 +1,5 @@
+from typing import Optional
+
 import torch
 
 import k_diffusion
@@ -56,6 +58,7 @@ def calculate_cfg(
     uncond: torch.Tensor,
     cfg: float,
     timestep: torch.IntTensor,
+    additional_pred: Optional[torch.Tensor],
 ):
     if config.api.apply_unsharp_mask:
         cc = uncond + cfg * (cond - uncond)
@@ -68,6 +71,9 @@ def calculate_cfg(
         return cc + (sharpened - cc) * MIX_FACTOR
 
     if config.api.cfg_rescale_threshold == "off":
+        if additional_pred is not None:
+            additional_pred, _ = additional_pred.chunk(2)
+            uncond = additional_pred
         return uncond + cfg * (cond - uncond)
 
     if config.api.cfg_rescale_threshold <= cfg:
@@ -89,4 +95,7 @@ def calculate_cfg(
         mimicked = (uncond + 0.7 * (cond - uncond)) * (1 - t)
         return reps + mimicked
 
+    if additional_pred is not None:
+        additional_pred, _ = additional_pred.chunk(2)
+        uncond = additional_pred
     return uncond + cfg * (cond - uncond)

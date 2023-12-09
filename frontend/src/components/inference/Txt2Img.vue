@@ -94,10 +94,11 @@
 
         <ResizeFromDimensionsInput
           :dimensions-object="settings.data.settings.txt2img"
-          v-if="settings.data.settings.model?.type === 'SDXL'"
+          v-if="isSelectedModelSDXL"
         />
         <XLRefiner v-if="isSelectedModelSDXL" />
         <HighResFix v-if="!isSelectedModelSDXL" />
+        <Scalecrafter />
       </NGi>
 
       <!-- Split -->
@@ -136,6 +137,7 @@ import {
   XLRefiner,
   CFGScale,
   SAGInput,
+  Scalecrafter,
 } from "@/components";
 import { serverUrl } from "@/env";
 import {
@@ -266,6 +268,17 @@ const generate = () => {
                 scaler: settings.defaultSettings.flags.deepshrink.scaler,
                 base_scale:
                   settings.defaultSettings.flags.deepshrink.base_scale,
+              },
+            }
+          : {}),
+        ...(settings.defaultSettings.flags.scalecrafter.enabled
+          ? {
+              scalecrafter: {
+                unsafe_resolutions:
+                  settings.defaultSettings.flags.scalecrafter
+                    .unsafe_resolutions,
+                base: settings.data.settings.model?.type,
+                disperse: settings.defaultSettings.flags.scalecrafter.disperse,
               },
             }
           : {}),

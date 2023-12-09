@@ -54,6 +54,17 @@ class DeepshrinkFlag(Flag, DataClassJsonMixin):
 
 
 @dataclass
+class ScalecrafterFlag(Flag, DataClassJsonMixin):
+    "Flag for Scalecrafter settings"
+
+    base: str = "sd15"
+    # In other words: allow untested/"unsafe" resolutions like "1234x4321"
+    unsafe_resolutions: bool = True
+    # May produce more "appealing" images, but will triple, or even quadruple memory usage.
+    disperse: bool = False
+
+
+@dataclass
 class XLOriginalSize:
     width: int = 1024
     height: int = 1024
