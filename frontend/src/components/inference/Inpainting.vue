@@ -369,18 +369,21 @@ const generate = () => {
           prompt_to_prompt: settings.data.settings.api.prompt_to_prompt,
         },
       },
-      ...(settings.defaultSettings.flags.deepshrink.enabled
+      ...(settings.data.settings.inpainting.deepshrink.enabled
         ? {
             flags: {
               deepshrink: {
-                early_out: settings.defaultSettings.flags.deepshrink.early_out,
-                depth_1: settings.defaultSettings.flags.deepshrink.depth_1,
-                stop_at_1: settings.defaultSettings.flags.deepshrink.stop_at_1,
-                depth_2: settings.defaultSettings.flags.deepshrink.depth_2,
-                stop_at_2: settings.defaultSettings.flags.deepshrink.stop_at_2,
-                scaler: settings.defaultSettings.flags.deepshrink.scaler,
+                early_out:
+                  settings.data.settings.inpainting.deepshrink.early_out,
+                depth_1: settings.data.settings.inpainting.deepshrink.depth_1,
+                stop_at_1:
+                  settings.data.settings.inpainting.deepshrink.stop_at_1,
+                depth_2: settings.data.settings.inpainting.deepshrink.depth_2,
+                stop_at_2:
+                  settings.data.settings.inpainting.deepshrink.stop_at_2,
+                scaler: settings.data.settings.inpainting.deepshrink.scaler,
                 base_scale:
-                  settings.defaultSettings.flags.deepshrink.base_scale,
+                  settings.data.settings.inpainting.deepshrink.base_scale,
               },
             },
           }

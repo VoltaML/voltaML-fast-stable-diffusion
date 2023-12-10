@@ -41476,6 +41476,22 @@ const upscaleFlagDefault = {
   tile_padding: 10,
   model: "RealESRGAN_x4plus_anime_6B"
 };
+const deepShrinkFlagDefault = {
+  enabled: false,
+  depth_1: 3,
+  stop_at_1: 0.15,
+  depth_2: 4,
+  stop_at_2: 0.3,
+  scaler: "bislerp",
+  base_scale: 0.5,
+  early_out: false
+};
+const scaleCrafterFlagDefault = {
+  enabled: false,
+  base: "sd15",
+  unsafe_resolutions: true,
+  disperse: false
+};
 const defaultSettings = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
@@ -41493,22 +41509,6 @@ const defaultSettings = {
       negative_aesthetic_score: 2.5,
       steps: 50,
       strength: 0.3
-    },
-    deepshrink: {
-      enabled: false,
-      depth_1: 3,
-      depth_2: 4,
-      stop_at_1: 0.15,
-      stop_at_2: 0.3,
-      early_out: false,
-      base_scale: 0.5,
-      scaler: "bislerp"
-    },
-    scalecrafter: {
-      enabled: false,
-      base: "sd15",
-      unsafe_resolutions: true,
-      disperse: false
     }
   },
   aitDim: {
@@ -41530,7 +41530,9 @@ const defaultSettings = {
     self_attention_scale: 0,
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
-    upscale: cloneObj(upscaleFlagDefault)
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault)
   },
   img2img: {
     width: 512,
@@ -41548,7 +41550,9 @@ const defaultSettings = {
     self_attention_scale: 0,
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
-    upscale: cloneObj(upscaleFlagDefault)
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault)
   },
   inpainting: {
     prompt: "",
@@ -41566,7 +41570,9 @@ const defaultSettings = {
     self_attention_scale: 0,
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
-    upscale: cloneObj(upscaleFlagDefault)
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault)
   },
   controlnet: {
     prompt: "",
@@ -41589,7 +41595,9 @@ const defaultSettings = {
     self_attention_scale: 0,
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
-    upscale: cloneObj(upscaleFlagDefault)
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault)
   },
   upscale: {
     image: "",
@@ -43185,8 +43193,8 @@ const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-9
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
 const ControlNet_vue_vue_type_style_index_0_scoped_97c56df6_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_8c5af50f_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_124be5cd_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_0af5331f_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_58a6e728_lang = "";
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_241a4664_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _hoisted_1$1 = { style: { "margin": "16px 0" } };
@@ -43485,7 +43493,7 @@ const router = createRouter({
     {
       path: "/img2img",
       name: "img2img",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
     },
     {
       path: "/imageProcessing",
@@ -43580,7 +43588,7 @@ export {
   useThemeClass as Y,
   NInternalSelectMenu as Z,
   _export_sfc as _,
-  useState2 as a,
+  createBlock as a,
   AddIcon as a$,
   happensIn as a0,
   call as a1,
@@ -43710,7 +43718,7 @@ export {
   color2Class as bx,
   rateLight as by,
   NTag as bz,
-  createBlock as c,
+  computed as c,
   VFollower as c0,
   sliderLight$1 as c1,
   isSlotEmpty as c2,
@@ -43720,12 +43728,12 @@ export {
   createVNode as e,
   unref as f,
   createElementBlock as g,
-  createCommentVNode as h,
-  NSpace as i,
-  createTextVNode as j,
-  NTooltip as k,
-  computed as l,
-  NSelect as m,
+  NSelect as h,
+  createCommentVNode as i,
+  useState2 as j,
+  NSpace as k,
+  createTextVNode as l,
+  NTooltip as m,
   useMessage as n,
   openBlock as o,
   onUnmounted as p,

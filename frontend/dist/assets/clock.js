@@ -5,11 +5,11 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
-import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, c as createBlock, w as withCtx, e as createVNode, f as unref, j as createTextVNode, B as toDisplayString, N as NCard, h as createCommentVNode, u as useSettings, k as NTooltip, l as computed, m as NSelect, F as Fragment, a as useState, E as spaceRegex, A as NIcon, G as promptHandleKeyUp, H as promptHandleKeyDown, I as NInput, _ as _export_sfc, J as watch, y as ref, s as serverUrl } from "./index.js";
+import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, a as createBlock, w as withCtx, e as createVNode, f as unref, l as createTextVNode, B as toDisplayString, N as NCard, i as createCommentVNode, u as useSettings, m as NTooltip, c as computed, F as Fragment, j as useState, E as spaceRegex, A as NIcon, h as NSelect, G as promptHandleKeyUp, H as promptHandleKeyDown, I as NInput, _ as _export_sfc, J as watch, y as ref, s as serverUrl } from "./index.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import { N as NSwitch } from "./Switch.js";
 import { N as NForm, c as NFormItem } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
+import { N as NSwitch } from "./Switch.js";
 const _hoisted_1$4 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -222,27 +222,6 @@ const _hoisted_7 = {
   class: "flex-container"
 };
 const _hoisted_8 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
-const _hoisted_9 = { key: 4 };
-const _hoisted_10 = { class: "flex-container" };
-const _hoisted_11 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Enable Deepshrink", -1);
-const _hoisted_12 = { key: 0 };
-const _hoisted_13 = { class: "flex-container" };
-const _hoisted_14 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "First layer", -1);
-const _hoisted_15 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
-const _hoisted_16 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Stop at", -1);
-const _hoisted_17 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
-const _hoisted_18 = { class: "flex-container" };
-const _hoisted_19 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Second layer", -1);
-const _hoisted_20 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
-const _hoisted_21 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Stop at", -1);
-const _hoisted_22 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
-const _hoisted_23 = { class: "flex-container" };
-const _hoisted_24 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Scale", -1);
-const _hoisted_25 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
-const _hoisted_26 = { class: "flex-container" };
-const _hoisted_27 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Latent scaler", -1);
-const _hoisted_28 = { class: "flex-container" };
-const _hoisted_29 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Early out", -1);
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "DimensionsInput",
   props: {
@@ -253,14 +232,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   },
   setup(__props) {
     const props = __props;
-    const latentUpscalerOptions = [
-      { label: "Nearest", value: "nearest" },
-      { label: "Nearest exact", value: "nearest-exact" },
-      { label: "Area", value: "area" },
-      { label: "Bilinear", value: "bilinear" },
-      { label: "Bicubic", value: "bicubic" },
-      { label: "Bislerp", value: "bislerp" }
-    ];
     const settings = useSettings();
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
@@ -271,8 +242,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[0] || (_cache[0] = ($event) => props.dimensionsObject.width = $event),
             min: unref(settings).data.settings.aitDim.width[0],
             max: unref(settings).data.settings.aitDim.width[1],
-            step: 64,
-            style: { "margin-right": "12px" }
+            step: 64
           }, null, 8, ["value", "min", "max"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.width,
@@ -290,8 +260,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[2] || (_cache[2] = ($event) => props.dimensionsObject.width = $event),
             min: 128,
             max: 2048,
-            step: 1,
-            style: { "margin-right": "12px" }
+            step: 1
           }, null, 8, ["value"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.width,
@@ -308,8 +277,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[4] || (_cache[4] = ($event) => props.dimensionsObject.height = $event),
             min: unref(settings).data.settings.aitDim.height[0],
             max: unref(settings).data.settings.aitDim.height[1],
-            step: 64,
-            style: { "margin-right": "12px" }
+            step: 64
           }, null, 8, ["value", "min", "max"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.height,
@@ -327,8 +295,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[6] || (_cache[6] = ($event) => props.dimensionsObject.height = $event),
             min: 128,
             max: 2048,
-            step: 1,
-            style: { "margin-right": "12px" }
+            step: 1
           }, null, 8, ["value"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.height,
@@ -337,106 +304,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             style: { "min-width": "96px", "width": "96px" },
             step: 1
           }, null, 8, ["value"])
-        ])),
-        props.dimensionsObject.width * props.dimensionsObject.height >= 768 * 768 || unref(settings).defaultSettings.flags.deepshrink.enabled ? (openBlock(), createElementBlock("div", _hoisted_9, [
-          createBaseVNode("div", _hoisted_10, [
-            _hoisted_11,
-            createVNode(unref(NSwitch), {
-              value: unref(settings).defaultSettings.flags.deepshrink.enabled,
-              "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.flags.deepshrink.enabled = $event)
-            }, null, 8, ["value"])
-          ]),
-          unref(settings).defaultSettings.flags.deepshrink.enabled ? (openBlock(), createElementBlock("div", _hoisted_12, [
-            createBaseVNode("div", _hoisted_13, [
-              _hoisted_14,
-              createVNode(unref(NInputNumber), {
-                value: unref(settings).defaultSettings.flags.deepshrink.depth_1,
-                "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.flags.deepshrink.depth_1 = $event),
-                max: 4,
-                min: 1,
-                step: 1
-              }, null, 8, ["value"]),
-              _hoisted_15,
-              _hoisted_16,
-              createVNode(unref(NSlider), {
-                value: unref(settings).defaultSettings.flags.deepshrink.stop_at_1,
-                "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.flags.deepshrink.stop_at_1 = $event),
-                min: 0.05,
-                max: 1,
-                step: 0.05
-              }, null, 8, ["value"]),
-              _hoisted_17,
-              createVNode(unref(NInputNumber), {
-                value: unref(settings).defaultSettings.flags.deepshrink.stop_at_1,
-                "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.flags.deepshrink.stop_at_1 = $event),
-                max: 1,
-                min: 0.05,
-                step: 0.05
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_18, [
-              _hoisted_19,
-              createVNode(unref(NInputNumber), {
-                value: unref(settings).defaultSettings.flags.deepshrink.depth_2,
-                "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.flags.deepshrink.depth_2 = $event),
-                max: 4,
-                min: 1,
-                step: 1
-              }, null, 8, ["value"]),
-              _hoisted_20,
-              _hoisted_21,
-              createVNode(unref(NSlider), {
-                value: unref(settings).defaultSettings.flags.deepshrink.stop_at_2,
-                "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).defaultSettings.flags.deepshrink.stop_at_2 = $event),
-                min: 0.05,
-                max: 1,
-                step: 0.05
-              }, null, 8, ["value"]),
-              _hoisted_22,
-              createVNode(unref(NInputNumber), {
-                value: unref(settings).defaultSettings.flags.deepshrink.stop_at_2,
-                "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(settings).defaultSettings.flags.deepshrink.stop_at_2 = $event),
-                max: 1,
-                min: 0.05,
-                step: 0.05
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_23, [
-              _hoisted_24,
-              createVNode(unref(NSlider), {
-                value: unref(settings).defaultSettings.flags.deepshrink.base_scale,
-                "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(settings).defaultSettings.flags.deepshrink.base_scale = $event),
-                min: 0.05,
-                max: 1,
-                step: 0.05
-              }, null, 8, ["value"]),
-              _hoisted_25,
-              createVNode(unref(NInputNumber), {
-                value: unref(settings).defaultSettings.flags.deepshrink.base_scale,
-                "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).defaultSettings.flags.deepshrink.base_scale = $event),
-                max: 1,
-                min: 0.05,
-                step: 0.05
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_26, [
-              _hoisted_27,
-              createVNode(unref(NSelect), {
-                value: unref(settings).defaultSettings.flags.deepshrink.scaler,
-                "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).defaultSettings.flags.deepshrink.scaler = $event),
-                filterable: "",
-                options: latentUpscalerOptions
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_28, [
-              _hoisted_29,
-              createVNode(unref(NSwitch), {
-                value: unref(settings).defaultSettings.flags.deepshrink.early_out,
-                "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(settings).defaultSettings.flags.deepshrink.early_out = $event)
-              }, null, 8, ["value"])
-            ])
-          ])) : createCommentVNode("", true)
-        ])) : createCommentVNode("", true)
+        ]))
       ], 64);
     };
   }

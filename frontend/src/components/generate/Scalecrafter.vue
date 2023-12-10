@@ -5,14 +5,12 @@
       <div class="slider-label">
         <p>Enabled</p>
       </div>
-      <NSwitch
-        v-model:value="settings.defaultSettings.flags.scalecrafter.enabled"
-      />
+      <NSwitch v-model:value="target[props.tab].scalecrafter.enabled" />
     </div>
     <NSpace
       vertical
       class="left-container"
-      v-if="settings.defaultSettings.flags.scalecrafter.enabled"
+      v-if="target[props.tab].scalecrafter.enabled"
     >
       <div class="flex-container">
         <NTooltip style="max-width: 600px">
@@ -25,9 +23,7 @@
             in the range of 3-4x.
           </b>
         </NTooltip>
-        <NSwitch
-          v-model:value="settings.defaultSettings.flags.scalecrafter.disperse"
-        />
+        <NSwitch v-model:value="target[props.tab].scalecrafter.disperse" />
       </div>
 
       <div class="flex-container">
@@ -40,9 +36,7 @@
           resolution.
         </NTooltip>
         <NSwitch
-          v-model:value="
-            settings.defaultSettings.flags.scalecrafter.unsafe_resolutions
-          "
+          v-model:value="target[props.tab].scalecrafter.unsafe_resolutions"
         />
       </div>
     </NSpace>
@@ -50,8 +44,31 @@
 </template>
 
 <script setup lang="ts">
+import type { ISettings } from "@/settings";
 import { useSettings } from "@/store/settings";
+import type { InferenceTabs } from "@/types";
 import { NCard, NSpace, NSwitch, NTooltip } from "naive-ui";
+import { computed, type PropType } from "vue";
 
 const settings = useSettings();
+
+const props = defineProps({
+  tab: {
+    type: String as PropType<InferenceTabs>,
+    required: true,
+  },
+  target: {
+    type: String as PropType<"settings" | "defaultSettings">,
+    required: false,
+    default: "settings",
+  },
+});
+
+const target = computed<ISettings>(() => {
+  if (props.target === "settings") {
+    return settings.data.settings;
+  }
+
+  return settings.defaultSettings;
+});
 </script>

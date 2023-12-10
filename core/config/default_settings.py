@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
-from core.flags import HighResFixFlag, UpscaleFlag
+from core.flags import DeepshrinkFlag, HighResFixFlag, ScalecrafterFlag, UpscaleFlag
 from core.types import SigmaScheduler
 
 
@@ -37,6 +37,8 @@ class BaseDiffusionMixin:
     # Flags
     highres: HighResFixFlag = field(default_factory=HighResFixFlag)
     upscale: UpscaleFlag = field(default_factory=UpscaleFlag)
+    deepshrink: DeepshrinkFlag = field(default_factory=DeepshrinkFlag)
+    scalecrafter: ScalecrafterFlag = field(default_factory=ScalecrafterFlag)
 
 
 @dataclass

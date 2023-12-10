@@ -63,6 +63,50 @@ const upscaleFlagDefault: UpscaleFlag = {
   model: "RealESRGAN_x4plus_anime_6B",
 };
 
+export interface DeepShrinkFlag {
+  enabled: boolean;
+
+  depth_1: number;
+  stop_at_1: number;
+
+  depth_2: number;
+  stop_at_2: number;
+
+  scaler: string;
+  base_scale: number;
+  early_out: boolean;
+}
+
+const deepShrinkFlagDefault: DeepShrinkFlag = {
+  enabled: false,
+
+  depth_1: 3,
+  stop_at_1: 0.15,
+
+  depth_2: 4,
+  stop_at_2: 0.3,
+
+  scaler: "bislerp",
+  base_scale: 0.5,
+  early_out: false,
+};
+
+export interface ScaleCrafterFlag {
+  enabled: boolean;
+
+  base: string;
+  unsafe_resolutions: boolean;
+  disperse: boolean;
+}
+
+const scaleCrafterFlagDefault: ScaleCrafterFlag = {
+  enabled: false,
+
+  base: "sd15",
+  unsafe_resolutions: true,
+  disperse: false,
+};
+
 export type SigmaType =
   | "automatic"
   | "karras"
@@ -95,22 +139,6 @@ export interface ISettings {
       steps: 50;
       strength: number;
     };
-    deepshrink: {
-      enabled: boolean;
-      depth_1: number;
-      stop_at_1: number;
-      depth_2: number;
-      stop_at_2: number;
-      base_scale: number;
-      scaler: string;
-      early_out: boolean;
-    };
-    scalecrafter: {
-      enabled: boolean;
-      base: string;
-      unsafe_resolutions: boolean;
-      disperse: boolean;
-    };
   };
   aitDim: {
     width: number[] | undefined;
@@ -132,6 +160,8 @@ export interface ISettings {
     sigmas: SigmaType;
     highres: HighResFixFlag;
     upscale: UpscaleFlag;
+    deepshrink: DeepShrinkFlag;
+    scalecrafter: ScaleCrafterFlag;
   };
   img2img: {
     prompt: string;
@@ -150,6 +180,8 @@ export interface ISettings {
     sigmas: SigmaType;
     highres: HighResFixFlag;
     upscale: UpscaleFlag;
+    deepshrink: DeepShrinkFlag;
+    scalecrafter: ScaleCrafterFlag;
   };
   inpainting: {
     prompt: string;
@@ -168,6 +200,8 @@ export interface ISettings {
     sigmas: SigmaType;
     highres: HighResFixFlag;
     upscale: UpscaleFlag;
+    deepshrink: DeepShrinkFlag;
+    scalecrafter: ScaleCrafterFlag;
   };
   controlnet: {
     prompt: string;
@@ -191,6 +225,8 @@ export interface ISettings {
     sigmas: SigmaType;
     highres: HighResFixFlag;
     upscale: UpscaleFlag;
+    deepshrink: DeepShrinkFlag;
+    scalecrafter: ScaleCrafterFlag;
   };
   upscale: {
     image: string;
@@ -334,22 +370,6 @@ export const defaultSettings: ISettings = {
       steps: 50,
       strength: 0.3,
     },
-    deepshrink: {
-      enabled: false,
-      depth_1: 3,
-      depth_2: 4,
-      stop_at_1: 0.15,
-      stop_at_2: 0.3,
-      early_out: false,
-      base_scale: 0.5,
-      scaler: "bislerp",
-    },
-    scalecrafter: {
-      enabled: false,
-      base: "sd15",
-      unsafe_resolutions: true,
-      disperse: false,
-    },
   },
   aitDim: {
     width: undefined,
@@ -371,6 +391,8 @@ export const defaultSettings: ISettings = {
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
     upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
   },
   img2img: {
     width: 512,
@@ -389,6 +411,8 @@ export const defaultSettings: ISettings = {
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
     upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
   },
   inpainting: {
     prompt: "",
@@ -407,6 +431,8 @@ export const defaultSettings: ISettings = {
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
     upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
   },
   controlnet: {
     prompt: "",
@@ -430,6 +456,8 @@ export const defaultSettings: ISettings = {
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
     upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
   },
   upscale: {
     image: "",

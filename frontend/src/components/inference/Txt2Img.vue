@@ -97,9 +97,14 @@
           v-if="isSelectedModelSDXL"
         />
         <XLRefiner v-if="isSelectedModelSDXL" />
-        <Scalecrafter />
+
+        <!-- Upscaling -->
         <HighResFix tab="txt2img" />
         <Upscale tab="txt2img" />
+
+        <!-- Scaling techniques -->
+        <DeepShrink tab="txt2img" />
+        <Scalecrafter tab="txt2img" />
       </NGi>
 
       <!-- Split -->
@@ -128,6 +133,7 @@
 import {
   BatchSizeInput,
   CFGScale,
+  DeepShrink,
   DimensionsInput,
   GenerateSection,
   HighResFix,
@@ -136,8 +142,8 @@ import {
   Prompt,
   ResizeFromDimensionsInput,
   SAGInput,
-  Scalecrafter,
   SamplerPicker,
+  Scalecrafter,
   Upscale,
   XLRefiner,
 } from "@/components";
@@ -259,28 +265,28 @@ const generate = () => {
               },
             }
           : {}),
-        ...(settings.defaultSettings.flags.deepshrink.enabled
+        ...(settings.data.settings.txt2img.deepshrink.enabled
           ? {
               deepshrink: {
-                early_out: settings.defaultSettings.flags.deepshrink.early_out,
-                depth_1: settings.defaultSettings.flags.deepshrink.depth_1,
-                stop_at_1: settings.defaultSettings.flags.deepshrink.stop_at_1,
-                depth_2: settings.defaultSettings.flags.deepshrink.depth_2,
-                stop_at_2: settings.defaultSettings.flags.deepshrink.stop_at_2,
-                scaler: settings.defaultSettings.flags.deepshrink.scaler,
+                early_out: settings.data.settings.txt2img.deepshrink.early_out,
+                depth_1: settings.data.settings.txt2img.deepshrink.depth_1,
+                stop_at_1: settings.data.settings.txt2img.deepshrink.stop_at_1,
+                depth_2: settings.data.settings.txt2img.deepshrink.depth_2,
+                stop_at_2: settings.data.settings.txt2img.deepshrink.stop_at_2,
+                scaler: settings.data.settings.txt2img.deepshrink.scaler,
                 base_scale:
-                  settings.defaultSettings.flags.deepshrink.base_scale,
+                  settings.data.settings.txt2img.deepshrink.base_scale,
               },
             }
           : {}),
-        ...(settings.defaultSettings.flags.scalecrafter.enabled
+        ...(settings.data.settings.txt2img.scalecrafter.enabled
           ? {
               scalecrafter: {
                 unsafe_resolutions:
-                  settings.defaultSettings.flags.scalecrafter
+                  settings.data.settings.txt2img.scalecrafter
                     .unsafe_resolutions,
                 base: settings.data.settings.model?.type,
-                disperse: settings.defaultSettings.flags.scalecrafter.disperse,
+                disperse: settings.data.settings.txt2img.scalecrafter.disperse,
               },
             }
           : {}),
