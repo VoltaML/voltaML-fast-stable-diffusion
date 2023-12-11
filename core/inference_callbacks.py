@@ -1,5 +1,6 @@
 import time
-from typing import List
+from typing import Union, List
+from io import BytesIO
 
 import torch
 from PIL import Image
@@ -31,14 +32,14 @@ def callback(step: int, _timestep: int, tensor: torch.Tensor):
         (time.time() - last_image_time > config.api.live_preview_delay)
     )
 
-    images: List[Image.Image] = []
+    images: List[Union[BytesIO, Image.Image]] = []
     if send_image:
         last_image_time = time.time()
         if config.api.live_preview_method == "approximation":
             for t in range(tensor.shape[0]):
                 images.append(cheap_approximation(tensor[t]))
         else:
-            for img in numpy_to_pil(taesd(tensor)):
+            for img in numpy_to_pil(taesd(tensor)):  # type: ignore
                 images.append(img)
 
     websocket_manager.broadcast_sync(

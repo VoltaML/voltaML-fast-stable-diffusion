@@ -2,6 +2,7 @@
 
 from contextlib import ExitStack
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
+import inspect
 
 import PIL
 import torch
@@ -39,6 +40,7 @@ from core.inference.utilities import (
     preprocess_image,
 )
 from core.inference.utilities.philox import PhiloxGenerator
+from core.flags import AnimateDiffFlag
 from core.optimizations import ensure_correct_device, inference_context, unload_all
 from core.scheduling import KdiffusionSchedulerAdapter
 
@@ -287,6 +289,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         prompt_expansion_settings: Optional[Dict] = None,
         adapter_conditioning_scale: Union[float, List[float]] = 1.0,
         adapter_conditioning_factor: float = 1.0,
+        animatediff: Optional[AnimateDiffFlag] = None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -363,7 +366,15 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             (nsfw) content, according to the `safety_checker`.
         """
 
-        with inference_context(self.unet, self.vae, height, width) as inf:
+        animatediff = AnimateDiffFlag(
+            motion_model="guoyww/animatediff-motion-adapter-v1-5-2",
+            frames=16,
+            chunk_feed_forward=True,
+        )
+
+        with inference_context(
+            self.unet, self.vae, height, width, [animatediff]
+        ) as inf:
             # 0. Modify unet and vae to the (optionally) modified versions from inf
             self.unet = inf.unet  # type: ignore
             self.vae = inf.vae  # type: ignore
@@ -486,8 +497,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 dtype,
                 device,
                 generator,
-                latents,
+                latents=latents,
                 latent_channels=None if mask is None else self.vae.config.latent_channels,  # type: ignore
+                frames=None if animatediff is None else animatediff.frames,
             )
 
             # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
@@ -601,10 +613,20 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         )
 
                 change_source(self.unet)
+                kwargs = set(
+                    inspect.signature(self.unet.forward).parameters.keys()  # type: ignore
+                )
                 if split_latents_into_two and do_classifier_free_guidance:
                     uncond, cond = text_embeddings.chunk(2)
-                    uncond_down, cond_down = down_block_res_samples.chunk(2)  # type: ignore
-                    uncond_mid, cond_mid = mid_block_res_sample.chunk(2)  # type: ignore
+                    uncond_down, uncond_mid, cond_down, cond_mid = (
+                        None,
+                        None,
+                        None,
+                        None,
+                    )
+                    if down_block_res_samples is not None:
+                        uncond_down, cond_down = down_block_res_samples.chunk(2)  # type: ignore
+                        uncond_mid, cond_mid = mid_block_res_sample.chunk(2)  # type: ignore
                     uncond_intra, cond_intra = None, None
                     if down_intrablock_additional_residuals is not None:
                         uncond_intra, cond_intra = [], []
@@ -612,36 +634,50 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             unc, cnd = s.chunk(2)
                             uncond_intra.append(unc)
                             cond_intra.append(cnd)
-                    noise_pred_text = call(
-                        latent_model_input,
-                        t,
-                        cond=cond,
-                        down_block_additional_residuals=cond_down,
-                        mid_block_additional_residual=cond_mid,
-                        down_intrablock_additional_residuals=cond_intra,
-                    )
+                    _kwargs = {
+                        "down_block_additional_residuals": cond_down,
+                        "mid_block_additional_residual": cond_mid,
+                        "down_intrablock_additional_residuals": cond_intra,
+                    }
+                    for kw, _ in _kwargs.copy().items():
+                        if kw not in kwargs:
+                            del _kwargs[kw]
+                    noise_pred_text = call(latent_model_input, t, cond=cond, **_kwargs)
+
+                    _kwargs = {
+                        "down_block_additional_residuals": uncond_down,
+                        "mid_block_additional_residual": uncond_mid,
+                        "down_intrablock_additional_residuals": uncond_intra,
+                    }
+                    for kw, _ in _kwargs.copy().items():
+                        if kw not in kwargs:
+                            del _kwargs[kw]
                     noise_pred_uncond = call(
-                        latent_model_input,
-                        t,
-                        cond=uncond,
-                        down_block_additional_residuals=uncond_down,
-                        mid_block_additional_residual=uncond_mid,
-                        down_intrablock_additional_residuals=uncond_intra,
+                        latent_model_input, t, cond=uncond, **_kwargs
                     )
                 else:
+                    _kwargs = {
+                        "down_block_additional_residuals": down_block_res_samples,
+                        "mid_block_additional_residual": mid_block_res_sample,
+                        "down_intrablock_additional_residuals": down_intrablock_additional_residuals,
+                    }
+                    for kw, _ in _kwargs.copy().items():
+                        if kw not in kwargs:
+                            del _kwargs[kw]
                     noise_pred = call(  # type: ignore
-                        latent_model_input,
-                        t,
-                        cond=text_embeddings,
-                        down_block_additional_residuals=down_block_res_samples,
-                        mid_block_additional_residual=mid_block_res_sample,
-                        down_intrablock_additional_residuals=down_intrablock_additional_residuals,
+                        latent_model_input, t, cond=text_embeddings, **_kwargs
                     )
 
                 # perform guidance
                 if do_classifier_free_guidance:
                     if not split_latents_into_two:
+                        if isinstance(noise_pred, tuple):  # type: ignore
+                            noise_pred = noise_pred[0]
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
+                    if isinstance(noise_pred_text, tuple):  # type: ignore
+                        noise_pred_text = noise_pred_text[0]
+                    if isinstance(noise_pred_uncond, tuple):  # type: ignore
+                        noise_pred_uncond = noise_pred_uncond[0]
                     noise_pred = calculate_cfg(
                         noise_pred_text, noise_pred_uncond, guidance_scale, t  # type: ignore
                     )

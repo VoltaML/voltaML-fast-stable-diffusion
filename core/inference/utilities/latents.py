@@ -272,17 +272,27 @@ def prepare_latents(
     dtype: torch.dtype,
     device: torch.device,
     generator: Union[PhiloxGenerator, torch.Generator],
+    frames: Optional[int] = None,
     latents=None,
     latent_channels: Optional[int] = None,
     align_to: int = 1,
 ):
     if image is None:
-        shape = (
-            batch_size,
-            pipe.unet.config.in_channels,  # type: ignore
-            (math.ceil(height / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
-            (math.ceil(width / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
-        )
+        if frames is not None:
+            shape = (
+                batch_size,
+                pipe.unet.config.in_channels,
+                frames,
+                (math.ceil(height / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+                (math.ceil(width / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+            )
+        else:
+            shape = (
+                batch_size,
+                pipe.unet.config.in_channels,  # type: ignore
+                (math.ceil(height / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+                (math.ceil(width / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+            )
 
         if latents is None:
             # randn does not work reproducibly on mps

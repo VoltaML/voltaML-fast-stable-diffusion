@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Literal, List
 
 from dataclasses_json.api import DataClassJsonMixin
 
@@ -60,3 +60,21 @@ class SDXLRefinerFlag(Flag, DataClassJsonMixin):
     model: str = ""
     aesthetic_score: float = 6.0
     negative_aesthetic_score: float = 2.5
+
+
+@dataclass
+class AnimateDiffFlag(Flag, DataClassJsonMixin):
+    "Flag for AnimateDiff"
+
+    motion_model: str = ""
+    frames: int = 16
+    fps: int = 10
+
+    # only active when frames > 16 --> sliding context window.
+    frame_overlap: int = 4  # not working
+
+    # increase processing time for decreased memory usage
+    chunk_feed_forward: bool = True  # probably not working
+
+    input_video: str = ""  # not working
+    video_controlnets: List[str] = field(default_factory=list)  # not working

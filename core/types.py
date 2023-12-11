@@ -42,7 +42,7 @@ PyTorchModelBase = Literal[
     "Unknown",
 ]
 PyTorchModelStage = Literal["text_encoding", "first_stage", "last_stage"]
-ImageFormats = Literal["png", "jpeg", "webp"]
+ImageFormats = Literal["png", "jpeg", "webp", "gif"]
 
 
 @dataclass
