@@ -39,6 +39,7 @@ from core.inference.utilities import (
     preprocess_adapter_image,
     preprocess_image,
 )
+from core.inference.utilities.animatediff import get_context_scheduler, nil_scheduler
 from core.inference.utilities.philox import PhiloxGenerator
 from core.flags import AnimateDiffFlag
 from core.optimizations import ensure_correct_device, inference_context, unload_all
@@ -367,8 +368,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         """
 
         animatediff = AnimateDiffFlag(
-            motion_model="guoyww/animatediff-motion-adapter-v1-5-2",
-            frames=16,
+            motion_model="data/motion-models/mm_sd_v15_v2.ckpt",
+            frames=64,
+            context_scheduler="uniform_v2",
             chunk_feed_forward=True,
         )
 
@@ -549,6 +551,26 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             # 8. Denoising loop
             j = 0
 
+            context_scheduler = (
+                get_context_scheduler(animatediff.context_scheduler)
+                if animatediff is not None
+                else nil_scheduler
+            )
+            context_args = []
+            if animatediff is not None:
+                if split_latents_into_two:
+                    logger.warn(
+                        "AnimateDiff doesn't work with non-merged latents! Disabling."
+                    )
+                    split_latents_into_two = False
+                context_args = [
+                    animatediff.frames,
+                    animatediff.context_size,
+                    animatediff.frame_stride,
+                    animatediff.frame_overlap,
+                    animatediff.closed_loop,
+                ]
+
             def do_denoise(
                 x: torch.Tensor,
                 t: torch.IntTensor,
@@ -557,127 +579,170 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             ):
                 nonlocal j
                 # expand the latents if we are doing classifier free guidance
-                latent_model_input = (
-                    torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
-                )
-                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
+                assert context_scheduler is not None
 
-                if num_channels_unet == 9:
-                    latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
-
-                # predict the noise residual
-                down_intrablock_additional_residuals = None
-                if hasattr(self, "adapter") and self.adapter is not None:
-                    if j < cutoff:
-                        assert adapter_state is not None
-                        down_intrablock_additional_residuals = [
-                            state.clone() for state in adapter_state
-                        ]
-
-                down_block_res_samples, mid_block_res_sample = None, None
-                if hasattr(self, "controlnet") and self.controlnet is not None:
-                    if guess_mode and do_classifier_free_guidance:
-                        # Infer ControlNet only for the conditional batch.
-                        control_model_input = x
-                        control_model_input = self.scheduler.scale_model_input(control_model_input, t).half()  # type: ignore
-                        controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
-                    else:
-                        control_model_input = latent_model_input
-                        controlnet_prompt_embeds = text_embeddings
-
-                    cond_scale = controlnet_conditioning_scale * controlnet_keep[i]
-
-                    change_source(self.controlnet)
-                    down_block_res_samples, mid_block_res_sample = call(
-                        control_model_input,
-                        t,
-                        cond=controlnet_prompt_embeds,
-                        controlnet_cond=image,
-                        conditioning_scale=cond_scale,
-                        guess_mode=guess_mode,
+                noise_pred, counter = None, None
+                if animatediff is not None:
+                    noise_pred = torch.zeros(
+                        (
+                            x.shape[0] * (2 if do_classifier_free_guidance else 1),
+                            *x.shape[1:],
+                        ),
+                        device=config.api.device,
+                        dtype=config.api.load_dtype,
+                    )
+                    counter = torch.zeros(
+                        (1, 1, animatediff.frames, 1, 1),
+                        device=config.api.device,
+                        dtype=config.api.load_dtype,
                     )
 
-                    if guess_mode and do_classifier_free_guidance:
-                        # Infered ControlNet only for the conditional batch.
-                        # To apply the output of ControlNet to both the unconditional and conditional batches,
-                        # add 0 to the unconditional batch to keep it unchanged.
-                        down_block_res_samples = [
-                            torch.cat([torch.zeros_like(d), d])
-                            for d in down_block_res_samples
-                        ]
-                        mid_block_res_sample = torch.cat(
-                            [
-                                torch.zeros_like(mid_block_res_sample),
-                                mid_block_res_sample,
+                for context in context_scheduler(j, *context_args):
+                    if animatediff is not None:
+                        latent_model_input = (
+                            x[:, :, context]
+                            .to(device=self.unet.device)
+                            .repeat(2 if do_classifier_free_guidance else 1, 1, 1, 1, 1)
+                        )
+                    else:
+                        latent_model_input = (
+                            torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
+                        )
+                    latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
+
+                    if num_channels_unet == 9:
+                        latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
+
+                    # predict the noise residual
+                    down_intrablock_additional_residuals = None
+                    if hasattr(self, "adapter") and self.adapter is not None:
+                        if j < cutoff:
+                            assert adapter_state is not None
+                            down_intrablock_additional_residuals = [
+                                state.clone() for state in adapter_state
                             ]
+
+                    down_block_res_samples, mid_block_res_sample = None, None
+                    if hasattr(self, "controlnet") and self.controlnet is not None:
+                        if guess_mode and do_classifier_free_guidance:
+                            # Infer ControlNet only for the conditional batch.
+                            control_model_input = x
+                            control_model_input = self.scheduler.scale_model_input(control_model_input, t).half()  # type: ignore
+                            controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
+                        else:
+                            control_model_input = latent_model_input
+                            controlnet_prompt_embeds = text_embeddings
+
+                        cond_scale = controlnet_conditioning_scale * controlnet_keep[i]
+
+                        change_source(self.controlnet)
+                        down_block_res_samples, mid_block_res_sample = call(
+                            control_model_input,
+                            t,
+                            cond=controlnet_prompt_embeds,
+                            controlnet_cond=image,
+                            conditioning_scale=cond_scale,
+                            guess_mode=guess_mode,
                         )
 
-                change_source(self.unet)
-                kwargs = set(
-                    inspect.signature(self.unet.forward).parameters.keys()  # type: ignore
-                )
-                if split_latents_into_two and do_classifier_free_guidance:
-                    uncond, cond = text_embeddings.chunk(2)
-                    uncond_down, uncond_mid, cond_down, cond_mid = (
-                        None,
-                        None,
-                        None,
-                        None,
-                    )
-                    if down_block_res_samples is not None:
-                        uncond_down, cond_down = down_block_res_samples.chunk(2)  # type: ignore
-                        uncond_mid, cond_mid = mid_block_res_sample.chunk(2)  # type: ignore
-                    uncond_intra, cond_intra = None, None
-                    if down_intrablock_additional_residuals is not None:
-                        uncond_intra, cond_intra = [], []
-                        for s in down_intrablock_additional_residuals:
-                            unc, cnd = s.chunk(2)
-                            uncond_intra.append(unc)
-                            cond_intra.append(cnd)
-                    _kwargs = {
-                        "down_block_additional_residuals": cond_down,
-                        "mid_block_additional_residual": cond_mid,
-                        "down_intrablock_additional_residuals": cond_intra,
-                    }
-                    for kw, _ in _kwargs.copy().items():
-                        if kw not in kwargs:
-                            del _kwargs[kw]
-                    noise_pred_text = call(latent_model_input, t, cond=cond, **_kwargs)
+                        if guess_mode and do_classifier_free_guidance:
+                            # Infered ControlNet only for the conditional batch.
+                            # To apply the output of ControlNet to both the unconditional and conditional batches,
+                            # add 0 to the unconditional batch to keep it unchanged.
+                            down_block_res_samples = [
+                                torch.cat([torch.zeros_like(d), d])
+                                for d in down_block_res_samples
+                            ]
+                            mid_block_res_sample = torch.cat(
+                                [
+                                    torch.zeros_like(mid_block_res_sample),
+                                    mid_block_res_sample,
+                                ]
+                            )
 
-                    _kwargs = {
-                        "down_block_additional_residuals": uncond_down,
-                        "mid_block_additional_residual": uncond_mid,
-                        "down_intrablock_additional_residuals": uncond_intra,
-                    }
-                    for kw, _ in _kwargs.copy().items():
-                        if kw not in kwargs:
-                            del _kwargs[kw]
-                    noise_pred_uncond = call(
-                        latent_model_input, t, cond=uncond, **_kwargs
+                    change_source(self.unet)
+                    kwargs = set(
+                        inspect.signature(self.unet.forward).parameters.keys()  # type: ignore
                     )
-                else:
-                    _kwargs = {
-                        "down_block_additional_residuals": down_block_res_samples,
-                        "mid_block_additional_residual": mid_block_res_sample,
-                        "down_intrablock_additional_residuals": down_intrablock_additional_residuals,
-                    }
-                    for kw, _ in _kwargs.copy().items():
-                        if kw not in kwargs:
-                            del _kwargs[kw]
-                    noise_pred = call(  # type: ignore
-                        latent_model_input, t, cond=text_embeddings, **_kwargs
-                    )
+
+                    if split_latents_into_two and do_classifier_free_guidance:
+                        uncond, cond = text_embeddings.chunk(2)
+                        uncond_down, uncond_mid, cond_down, cond_mid = (
+                            None,
+                            None,
+                            None,
+                            None,
+                        )
+                        if down_block_res_samples is not None:
+                            uncond_down, cond_down = down_block_res_samples.chunk(2)  # type: ignore
+                            uncond_mid, cond_mid = mid_block_res_sample.chunk(2)  # type: ignore
+                        uncond_intra, cond_intra = None, None
+                        if down_intrablock_additional_residuals is not None:
+                            uncond_intra, cond_intra = [], []
+                            for s in down_intrablock_additional_residuals:
+                                unc, cnd = s.chunk(2)
+                                uncond_intra.append(unc)
+                                cond_intra.append(cnd)
+                        _kwargs = {
+                            "down_block_additional_residuals": cond_down,
+                            "mid_block_additional_residual": cond_mid,
+                            "down_intrablock_additional_residuals": cond_intra,
+                        }
+                        for kw, _ in _kwargs.copy().items():
+                            if kw not in kwargs:
+                                del _kwargs[kw]
+                        noise_pred_text = call(
+                            latent_model_input, t, cond=cond, **_kwargs
+                        )
+
+                        _kwargs = {
+                            "down_block_additional_residuals": uncond_down,
+                            "mid_block_additional_residual": uncond_mid,
+                            "down_intrablock_additional_residuals": uncond_intra,
+                        }
+                        for kw, _ in _kwargs.copy().items():
+                            if kw not in kwargs:
+                                del _kwargs[kw]
+                        noise_pred_uncond = call(
+                            latent_model_input, t, cond=uncond, **_kwargs
+                        )
+                    else:
+                        _kwargs = {
+                            "down_block_additional_residuals": down_block_res_samples,
+                            "mid_block_additional_residual": mid_block_res_sample,
+                            "down_intrablock_additional_residuals": down_intrablock_additional_residuals,
+                        }
+                        for kw, _ in _kwargs.copy().items():
+                            if kw not in kwargs:
+                                del _kwargs[kw]
+
+                        if animatediff is not None:
+                            assert noise_pred is not None
+                            assert counter is not None
+                            noise_pred[:, :, context] = (
+                                noise_pred[:, :, context]
+                                + call(
+                                    latent_model_input,
+                                    t,
+                                    cond=text_embeddings,
+                                    **_kwargs,
+                                )[0]
+                            )
+                            counter[:, :, context] = counter[:, :, context] + 1
+                        else:
+                            noise_pred = call(  # type: ignore
+                                latent_model_input, t, cond=text_embeddings, **_kwargs
+                            )
 
                 # perform guidance
                 if do_classifier_free_guidance:
                     if not split_latents_into_two:
-                        if isinstance(noise_pred, tuple):  # type: ignore
-                            noise_pred = noise_pred[0]
-                        noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
-                    if isinstance(noise_pred_text, tuple):  # type: ignore
-                        noise_pred_text = noise_pred_text[0]
-                    if isinstance(noise_pred_uncond, tuple):  # type: ignore
-                        noise_pred_uncond = noise_pred_uncond[0]
+                        if animatediff is not None:
+                            assert noise_pred is not None
+                            assert counter is not None
+                            noise_pred_uncond, noise_pred_text = (noise_pred / counter).chunk(2)  # type: ignore
+                        else:
+                            noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
                     noise_pred = calculate_cfg(
                         noise_pred_text, noise_pred_uncond, guidance_scale, t  # type: ignore
                     )

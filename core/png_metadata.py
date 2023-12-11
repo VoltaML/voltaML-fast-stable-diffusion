@@ -187,7 +187,7 @@ def save_images(
                     # Save the image
                     buffer = BytesIO()
                     if extension == "gif":
-                        buffer: BytesIO = image
+                        buffer: BytesIO = image  # type: ignore
                     else:
                         image.save(buffer, quality=config.api.image_quality)
 

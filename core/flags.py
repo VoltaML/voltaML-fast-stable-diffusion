@@ -71,7 +71,14 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     fps: int = 10
 
     # only active when frames > 16 --> sliding context window.
+    context_size: int = 16
+    frame_stride: int = 1
     frame_overlap: int = 4  # not working
+    context_scheduler: Literal[
+        "uniform", "uniform_constant", "uniform_v2"
+    ] = "uniform_v2"
+
+    closed_loop: bool = True
 
     # increase processing time for decreased memory usage
     chunk_feed_forward: bool = True  # probably not working

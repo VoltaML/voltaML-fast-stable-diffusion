@@ -1,10 +1,9 @@
 from contextlib import ExitStack
-from typing import List, Optional
+from typing import List, Optional, Type
 
 import torch
 from diffusers.models.autoencoder_kl import AutoencoderKL
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
-from diffusers.models.unet_motion_model import UNetMotionModel, MotionAdapter
 
 from core.config import config
 from core.flags import AnimateDiffFlag, Flag
@@ -18,11 +17,18 @@ class InferenceContext(ExitStack):
 
     unet: torch.nn.Module
     vae: torch.nn.Module
+    flags: List[Optional[Flag]] = []
     components: dict = {}
 
     def to(self, device: str, dtype: torch.dtype):
         self.unet.to(device=device, dtype=dtype)
         self.vae.to(device=device, dtype=dtype)
+
+    def get_flag(self, _type: Type) -> Optional[Flag]:
+        try:
+            return [x for x in self.flags if isinstance(x, _type)].pop()
+        except IndexError:
+            return None
 
 
 def inference_context(
@@ -43,26 +49,29 @@ def inference_context(
             disable=config.api.autocast and not unet.force_autocast,
         )
     )
-    animatediff = [x for x in flags if isinstance(x, AnimateDiffFlag)]
-    print(len(flags) - len(animatediff))
-    if len(animatediff) != 0:
-        flag: AnimateDiffFlag = animatediff[0]
-        motion_adapter: MotionAdapter = MotionAdapter.from_pretrained(flag.motion_model)  # type: ignore
-        motion_adapter.to(dtype=config.api.load_dtype, device=config.api.device)
+    s.flags = flags
+
+    animatediff: Optional[AnimateDiffFlag] = s.get_flag(AnimateDiffFlag)  # type: ignore
+    if animatediff is not None:
+        from core.inference.utilities.animatediff.models.unet import (
+            UNet3DConditionModel,
+        )
+        from core.inference.utilities.animatediff import patch as patch_animatediff
 
         offload = s.unet.device.type == "cpu"
 
-        s.unet = UNetMotionModel.from_unet2d(  # type: ignore
-            s.unet, motion_adapter  # type: ignore
+        s.unet = UNet3DConditionModel.from_pretrained_2d(  # type: ignore
+            s.unet, animatediff.motion_model  # type: ignore
         )
 
-        if flag.chunk_feed_forward:
-            s.unet.enable_forward_chunking()  # type: ignore
+        if config.api.clear_memory_policy == "always":
+            from core.shared_dependent import gpu
+
+            gpu.memory_cleanup()
 
         s.components.update({"unet": s.unet})
         cast(s, device=config.api.device, dtype=config.api.dtype, offload=offload)  # type: ignore
-
-        s.unet.to(dtype=config.api.load_dtype, device=config.api.device)  # type: ignore
+        patch_animatediff(s)
     if is_hypertile_available() and config.api.hypertile:
         s.enter_context(hypertile(unet, height, width))
     if config.api.torch_compile:
