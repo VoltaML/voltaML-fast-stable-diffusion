@@ -43,6 +43,8 @@ class HighResFixFlag(Flag, DataClassJsonMixin):
 class DeepshrinkFlag(Flag, DataClassJsonMixin):
     "Flag for deepshrink"
 
+    enabled: bool = False  # For storing in json
+
     depth_1: int = 3  # -1 to 12; steps of 1
     stop_at_1: float = 0.15  # 0 to 0.5; steps of 0.01
 
@@ -57,6 +59,8 @@ class DeepshrinkFlag(Flag, DataClassJsonMixin):
 @dataclass
 class ScalecrafterFlag(Flag, DataClassJsonMixin):
     "Flag for Scalecrafter settings"
+
+    enabled: bool = False  # For storing in json
 
     base: str = "sd15"
     # In other words: allow untested/"unsafe" resolutions like "1234x4321"

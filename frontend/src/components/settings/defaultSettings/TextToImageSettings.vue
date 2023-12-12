@@ -49,13 +49,13 @@
 
       <SamplerPicker type="txt2img" target="defaultSettings" />
       <Upscale tab="txt2img" target="defaultSettings" />
-      <HighResFix tab="txt2img" target="defaultSettings" />
+      <HighResFixTabs tab="txt2img" target="defaultSettings" />
     </NForm>
   </NCard>
 </template>
 
 <script lang="ts" setup>
-import { HighResFix, SamplerPicker, Upscale } from "@/components";
+import { HighResFixTabs, SamplerPicker, Upscale } from "@/components";
 import { NCard, NForm, NFormItem, NInput, NInputNumber } from "naive-ui";
 import { useSettings } from "../../../store/settings";
 

@@ -98,13 +98,11 @@
         />
         <XLRefiner v-if="isSelectedModelSDXL" />
 
-        <!-- Upscaling -->
-        <HighResFix tab="txt2img" />
-        <Upscale tab="txt2img" />
-
         <!-- Scaling techniques -->
-        <DeepShrink tab="txt2img" />
-        <Scalecrafter tab="txt2img" />
+        <HighResFixTabs tab="txt2img" />
+
+        <!-- Upscaling -->
+        <Upscale tab="txt2img" />
       </NGi>
 
       <!-- Split -->
@@ -133,17 +131,15 @@
 import {
   BatchSizeInput,
   CFGScale,
-  DeepShrink,
   DimensionsInput,
   GenerateSection,
-  HighResFix,
+  HighResFixTabs,
   ImageOutput,
   OutputStats,
   Prompt,
   ResizeFromDimensionsInput,
   SAGInput,
   SamplerPicker,
-  Scalecrafter,
   Upscale,
   XLRefiner,
 } from "@/components";

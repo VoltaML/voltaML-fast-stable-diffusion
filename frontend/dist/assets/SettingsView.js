@@ -1,7 +1,8 @@
-import { d as defineComponent, u as useSettings, o as openBlock, a as createBlock, w as withCtx, e as createVNode, f as unref, I as NInput, h as NSelect, N as NCard, b9 as reactive, c as computed, bA as convertToTextString, y as ref, s as serverUrl, J as watch, j as useState, b as createBaseVNode, g as createElementBlock, L as renderList, bc as NText, l as createTextVNode, B as toDisplayString, F as Fragment, i as createCommentVNode, C as NTabPane, D as NTabs, R as inject, bB as themeKey, z as NButton, m as NTooltip, n as useMessage, bC as useNotification, p as onUnmounted, bD as defaultSettings } from "./index.js";
-import { c as NFormItem, _ as _sfc_main$g, b as _sfc_main$h, a as _sfc_main$i, N as NForm } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
+import { d as defineComponent, u as useSettings, o as openBlock, c as createBlock, w as withCtx, e as createVNode, f as unref, I as NInput, m as NSelect, N as NCard, b9 as reactive, i as computed, bA as convertToTextString, y as ref, s as serverUrl, J as watch, a as useState, b as createBaseVNode, g as createElementBlock, L as renderList, bc as NText, k as createTextVNode, B as toDisplayString, F as Fragment, h as createCommentVNode, C as NTabPane, D as NTabs, R as inject, bB as themeKey, z as NButton, l as NTooltip, n as useMessage, bC as useNotification, p as onUnmounted, bD as defaultSettings } from "./index.js";
+import { c as NFormItem, _ as _sfc_main$g, a as _sfc_main$h, N as NForm } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
+import { _ as _sfc_main$i } from "./Scalecrafter.vue_vue_type_script_setup_true_lang.js";
 import { N as NSlider } from "./Slider.js";
 import "./Settings.js";
 const _sfc_main$f = /* @__PURE__ */ defineComponent({

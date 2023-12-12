@@ -3,6 +3,7 @@ export { default as CFGScale } from "./CFGScaleInput.vue";
 export { default as DeepShrink } from "./DeepShrink.vue";
 export { default as DimensionsInput } from "./DimensionsInput.vue";
 export { default as HighResFix } from "./HighResFix.vue";
+export { default as HighResFixTabs } from "./HighResFixTabs.vue";
 export { default as Prompt } from "./Prompt.vue";
 export { default as ResizeFromDimensionsInput } from "./ResizeFromDimensionsInput.vue";
 export { default as SAGInput } from "./SAGInput.vue";

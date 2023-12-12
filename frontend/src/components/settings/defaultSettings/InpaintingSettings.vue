@@ -51,13 +51,13 @@
 
       <SamplerPicker type="inpainting" target="defaultSettings" />
       <Upscale tab="inpainting" target="defaultSettings" />
-      <HighResFix tab="inpainting" target="defaultSettings" />
+      <HighResFixTabs tab="inpainting" target="defaultSettings" />
     </NForm>
   </NCard>
 </template>
 
 <script lang="ts" setup>
-import { HighResFix, SamplerPicker, Upscale } from "@/components";
+import { HighResFixTabs, SamplerPicker, Upscale } from "@/components";
 import { useSettings } from "@/store/settings";
 import { NCard, NForm, NFormItem, NInput, NInputNumber } from "naive-ui";
 

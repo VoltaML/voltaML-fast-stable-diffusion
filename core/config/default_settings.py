@@ -68,6 +68,8 @@ class InpaintingConfig(BaseDiffusionMixin):
 class ControlNetConfig(BaseDiffusionMixin):
     "Configuration for the inpainting pipeline"
 
+    self_attention_scale: float = 0.0
+
     controlnet: str = "lllyasviel/sd-controlnet-canny"
     controlnet_conditioning_scale: float = 1.0
     detection_resolution: int = 512

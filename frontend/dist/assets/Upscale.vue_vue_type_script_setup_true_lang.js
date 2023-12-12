@@ -1,4 +1,4 @@
-import { R as inject, bE as getCurrentInstance, J as watch, aB as onBeforeUnmount, Q as cB, ab as cM, aa as c, P as createInjectionKey, d as defineComponent, S as useConfig, T as useTheme, y as ref, a3 as provide, x as h, bF as formLight, a2 as keysOf, c as computed, az as formatLength, aH as get, bG as commonVariables, at as cE, X as toRef, aW as createId, bH as formItemInjectionKey, ba as onMounted, ah as createKey, Y as useThemeClass, aX as Transition, av as resolveWrappedSlot, aM as warn, u as useSettings, j as useState, K as upscalerOptions, o as openBlock, a as createBlock, w as withCtx, b as createBaseVNode, e as createVNode, f as unref, k as NSpace, h as NSelect, g as createElementBlock, l as createTextVNode, m as NTooltip, i as createCommentVNode, N as NCard, F as Fragment, L as renderList, z as NButton, B as toDisplayString, bA as convertToTextString, bI as resolveDynamicComponent, bf as NModal, A as NIcon } from "./index.js";
+import { R as inject, bF as getCurrentInstance, J as watch, aB as onBeforeUnmount, Q as cB, ab as cM, aa as c, P as createInjectionKey, d as defineComponent, S as useConfig, T as useTheme, y as ref, a3 as provide, x as h, bG as formLight, a2 as keysOf, i as computed, az as formatLength, aH as get, bH as commonVariables, at as cE, X as toRef, aW as createId, bI as formItemInjectionKey, ba as onMounted, ah as createKey, Y as useThemeClass, aX as Transition, av as resolveWrappedSlot, aM as warn, u as useSettings, a as useState, K as upscalerOptions, o as openBlock, g as createElementBlock, b as createBaseVNode, e as createVNode, f as unref, c as createBlock, w as withCtx, m as NSelect, k as createTextVNode, l as NTooltip, j as NSpace, h as createCommentVNode, F as Fragment, N as NCard, L as renderList, z as NButton, B as toDisplayString, bA as convertToTextString, bJ as resolveDynamicComponent, bf as NModal, A as NIcon } from "./index.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
@@ -1904,136 +1904,130 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       { label: "Bislerp", value: "bislerp" }
     ];
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), {
-        title: "Highres fix",
-        class: "generate-extra-card"
-      }, {
-        default: withCtx(() => [
-          createBaseVNode("div", _hoisted_1$2, [
-            _hoisted_2$2,
-            createVNode(unref(NSwitch), {
-              value: target.value[props.tab].highres.enabled,
-              "onUpdate:value": _cache[0] || (_cache[0] = ($event) => target.value[props.tab].highres.enabled = $event)
-            }, null, 8, ["value"])
-          ]),
-          target.value[props.tab].highres.enabled ? (openBlock(), createBlock(unref(NSpace), {
-            key: 0,
-            vertical: "",
-            class: "left-container"
-          }, {
-            default: withCtx(() => [
-              createBaseVNode("div", _hoisted_3$2, [
-                _hoisted_4$2,
+      return openBlock(), createElementBlock(Fragment, null, [
+        createBaseVNode("div", _hoisted_1$2, [
+          _hoisted_2$2,
+          createVNode(unref(NSwitch), {
+            value: target.value[props.tab].highres.enabled,
+            "onUpdate:value": _cache[0] || (_cache[0] = ($event) => target.value[props.tab].highres.enabled = $event)
+          }, null, 8, ["value"])
+        ]),
+        target.value[props.tab].highres.enabled ? (openBlock(), createBlock(unref(NSpace), {
+          key: 0,
+          vertical: "",
+          class: "left-container"
+        }, {
+          default: withCtx(() => [
+            createBaseVNode("div", _hoisted_3$2, [
+              _hoisted_4$2,
+              createVNode(unref(NSelect), {
+                value: target.value[props.tab].highres.mode,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => target.value[props.tab].highres.mode = $event),
+                options: [
+                  { label: "Latent", value: "latent" },
+                  { label: "Image", value: "image" }
+                ]
+              }, null, 8, ["value"])
+            ]),
+            target.value[props.tab].highres.mode === "image" ? (openBlock(), createElementBlock("div", _hoisted_5$2, [
+              createBaseVNode("div", _hoisted_6$2, [
+                _hoisted_7$2,
                 createVNode(unref(NSelect), {
-                  value: target.value[props.tab].highres.mode,
-                  "onUpdate:value": _cache[1] || (_cache[1] = ($event) => target.value[props.tab].highres.mode = $event),
-                  options: [
-                    { label: "Latent", value: "latent" },
-                    { label: "Image", value: "image" }
-                  ]
+                  value: target.value[props.tab].highres.image_upscaler,
+                  "onUpdate:value": _cache[2] || (_cache[2] = ($event) => target.value[props.tab].highres.image_upscaler = $event),
+                  size: "small",
+                  style: { "flex-grow": "1" },
+                  filterable: "",
+                  options: imageUpscalerOptions.value
+                }, null, 8, ["value", "options"])
+              ])
+            ])) : (openBlock(), createElementBlock("div", _hoisted_8$1, [
+              createBaseVNode("div", _hoisted_9$1, [
+                _hoisted_10$1,
+                createVNode(unref(NSwitch), {
+                  value: target.value[props.tab].highres.antialiased,
+                  "onUpdate:value": _cache[3] || (_cache[3] = ($event) => target.value[props.tab].highres.antialiased = $event)
                 }, null, 8, ["value"])
               ]),
-              target.value[props.tab].highres.mode === "image" ? (openBlock(), createElementBlock("div", _hoisted_5$2, [
-                createBaseVNode("div", _hoisted_6$2, [
-                  _hoisted_7$2,
-                  createVNode(unref(NSelect), {
-                    value: target.value[props.tab].highres.image_upscaler,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => target.value[props.tab].highres.image_upscaler = $event),
-                    size: "small",
-                    style: { "flex-grow": "1" },
-                    filterable: "",
-                    options: imageUpscalerOptions.value
-                  }, null, 8, ["value", "options"])
-                ])
-              ])) : (openBlock(), createElementBlock("div", _hoisted_8$1, [
-                createBaseVNode("div", _hoisted_9$1, [
-                  _hoisted_10$1,
-                  createVNode(unref(NSwitch), {
-                    value: target.value[props.tab].highres.antialiased,
-                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => target.value[props.tab].highres.antialiased = $event)
-                  }, null, 8, ["value"])
-                ]),
-                createBaseVNode("div", _hoisted_11, [
-                  _hoisted_12,
-                  createVNode(unref(NSelect), {
-                    value: target.value[props.tab].highres.latent_scale_mode,
-                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => target.value[props.tab].highres.latent_scale_mode = $event),
-                    size: "small",
-                    style: { "flex-grow": "1" },
-                    filterable: "",
-                    options: latentUpscalerOptions
-                  }, null, 8, ["value"])
-                ])
-              ])),
-              createBaseVNode("div", _hoisted_13, [
-                createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                  trigger: withCtx(() => [
-                    _hoisted_14
-                  ]),
-                  default: withCtx(() => [
-                    createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
-                    _hoisted_15
-                  ]),
-                  _: 1
-                }),
-                createVNode(unref(NSlider), {
-                  value: target.value[props.tab].highres.steps,
-                  "onUpdate:value": _cache[5] || (_cache[5] = ($event) => target.value[props.tab].highres.steps = $event),
-                  min: 5,
-                  max: 300,
-                  style: { "margin-right": "12px" }
-                }, null, 8, ["value"]),
-                createVNode(unref(NInputNumber), {
-                  value: target.value[props.tab].highres.steps,
-                  "onUpdate:value": _cache[6] || (_cache[6] = ($event) => target.value[props.tab].highres.steps = $event),
+              createBaseVNode("div", _hoisted_11, [
+                _hoisted_12,
+                createVNode(unref(NSelect), {
+                  value: target.value[props.tab].highres.latent_scale_mode,
+                  "onUpdate:value": _cache[4] || (_cache[4] = ($event) => target.value[props.tab].highres.latent_scale_mode = $event),
                   size: "small",
-                  style: { "min-width": "96px", "width": "96px" }
-                }, null, 8, ["value"])
-              ]),
-              createBaseVNode("div", _hoisted_16, [
-                _hoisted_17,
-                createVNode(unref(NSlider), {
-                  value: target.value[props.tab].highres.scale,
-                  "onUpdate:value": _cache[7] || (_cache[7] = ($event) => target.value[props.tab].highres.scale = $event),
-                  min: 1,
-                  max: 8,
-                  step: 0.1,
-                  style: { "margin-right": "12px" }
-                }, null, 8, ["value"]),
-                createVNode(unref(NInputNumber), {
-                  value: target.value[props.tab].highres.scale,
-                  "onUpdate:value": _cache[8] || (_cache[8] = ($event) => target.value[props.tab].highres.scale = $event),
-                  size: "small",
-                  style: { "min-width": "96px", "width": "96px" },
-                  step: 0.1
-                }, null, 8, ["value"])
-              ]),
-              createBaseVNode("div", _hoisted_18, [
-                _hoisted_19,
-                createVNode(unref(NSlider), {
-                  value: target.value[props.tab].highres.strength,
-                  "onUpdate:value": _cache[9] || (_cache[9] = ($event) => target.value[props.tab].highres.strength = $event),
-                  min: 0.1,
-                  max: 0.9,
-                  step: 0.05,
-                  style: { "margin-right": "12px" }
-                }, null, 8, ["value"]),
-                createVNode(unref(NInputNumber), {
-                  value: target.value[props.tab].highres.strength,
-                  "onUpdate:value": _cache[10] || (_cache[10] = ($event) => target.value[props.tab].highres.strength = $event),
-                  size: "small",
-                  style: { "min-width": "96px", "width": "96px" },
-                  min: 0.1,
-                  max: 0.9,
-                  step: 0.05
+                  style: { "flex-grow": "1" },
+                  filterable: "",
+                  options: latentUpscalerOptions
                 }, null, 8, ["value"])
               ])
+            ])),
+            createBaseVNode("div", _hoisted_13, [
+              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                trigger: withCtx(() => [
+                  _hoisted_14
+                ]),
+                default: withCtx(() => [
+                  createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
+                  _hoisted_15
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NSlider), {
+                value: target.value[props.tab].highres.steps,
+                "onUpdate:value": _cache[5] || (_cache[5] = ($event) => target.value[props.tab].highres.steps = $event),
+                min: 5,
+                max: 300,
+                style: { "margin-right": "12px" }
+              }, null, 8, ["value"]),
+              createVNode(unref(NInputNumber), {
+                value: target.value[props.tab].highres.steps,
+                "onUpdate:value": _cache[6] || (_cache[6] = ($event) => target.value[props.tab].highres.steps = $event),
+                size: "small",
+                style: { "min-width": "96px", "width": "96px" }
+              }, null, 8, ["value"])
             ]),
-            _: 1
-          })) : createCommentVNode("", true)
-        ]),
-        _: 1
-      });
+            createBaseVNode("div", _hoisted_16, [
+              _hoisted_17,
+              createVNode(unref(NSlider), {
+                value: target.value[props.tab].highres.scale,
+                "onUpdate:value": _cache[7] || (_cache[7] = ($event) => target.value[props.tab].highres.scale = $event),
+                min: 1,
+                max: 8,
+                step: 0.1,
+                style: { "margin-right": "12px" }
+              }, null, 8, ["value"]),
+              createVNode(unref(NInputNumber), {
+                value: target.value[props.tab].highres.scale,
+                "onUpdate:value": _cache[8] || (_cache[8] = ($event) => target.value[props.tab].highres.scale = $event),
+                size: "small",
+                style: { "min-width": "96px", "width": "96px" },
+                step: 0.1
+              }, null, 8, ["value"])
+            ]),
+            createBaseVNode("div", _hoisted_18, [
+              _hoisted_19,
+              createVNode(unref(NSlider), {
+                value: target.value[props.tab].highres.strength,
+                "onUpdate:value": _cache[9] || (_cache[9] = ($event) => target.value[props.tab].highres.strength = $event),
+                min: 0.1,
+                max: 0.9,
+                step: 0.05,
+                style: { "margin-right": "12px" }
+              }, null, 8, ["value"]),
+              createVNode(unref(NInputNumber), {
+                value: target.value[props.tab].highres.strength,
+                "onUpdate:value": _cache[10] || (_cache[10] = ($event) => target.value[props.tab].highres.strength = $event),
+                size: "small",
+                style: { "min-width": "96px", "width": "96px" },
+                min: 0.1,
+                max: 0.9,
+                step: 0.05
+              }, null, 8, ["value"])
+            ])
+          ]),
+          _: 1
+        })) : createCommentVNode("", true)
+      ], 64);
     };
   }
 });
@@ -2412,7 +2406,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
 export {
   NForm as N,
   _sfc_main$1 as _,
-  _sfc_main$2 as a,
-  _sfc_main as b,
+  _sfc_main as a,
+  _sfc_main$2 as b,
   NFormItem as c
 };
