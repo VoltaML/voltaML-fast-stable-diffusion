@@ -26,10 +26,13 @@ class InferenceContext(ExitStack):
             UNet3DConditionModel,
         )
 
-        self.vae.to(device=device, dtype=dtype, memory_format=memory_format)
-        if isinstance(self.unet, UNet3DConditionModel) and memory_format == torch.channels_last:
+        self.vae.to(device=device, dtype=dtype, memory_format=memory_format)  # type: ignore
+        if (
+            isinstance(self.unet, UNet3DConditionModel)
+            and memory_format == torch.channels_last
+        ):
             memory_format = torch.channels_last_3d
-        self.unet.to(device=device, dtype=dtype, memory_format=memory_format)
+        self.unet.to(device=device, dtype=dtype, memory_format=memory_format)  # type: ignore
 
     def get_flag(self, _type: Type) -> Optional[Flag]:
         try:
