@@ -47,8 +47,7 @@ def sag_masking(pipe, original_latents, attn_map, map_size, t, eps):
         h = h[-1]
 
     # Produce attention mask
-    attn_map = attn_map.reshape(b, h, hw1, hw2)
-    attn_mask = attn_map.mean(1, keepdim=False).sum(1, keepdim=False) > 1.0
+    attn_mask = attn_map > 1.0
     attn_mask = (
         attn_mask.reshape(b, map_size[0], map_size[1])
         .unsqueeze(1)

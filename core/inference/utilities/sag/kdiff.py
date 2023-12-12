@@ -21,10 +21,10 @@ def calculate_sag(
 ) -> torch.Tensor:
     pred: torch.Tensor = noise  # noise is already pred_x0 with kdiff
     if cfg > 1:
-        cond_attn, _ = store_processor.attention_probs.chunk(2)
+        cond_attn, _ = store_processor.attention_map.chunk(2)
         text_embeddings, _ = text_embeddings.chunk(2)
     else:
-        cond_attn = store_processor.attention_probs
+        cond_attn = store_processor.attention_map
 
     degraded: torch.Tensor = sag_masking(pipe, pred, cond_attn, map_size, timestep, 0)
 
