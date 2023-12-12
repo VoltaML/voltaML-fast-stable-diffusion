@@ -6,7 +6,6 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
 )
 
 from core.config import config
-from core.inference.utilities.animatediff.models.unet import UNet3DConditionModel
 
 try:
     force_autocast = [torch.float8_e4m3fn, torch.float8_e5m2]
@@ -39,6 +38,9 @@ def cast(
     if pipe.unet.force_autocast:
         for b in [x for x in pipe.components.values() if hasattr(x, "modules")]:  # type: ignore
             mem = memory_format
+            
+            from core.inference.utilities.animatediff.models.unet import UNet3DConditionModel
+            
             if isinstance(b, UNet3DConditionModel) and memory_format == torch.channels_last:
                 mem = torch.channels_last_3d
             if "CLIP" in b.__class__.__name__:
