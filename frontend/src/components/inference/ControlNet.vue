@@ -222,7 +222,7 @@
           </NSpace>
         </NCard>
 
-        <HighResFix v-if="!isSelectedModelSDXL" tab="controlnet" />
+        <HighResFixTabs tab="controlnet" />
         <Upscale tab="controlnet" />
       </NGi>
 
@@ -256,7 +256,7 @@ import {
   CFGScale,
   DimensionsInput,
   GenerateSection,
-  HighResFix,
+  HighResFixTabs,
   ImageOutput,
   ImageUpload,
   OutputStats,
@@ -279,17 +279,13 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { computed, onUnmounted } from "vue";
+import { onUnmounted } from "vue";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
 const global = useState();
 const settings = useSettings();
 const messageHandler = useMessage();
-
-const isSelectedModelSDXL = computed(() => {
-  return settings.data.settings.model?.type === "SDXL";
-});
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed

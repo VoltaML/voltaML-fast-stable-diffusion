@@ -240,7 +240,7 @@
           </NSpace>
         </NCard>
 
-        <HighResFix v-if="!isSelectedModelSDXL" tab="inpainting" />
+        <HighResFixTabs tab="inpainting" />
         <Upscale tab="inpainting" />
       </NGi>
 
@@ -272,7 +272,7 @@ import { BurnerClock } from "@/clock";
 import {
   CFGScale,
   GenerateSection,
-  HighResFix,
+  HighResFixTabs,
   ImageOutput,
   OutputStats,
   Prompt,
@@ -300,7 +300,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { computed, onUnmounted, ref } from "vue";
+import { onUnmounted, ref } from "vue";
 import VueDrawingCanvas from "vue-drawing-canvas";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
@@ -308,10 +308,6 @@ import { useState } from "../../store/state";
 const global = useState();
 const settings = useSettings();
 const messageHandler = useMessage();
-
-const isSelectedModelSDXL = computed(() => {
-  return settings.data.settings.model?.type === "SDXL";
-});
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed

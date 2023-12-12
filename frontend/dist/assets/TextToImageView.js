@@ -2,11 +2,10 @@ import { d as defineComponent, u as useSettings, a as useState, o as openBlock, 
 import { _ as _sfc_main$b } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$c } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { B as BurnerClock, P as Prompt, _ as _sfc_main$5, a as _sfc_main$6, b as _sfc_main$7, c as _sfc_main$8, d as _sfc_main$d } from "./clock.js";
-import { _ as _sfc_main$9 } from "./Scalecrafter.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$4, a as _sfc_main$9, b as _sfc_main$a } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import { _ as _sfc_main$4, a as _sfc_main$a } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
 import { v as v4 } from "./v4.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";

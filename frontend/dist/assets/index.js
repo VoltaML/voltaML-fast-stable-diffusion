@@ -43192,9 +43192,9 @@ const TopBar_vue_vue_type_style_index_0_scoped_91ace41f_lang = "";
 const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-91ace41f"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
-const ControlNet_vue_vue_type_style_index_0_scoped_97c56df6_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_0af5331f_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_58a6e728_lang = "";
+const ControlNet_vue_vue_type_style_index_0_scoped_d4ff54ab_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_a4145f6c_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_b1671b35_lang = "";
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_241a4664_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _hoisted_1$1 = { style: { "margin": "16px 0" } };
@@ -43483,12 +43483,12 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/Scalecrafter.vue_vue_type_script_setup_true_lang.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/txt2img",
       name: "txt2img",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/Scalecrafter.vue_vue_type_script_setup_true_lang.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/img2img",
@@ -43528,7 +43528,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js","assets/Settings.js","assets/Scalecrafter.vue_vue_type_script_setup_true_lang.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js","assets/Settings.js"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -43669,11 +43669,11 @@ export {
   themeKey as bB,
   useNotification as bC,
   defaultSettings as bD,
-  NAlert as bE,
-  getCurrentInstance as bF,
-  formLight$1 as bG,
-  commonVariables$m as bH,
-  formItemInjectionKey as bI,
+  getCurrentInstance as bE,
+  formLight$1 as bF,
+  commonVariables$m as bG,
+  formItemInjectionKey as bH,
+  NAlert as bI,
   resolveDynamicComponent as bJ,
   checkboxLight$1 as bK,
   urlFromPath as bL,
