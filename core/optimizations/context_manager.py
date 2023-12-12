@@ -7,6 +7,7 @@ from diffusers.models.unet_2d_condition import UNet2DConditionModel
 
 from core.config import config
 from core.flags import AnimateDiffFlag, Flag
+from .attn import set_attention_processor
 from .autocast_utils import autocast
 from .dtype import cast
 from .hypertile import is_hypertile_available, hypertile
@@ -20,15 +21,24 @@ class InferenceContext(ExitStack):
     flags: List[Optional[Flag]] = []
     components: dict = {}
 
-    def to(self, device: str, dtype: torch.dtype):
-        self.unet.to(device=device, dtype=dtype)
-        self.vae.to(device=device, dtype=dtype)
+    def to(self, device: str, dtype: torch.dtype, memory_format):
+        from core.inference.utilities.animatediff.models.unet import (
+            UNet3DConditionModel,
+        )
+
+        self.vae.to(device=device, dtype=dtype, memory_format=memory_format)
+        if isinstance(self.unet, UNet3DConditionModel) and memory_format == torch.channels_last:
+            memory_format = torch.channels_last_3d
+        self.unet.to(device=device, dtype=dtype, memory_format=memory_format)
 
     def get_flag(self, _type: Type) -> Optional[Flag]:
         try:
             return [x for x in self.flags if isinstance(x, _type)].pop()
         except IndexError:
             return None
+
+    def enable_xformers_memory_efficient_attention(self):
+        self.unet.enable_xformers_memory_efficient_attention()
 
 
 def inference_context(
@@ -70,7 +80,10 @@ def inference_context(
             gpu.memory_cleanup()
 
         s.components.update({"unet": s.unet})
+
         cast(s, device=config.api.device, dtype=config.api.dtype, offload=offload)  # type: ignore
+        set_attention_processor(s)
+
         patch_animatediff(s)
     if is_hypertile_available() and config.api.hypertile:
         s.enter_context(hypertile(unet, height, width))

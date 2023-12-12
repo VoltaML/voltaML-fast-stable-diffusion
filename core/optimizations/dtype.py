@@ -6,6 +6,7 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
 )
 
 from core.config import config
+from core.inference.utilities.animatediff.models.unet import UNet3DConditionModel
 
 try:
     force_autocast = [torch.float8_e4m3fn, torch.float8_e5m2]
@@ -24,25 +25,26 @@ def cast(
     # Change the order of the channels to be more efficient for the GPU
     # DirectML only supports contiguous memory format
     # Disable for IPEX as well, they don't like torch's way of setting memory format
+    memory_format = torch.preserve_format
     if config.api.channels_last:
         if "privateuseone" in device:
             logger.warn(
                 "Optimization: Skipping channels_last, since DirectML doesn't support it."
             )
         else:
-            if hasattr(pipe, "unet"):
-                pipe.unet.to(memory_format=torch.channels_last)  # type: ignore
-            if hasattr(pipe, "vae"):
-                pipe.vae.to(memory_format=torch.channels_last)  # type: ignore
+            memory_format = torch.channels_last
             logger.info("Optimization: Enabled channels_last memory format")
 
     pipe.unet.force_autocast = dtype in force_autocast
     if pipe.unet.force_autocast:
-        for m in [x.modules() for x in pipe.components.values() if hasattr(x, "modules")]:  # type: ignore
-            if "CLIP" in m.__class__.__name__:
-                m.to(device=None if offload else device, dtype=config.api.load_dtype)
+        for b in [x for x in pipe.components.values() if hasattr(x, "modules")]:  # type: ignore
+            mem = memory_format
+            if isinstance(b, UNet3DConditionModel) and memory_format == torch.channels_last:
+                mem = torch.channels_last_3d
+            if "CLIP" in b.__class__.__name__:
+                b.to(device=None if offload else device, dtype=config.api.load_dtype)
             else:
-                for module in m:
+                for module in b.modules():
                     if any(
                         [
                             x
@@ -54,15 +56,16 @@ def cast(
                             del module.fp16_weight
                         if config.api.cache_fp16_weight:
                             module.fp16_weight = module.weight.clone().half()
-                        module.to(device=None if offload else device, dtype=dtype)
+                        module.to(device=None if offload else device, dtype=dtype, memory_format=mem)
                     else:
                         module.to(
                             device=None if offload else device,
                             dtype=config.api.load_dtype,
+                            memory_format=mem,
                         )
         if not config.api.autocast:
             logger.info("Optimization: Forcing autocast on due to float8 weights.")
     else:
-        pipe.to(device=None if offload else device, dtype=dtype)
+        pipe.to(device=None if offload else device, dtype=dtype, memory_format=memory_format)
 
     return pipe
