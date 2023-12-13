@@ -32,22 +32,15 @@ def cast(
             )
         else:
             memory_format = torch.channels_last
+            if hasattr(pipe, "unet"):
+                pipe.unet.to(memory_format=memory_format)
+            if hasattr(pipe, "vae"):
+                pipe.vae.to(memory_format=memory_format)
             logger.info("Optimization: Enabled channels_last memory format")
 
-    pipe.unet.force_autocast = dtype in force_autocast
+    pipe.unet.force_autocast = dtype in force_autocast  # type: ignore
     if pipe.unet.force_autocast:
         for b in [x for x in pipe.components.values() if hasattr(x, "modules")]:  # type: ignore
-            mem = memory_format
-
-            from core.inference.utilities.animatediff.models.unet import (
-                UNet3DConditionModel,
-            )
-
-            if (
-                isinstance(b, UNet3DConditionModel)
-                and memory_format == torch.channels_last
-            ):
-                mem = torch.channels_last_3d
             if "CLIP" in b.__class__.__name__:
                 b.to(device=None if offload else device, dtype=config.api.load_dtype)
             else:
@@ -63,16 +56,14 @@ def cast(
                             del module.fp16_weight
                         if config.api.cache_fp16_weight:
                             module.fp16_weight = module.weight.clone().half()
-                        module.to(  # type: ignore
+                        module.to(
                             device=None if offload else device,
                             dtype=dtype,
-                            memory_format=mem,
                         )
                     else:
-                        module.to(  # type: ignore
+                        module.to(
                             device=None if offload else device,
                             dtype=config.api.load_dtype,
-                            memory_format=mem,
                         )
         if not config.api.autocast:
             logger.info("Optimization: Forcing autocast on due to float8 weights.")

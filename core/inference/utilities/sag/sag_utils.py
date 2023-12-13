@@ -37,11 +37,13 @@ def pred_x0(pipe, sample, model_output, timestep):
     return pred_original_sample
 
 
-def sag_masking(pipe, original_latents, attn_map, map_size, t, eps):
+def sag_masking(pipe, original_latents: torch.Tensor, attn_map, map_size, t, eps):
     "sag_masking"
     # Same masking process as in SAG paper: https://arxiv.org/pdf/2210.00939.pdf
-    _, hw1, hw2 = attn_map.shape
-    b, latent_channel, latent_h, latent_w = original_latents.shape
+    if original_latents.dim() == 5:
+        b, latent_channel, _, latent_h, latent_w = original_latents.shape
+    else:
+        b, latent_channel, latent_h, latent_w = original_latents.shape
     h = pipe.unet.config.attention_head_dim
     if isinstance(h, list):
         h = h[-1]
