@@ -1,5 +1,24 @@
 <template>
   <div class="main-container">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        justify-content: end;
+        margin-bottom: 12px;
+      "
+    >
+      <NButton
+        type="error"
+        ghost
+        style="margin-right: 12px"
+        @click="resetSettings"
+        >Reset Settings</NButton
+      >
+      <NButton type="success" ghost @click="saveSettings" :loading="saving"
+        >Save Settings</NButton
+      >
+    </div>
     <NCard>
       <NTabs>
         <NTabPane name="Autoload">
@@ -32,19 +51,6 @@
         <NTabPane name="NSFW">
           <NSFWSettings />
         </NTabPane>
-
-        <template #suffix>
-          <NButton
-            type="error"
-            ghost
-            style="margin-right: 12px"
-            @click="resetSettings"
-            >Reset Settings</NButton
-          >
-          <NButton type="success" ghost @click="saveSettings" :loading="saving"
-            >Save Settings</NButton
-          >
-        </template>
       </NTabs>
     </NCard>
   </div>

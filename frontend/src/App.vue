@@ -17,6 +17,7 @@ import { computed, provide, ref, watch } from "vue";
 import { useState as useAnalytics } from "vue-gtag-next";
 import Content from "./Content.vue";
 import { serverUrl } from "./env";
+import { isLargeScreen } from "./helper/mediaQueries";
 import { useSettings } from "./store/settings";
 import type { ExtendedThemeOverrides } from "./types";
 
@@ -72,6 +73,10 @@ watch(
       overrides.value?.common?.baseColor ?? theme.value.common.baseColor;
   }
 );
+
+const marginLeft = computed(() => {
+  return isLargeScreen.value ? "64px" : "0px";
+});
 </script>
 
 <style lang="scss">
@@ -136,5 +141,9 @@ watch(
   top: 0;
   left: 0;
   z-index: -99;
+}
+
+.main {
+  margin-left: v-bind(marginLeft);
 }
 </style>
