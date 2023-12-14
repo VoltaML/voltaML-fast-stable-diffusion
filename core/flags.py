@@ -68,12 +68,27 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
 
     motion_model: str = ""
     frames: int = 16
-    fps: int = 10
+    fps: int = 10  # not working
+
+    # https://github.com/TianxingWu/FreeInit/blob/master/examples/AnimateDiff/animatediff/pipelines/pipeline_animation.py#L470
+    # Probably self-explanatory, but increases generation time to ${freeinit_iterations}x.
+    freeinit_iterations: int = -1  # -1 to disable, 5 recommended
+    freeinit_fast_sampling: bool = False  # ruins quality, speeds up inbetween iterations.
+
+    # Big maybes:
+    # - https://github.com/omerbt/TokenFlow
+    # - https://github.com/Kosinkadink/ComfyUI-AnimateDiff-Evolved/commit/5bbcae4d226e8f298a8b204e9cc9b2dd41fbe417
+
+    # TODO: steal code from here:
+    # - https://github.com/guoyww/AnimateDiff/pull/132/files
+    # - https://github.com/guoyww/AnimateDiff/pull/25/files
+    # - https://github.com/guoyww/AnimateDiff/pull/8/files
+
 
     # only active when frames > 16 --> sliding context window.
     context_size: int = 16
     frame_stride: int = 1
-    frame_overlap: int = 4  # not working
+    frame_overlap: int = 4
     context_scheduler: Literal[
         "uniform", "uniform_constant", "uniform_v2"
     ] = "uniform_v2"
@@ -84,4 +99,5 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     chunk_feed_forward: bool = True  # probably not working
 
     input_video: str = ""  # not working
+    init_image: str = ""  # not working
     video_controlnets: List[str] = field(default_factory=list)  # not working
