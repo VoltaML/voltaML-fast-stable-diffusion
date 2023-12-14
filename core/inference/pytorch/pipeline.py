@@ -39,7 +39,12 @@ from core.inference.utilities import (
     preprocess_adapter_image,
     preprocess_image,
 )
-from core.inference.utilities.animatediff import get_context_scheduler, nil_scheduler
+from core.inference.utilities.animatediff import (
+    get_context_scheduler,
+    nil_scheduler,
+    freeinit_filter,
+    freeinit_mix,
+)
 from core.inference.utilities.philox import PhiloxGenerator
 from core.flags import AnimateDiffFlag
 from core.optimizations import ensure_correct_device, inference_context, unload_all
@@ -568,6 +573,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     else nil_scheduler
                 )
                 context_args = []
+                iteration_count = 1
+                freq_filter = None
+                f_fast_sampling = False
                 if animatediff is not None:
                     if split_latents_into_two:
                         logger.warn(
@@ -581,6 +589,19 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         animatediff.frame_overlap,
                         animatediff.closed_loop,
                     ]
+                    if animatediff.freeinit_iterations != -1:
+                        iteration_count = animatediff.freeinit_iterations
+                        f_fast_sampling = animatediff.freeinit_fast_sampling
+                        freq_filter = freeinit_filter(
+                            latents.shape,
+                            device=self.unet.device,
+                            params={
+                                "method": animatediff.freeinit_method,
+                                "n": animatediff.freeinit_n,
+                                "d_t": animatediff.freeinit_dt,
+                                "d_s": animatediff.freeinit_ds,
+                            },
+                        )
 
                 def do_denoise(
                     x: torch.Tensor,
@@ -814,50 +835,82 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     if do_self_attention_guidance:
                         gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
 
-                    if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
-                        latents = self.scheduler.do_inference(
-                            latents,  # type: ignore
-                            generator=generator,
-                            call=self.unet,  # type: ignore
-                            apply_model=do_denoise,
-                            callback=callback,
-                            callback_steps=callback_steps,
-                        )
-                    else:
-                        s = self.unet
+                    for iter in range(iteration_count):
+                        if freq_filter is not None:
+                            if iter == 0:
+                                assert latents is not None
+                                initial_noise = latents.detach().clone()
+                            else:
+                                assert latents is not None
+                                diffuse_timestep = (
+                                    self.scheduler.config["num_train_timesteps"] - 1
+                                )
+                                diffuse_timesteps = torch.full(
+                                    (batch_size,), int(diffuse_timestep)
+                                )
+                                diffuse_timesteps = diffuse_timesteps.long()
+                                z_T = self.scheduler.add_noise(
+                                    original_samples=latents.to(device),  # type: ignore
+                                    noise=initial_noise.to(device),  # type: ignore
+                                    timesteps=diffuse_timesteps.to(device),  # type: ignore
+                                )
+                                z_rand = torch.randn(latents.shape, device=device)
+                                lt = latents.dtype
+                                latents = freeinit_mix(
+                                    z_T.to(dtype=torch.float32), z_rand, LPF=freq_filter
+                                )
+                                latents = latents.to(dtype=lt)  # type: ignore
+                            if f_fast_sampling:
+                                curr_inf = int(
+                                    len(timesteps) / iteration_count * (iter + 1)
+                                )
+                                self.scheduler.set_timesteps(curr_inf, device=device)
+                                timesteps = self.scheduler.timesteps
 
-                        def change(src):
-                            nonlocal s
-                            s = src
-
-                        def _call(*args, **kwargs):
-                            if len(args) == 3:
-                                encoder_hidden_states = args[-1]
-                                args = args[:2]
-                            if kwargs.get("cond", None) is not None:
-                                encoder_hidden_states = kwargs.pop("cond")
-                            ret = s(
-                                *args,
-                                encoder_hidden_states=encoder_hidden_states,  # type: ignore
-                                return_dict=False,
-                                **kwargs,
+                        if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+                            latents = self.scheduler.do_inference(
+                                latents,  # type: ignore
+                                generator=generator,
+                                call=self.unet,  # type: ignore
+                                apply_model=do_denoise,
+                                callback=callback,
+                                callback_steps=callback_steps,
                             )
-                            if isinstance(s, UNet2DConditionModel):
-                                return ret[0]
-                            return ret
+                        else:
+                            s = self.unet
 
-                        for i, t in enumerate(tqdm(timesteps, desc="PyTorch")):
-                            latents = do_denoise(latents, t, _call, change)  # type: ignore
+                            def change(src):
+                                nonlocal s
+                                s = src
 
-                            # call the callback, if provided
-                            if i % callback_steps == 0:
-                                if callback is not None:
-                                    callback(i, t, latents)  # type: ignore
-                                if (
-                                    is_cancelled_callback is not None
-                                    and is_cancelled_callback()
-                                ):
-                                    return None
+                            def _call(*args, **kwargs):
+                                if len(args) == 3:
+                                    encoder_hidden_states = args[-1]
+                                    args = args[:2]
+                                if kwargs.get("cond", None) is not None:
+                                    encoder_hidden_states = kwargs.pop("cond")
+                                ret = s(
+                                    *args,
+                                    encoder_hidden_states=encoder_hidden_states,  # type: ignore
+                                    return_dict=False,
+                                    **kwargs,
+                                )
+                                if isinstance(s, UNet2DConditionModel):
+                                    return ret[0]
+                                return ret
+
+                            for i, t in enumerate(tqdm(timesteps, desc="PyTorch")):
+                                latents = do_denoise(latents, t, _call, change)  # type: ignore
+
+                                # call the callback, if provided
+                                if i % callback_steps == 0:
+                                    if callback is not None:
+                                        callback(i, t, latents)  # type: ignore
+                                    if (
+                                        is_cancelled_callback is not None
+                                        and is_cancelled_callback()
+                                    ):
+                                        return None
 
                 # 9. Post-processing
                 if output_type == "latent":

@@ -72,8 +72,14 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
 
     # https://github.com/TianxingWu/FreeInit/blob/master/examples/AnimateDiff/animatediff/pipelines/pipeline_animation.py#L470
     # Probably self-explanatory, but increases generation time to ${freeinit_iterations}x.
-    freeinit_iterations: int = -1  # -1 to disable, 5 recommended
-    freeinit_fast_sampling: bool = False  # ruins quality, speeds up inbetween iterations.
+    freeinit_iterations: int = 5  # -1 to disable, 5 recommended
+    freeinit_fast_sampling: bool = (
+        False  # ruins quality, speeds up inbetween iterations.
+    )
+    freeinit_method: Literal["butterworth", "gaussian", "ideal", "box"] = "butterworth"
+    freeinit_n: int = 4
+    freeinit_ds: float = 0.25
+    freeinit_dt: float = 0.25
 
     # Big maybes:
     # - https://github.com/omerbt/TokenFlow
@@ -83,7 +89,6 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     # - https://github.com/guoyww/AnimateDiff/pull/132/files
     # - https://github.com/guoyww/AnimateDiff/pull/25/files
     # - https://github.com/guoyww/AnimateDiff/pull/8/files
-
 
     # only active when frames > 16 --> sliding context window.
     context_size: int = 16

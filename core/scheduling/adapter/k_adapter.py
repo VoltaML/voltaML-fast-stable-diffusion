@@ -24,7 +24,11 @@ class KdiffusionSchedulerAdapter:
     denoiser: Denoiser
 
     # diffusers compat
-    config: dict = {"steps_offset": 0, "prediction_type": "epsilon"}
+    config: dict = {
+        "steps_offset": 0,
+        "prediction_type": "epsilon",
+        "num_train_timesteps": 1000,
+    }
 
     # should really be "sigmas," but for compatibility with diffusers
     # it's named timesteps.

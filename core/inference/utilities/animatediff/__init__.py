@@ -1,6 +1,6 @@
 # AnimateDiff is NCFHW (batch, channels, frames, height, width)
 
-from typing import Callable, Optional
+from typing import Optional
 
 import torch
 import einops
@@ -9,6 +9,8 @@ import numpy as np
 from core.config import config
 from core.optimizations import InferenceContext
 from core.flags import AnimateDiffFlag
+
+from .freeinit import freq_mix_3d as freeinit_mix, get_freq_filter as freeinit_filter
 
 
 def memory_required(input_shape: tuple):
