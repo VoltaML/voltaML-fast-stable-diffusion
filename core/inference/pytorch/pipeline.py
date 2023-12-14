@@ -374,12 +374,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
         animatediff = AnimateDiffFlag(
             motion_model="data/motion-models/mm_sd_v15_v2.ckpt",
-            frames=32,
-            frame_overlap=6,
-            frame_stride=4,
+            frames=16,
             context_scheduler="uniform_v2",
-            chunk_feed_forward=-1,
-            chunk_feed_size=1,
         )
 
         with inference_context(

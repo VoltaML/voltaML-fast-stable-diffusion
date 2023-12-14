@@ -102,7 +102,7 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
 
     # increase processing time for decreased memory usage
     chunk_feed_forward: int = -1  # -1 for disable, 0 for batch, 1 for sequence
-    chunk_feed_size: Union[Literal["auto"], int] = "auto"
+    chunk_feed_size: Union[Literal["auto"], int] = -1
 
     input_video: str = ""  # not working
     init_image: str = ""  # not working
