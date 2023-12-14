@@ -306,6 +306,8 @@ def prepare_latents(
 
         # scale the initial noise by the standard deviation required by the scheduler
         latents = latents * pipe.scheduler.init_noise_sigma  # type: ignore
+        if frames is not None:
+            latents = latents.to(memory_format=torch.channels_last_3d)
         return latents, None, None
     else:
         if image.shape[1] != 4:

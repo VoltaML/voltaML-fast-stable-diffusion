@@ -25,8 +25,11 @@ def optimize_model(
     pipe: StableDiffusionPipeline,
     device,
     is_for_aitemplate: bool = False,
+    silent: bool = False,
 ) -> None:
     "Optimize the model for inference."
+
+    logger.disabled = silent
 
     # Tuple[Supported, Enabled by default, Enabled]
     hardware_scheduling = experimental_check_hardware_scheduling()
@@ -202,7 +205,9 @@ def experimental_check_hardware_scheduling() -> Tuple[int, int, int]:
 def is_pytorch_pipe(pipe):
     "Checks if the pipe is a pytorch pipe"
 
-    return issubclass(pipe.__class__, (DiffusionPipeline))
+    from .context_manager import InferenceContext
+
+    return issubclass(pipe.__class__, (DiffusionPipeline, InferenceContext))
 
 
 def optimize_vae(vae):

@@ -1,5 +1,6 @@
 # pylint: disable=global-statement
 
+from typing import Optional
 import logging
 
 from accelerate import cpu_offload
@@ -36,8 +37,11 @@ def ensure_correct_device(module: torch.nn.Module):
         logger.debug(f"Don't need to do anything with {module.__class__.__name__}.")
 
 
-def set_offload(module: torch.nn.Module, device: torch.device):
-    if config.api.offload == "module":
+def set_offload(
+    module: torch.nn.Module, device: torch.device, offload_type: Optional[str] = None
+):
+    offload = offload_type or config.api.offload
+    if offload == "module":
         class_name = module.__class__.__name__
         if "CLIP" not in class_name and "Autoencoder" not in class_name:
             return cpu_offload(

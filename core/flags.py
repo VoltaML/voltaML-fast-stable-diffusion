@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Literal, List
+from typing import Literal, List, Union
 
 from dataclasses_json.api import DataClassJsonMixin
 
@@ -96,7 +96,8 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     closed_loop: bool = True
 
     # increase processing time for decreased memory usage
-    chunk_feed_forward: bool = True  # probably not working
+    chunk_feed_forward: int = -1  # -1 for disable, 0 for batch, 1 for sequence
+    chunk_feed_size: Union[Literal["auto"], int] = "auto"
 
     input_video: str = ""  # not working
     init_image: str = ""  # not working
