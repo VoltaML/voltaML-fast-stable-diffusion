@@ -832,6 +832,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
 
                     for iter in range(iteration_count):
+                        if hasattr(self.scheduler, "_step_index"):
+                            self.scheduler._step_index = 0
                         if freq_filter is not None:
                             if iter == 0:
                                 assert latents is not None
