@@ -4,16 +4,17 @@
       style="height: 100%; overflow: visible"
       has-sider
       content-style="overflow: visible"
+      v-if="isLargeScreen"
     >
       <n-layout-sider
         bordered
         collapse-mode="width"
         :collapsed-width="64"
         :width="240"
-        :collapsed="collapsed"
+        :collapsed="!global.state.collapsibleBarActive"
         show-trigger
-        @collapse="collapsed = true"
-        @expand="collapsed = false"
+        @collapse="global.state.collapsibleBarActive = false"
+        @expand="global.state.collapsibleBarActive = true"
         style="overflow: visible; overflow-x: visible"
       >
         <NSpace
@@ -23,7 +24,7 @@
           item-style="height: 100%"
         >
           <n-menu
-            :collapsed="collapsed"
+            :collapsed="!global.state.collapsibleBarActive"
             :collapsed-width="64"
             :collapsed-icon-size="22"
             :options="menuOptionsMain"
@@ -32,10 +33,52 @@
         </NSpace>
       </n-layout-sider>
     </n-layout>
+
+    <NDrawer
+      v-model:show="global.state.collapsibleBarActive"
+      placement="left"
+      width="272px"
+      v-else
+    >
+      <NDrawerContent
+        :body-content-style="{
+          padding: '0px',
+        }"
+      >
+        <n-layout
+          style="height: 100%; overflow: visible"
+          has-sider
+          content-style="overflow: visible"
+        >
+          <n-layout-sider
+            bordered
+            collapse-mode="width"
+            :collapsed="false"
+            style="overflow: visible; overflow-x: visible"
+          >
+            <NSpace
+              vertical
+              justify="space-between"
+              style="height: 100%; overflow: visible; overflow-x: visible"
+              item-style="height: 100%"
+            >
+              <n-menu
+                :collapsed="false"
+                :collapsed-width="64"
+                :collapsed-icon-size="22"
+                :options="menuOptionsMain"
+                style="height: 100%; display: flex; flex-direction: column"
+              />
+            </NSpace>
+          </n-layout-sider>
+        </n-layout>
+      </NDrawerContent>
+    </NDrawer>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { isLargeScreen } from "@/helper";
 import {
   Albums,
   Create,
@@ -48,10 +91,21 @@ import {
   Warning,
 } from "@vicons/ionicons5";
 import type { MenuOption } from "naive-ui";
-import { NIcon, NLayout, NLayoutSider, NMenu, NSpace } from "naive-ui";
+import {
+  NDrawer,
+  NDrawerContent,
+  NIcon,
+  NLayout,
+  NLayoutSider,
+  NMenu,
+  NSpace,
+} from "naive-ui";
 import type { Component } from "vue";
-import { h, ref } from "vue";
+import { h } from "vue";
 import { RouterLink } from "vue-router";
+import { useState } from "../store/state";
+
+const global = useState();
 
 function renderIcon(icon: Component) {
   return () => h(NIcon, null, { default: () => h(icon) });
@@ -125,8 +179,6 @@ if (import.meta.env.DEV) {
     icon: renderIcon(Warning),
   });
 }
-
-let collapsed = ref(true);
 </script>
 
 <style>

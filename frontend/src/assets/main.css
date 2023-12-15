@@ -1,5 +1,4 @@
 body {
-  margin-left: 64px;
   color: #fff;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
@@ -35,4 +34,8 @@ a,
 
 .n-menu-item:last-child {
   margin-top: auto;
+}
+
+.n-drawer-content-wrapper {
+  backdrop-filter: blur(10px);
 }
