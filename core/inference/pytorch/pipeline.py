@@ -17,6 +17,7 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
 )
 from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
+from diffusers.schedulers.scheduling_ddim import DDIMScheduler
 from diffusers.schedulers.scheduling_utils import SchedulerMixin
 from diffusers.utils import logging
 from PIL import Image
@@ -374,8 +375,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
         animatediff = AnimateDiffFlag(
             motion_model="data/motion-models/mm_sd_v15_v2.ckpt",
-            frames=16,
-            context_scheduler="uniform_v2",
         )
 
         with inference_context(
@@ -401,6 +400,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 # 2. Define call parameters
                 batch_size = 1 if isinstance(prompt, str) else len(prompt)
                 device = self._execution_device
+                latents_device = (
+                    torch.device("cpu") if animatediff is not None else device
+                )
                 # here `guidance_scale` is defined analog to the guidance weight `w` of equation (2)
                 # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
                 # corresponds to doing no classifier free guidance.
@@ -504,7 +506,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     height,
                     width,
                     dtype,
-                    device,
+                    latents_device,
                     generator,
                     latents=latents,
                     latent_channels=None if mask is None else self.vae.config.latent_channels,  # type: ignore
@@ -512,8 +514,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 )
 
                 assert latents is not None
-
-                print(latents.element_size() * latents.nelement())
 
                 # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
                 extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta, generator)  # type: ignore
@@ -571,6 +571,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 context_args = []
                 iteration_count = 1
                 freq_filter = None
+                f_scheduler: DDIMScheduler = None  # type: ignore
                 f_fast_sampling = False
                 if animatediff is not None:
                     if split_latents_into_two:
@@ -588,6 +589,14 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     if animatediff.freeinit_iterations != -1:
                         iteration_count = animatediff.freeinit_iterations
                         f_fast_sampling = animatediff.freeinit_fast_sampling
+                        # FreeInit only works with DDIM, so... just use DDIM :)
+                        f_scheduler = DDIMScheduler.from_config(  # type: ignore
+                            {
+                                "beta_start": 0.00085,
+                                "beta_end": 0.012,
+                                "beta_scheduler": "linear",
+                            }
+                        )
                         freq_filter = freeinit_filter(
                             latents.shape,
                             device=self.unet.device,
@@ -611,28 +620,25 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                     noise_pred, counter = None, None
                     if animatediff is not None:
+                        assert latents is not None
                         noise_pred = torch.zeros(
                             (
                                 x.shape[0] * (2 if do_classifier_free_guidance else 1),
                                 *x.shape[1:],
                             ),
-                            device=config.api.device,
-                            dtype=config.api.load_dtype,
+                            device=latents.device,
+                            dtype=latents.dtype,
                         )
                         counter = torch.zeros(
                             (1, 1, animatediff.frames, 1, 1),
-                            device=config.api.device,
-                            dtype=config.api.load_dtype,
+                            device=latents.device,
+                            dtype=latents.dtype,
                         )
 
                     for context in context_scheduler(j, *context_args):
                         if animatediff is not None:
-                            latent_model_input = (
-                                x[:, :, context]
-                                .to(device=self.unet.device)
-                                .repeat(
-                                    2 if do_classifier_free_guidance else 1, 1, 1, 1, 1
-                                )
+                            latent_model_input = x[:, :, context].repeat(
+                                2 if do_classifier_free_guidance else 1, 1, 1, 1, 1
                             )
                         else:
                             latent_model_input = (
@@ -642,6 +648,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                         if num_channels_unet == 9:
                             latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
+                        latent_model_input = latent_model_input.to(
+                            device=latents_device
+                        )
 
                         # predict the noise residual
                         down_intrablock_additional_residuals = None
@@ -751,16 +760,18 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             if animatediff is not None:
                                 assert noise_pred is not None
                                 assert counter is not None
-                                noise_pred[:, :, context] = (
-                                    noise_pred[:, :, context]
+                                # fmt: off
+                                # This is an abomination with formatting enabled
+                                lmi = latent_model_input.to(dtype=dtype, device=device)
+                                noise_pred[:, :, context] = noise_pred[:, :, context] \
                                     + call(
-                                        latent_model_input,
+                                        lmi,
                                         t,
                                         cond=text_embeddings,
                                         **_kwargs,
-                                    )[0]
-                                )
+                                    )[0].to(dtype=noise_pred.dtype, device=noise_pred.device)
                                 counter[:, :, context] = counter[:, :, context] + 1
+                                # fmt: on
                             else:
                                 noise_pred = call(  # type: ignore
                                     latent_model_input,
@@ -796,7 +807,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             text_embeddings,
                             self_attention_scale,
                             guidance_scale,
-                            config.api.load_dtype,
+                            dtype,
                         )
 
                     if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
@@ -833,21 +844,21 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                     for iter in range(iteration_count):
                         if hasattr(self.scheduler, "_step_index"):
-                            self.scheduler._step_index = 0
+                            self.scheduler._step_index = None
                         if freq_filter is not None:
                             if iter == 0:
                                 assert latents is not None
                                 initial_noise = latents.detach().clone()
                             else:
-                                assert latents is not None
+                                assert latents is not None and f_scheduler is not None
                                 diffuse_timestep = (
-                                    self.scheduler.config["num_train_timesteps"] - 1
+                                    f_scheduler.config["num_train_timesteps"] - 1
                                 )
                                 diffuse_timesteps = torch.full(
                                     (batch_size,), int(diffuse_timestep)
                                 )
                                 diffuse_timesteps = diffuse_timesteps.long()
-                                z_T = self.scheduler.add_noise(
+                                z_T = f_scheduler.add_noise(
                                     original_samples=latents.to(device),  # type: ignore
                                     noise=initial_noise.to(device),  # type: ignore
                                     timesteps=diffuse_timesteps.to(device),  # type: ignore
@@ -860,7 +871,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                                 latents = latents.to(dtype=lt)  # type: ignore
                             if f_fast_sampling:
                                 curr_inf = int(
-                                    len(timesteps) / iteration_count * (iter + 1)
+                                    num_inference_steps / iteration_count * (iter + 1)
                                 )
                                 self.scheduler.set_timesteps(curr_inf, device=device)
                                 timesteps = self.scheduler.timesteps
@@ -868,6 +879,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                             latents = self.scheduler.do_inference(
                                 latents,  # type: ignore
+                                device=latents_device,
                                 generator=generator,
                                 call=self.unet,  # type: ignore
                                 apply_model=do_denoise,
@@ -909,6 +921,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                                         and is_cancelled_callback()
                                     ):
                                         return None
+
+                latents = latents.to(device=device)  # type: ignore
 
                 # 9. Post-processing
                 if output_type == "latent":

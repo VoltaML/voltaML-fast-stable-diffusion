@@ -1,7 +1,7 @@
 import functools
 from typing import Any, Callable, Optional, Union
 
-from diffusers import UNet2DConditionModel
+from diffusers import UNet2DConditionModel  # type: ignore
 import torch
 
 from core.inference.utilities.philox import PhiloxGenerator
@@ -115,6 +115,7 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
         callback_steps,
         optional_device: Optional[torch.device] = None,
         optional_dtype: Optional[torch.dtype] = None,
+        device: torch.device = None,  # type: ignore
     ) -> torch.Tensor:
         device = optional_device or call.device
         dtype = optional_dtype or call.dtype

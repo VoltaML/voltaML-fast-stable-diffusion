@@ -8,7 +8,6 @@ from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from core.config import config
 from core.flags import AnimateDiffFlag, Flag
 from .autocast_utils import autocast
-from .offload import set_offload
 from .hypertile import is_hypertile_available, hypertile
 
 
@@ -109,7 +108,7 @@ def inference_context(
             s.unet.enable_forward_chunking(
                 chunk_size=batch_size, dim=animatediff.chunk_feed_forward
             )
-        set_offload(s.unet, config.api.device, "model")  # type: ignore
+        # set_offload(s.unet, config.api.device, "model")  # type: ignore
 
         patch_animatediff(s)
     if is_hypertile_available() and config.api.hypertile:

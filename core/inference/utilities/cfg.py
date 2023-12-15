@@ -14,10 +14,17 @@ def patched_ddpm_denoiser_forward(self, input, sigma, **kwargs):
         k_diffusion.utils.append_dims(x, input.ndim) for x in self.get_scalings(sigma)
     ]
     cfg_x0, cfg_s, cfg_cin = input, c_out, c_in
-    eps = self.get_eps(input * c_in, self.sigma_to_t(sigma), **kwargs)
+
+    c_in, c_out = c_in.to(device=input.device), c_out.to(device=input.device)
+
+    eps = self.get_eps(
+        input * c_in,
+        self.sigma_to_t(sigma.to(device=self.log_sigmas.device)).to(input.device),
+        **kwargs,
+    )
 
     if not isinstance(eps, torch.Tensor):
-        return eps
+        return eps[0] * c_out + input
     else:
         return eps * c_out + input
 
@@ -30,10 +37,20 @@ def patched_vddpm_denoiser_forward(self, input, sigma, **kwargs):
     ]
     cfg_x0, cfg_s, cfg_cin = input, c_out, c_in
 
-    v = self.get_v(input * c_in, self.sigma_to_t(sigma), **kwargs)
+    c_skip, c_out, c_in = (
+        c_skip.to(device=input.device),
+        c_out.to(device=input.device),
+        c_in.to(device=input.device),
+    )
+
+    v = self.get_v(
+        input * c_in,
+        self.sigma_to_t(sigma.to(device=self.log_sigmas.device)).to(input.device),
+        **kwargs,
+    )
 
     if not isinstance(v, torch.Tensor):
-        return v
+        return v[0] * c_out + input * c_skip
     else:
         return v * c_out + input * c_skip
 

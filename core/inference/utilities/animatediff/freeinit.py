@@ -1,5 +1,4 @@
 import torch
-import torch.fft as fft
 import math
 
 
@@ -13,10 +12,10 @@ def freq_mix_3d(x, noise, LPF):
         LPF: low pass filter
     """
     # FFT
-    x_freq = fft.fftn(x, dim=(-3, -2, -1))
-    x_freq = fft.fftshift(x_freq, dim=(-3, -2, -1))
-    noise_freq = fft.fftn(noise, dim=(-3, -2, -1))
-    noise_freq = fft.fftshift(noise_freq, dim=(-3, -2, -1))
+    x_freq = torch.fft.fftn(x, dim=(-3, -2, -1))
+    x_freq = torch.fft.fftshift(x_freq, dim=(-3, -2, -1))
+    noise_freq = torch.fft.fftn(noise, dim=(-3, -2, -1))
+    noise_freq = torch.fft.fftshift(noise_freq, dim=(-3, -2, -1))
 
     # frequency mix
     HPF = 1 - LPF
@@ -25,8 +24,8 @@ def freq_mix_3d(x, noise, LPF):
     x_freq_mixed = x_freq_low + noise_freq_high  # mix in freq domain
 
     # IFFT
-    x_freq_mixed = fft.ifftshift(x_freq_mixed, dim=(-3, -2, -1))
-    x_mixed = fft.ifftn(x_freq_mixed, dim=(-3, -2, -1)).real
+    x_freq_mixed = torch.fft.ifftshift(x_freq_mixed, dim=(-3, -2, -1))
+    x_mixed = torch.fft.ifftn(x_freq_mixed, dim=(-3, -2, -1)).real
 
     return x_mixed
 

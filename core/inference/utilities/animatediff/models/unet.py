@@ -1,21 +1,19 @@
 # Adapted from https://github.com/huggingface/diffusers/blob/main/src/diffusers/models/unet_2d_condition.py
 
 from dataclasses import dataclass
-from os import PathLike
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import torch
+import torch.nn as nn
 import torch.utils.checkpoint
-from diffusers.configuration_utils import ConfigMixin, register_to_config
-from diffusers.models import ModelMixin  # type: ignore
-from diffusers.models.unet_2d_condition import UNet2DConditionModel
-from diffusers.models.embeddings import TimestepEmbedding, Timesteps
-from diffusers.utils import BaseOutput, logging  # type: ignore
-from safetensors.torch import load_file
-from torch import Tensor, nn
 
-from .resnet import InflatedConv3d
+from safetensors.torch import load_file
+
+from diffusers.configuration_utils import ConfigMixin, register_to_config
+from diffusers import ModelMixin  # type: ignore
+from diffusers.utils import BaseOutput, logging  # type: ignore
+from diffusers.models.embeddings import TimestepEmbedding, Timesteps
 from .unet_blocks import (
     CrossAttnDownBlock3D,
     CrossAttnUpBlock3D,
@@ -25,7 +23,9 @@ from .unet_blocks import (
     get_down_block,
     get_up_block,
 )
+from .resnet import InflatedConv3d, InflatedGroupNorm
 from . import MMV2_DIM_KEY
+
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
@@ -70,13 +70,13 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         norm_eps: float = 1e-5,
         cross_attention_dim: int = 1280,
         attention_head_dim: Union[int, Tuple[int]] = 8,
-        num_attention_heads: Optional[Union[int, Tuple[int]]] = None,
         dual_cross_attention: bool = False,
         use_linear_projection: bool = False,
         class_embed_type: Optional[str] = None,
         num_class_embeds: Optional[int] = None,
         upcast_attention: bool = False,
         resnet_time_scale_shift: str = "default",
+        use_inflated_groupnorm=True,
         # Additional
         use_motion_module=False,
         motion_module_resolutions=(1, 2, 4, 8),
@@ -84,8 +84,8 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         motion_module_decoder_only=False,
         motion_module_type=None,
         motion_module_kwargs={},
-        unet_use_cross_frame_attention=None,
-        unet_use_temporal_attention=None,
+        unet_use_cross_frame_attention=False,
+        unet_use_temporal_attention=False,
     ):
         super().__init__()
 
@@ -151,6 +151,7 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
                 resnet_time_scale_shift=resnet_time_scale_shift,
                 unet_use_cross_frame_attention=unet_use_cross_frame_attention,
                 unet_use_temporal_attention=unet_use_temporal_attention,
+                use_inflated_groupnorm=use_inflated_groupnorm,  # type: ignore
                 use_motion_module=use_motion_module
                 and (res in motion_module_resolutions)
                 and (not motion_module_decoder_only),
@@ -176,6 +177,7 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
                 upcast_attention=upcast_attention,
                 unet_use_cross_frame_attention=unet_use_cross_frame_attention,
                 unet_use_temporal_attention=unet_use_temporal_attention,
+                use_inflated_groupnorm=use_inflated_groupnorm,  # type: ignore
                 use_motion_module=use_motion_module and motion_module_mid_block,
                 motion_module_type=motion_module_type,
                 motion_module_kwargs=motion_module_kwargs,
@@ -228,6 +230,7 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
                 resnet_time_scale_shift=resnet_time_scale_shift,
                 unet_use_cross_frame_attention=unet_use_cross_frame_attention,
                 unet_use_temporal_attention=unet_use_temporal_attention,
+                use_inflated_groupnorm=use_inflated_groupnorm,  # type: ignore
                 use_motion_module=use_motion_module
                 and (res in motion_module_resolutions),
                 motion_module_type=motion_module_type,
@@ -237,9 +240,18 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
             prev_output_channel = output_channel
 
         # out
-        self.conv_norm_out = nn.GroupNorm(
-            num_channels=block_out_channels[0], num_groups=norm_num_groups, eps=norm_eps
-        )
+        if use_inflated_groupnorm:
+            self.conv_norm_out = InflatedGroupNorm(
+                num_channels=block_out_channels[0],
+                num_groups=norm_num_groups,
+                eps=norm_eps,
+            )
+        else:
+            self.conv_norm_out = nn.GroupNorm(
+                num_channels=block_out_channels[0],
+                num_groups=norm_num_groups,
+                eps=norm_eps,
+            )
         self.conv_act = nn.SiLU()
         self.conv_out = InflatedConv3d(
             block_out_channels[0], out_channels, kernel_size=3, padding=1
@@ -359,7 +371,7 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         """
         sliceable_head_dims = []
 
-        def fn_recursive_retrieve_slicable_dims(module: nn.Module):
+        def fn_recursive_retrieve_slicable_dims(module: torch.nn.Module):
             if hasattr(module, "set_attention_slice"):
                 sliceable_head_dims.append(module.sliceable_head_dim)
 
@@ -401,7 +413,9 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         # Recursively walk through all the children.
         # Any children which exposes the set_attention_slice method
         # gets the message
-        def fn_recursive_set_attention_slice(module: nn.Module, slice_size: List[int]):
+        def fn_recursive_set_attention_slice(
+            module: torch.nn.Module, slice_size: List[int]
+        ):
             if hasattr(module, "set_attention_slice"):
                 module.set_attention_slice(slice_size.pop())
 
@@ -421,13 +435,13 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
     def forward(
         self,
         sample: torch.FloatTensor,
-        timestep: Union[Tensor, float, int],
-        encoder_hidden_states: Tensor,
-        class_labels: Optional[Tensor] = None,
-        attention_mask: Optional[Tensor] = None,
-        cross_attention_kwargs: Optional[Dict[str, Any]] = None,
-        added_cond_kwargs: Optional[Dict[str, torch.Tensor]] = None,
-        encoder_attention_mask: Optional[torch.Tensor] = None,
+        timestep: Union[torch.Tensor, float, int],
+        encoder_hidden_states: torch.Tensor,
+        class_labels: Optional[torch.Tensor] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        # support controlnet
+        down_block_additional_residuals: Optional[Tuple[torch.Tensor]] = None,
+        mid_block_additional_residual: Optional[torch.Tensor] = None,
         return_dict: bool = True,
     ) -> Union[UNet3DConditionOutput, Tuple]:
         r"""
@@ -443,7 +457,7 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
             [`~models.unet_2d_condition.UNet2DConditionOutput`] if `return_dict` is True, otherwise a `tuple`. When
             returning a tuple, the first element is the sample tensor.
         """
-        # By default samples have to be at least a multiple of the overall upsampling factor.
+        # By default samples have to be AT least a multiple of the overall upsampling factor.
         # The overall upsampling factor is equal to 2 ** (# num of upsampling layears).
         # However, the upsampling interpolation output size can be forced to fit any upsampling size
         # on the fly if necessary.
@@ -454,40 +468,21 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         upsample_size = None
 
         if any(s % default_overall_up_factor != 0 for s in sample.shape[-2:]):
-            logger.debug("Forward upsample size to force interpolation output size.")
+            logger.info("Forward upsample size to force interpolation output size.")
             forward_upsample_size = True
 
-        # ensure attention_mask is a bias, and give it a singleton query_tokens dimension
-        # expects mask of shape:
-        #   [batch, key_tokens]
-        # adds singleton query_tokens dimension:
-        #   [batch,                    1, key_tokens]
-        # this helps to broadcast it as a bias over attention scores, which will be in one of the following shapes:
-        #   [batch,  heads, query_tokens, key_tokens] (e.g. torch sdp attn)
-        #   [batch * heads, query_tokens, key_tokens] (e.g. xformers or classic attn)
+        # prepare attention_mask
         if attention_mask is not None:
-            # assume that mask is expressed as:
-            #   (1 = keep,      0 = discard)
-            # convert mask into a bias that can be added to attention scores:
-            #       (keep = +0,     discard = -10000.0)
             attention_mask = (1 - attention_mask.to(sample.dtype)) * -10000.0
             attention_mask = attention_mask.unsqueeze(1)
 
-        # convert encoder_attention_mask to a bias the same way we do for attention_mask
-        if encoder_attention_mask is not None:
-            encoder_attention_mask = (
-                1 - encoder_attention_mask.to(sample.dtype)
-            ) * -10000.0
-            encoder_attention_mask = encoder_attention_mask.unsqueeze(1)
-
-        # 0. center input if necessary
+        # center input if necessary
         if self.config["center_input_sample"]:
             sample = 2 * sample - 1.0  # type: ignore
 
-        # 1. time
+        # time
         timesteps = timestep
         if not torch.is_tensor(timesteps):
-            # TODO: this requires sync between CPU and GPU. So try to pass timesteps as tensors if you can
             # This would be a good case for the `match` statement (Python 3.10+)
             is_mps = sample.device.type == "mps"
             if isinstance(timestep, float):
@@ -503,11 +498,10 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
 
         t_emb = self.time_proj(timesteps)
 
-        # `Timesteps` does not contain any weights and will always return f32 tensors
+        # timesteps does not contain any weights and will always return f32 tensors
         # but time_embedding might actually be running in fp16. so we need to cast here.
         # there might be better ways to encapsulate this.
-        t_emb = t_emb.to(dtype=sample.dtype)
-
+        t_emb = t_emb.to(dtype=self.dtype)
         emb = self.time_embedding(t_emb)
 
         if self.class_embedding is not None:
@@ -519,21 +513,13 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
             if self.config["class_embed_type"] == "timestep":
                 class_labels = self.time_proj(class_labels)
 
-                # `Timesteps` does not contain any weights and will always return f32 tensors
-                # there might be better ways to encapsulate this.
-                class_labels = class_labels.to(dtype=sample.dtype)  # type: ignore
+            class_emb = self.class_embedding(class_labels).to(dtype=self.dtype)
+            emb = emb + class_emb
 
-            class_emb = self.class_embedding(class_labels).to(dtype=sample.dtype)
-
-            if self.config["class_embeddings_concat"]:
-                emb = torch.cat([emb, class_emb], dim=-1)
-            else:
-                emb = emb + class_emb
-
-        # 2. pre-process
+        # pre-process
         sample = self.conv_in(sample)
 
-        # 3. down
+        # down
         down_block_res_samples = (sample,)
         for downsample_block in self.down_blocks:
             if (
@@ -545,8 +531,6 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
                     temb=emb,
                     encoder_hidden_states=encoder_hidden_states,
                     attention_mask=attention_mask,
-                    cross_attention_kwargs=cross_attention_kwargs,
-                    encoder_attention_mask=encoder_attention_mask,
                 )
             else:
                 sample, res_samples = downsample_block(
@@ -555,17 +539,37 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
                     encoder_hidden_states=encoder_hidden_states,
                 )
 
-            down_block_res_samples = down_block_res_samples + res_samples
+            down_block_res_samples += res_samples
 
-        # 4. mid
-        if self.mid_block is not None:
-            sample = self.mid_block(
-                sample,
-                emb,
-                encoder_hidden_states=encoder_hidden_states,
-                attention_mask=attention_mask,
-                cross_attention_kwargs=cross_attention_kwargs,
-            )
+        # support controlnet
+        down_block_res_samples = list(down_block_res_samples)
+        if down_block_additional_residuals is not None:
+            for i, down_block_additional_residual in enumerate(
+                down_block_additional_residuals
+            ):
+                if down_block_additional_residual.dim() == 4:  # boardcast
+                    down_block_additional_residual = (
+                        down_block_additional_residual.unsqueeze(2)
+                    )
+                down_block_res_samples[i] = (  # type: ignore
+                    down_block_res_samples[i] + down_block_additional_residual
+                )
+
+        # mid
+        sample = self.mid_block(  # type: ignore
+            sample,
+            emb,
+            encoder_hidden_states=encoder_hidden_states,
+            attention_mask=attention_mask,
+        )
+
+        # support controlnet
+        if mid_block_additional_residual is not None:
+            if mid_block_additional_residual.dim() == 4:  # boardcast
+                mid_block_additional_residual = mid_block_additional_residual.unsqueeze(
+                    2
+                )
+            sample = sample + mid_block_additional_residual  # type: ignore
 
         # up
         for i, upsample_block in enumerate(self.up_blocks):
@@ -615,8 +619,9 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
     @classmethod
     def from_pretrained_2d(
         cls,
-        unet: UNet2DConditionModel,
-        motion_module_path: PathLike,
+        unet,
+        motion_module_path,
+        is_sdxl: bool = False,
     ):
         motion_module_path = Path(motion_module_path)
         state_dict = unet.state_dict()
@@ -679,18 +684,30 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
 
         unet_config = dict(unet.config)
         unet_config["_class_name"] = cls.__name__
-        unet_config["down_block_types"] = [
-            "CrossAttnDownBlock3D",
-            "CrossAttnDownBlock3D",
-            "CrossAttnDownBlock3D",
-            "DownBlock3D",
-        ]
-        unet_config["up_block_types"] = [
-            "UpBlock3D",
-            "CrossAttnUpBlock3D",
-            "CrossAttnUpBlock3D",
-            "CrossAttnUpBlock3D",
-        ]
+        if is_sdxl:
+            unet_config["down_block_types"] = [
+                "DownBlock3D",
+                "CrossAttnDownBlock3D",
+                "CrossAttnDownBlock3D",
+            ]
+            unet_config["up_block_types"] = [
+                "CrossAttnUpBlock3D",
+                "CrossAttnUpBlock3D",
+                "UpBlock3D",
+            ]
+        else:
+            unet_config["down_block_types"] = [
+                "CrossAttnDownBlock3D",
+                "CrossAttnDownBlock3D",
+                "CrossAttnDownBlock3D",
+                "DownBlock3D",
+            ]
+            unet_config["up_block_types"] = [
+                "UpBlock3D",
+                "CrossAttnUpBlock3D",
+                "CrossAttnUpBlock3D",
+                "CrossAttnUpBlock3D",
+            ]
         unet_config["mid_block_type"] = "UNetMidBlock3DCrossAttn"
 
         if unet_additional_kwargs is None:

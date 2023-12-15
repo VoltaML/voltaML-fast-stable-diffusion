@@ -70,11 +70,11 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     frames: int = 16
     fps: int = 10  # not working
 
-    # https://github.com/TianxingWu/FreeInit/blob/master/examples/AnimateDiff/animatediff/pipelines/pipeline_animation.py#L470
-    # Probably self-explanatory, but increases generation time to ${freeinit_iterations}x.
-    freeinit_iterations: int = 5  # -1 to disable, 5 recommended
+    # DDIM ONLY!!! (for now)
+    # Probably self-explanatory, but increases generation time to {freeinit_iterations}x.
+    freeinit_iterations: int = -1  # -1 to disable, 5 recommended
     freeinit_fast_sampling: bool = (
-        False  # ruins quality, speeds up inbetween iterations.
+        True  # decreases quality, but reduces generation time by ~60%
     )
     freeinit_method: Literal["butterworth", "gaussian", "ideal", "box"] = "butterworth"
     freeinit_n: int = 4

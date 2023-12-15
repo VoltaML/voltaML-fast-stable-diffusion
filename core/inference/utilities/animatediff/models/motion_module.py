@@ -1,13 +1,19 @@
-import math
 from dataclasses import dataclass
-from typing import Optional
 
 import torch
-from diffusers.models.attention import Attention, FeedForward  # type: ignore
+from torch import nn
 from diffusers.utils import BaseOutput  # type: ignore
+from diffusers.utils.import_utils import is_xformers_available
+from diffusers.models.attention import FeedForward
+from diffusers.models.attention_processor import (
+    Attention as CrossAttention,
+    AttnProcessor,
+    AttnProcessor2_0,
+    XFormersAttnProcessor,
+)
+
 from einops import rearrange, repeat
-from torch import Tensor, nn
-from torch._dynamo import allow_in_graph as maybe_allow_in_graph
+import math
 
 
 def zero_module(module):
@@ -20,6 +26,13 @@ def zero_module(module):
 @dataclass
 class TemporalTransformer3DModelOutput(BaseOutput):
     sample: torch.FloatTensor
+
+
+if is_xformers_available():
+    import xformers
+    import xformers.ops
+else:
+    xformers = None
 
 
 def get_motion_module(in_channels, motion_module_type: str, motion_module_kwargs: dict):
@@ -82,7 +95,6 @@ class VanillaTemporalModule(nn.Module):
         return output
 
 
-@maybe_allow_in_graph
 class TemporalTransformer3DModel(nn.Module):
     def __init__(
         self,
@@ -135,12 +147,7 @@ class TemporalTransformer3DModel(nn.Module):
         )
         self.proj_out = nn.Linear(inner_dim, in_channels)
 
-    def forward(
-        self,
-        hidden_states: Tensor,
-        encoder_hidden_states: Optional[Tensor] = None,
-        attention_mask: Optional[Tensor] = None,
-    ):
+    def forward(self, hidden_states, encoder_hidden_states=None, attention_mask=None):
         assert (
             hidden_states.dim() == 5
         ), f"Expected hidden_states to have ndim=5, but got ndim={hidden_states.dim()}."
@@ -179,26 +186,25 @@ class TemporalTransformer3DModel(nn.Module):
         return output
 
 
-@maybe_allow_in_graph
 class TemporalTransformerBlock(nn.Module):
     def __init__(
         self,
-        dim: int,
-        num_attention_heads: int,
-        attention_head_dim: int,
+        dim,
+        num_attention_heads,
+        attention_head_dim,
         attention_block_types=(
             "Temporal_Self",
             "Temporal_Self",
         ),
         dropout=0.0,
-        norm_num_groups: int = 32,
-        cross_attention_dim: int = 768,
-        activation_fn: str = "geglu",
-        attention_bias: bool = False,
-        upcast_attention: bool = False,
+        norm_num_groups=32,
+        cross_attention_dim=768,
+        activation_fn="geglu",
+        attention_bias=False,
+        upcast_attention=False,
         cross_frame_attention_mode=None,
-        temporal_position_encoding: bool = False,
-        temporal_position_encoding_max_len: int = 24,
+        temporal_position_encoding=False,
+        temporal_position_encoding_max_len=24,
     ):
         super().__init__()
 
@@ -258,37 +264,35 @@ class TemporalTransformerBlock(nn.Module):
 
 
 class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, dropout: float = 0.0, max_len: int = 24):
+    def __init__(self, d_model, dropout=0.0, max_len=24):
         super().__init__()
-        self.dropout: nn.Module = nn.Dropout(p=dropout)
+        self.dropout = nn.Dropout(p=dropout)
         position = torch.arange(max_len).unsqueeze(1)
         div_term = torch.exp(
             torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model)
         )
-        pe: Tensor = torch.zeros(1, max_len, d_model)
+        pe = torch.zeros(1, max_len, d_model)
         pe[0, :, 0::2] = torch.sin(position * div_term)
         pe[0, :, 1::2] = torch.cos(position * div_term)
         self.register_buffer("pe", pe)
 
-    def forward(self, x: Tensor):
+    def forward(self, x):
         x = x + self.pe[:, : x.size(1)]
         return self.dropout(x)
 
 
-@maybe_allow_in_graph
-class VersatileAttention(Attention):
+class VersatileAttention(CrossAttention):
     def __init__(
         self,
-        attention_mode: str = None,  # type: ignore
-        cross_frame_attention_mode: Optional[str] = None,
-        temporal_position_encoding: bool = False,
-        temporal_position_encoding_max_len: int = 24,
+        attention_mode=None,
+        cross_frame_attention_mode=None,
+        temporal_position_encoding=False,
+        temporal_position_encoding_max_len=24,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        if attention_mode.lower() != "temporal":
-            raise ValueError(f"Attention mode {attention_mode} is not supported.")
+        assert attention_mode == "Temporal"
 
         self.attention_mode = attention_mode
         self.is_cross_attention = kwargs["cross_attention_dim"] is not None
@@ -306,12 +310,55 @@ class VersatileAttention(Attention):
     def extra_repr(self):
         return f"(Module Info) Attention_Mode: {self.attention_mode}, Is_Cross_Attention: {self.is_cross_attention}"
 
+    def set_use_memory_efficient_attention_xformers(
+        self, use_memory_efficient_attention_xformers: bool, attention_op=None
+    ):
+        if use_memory_efficient_attention_xformers:
+            if not is_xformers_available():
+                raise ModuleNotFoundError(
+                    (
+                        "Refer to https://github.com/facebookresearch/xformers for more information on how to install"
+                        " xformers"
+                    ),
+                    name="xformers",
+                )
+            elif not torch.cuda.is_available():
+                raise ValueError(
+                    "torch.cuda.is_available() should be True but is False. xformers' memory efficient attention is"
+                    " only available for GPU "
+                )
+            else:
+                try:
+                    # Make sure we can run the memory efficient attention
+                    assert xformers is not None
+                    _ = xformers.ops.memory_efficient_attention(
+                        torch.randn((1, 2, 40), device="cuda"),
+                        torch.randn((1, 2, 40), device="cuda"),
+                        torch.randn((1, 2, 40), device="cuda"),
+                    )
+                except Exception as e:
+                    raise e
+
+            # XFormersAttnProcessor corrupts video generation and work with Pytorch 1.13.
+            # Pytorch 2.0.1 AttnProcessor works the same as XFormersAttnProcessor in Pytorch 1.13.
+            # You don't need XFormersAttnProcessor here.
+            processor = XFormersAttnProcessor(
+                attention_op=attention_op,
+            )
+        else:
+            processor = AttnProcessor()
+            if hasattr(torch.nn.functional, "scaled_dot_product_attention"):
+                processor = AttnProcessor2_0()
+
+        self.set_processor(processor)  # type: ignore
+
     def forward(
         self,
-        hidden_states: Tensor,
+        hidden_states,
         encoder_hidden_states=None,
         attention_mask=None,
         video_length=None,
+        **cross_attention_kwargs,
     ):
         if self.attention_mode == "Temporal":
             d = hidden_states.shape[1]
@@ -330,8 +377,13 @@ class VersatileAttention(Attention):
         else:
             raise NotImplementedError
 
-        # attention processor makes this easy so that's nice
-        hidden_states = self.processor(self, hidden_states, encoder_hidden_states, attention_mask)  # type: ignore
+        hidden_states = self.processor(
+            self,
+            hidden_states,
+            encoder_hidden_states=encoder_hidden_states,
+            attention_mask=attention_mask,
+            **cross_attention_kwargs,
+        )
 
         if self.attention_mode == "Temporal":
             hidden_states = rearrange(hidden_states, "(b d) f c -> (b f) d c", d=d)

@@ -305,9 +305,12 @@ def prepare_latents(
             latents = latents.to(device)
 
         # scale the initial noise by the standard deviation required by the scheduler
-        latents = latents * pipe.scheduler.init_noise_sigma  # type: ignore
+        sigma = pipe.scheduler.init_noise_sigma
+        if isinstance(sigma, torch.Tensor):
+            sigma = sigma.to(dtype=latents.dtype, device=latents.device)
+        latents = latents * sigma  # type: ignore
         if frames is not None:
-            latents = latents.to(memory_format=torch.channels_last_3d)
+            latents = latents.to(memory_format=torch.channels_last_3d)  # type: ignore
         return latents, None, None
     else:
         if image.shape[1] != 4:
