@@ -242,8 +242,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[0] || (_cache[0] = ($event) => props.dimensionsObject.width = $event),
             min: unref(settings).data.settings.aitDim.width[0],
             max: unref(settings).data.settings.aitDim.width[1],
-            step: 64,
-            style: { "margin-right": "12px" }
+            step: 64
           }, null, 8, ["value", "min", "max"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.width,
@@ -261,8 +260,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[2] || (_cache[2] = ($event) => props.dimensionsObject.width = $event),
             min: 128,
             max: 2048,
-            step: 1,
-            style: { "margin-right": "12px" }
+            step: 1
           }, null, 8, ["value"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.width,
@@ -279,8 +277,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[4] || (_cache[4] = ($event) => props.dimensionsObject.height = $event),
             min: unref(settings).data.settings.aitDim.height[0],
             max: unref(settings).data.settings.aitDim.height[1],
-            step: 64,
-            style: { "margin-right": "12px" }
+            step: 64
           }, null, 8, ["value", "min", "max"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.height,
@@ -298,8 +295,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[6] || (_cache[6] = ($event) => props.dimensionsObject.height = $event),
             min: 128,
             max: 2048,
-            step: 1,
-            style: { "margin-right": "12px" }
+            step: 1
           }, null, 8, ["value"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.height,

@@ -40,6 +40,36 @@ class HighResFixFlag(Flag, DataClassJsonMixin):
 
 
 @dataclass
+class DeepshrinkFlag(Flag, DataClassJsonMixin):
+    "Flag for deepshrink"
+
+    enabled: bool = False  # For storing in json
+
+    depth_1: int = 3  # -1 to 12; steps of 1
+    stop_at_1: float = 0.15  # 0 to 0.5; steps of 0.01
+
+    depth_2: int = 4  # -1 to 12; steps of 1
+    stop_at_2: float = 0.30  # 0 to 0.5; steps of 0.01
+
+    scaler: LatentScaleModel = "bislerp"
+    base_scale: float = 0.5  # 0.05 to 1.0; steps of 0.05
+    early_out: bool = False
+
+
+@dataclass
+class ScalecrafterFlag(Flag, DataClassJsonMixin):
+    "Flag for Scalecrafter settings"
+
+    enabled: bool = False  # For storing in json
+
+    base: str = "sd15"
+    # In other words: allow untested/"unsafe" resolutions like "1234x4321"
+    unsafe_resolutions: bool = True
+    # May produce more "appealing" images, but will triple, or even quadruple memory usage.
+    disperse: bool = False
+
+
+@dataclass
 class XLOriginalSize:
     width: int = 1024
     height: int = 1024

@@ -240,7 +240,7 @@
           </NSpace>
         </NCard>
 
-        <HighResFix v-if="!isSelectedModelSDXL" tab="inpainting" />
+        <HighResFixTabs tab="inpainting" />
         <Upscale tab="inpainting" />
       </NGi>
 
@@ -272,7 +272,7 @@ import { BurnerClock } from "@/clock";
 import {
   CFGScale,
   GenerateSection,
-  HighResFix,
+  HighResFixTabs,
   ImageOutput,
   OutputStats,
   Prompt,
@@ -300,7 +300,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { computed, onUnmounted, ref } from "vue";
+import { onUnmounted, ref } from "vue";
 import VueDrawingCanvas from "vue-drawing-canvas";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
@@ -308,10 +308,6 @@ import { useState } from "../../store/state";
 const global = useState();
 const settings = useSettings();
 const messageHandler = useMessage();
-
-const isSelectedModelSDXL = computed(() => {
-  return settings.data.settings.model?.type === "SDXL";
-});
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed
@@ -369,6 +365,25 @@ const generate = () => {
           prompt_to_prompt: settings.data.settings.api.prompt_to_prompt,
         },
       },
+      ...(settings.data.settings.inpainting.deepshrink.enabled
+        ? {
+            flags: {
+              deepshrink: {
+                early_out:
+                  settings.data.settings.inpainting.deepshrink.early_out,
+                depth_1: settings.data.settings.inpainting.deepshrink.depth_1,
+                stop_at_1:
+                  settings.data.settings.inpainting.deepshrink.stop_at_1,
+                depth_2: settings.data.settings.inpainting.deepshrink.depth_2,
+                stop_at_2:
+                  settings.data.settings.inpainting.deepshrink.stop_at_2,
+                scaler: settings.data.settings.inpainting.deepshrink.scaler,
+                base_scale:
+                  settings.data.settings.inpainting.deepshrink.base_scale,
+              },
+            },
+          }
+        : {}),
       model: settings.data.settings.model?.path,
       flags: {
         ...(settings.data.settings.inpainting.highres.enabled

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import torch
 
 import k_diffusion
@@ -19,6 +21,10 @@ def patched_ddpm_denoiser_forward(self, input, sigma, **kwargs):
     if not isinstance(eps, torch.Tensor):
         return eps
     else:
+        if eps.shape != input.shape:
+            eps = torch.nn.functional.interpolate(
+                eps, (input.shape[2], input.shape[3]), mode="bilinear"
+            )
         return eps * c_out + input
 
 
@@ -35,6 +41,10 @@ def patched_vddpm_denoiser_forward(self, input, sigma, **kwargs):
     if not isinstance(v, torch.Tensor):
         return v
     else:
+        if v.shape != input.shape:
+            v = torch.nn.functional.interpolate(
+                v, (input.shape[2], input.shape[3]), mode="bilinear"
+            )
         return v * c_out + input * c_skip
 
 
@@ -43,7 +53,12 @@ k_diffusion.external.DiscreteVDDPMDenoiser.forward = patched_vddpm_denoiser_forw
 
 
 def calculate_cfg(
-    cond: torch.Tensor, uncond: torch.Tensor, cfg: float, timestep: torch.IntTensor
+    i: int,
+    cond: torch.Tensor,
+    uncond: torch.Tensor,
+    cfg: float,
+    timestep: torch.IntTensor,
+    additional_pred: Optional[torch.Tensor],
 ):
     if config.api.apply_unsharp_mask:
         cc = uncond + cfg * (cond - uncond)
@@ -56,6 +71,9 @@ def calculate_cfg(
         return cc + (sharpened - cc) * MIX_FACTOR
 
     if config.api.cfg_rescale_threshold == "off":
+        if additional_pred is not None:
+            additional_pred, _ = additional_pred.chunk(2)
+            uncond = additional_pred
         return uncond + cfg * (cond - uncond)
 
     if config.api.cfg_rescale_threshold <= cfg:
@@ -77,4 +95,7 @@ def calculate_cfg(
         mimicked = (uncond + 0.7 * (cond - uncond)) * (1 - t)
         return reps + mimicked
 
+    if additional_pred is not None:
+        additional_pred, _ = additional_pred.chunk(2)
+        uncond = additional_pred
     return uncond + cfg * (cond - uncond)

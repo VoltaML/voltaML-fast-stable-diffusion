@@ -1552,7 +1552,7 @@ function renderComponentRoot(instance) {
     slots,
     attrs,
     emit: emit2,
-    render: render15,
+    render: render17,
     renderCache,
     data,
     setupState,
@@ -1566,7 +1566,7 @@ function renderComponentRoot(instance) {
     if (vnode.shapeFlag & 4) {
       const proxyToUse = withProxy || proxy;
       result = normalizeVNode(
-        render15.call(
+        render17.call(
           proxyToUse,
           proxyToUse,
           renderCache,
@@ -2668,7 +2668,7 @@ function applyOptions(instance) {
     beforeUnmount,
     destroyed,
     unmounted,
-    render: render15,
+    render: render17,
     renderTracked,
     renderTriggered,
     errorCaptured,
@@ -2767,8 +2767,8 @@ function applyOptions(instance) {
       instance.exposed = {};
     }
   }
-  if (render15 && instance.render === NOOP) {
-    instance.render = render15;
+  if (render17 && instance.render === NOOP) {
+    instance.render = render17;
   }
   if (inheritAttrs != null) {
     instance.inheritAttrs = inheritAttrs;
@@ -3000,7 +3000,7 @@ function createAppContext() {
   };
 }
 let uid$1 = 0;
-function createAppAPI(render15, hydrate) {
+function createAppAPI(render17, hydrate) {
   return function createApp2(rootComponent, rootProps = null) {
     if (!isFunction$2(rootComponent)) {
       rootComponent = extend({}, rootComponent);
@@ -3069,7 +3069,7 @@ function createAppAPI(render15, hydrate) {
           if (isHydrate && hydrate) {
             hydrate(vnode, rootContainer);
           } else {
-            render15(vnode, rootContainer, isSVG2);
+            render17(vnode, rootContainer, isSVG2);
           }
           isMounted2 = true;
           app2._container = rootContainer;
@@ -3079,7 +3079,7 @@ function createAppAPI(render15, hydrate) {
       },
       unmount() {
         if (isMounted2) {
-          render15(null, app2._container);
+          render17(null, app2._container);
           delete app2._container.__vue_app__;
         }
       },
@@ -4794,7 +4794,7 @@ function baseCreateRenderer(options, createHydrationFns) {
     }
     return hostNextSibling(vnode.anchor || vnode.el);
   };
-  const render15 = (vnode, container, isSVG2) => {
+  const render17 = (vnode, container, isSVG2) => {
     if (vnode == null) {
       if (container._vnode) {
         unmount2(container._vnode, null, null, true);
@@ -4826,9 +4826,9 @@ function baseCreateRenderer(options, createHydrationFns) {
     );
   }
   return {
-    render: render15,
+    render: render17,
     hydrate,
-    createApp: createAppAPI(render15, hydrate)
+    createApp: createAppAPI(render17, hydrate)
   };
 }
 function toggleRecurse({ effect, update }, allowed) {
@@ -27891,8 +27891,8 @@ const NDropdownRenderOption = defineComponent({
     }
   },
   render() {
-    const { rawNode: { render: render15, props } } = this.tmNode;
-    return h("div", props, [render15 === null || render15 === void 0 ? void 0 : render15()]);
+    const { rawNode: { render: render17, props } } = this.tmNode;
+    return h("div", props, [render17 === null || render17 === void 0 ? void 0 : render17()]);
   }
 });
 const NDropdownMenu = defineComponent({
@@ -38105,12 +38105,493 @@ const NThemeEditor = defineComponent({
     });
   }
 });
-const _hoisted_1$i = {
+const loc = window.location;
+let new_uri;
+if (loc.protocol === "https:") {
+  new_uri = "wss:";
+} else {
+  new_uri = "ws:";
+}
+const serverUrl = loc.protocol + "//" + loc.host;
+const webSocketUrl = new_uri + "//" + loc.host;
+const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
+const defaultCapabilities = {
+  supported_backends: [["CPU", "cpu"]],
+  supported_precisions_cpu: ["float32"],
+  supported_precisions_gpu: ["float32"],
+  supported_torch_compile_backends: ["inductor"],
+  supported_self_attentions: [
+    ["Cross-Attention", "cross-attention"],
+    ["Subquadratic Attention", "subquadratic"],
+    ["Multihead Attention", "multihead"]
+  ],
+  has_tensorfloat: false,
+  has_tensor_cores: false,
+  supports_xformers: false,
+  supports_triton: false,
+  supports_int8: false
+};
+async function getCapabilities() {
+  try {
+    const response = await fetch(`${serverUrl}/api/hardware/capabilities`);
+    if (response.status !== 200) {
+      console.error("Server is not responding");
+      return defaultCapabilities;
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return defaultCapabilities;
+  }
+}
+var _a;
+const isClient = typeof window !== "undefined";
+const isFunction = (val) => typeof val === "function";
+const isString = (val) => typeof val === "string";
+const noop$1 = () => {
+};
+const isIOS = isClient && ((_a = window == null ? void 0 : window.navigator) == null ? void 0 : _a.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
+function resolveUnref(r) {
+  return typeof r === "function" ? r() : unref(r);
+}
+function identity(arg) {
+  return arg;
+}
+function tryOnScopeDispose(fn) {
+  if (getCurrentScope()) {
+    onScopeDispose(fn);
+    return true;
+  }
+  return false;
+}
+function resolveRef(r) {
+  return typeof r === "function" ? computed(r) : ref(r);
+}
+function tryOnMounted(fn, sync = true) {
+  if (getCurrentInstance())
+    onMounted(fn);
+  else if (sync)
+    fn();
+  else
+    nextTick(fn);
+}
+function useIntervalFn(cb, interval = 1e3, options = {}) {
+  const {
+    immediate = true,
+    immediateCallback = false
+  } = options;
+  let timer = null;
+  const isActive = ref(false);
+  function clean() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  }
+  function pause() {
+    isActive.value = false;
+    clean();
+  }
+  function resume() {
+    const intervalValue = resolveUnref(interval);
+    if (intervalValue <= 0)
+      return;
+    isActive.value = true;
+    if (immediateCallback)
+      cb();
+    clean();
+    timer = setInterval(cb, intervalValue);
+  }
+  if (immediate && isClient)
+    resume();
+  if (isRef(interval) || isFunction(interval)) {
+    const stopWatch = watch(interval, () => {
+      if (isActive.value && isClient)
+        resume();
+    });
+    tryOnScopeDispose(stopWatch);
+  }
+  tryOnScopeDispose(pause);
+  return {
+    isActive,
+    pause,
+    resume
+  };
+}
+function unrefElement(elRef) {
+  var _a2;
+  const plain = resolveUnref(elRef);
+  return (_a2 = plain == null ? void 0 : plain.$el) != null ? _a2 : plain;
+}
+const defaultWindow = isClient ? window : void 0;
+function useEventListener(...args) {
+  let target;
+  let events2;
+  let listeners;
+  let options;
+  if (isString(args[0]) || Array.isArray(args[0])) {
+    [events2, listeners, options] = args;
+    target = defaultWindow;
+  } else {
+    [target, events2, listeners, options] = args;
+  }
+  if (!target)
+    return noop$1;
+  if (!Array.isArray(events2))
+    events2 = [events2];
+  if (!Array.isArray(listeners))
+    listeners = [listeners];
+  const cleanups = [];
+  const cleanup = () => {
+    cleanups.forEach((fn) => fn());
+    cleanups.length = 0;
+  };
+  const register = (el, event2, listener, options2) => {
+    el.addEventListener(event2, listener, options2);
+    return () => el.removeEventListener(event2, listener, options2);
+  };
+  const stopWatch = watch(() => [unrefElement(target), resolveUnref(options)], ([el, options2]) => {
+    cleanup();
+    if (!el)
+      return;
+    cleanups.push(...events2.flatMap((event2) => {
+      return listeners.map((listener) => register(el, event2, listener, options2));
+    }));
+  }, { immediate: true, flush: "post" });
+  const stop = () => {
+    stopWatch();
+    cleanup();
+  };
+  tryOnScopeDispose(stop);
+  return stop;
+}
+let _iOSWorkaround = false;
+function onClickOutside(target, handler, options = {}) {
+  const { window: window2 = defaultWindow, ignore = [], capture = true, detectIframe = false } = options;
+  if (!window2)
+    return;
+  if (isIOS && !_iOSWorkaround) {
+    _iOSWorkaround = true;
+    Array.from(window2.document.body.children).forEach((el) => el.addEventListener("click", noop$1));
+  }
+  let shouldListen = true;
+  const shouldIgnore = (event2) => {
+    return ignore.some((target2) => {
+      if (typeof target2 === "string") {
+        return Array.from(window2.document.querySelectorAll(target2)).some((el) => el === event2.target || event2.composedPath().includes(el));
+      } else {
+        const el = unrefElement(target2);
+        return el && (event2.target === el || event2.composedPath().includes(el));
+      }
+    });
+  };
+  const listener = (event2) => {
+    const el = unrefElement(target);
+    if (!el || el === event2.target || event2.composedPath().includes(el))
+      return;
+    if (event2.detail === 0)
+      shouldListen = !shouldIgnore(event2);
+    if (!shouldListen) {
+      shouldListen = true;
+      return;
+    }
+    handler(event2);
+  };
+  const cleanup = [
+    useEventListener(window2, "click", listener, { passive: true, capture }),
+    useEventListener(window2, "pointerdown", (e) => {
+      const el = unrefElement(target);
+      if (el)
+        shouldListen = !e.composedPath().includes(el) && !shouldIgnore(e);
+    }, { passive: true }),
+    detectIframe && useEventListener(window2, "blur", (event2) => {
+      var _a2;
+      const el = unrefElement(target);
+      if (((_a2 = window2.document.activeElement) == null ? void 0 : _a2.tagName) === "IFRAME" && !(el == null ? void 0 : el.contains(window2.document.activeElement)))
+        handler(event2);
+    })
+  ].filter(Boolean);
+  const stop = () => cleanup.forEach((fn) => fn());
+  return stop;
+}
+function useSupported(callback, sync = false) {
+  const isSupported = ref();
+  const update = () => isSupported.value = Boolean(callback());
+  update();
+  tryOnMounted(update, sync);
+  return isSupported;
+}
+function useMediaQuery(query2, options = {}) {
+  const { window: window2 = defaultWindow } = options;
+  const isSupported = useSupported(() => window2 && "matchMedia" in window2 && typeof window2.matchMedia === "function");
+  let mediaQuery;
+  const matches = ref(false);
+  const cleanup = () => {
+    if (!mediaQuery)
+      return;
+    if ("removeEventListener" in mediaQuery)
+      mediaQuery.removeEventListener("change", update);
+    else
+      mediaQuery.removeListener(update);
+  };
+  const update = () => {
+    if (!isSupported.value)
+      return;
+    cleanup();
+    mediaQuery = window2.matchMedia(resolveRef(query2).value);
+    matches.value = mediaQuery.matches;
+    if ("addEventListener" in mediaQuery)
+      mediaQuery.addEventListener("change", update);
+    else
+      mediaQuery.addListener(update);
+  };
+  watchEffect(update);
+  tryOnScopeDispose(() => cleanup());
+  return matches;
+}
+const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
+const globalKey = "__vueuse_ssr_handlers__";
+_global[globalKey] = _global[globalKey] || {};
+var SwipeDirection;
+(function(SwipeDirection2) {
+  SwipeDirection2["UP"] = "UP";
+  SwipeDirection2["RIGHT"] = "RIGHT";
+  SwipeDirection2["DOWN"] = "DOWN";
+  SwipeDirection2["LEFT"] = "LEFT";
+  SwipeDirection2["NONE"] = "NONE";
+})(SwipeDirection || (SwipeDirection = {}));
+var __defProp2 = Object.defineProperty;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp2 = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __spreadValues = (a, b) => {
+  for (var prop in b || (b = {}))
+    if (__hasOwnProp.call(b, prop))
+      __defNormalProp2(a, prop, b[prop]);
+  if (__getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(b)) {
+      if (__propIsEnum.call(b, prop))
+        __defNormalProp2(a, prop, b[prop]);
+    }
+  return a;
+};
+const _TransitionPresets = {
+  easeInSine: [0.12, 0, 0.39, 0],
+  easeOutSine: [0.61, 1, 0.88, 1],
+  easeInOutSine: [0.37, 0, 0.63, 1],
+  easeInQuad: [0.11, 0, 0.5, 0],
+  easeOutQuad: [0.5, 1, 0.89, 1],
+  easeInOutQuad: [0.45, 0, 0.55, 1],
+  easeInCubic: [0.32, 0, 0.67, 0],
+  easeOutCubic: [0.33, 1, 0.68, 1],
+  easeInOutCubic: [0.65, 0, 0.35, 1],
+  easeInQuart: [0.5, 0, 0.75, 0],
+  easeOutQuart: [0.25, 1, 0.5, 1],
+  easeInOutQuart: [0.76, 0, 0.24, 1],
+  easeInQuint: [0.64, 0, 0.78, 0],
+  easeOutQuint: [0.22, 1, 0.36, 1],
+  easeInOutQuint: [0.83, 0, 0.17, 1],
+  easeInExpo: [0.7, 0, 0.84, 0],
+  easeOutExpo: [0.16, 1, 0.3, 1],
+  easeInOutExpo: [0.87, 0, 0.13, 1],
+  easeInCirc: [0.55, 0, 1, 0.45],
+  easeOutCirc: [0, 0.55, 0.45, 1],
+  easeInOutCirc: [0.85, 0, 0.15, 1],
+  easeInBack: [0.36, 0, 0.66, -0.56],
+  easeOutBack: [0.34, 1.56, 0.64, 1],
+  easeInOutBack: [0.68, -0.6, 0.32, 1.6]
+};
+__spreadValues({
+  linear: identity
+}, _TransitionPresets);
+const DEFAULT_PING_MESSAGE = "ping";
+function resolveNestedOptions(options) {
+  if (options === true)
+    return {};
+  return options;
+}
+function useWebSocket(url, options = {}) {
+  const {
+    onConnected,
+    onDisconnected,
+    onError,
+    onMessage,
+    immediate = true,
+    autoClose = true,
+    protocols = []
+  } = options;
+  const data = ref(null);
+  const status = ref("CLOSED");
+  const wsRef = ref();
+  const urlRef = resolveRef(url);
+  let heartbeatPause;
+  let heartbeatResume;
+  let explicitlyClosed = false;
+  let retried = 0;
+  let bufferedData = [];
+  let pongTimeoutWait;
+  const close = (code = 1e3, reason) => {
+    if (!wsRef.value)
+      return;
+    explicitlyClosed = true;
+    heartbeatPause == null ? void 0 : heartbeatPause();
+    wsRef.value.close(code, reason);
+  };
+  const _sendBuffer = () => {
+    if (bufferedData.length && wsRef.value && status.value === "OPEN") {
+      for (const buffer of bufferedData)
+        wsRef.value.send(buffer);
+      bufferedData = [];
+    }
+  };
+  const resetHeartbeat = () => {
+    clearTimeout(pongTimeoutWait);
+    pongTimeoutWait = void 0;
+  };
+  const send = (data2, useBuffer = true) => {
+    if (!wsRef.value || status.value !== "OPEN") {
+      if (useBuffer)
+        bufferedData.push(data2);
+      return false;
+    }
+    _sendBuffer();
+    wsRef.value.send(data2);
+    return true;
+  };
+  const _init = () => {
+    if (explicitlyClosed || typeof urlRef.value === "undefined")
+      return;
+    const ws = new WebSocket(urlRef.value, protocols);
+    wsRef.value = ws;
+    status.value = "CONNECTING";
+    ws.onopen = () => {
+      status.value = "OPEN";
+      onConnected == null ? void 0 : onConnected(ws);
+      heartbeatResume == null ? void 0 : heartbeatResume();
+      _sendBuffer();
+    };
+    ws.onclose = (ev) => {
+      status.value = "CLOSED";
+      wsRef.value = void 0;
+      onDisconnected == null ? void 0 : onDisconnected(ws, ev);
+      if (!explicitlyClosed && options.autoReconnect) {
+        const {
+          retries = -1,
+          delay = 1e3,
+          onFailed
+        } = resolveNestedOptions(options.autoReconnect);
+        retried += 1;
+        if (typeof retries === "number" && (retries < 0 || retried < retries))
+          setTimeout(_init, delay);
+        else if (typeof retries === "function" && retries())
+          setTimeout(_init, delay);
+        else
+          onFailed == null ? void 0 : onFailed();
+      }
+    };
+    ws.onerror = (e) => {
+      onError == null ? void 0 : onError(ws, e);
+    };
+    ws.onmessage = (e) => {
+      if (options.heartbeat) {
+        resetHeartbeat();
+        const {
+          message = DEFAULT_PING_MESSAGE
+        } = resolveNestedOptions(options.heartbeat);
+        if (e.data === message)
+          return;
+      }
+      data.value = e.data;
+      onMessage == null ? void 0 : onMessage(ws, e);
+    };
+  };
+  if (options.heartbeat) {
+    const {
+      message = DEFAULT_PING_MESSAGE,
+      interval = 1e3,
+      pongTimeout = 1e3
+    } = resolveNestedOptions(options.heartbeat);
+    const { pause, resume } = useIntervalFn(() => {
+      send(message, false);
+      if (pongTimeoutWait != null)
+        return;
+      pongTimeoutWait = setTimeout(() => {
+        close();
+      }, pongTimeout);
+    }, interval, { immediate: false });
+    heartbeatPause = pause;
+    heartbeatResume = resume;
+  }
+  if (autoClose) {
+    useEventListener(window, "beforeunload", () => close());
+    tryOnScopeDispose(close);
+  }
+  const open = () => {
+    close();
+    explicitlyClosed = false;
+    retried = 0;
+    _init();
+  };
+  if (immediate)
+    watch(urlRef, open, { immediate: true });
+  return {
+    data,
+    status,
+    close,
+    send,
+    open,
+    ws: wsRef
+  };
+}
+const isLargeScreen = useMediaQuery("(min-width: 1000px)");
+const _hoisted_1$k = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$g = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$i = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "stroke-width": "32",
+    d: "M256 112v288"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$h = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "stroke-width": "32",
+    d: "M400 256H112"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$e = [_hoisted_2$i, _hoisted_3$h];
+const Add = defineComponent({
+  name: "Add",
+  render: function render2(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$k, _hoisted_4$e);
+  }
+});
+const _hoisted_1$j = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$h = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M368 96H144a16 16 0 0 1 0-32h224a16 16 0 0 1 0 32z",
@@ -38120,7 +38601,7 @@ const _hoisted_2$g = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$f = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$g = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M400 144H112a16 16 0 0 1 0-32h288a16 16 0 0 1 0 32z",
@@ -38130,7 +38611,7 @@ const _hoisted_3$f = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$c = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M419.13 448H92.87A44.92 44.92 0 0 1 48 403.13V204.87A44.92 44.92 0 0 1 92.87 160h326.26A44.92 44.92 0 0 1 464 204.87v198.26A44.92 44.92 0 0 1 419.13 448z",
@@ -38140,10 +38621,52 @@ const _hoisted_4$c = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$8 = [_hoisted_2$g, _hoisted_3$f, _hoisted_4$c];
+const _hoisted_5$9 = [_hoisted_2$h, _hoisted_3$g, _hoisted_4$d];
 const Albums = defineComponent({
   name: "Albums",
-  render: function render2(_ctx, _cache) {
+  render: function render3(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$j, _hoisted_5$9);
+  }
+});
+const _hoisted_1$i = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$g = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$f = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$c = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5$8 = [_hoisted_2$g, _hoisted_3$f, _hoisted_4$c];
+const Create = defineComponent({
+  name: "Create",
+  render: function render4(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$i, _hoisted_5$8);
   }
 });
@@ -38155,7 +38678,7 @@ const _hoisted_1$h = {
 const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
+    d: "M440.9 136.3a4 4 0 0 0 0-6.91L288.16 40.65a64.14 64.14 0 0 0-64.33 0L71.12 129.39a4 4 0 0 0 0 6.91L254 243.88a4 4 0 0 0 4.06 0z",
     fill: "currentColor"
   },
   null,
@@ -38165,7 +38688,7 @@ const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
+    d: "M54 163.51a4 4 0 0 0-6 3.49v173.89a48 48 0 0 0 23.84 41.39L234 479.51a4 4 0 0 0 6-3.46V274.3a4 4 0 0 0-2-3.46z",
     fill: "currentColor"
   },
   null,
@@ -38175,7 +38698,7 @@ const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
+    d: "M272 275v201a4 4 0 0 0 6 3.46l162.15-97.23A48 48 0 0 0 464 340.89V167a4 4 0 0 0-6-3.45l-184 108a4 4 0 0 0-2 3.45z",
     fill: "currentColor"
   },
   null,
@@ -38183,9 +38706,9 @@ const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_5$7 = [_hoisted_2$f, _hoisted_3$e, _hoisted_4$b];
-const Create = defineComponent({
-  name: "Create",
-  render: function render3(_ctx, _cache) {
+const Cube = defineComponent({
+  name: "Cube",
+  render: function render5(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$h, _hoisted_5$7);
   }
 });
@@ -38197,7 +38720,7 @@ const _hoisted_1$g = {
 const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M440.9 136.3a4 4 0 0 0 0-6.91L288.16 40.65a64.14 64.14 0 0 0-64.33 0L71.12 129.39a4 4 0 0 0 0 6.91L254 243.88a4 4 0 0 0 4.06 0z",
+    d: "M428 224H288a48 48 0 0 1-48-48V36a4 4 0 0 0-4-4h-92a64 64 0 0 0-64 64v320a64 64 0 0 0 64 64h224a64 64 0 0 0 64-64V228a4 4 0 0 0-4-4zm-92 160H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32zm0-80H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32z",
     fill: "currentColor"
   },
   null,
@@ -38207,28 +38730,18 @@ const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M54 163.51a4 4 0 0 0-6 3.49v173.89a48 48 0 0 0 23.84 41.39L234 479.51a4 4 0 0 0 6-3.46V274.3a4 4 0 0 0-2-3.46z",
+    d: "M419.22 188.59L275.41 44.78a2 2 0 0 0-3.41 1.41V176a16 16 0 0 0 16 16h129.81a2 2 0 0 0 1.41-3.41z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M272 275v201a4 4 0 0 0 6 3.46l162.15-97.23A48 48 0 0 0 464 340.89V167a4 4 0 0 0-6-3.45l-184 108a4 4 0 0 0-2 3.45z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_5$6 = [_hoisted_2$e, _hoisted_3$d, _hoisted_4$a];
-const Cube = defineComponent({
-  name: "Cube",
-  render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$g, _hoisted_5$6);
+const _hoisted_4$a = [_hoisted_2$e, _hoisted_3$d];
+const DocumentText = defineComponent({
+  name: "DocumentText",
+  render: function render6(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$g, _hoisted_4$a);
   }
 });
 const _hoisted_1$f = {
@@ -38239,7 +38752,7 @@ const _hoisted_1$f = {
 const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M428 224H288a48 48 0 0 1-48-48V36a4 4 0 0 0-4-4h-92a64 64 0 0 0-64 64v320a64 64 0 0 0 64 64h224a64 64 0 0 0 64-64V228a4 4 0 0 0-4-4zm-92 160H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32zm0-80H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32z",
+    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
     fill: "currentColor"
   },
   null,
@@ -38249,7 +38762,7 @@ const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M419.22 188.59L275.41 44.78a2 2 0 0 0-3.41 1.41V176a16 16 0 0 0 16 16h129.81a2 2 0 0 0 1.41-3.41z",
+    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
     fill: "currentColor"
   },
   null,
@@ -38257,9 +38770,9 @@ const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$9 = [_hoisted_2$d, _hoisted_3$c];
-const DocumentText = defineComponent({
-  name: "DocumentText",
-  render: function render5(_ctx, _cache) {
+const Duplicate = defineComponent({
+  name: "Duplicate",
+  render: function render7(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_4$9);
   }
 });
@@ -38271,28 +38784,18 @@ const _hoisted_1$e = {
 const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
+    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$8 = [_hoisted_2$c, _hoisted_3$b];
-const Duplicate = defineComponent({
-  name: "Duplicate",
-  render: function render6(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_4$8);
+const _hoisted_3$b = [_hoisted_2$c];
+const Image$1 = defineComponent({
+  name: "Image",
+  render: function render8(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_3$b);
   }
 });
 const _hoisted_1$d = {
@@ -38303,18 +38806,28 @@ const _hoisted_1$d = {
 const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
+    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$a = [_hoisted_2$b];
-const Image$1 = defineComponent({
-  name: "Image",
-  render: function render7(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_3$a);
+const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$8 = [_hoisted_2$b, _hoisted_3$a];
+const Images = defineComponent({
+  name: "Images",
+  render: function render9(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$8);
   }
 });
 const _hoisted_1$c = {
@@ -38325,8 +38838,12 @@ const _hoisted_1$c = {
 const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
-    fill: "currentColor"
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-miterlimit": "10",
+    "stroke-width": "48",
+    d: "M88 152h336"
   },
   null,
   -1
@@ -38335,18 +38852,36 @@ const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$9 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
-    fill: "currentColor"
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-miterlimit": "10",
+    "stroke-width": "48",
+    d: "M88 256h336"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$7 = [_hoisted_2$a, _hoisted_3$9];
-const Images = defineComponent({
-  name: "Images",
-  render: function render8(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_4$7);
+const _hoisted_4$7 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-miterlimit": "10",
+    "stroke-width": "48",
+    d: "M88 360h336"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5$6 = [_hoisted_2$a, _hoisted_3$9, _hoisted_4$7];
+const Menu = defineComponent({
+  name: "Menu",
+  render: function render10(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_5$6);
   }
 });
 const _hoisted_1$b = {
@@ -38377,7 +38912,7 @@ const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$6 = [_hoisted_2$9, _hoisted_3$8];
 const PowerSharp = defineComponent({
   name: "PowerSharp",
-  render: function render9(_ctx, _cache) {
+  render: function render11(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$6);
   }
 });
@@ -38399,7 +38934,7 @@ const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$7 = [_hoisted_2$8];
 const SettingsSharp = defineComponent({
   name: "SettingsSharp",
-  render: function render10(_ctx, _cache) {
+  render: function render12(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_3$7);
   }
 });
@@ -38421,7 +38956,7 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$6 = [_hoisted_2$7];
 const Speedometer = defineComponent({
   name: "Speedometer",
-  render: function render11(_ctx, _cache) {
+  render: function render13(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_3$6);
   }
 });
@@ -38473,7 +39008,7 @@ const _hoisted_5$5 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_6$3 = [_hoisted_2$6, _hoisted_3$5, _hoisted_4$5, _hoisted_5$5];
 const StatsChart = defineComponent({
   name: "StatsChart",
-  render: function render12(_ctx, _cache) {
+  render: function render14(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_6$3);
   }
 });
@@ -38527,7 +39062,7 @@ const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_5$4 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$4];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
-  render: function render13(_ctx, _cache) {
+  render: function render15(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_5$4);
   }
 });
@@ -38581,7 +39116,7 @@ const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_6$2 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$3, _hoisted_5$3];
 const Wifi = defineComponent({
   name: "Wifi",
-  render: function render14(_ctx, _cache) {
+  render: function render16(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_6$2);
   }
 });
@@ -38603,7 +39138,7 @@ function applyToParams(fn, params) {
   }
   return newParams;
 }
-const noop$1 = () => {
+const noop = () => {
 };
 const isArray = Array.isArray;
 const TRAILING_SLASH_RE = /\/$/;
@@ -39344,7 +39879,7 @@ function createRouterMatcher(routes, globalOptions) {
     }
     return originalMatcher ? () => {
       removeRoute(originalMatcher);
-    } : noop$1;
+    } : noop;
   }
   function removeRoute(matcherRef) {
     if (isRouteName(matcherRef)) {
@@ -39707,7 +40242,7 @@ function useLink(props) {
       return router2[unref(props.replace) ? "replace" : "push"](
         unref(props.to)
         // avoid uncaught errors are they are logged anyway
-      ).catch(noop$1);
+      ).catch(noop);
     }
     return Promise.resolve();
   }
@@ -40185,7 +40720,7 @@ function createRouter(options) {
       const toLocation = resolve2(to);
       const shouldRedirect = handleRedirectRecord(toLocation);
       if (shouldRedirect) {
-        pushWithRedirect(assign(shouldRedirect, { replace: true }), toLocation).catch(noop$1);
+        pushWithRedirect(assign(shouldRedirect, { replace: true }), toLocation).catch(noop);
         return;
       }
       pendingLocation = toLocation;
@@ -40218,7 +40753,7 @@ function createRouter(options) {
             ) && !info.delta && info.type === NavigationType.pop) {
               routerHistory.go(-1, false);
             }
-          }).catch(noop$1);
+          }).catch(noop);
           return Promise.reject();
         }
         if (info.delta) {
@@ -40250,7 +40785,7 @@ function createRouter(options) {
           }
         }
         triggerAfterEach(toLocation, from, failure);
-      }).catch(noop$1);
+      }).catch(noop);
     });
   }
   let readyHandlers = useCallbacks();
@@ -40383,159 +40918,9 @@ function extractChangingRecords(to, from) {
 function useRouter() {
   return inject(routerKey);
 }
-const _hoisted_1$5 = { class: "navbar" };
-const _sfc_main$9 = /* @__PURE__ */ defineComponent({
-  __name: "CollapsibleNavbar",
-  setup(__props) {
-    function renderIcon(icon) {
-      return () => h(NIcon, null, { default: () => h(icon) });
-    }
-    const menuOptionsMain = [
-      {
-        label: () => h(RouterLink, { to: "/" }, { default: () => "Text to Image" }),
-        key: "txt2img",
-        icon: renderIcon(Image$1)
-      },
-      {
-        label: () => h(RouterLink, { to: "/img2img" }, { default: () => "Image to Image" }),
-        key: "img2img",
-        icon: renderIcon(Images)
-      },
-      {
-        label: () => h(
-          RouterLink,
-          { to: "/imageProcessing" },
-          { default: () => "Image Processing" }
-        ),
-        key: "imageProcessing",
-        icon: renderIcon(Duplicate)
-      },
-      {
-        label: () => h(RouterLink, { to: "/tagger" }, { default: () => "Tagger" }),
-        key: "tagger",
-        icon: renderIcon(Create)
-      },
-      {
-        label: () => h(
-          RouterLink,
-          { to: "/imageBrowser" },
-          { default: () => "Image Browser" }
-        ),
-        key: "imageBrowser",
-        icon: renderIcon(Albums)
-      },
-      {
-        label: () => h(RouterLink, { to: "/models" }, { default: () => "Models" }),
-        key: "models",
-        icon: renderIcon(Cube)
-      },
-      {
-        label: () => h(RouterLink, { to: "/accelerate" }, { default: () => "Accelerate" }),
-        key: "plugins",
-        icon: renderIcon(Speedometer)
-      },
-      // {
-      //   label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
-      //   key: "extra",
-      //   icon: renderIcon(Archive),
-      // },
-      {
-        label: () => h(RouterLink, { to: "/settings" }, { default: () => "Settings" }),
-        key: "settings",
-        icon: renderIcon(SettingsSharp)
-      }
-    ];
-    let collapsed = ref(true);
-    return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$5, [
-        createVNode(unref(NLayout), {
-          style: { "height": "100%", "overflow": "visible" },
-          "has-sider": "",
-          "content-style": "overflow: visible"
-        }, {
-          default: withCtx(() => [
-            createVNode(unref(NLayoutSider), {
-              bordered: "",
-              "collapse-mode": "width",
-              "collapsed-width": 64,
-              width: 240,
-              collapsed: unref(collapsed),
-              "show-trigger": "",
-              onCollapse: _cache[0] || (_cache[0] = ($event) => isRef(collapsed) ? collapsed.value = true : collapsed = true),
-              onExpand: _cache[1] || (_cache[1] = ($event) => isRef(collapsed) ? collapsed.value = false : collapsed = false),
-              style: { "overflow": "visible", "overflow-x": "visible" }
-            }, {
-              default: withCtx(() => [
-                createVNode(unref(NSpace), {
-                  vertical: "",
-                  justify: "space-between",
-                  style: { "height": "100%", "overflow": "visible", "overflow-x": "visible" },
-                  "item-style": "height: 100%"
-                }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NMenu), {
-                      collapsed: unref(collapsed),
-                      "collapsed-width": 64,
-                      "collapsed-icon-size": 22,
-                      options: menuOptionsMain,
-                      style: { "height": "100%", "display": "flex", "flex-direction": "column" }
-                    }, null, 8, ["collapsed"])
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            }, 8, ["collapsed"])
-          ]),
-          _: 1
-        })
-      ]);
-    };
-  }
-});
-const CollapsibleNavbar_vue_vue_type_style_index_0_lang = "";
-const loc = window.location;
-let new_uri;
-if (loc.protocol === "https:") {
-  new_uri = "wss:";
-} else {
-  new_uri = "ws:";
-}
-const serverUrl = loc.protocol + "//" + loc.host;
-const webSocketUrl = new_uri + "//" + loc.host;
-const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
-const defaultCapabilities = {
-  supported_backends: [["CPU", "cpu"]],
-  supported_precisions_cpu: ["float32"],
-  supported_precisions_gpu: ["float32"],
-  supported_torch_compile_backends: ["inductor"],
-  supported_self_attentions: [
-    ["Cross-Attention", "cross-attention"],
-    ["Subquadratic Attention", "subquadratic"],
-    ["Multihead Attention", "multihead"]
-  ],
-  has_tensorfloat: false,
-  has_tensor_cores: false,
-  supports_xformers: false,
-  supports_triton: false,
-  supports_int8: false
-};
-async function getCapabilities() {
-  try {
-    const response = await fetch(`${serverUrl}/api/hardware/capabilities`);
-    if (response.status !== 200) {
-      console.error("Server is not responding");
-      return defaultCapabilities;
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(error);
-    return defaultCapabilities;
-  }
-}
 const useState2 = defineStore("state", () => {
   const state2 = reactive({
+    collapsibleBarActive: false,
     progress: 0,
     generating: false,
     downloading: false,
@@ -40663,6 +41048,171 @@ const useState2 = defineStore("state", () => {
   }
   return { state: state2, fetchCapabilites, fetchAutofill };
 });
+const _hoisted_1$5 = { class: "navbar" };
+const _sfc_main$9 = /* @__PURE__ */ defineComponent({
+  __name: "CollapsibleNavbar",
+  setup(__props) {
+    const global2 = useState2();
+    function renderIcon(icon) {
+      return () => h(NIcon, null, { default: () => h(icon) });
+    }
+    const menuOptionsMain = [
+      {
+        label: () => h(RouterLink, { to: "/" }, { default: () => "Text to Image" }),
+        key: "txt2img",
+        icon: renderIcon(Image$1)
+      },
+      {
+        label: () => h(RouterLink, { to: "/img2img" }, { default: () => "Image to Image" }),
+        key: "img2img",
+        icon: renderIcon(Images)
+      },
+      {
+        label: () => h(
+          RouterLink,
+          { to: "/imageProcessing" },
+          { default: () => "Image Processing" }
+        ),
+        key: "imageProcessing",
+        icon: renderIcon(Duplicate)
+      },
+      {
+        label: () => h(RouterLink, { to: "/tagger" }, { default: () => "Tagger" }),
+        key: "tagger",
+        icon: renderIcon(Create)
+      },
+      {
+        label: () => h(
+          RouterLink,
+          { to: "/imageBrowser" },
+          { default: () => "Image Browser" }
+        ),
+        key: "imageBrowser",
+        icon: renderIcon(Albums)
+      },
+      {
+        label: () => h(RouterLink, { to: "/models" }, { default: () => "Models" }),
+        key: "models",
+        icon: renderIcon(Cube)
+      },
+      {
+        label: () => h(RouterLink, { to: "/accelerate" }, { default: () => "Accelerate" }),
+        key: "plugins",
+        icon: renderIcon(Speedometer)
+      },
+      // {
+      //   label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
+      //   key: "extra",
+      //   icon: renderIcon(Archive),
+      // },
+      {
+        label: () => h(RouterLink, { to: "/settings" }, { default: () => "Settings" }),
+        key: "settings",
+        icon: renderIcon(SettingsSharp)
+      }
+    ];
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", _hoisted_1$5, [
+        unref(isLargeScreen) ? (openBlock(), createBlock(unref(NLayout), {
+          key: 0,
+          style: { "height": "100%", "overflow": "visible" },
+          "has-sider": "",
+          "content-style": "overflow: visible"
+        }, {
+          default: withCtx(() => [
+            createVNode(unref(NLayoutSider), {
+              bordered: "",
+              "collapse-mode": "width",
+              "collapsed-width": 64,
+              width: 240,
+              collapsed: !unref(global2).state.collapsibleBarActive,
+              "show-trigger": "",
+              onCollapse: _cache[0] || (_cache[0] = ($event) => unref(global2).state.collapsibleBarActive = false),
+              onExpand: _cache[1] || (_cache[1] = ($event) => unref(global2).state.collapsibleBarActive = true),
+              style: { "overflow": "visible", "overflow-x": "visible" }
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NSpace), {
+                  vertical: "",
+                  justify: "space-between",
+                  style: { "height": "100%", "overflow": "visible", "overflow-x": "visible" },
+                  "item-style": "height: 100%"
+                }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NMenu), {
+                      collapsed: !unref(global2).state.collapsibleBarActive,
+                      "collapsed-width": 64,
+                      "collapsed-icon-size": 22,
+                      options: menuOptionsMain,
+                      style: { "height": "100%", "display": "flex", "flex-direction": "column" }
+                    }, null, 8, ["collapsed"])
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            }, 8, ["collapsed"])
+          ]),
+          _: 1
+        })) : (openBlock(), createBlock(unref(NDrawer), {
+          key: 1,
+          show: unref(global2).state.collapsibleBarActive,
+          "onUpdate:show": _cache[2] || (_cache[2] = ($event) => unref(global2).state.collapsibleBarActive = $event),
+          placement: "left",
+          width: "272px"
+        }, {
+          default: withCtx(() => [
+            createVNode(unref(NDrawerContent), { "body-content-style": {
+              padding: "0px"
+            } }, {
+              default: withCtx(() => [
+                createVNode(unref(NLayout), {
+                  style: { "height": "100%", "overflow": "visible" },
+                  "has-sider": "",
+                  "content-style": "overflow: visible"
+                }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NLayoutSider), {
+                      bordered: "",
+                      "collapse-mode": "width",
+                      collapsed: false,
+                      style: { "overflow": "visible", "overflow-x": "visible" }
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(unref(NSpace), {
+                          vertical: "",
+                          justify: "space-between",
+                          style: { "height": "100%", "overflow": "visible", "overflow-x": "visible" },
+                          "item-style": "height: 100%"
+                        }, {
+                          default: withCtx(() => [
+                            createVNode(unref(NMenu), {
+                              collapsed: false,
+                              "collapsed-width": 64,
+                              "collapsed-icon-size": 22,
+                              options: menuOptionsMain,
+                              style: { "height": "100%", "display": "flex", "flex-direction": "column" }
+                            })
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    })
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            })
+          ]),
+          _: 1
+        }, 8, ["show"]))
+      ]);
+    };
+  }
+});
+const CollapsibleNavbar_vue_vue_type_style_index_0_lang = "";
 var Backends = /* @__PURE__ */ ((Backends2) => {
   Backends2[Backends2["PyTorch"] = 0] = "PyTorch";
   Backends2[Backends2["SDXL"] = 1] = "SDXL";
@@ -40687,363 +41237,6 @@ var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   ControlNetType2["SEGMENTATION"] = "lllyasviel/sd-controlnet-seg";
   return ControlNetType2;
 })(ControlNetType || {});
-var _a;
-const isClient = typeof window !== "undefined";
-const isFunction = (val) => typeof val === "function";
-const isString = (val) => typeof val === "string";
-const noop = () => {
-};
-const isIOS = isClient && ((_a = window == null ? void 0 : window.navigator) == null ? void 0 : _a.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
-function resolveUnref(r) {
-  return typeof r === "function" ? r() : unref(r);
-}
-function identity(arg) {
-  return arg;
-}
-function tryOnScopeDispose(fn) {
-  if (getCurrentScope()) {
-    onScopeDispose(fn);
-    return true;
-  }
-  return false;
-}
-function resolveRef(r) {
-  return typeof r === "function" ? computed(r) : ref(r);
-}
-function useIntervalFn(cb, interval = 1e3, options = {}) {
-  const {
-    immediate = true,
-    immediateCallback = false
-  } = options;
-  let timer = null;
-  const isActive = ref(false);
-  function clean() {
-    if (timer) {
-      clearInterval(timer);
-      timer = null;
-    }
-  }
-  function pause() {
-    isActive.value = false;
-    clean();
-  }
-  function resume() {
-    const intervalValue = resolveUnref(interval);
-    if (intervalValue <= 0)
-      return;
-    isActive.value = true;
-    if (immediateCallback)
-      cb();
-    clean();
-    timer = setInterval(cb, intervalValue);
-  }
-  if (immediate && isClient)
-    resume();
-  if (isRef(interval) || isFunction(interval)) {
-    const stopWatch = watch(interval, () => {
-      if (isActive.value && isClient)
-        resume();
-    });
-    tryOnScopeDispose(stopWatch);
-  }
-  tryOnScopeDispose(pause);
-  return {
-    isActive,
-    pause,
-    resume
-  };
-}
-function unrefElement(elRef) {
-  var _a2;
-  const plain = resolveUnref(elRef);
-  return (_a2 = plain == null ? void 0 : plain.$el) != null ? _a2 : plain;
-}
-const defaultWindow = isClient ? window : void 0;
-function useEventListener(...args) {
-  let target;
-  let events2;
-  let listeners;
-  let options;
-  if (isString(args[0]) || Array.isArray(args[0])) {
-    [events2, listeners, options] = args;
-    target = defaultWindow;
-  } else {
-    [target, events2, listeners, options] = args;
-  }
-  if (!target)
-    return noop;
-  if (!Array.isArray(events2))
-    events2 = [events2];
-  if (!Array.isArray(listeners))
-    listeners = [listeners];
-  const cleanups = [];
-  const cleanup = () => {
-    cleanups.forEach((fn) => fn());
-    cleanups.length = 0;
-  };
-  const register = (el, event2, listener, options2) => {
-    el.addEventListener(event2, listener, options2);
-    return () => el.removeEventListener(event2, listener, options2);
-  };
-  const stopWatch = watch(() => [unrefElement(target), resolveUnref(options)], ([el, options2]) => {
-    cleanup();
-    if (!el)
-      return;
-    cleanups.push(...events2.flatMap((event2) => {
-      return listeners.map((listener) => register(el, event2, listener, options2));
-    }));
-  }, { immediate: true, flush: "post" });
-  const stop = () => {
-    stopWatch();
-    cleanup();
-  };
-  tryOnScopeDispose(stop);
-  return stop;
-}
-let _iOSWorkaround = false;
-function onClickOutside(target, handler, options = {}) {
-  const { window: window2 = defaultWindow, ignore = [], capture = true, detectIframe = false } = options;
-  if (!window2)
-    return;
-  if (isIOS && !_iOSWorkaround) {
-    _iOSWorkaround = true;
-    Array.from(window2.document.body.children).forEach((el) => el.addEventListener("click", noop));
-  }
-  let shouldListen = true;
-  const shouldIgnore = (event2) => {
-    return ignore.some((target2) => {
-      if (typeof target2 === "string") {
-        return Array.from(window2.document.querySelectorAll(target2)).some((el) => el === event2.target || event2.composedPath().includes(el));
-      } else {
-        const el = unrefElement(target2);
-        return el && (event2.target === el || event2.composedPath().includes(el));
-      }
-    });
-  };
-  const listener = (event2) => {
-    const el = unrefElement(target);
-    if (!el || el === event2.target || event2.composedPath().includes(el))
-      return;
-    if (event2.detail === 0)
-      shouldListen = !shouldIgnore(event2);
-    if (!shouldListen) {
-      shouldListen = true;
-      return;
-    }
-    handler(event2);
-  };
-  const cleanup = [
-    useEventListener(window2, "click", listener, { passive: true, capture }),
-    useEventListener(window2, "pointerdown", (e) => {
-      const el = unrefElement(target);
-      if (el)
-        shouldListen = !e.composedPath().includes(el) && !shouldIgnore(e);
-    }, { passive: true }),
-    detectIframe && useEventListener(window2, "blur", (event2) => {
-      var _a2;
-      const el = unrefElement(target);
-      if (((_a2 = window2.document.activeElement) == null ? void 0 : _a2.tagName) === "IFRAME" && !(el == null ? void 0 : el.contains(window2.document.activeElement)))
-        handler(event2);
-    })
-  ].filter(Boolean);
-  const stop = () => cleanup.forEach((fn) => fn());
-  return stop;
-}
-const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
-const globalKey = "__vueuse_ssr_handlers__";
-_global[globalKey] = _global[globalKey] || {};
-var SwipeDirection;
-(function(SwipeDirection2) {
-  SwipeDirection2["UP"] = "UP";
-  SwipeDirection2["RIGHT"] = "RIGHT";
-  SwipeDirection2["DOWN"] = "DOWN";
-  SwipeDirection2["LEFT"] = "LEFT";
-  SwipeDirection2["NONE"] = "NONE";
-})(SwipeDirection || (SwipeDirection = {}));
-var __defProp2 = Object.defineProperty;
-var __getOwnPropSymbols = Object.getOwnPropertySymbols;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __propIsEnum = Object.prototype.propertyIsEnumerable;
-var __defNormalProp2 = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __spreadValues = (a, b) => {
-  for (var prop in b || (b = {}))
-    if (__hasOwnProp.call(b, prop))
-      __defNormalProp2(a, prop, b[prop]);
-  if (__getOwnPropSymbols)
-    for (var prop of __getOwnPropSymbols(b)) {
-      if (__propIsEnum.call(b, prop))
-        __defNormalProp2(a, prop, b[prop]);
-    }
-  return a;
-};
-const _TransitionPresets = {
-  easeInSine: [0.12, 0, 0.39, 0],
-  easeOutSine: [0.61, 1, 0.88, 1],
-  easeInOutSine: [0.37, 0, 0.63, 1],
-  easeInQuad: [0.11, 0, 0.5, 0],
-  easeOutQuad: [0.5, 1, 0.89, 1],
-  easeInOutQuad: [0.45, 0, 0.55, 1],
-  easeInCubic: [0.32, 0, 0.67, 0],
-  easeOutCubic: [0.33, 1, 0.68, 1],
-  easeInOutCubic: [0.65, 0, 0.35, 1],
-  easeInQuart: [0.5, 0, 0.75, 0],
-  easeOutQuart: [0.25, 1, 0.5, 1],
-  easeInOutQuart: [0.76, 0, 0.24, 1],
-  easeInQuint: [0.64, 0, 0.78, 0],
-  easeOutQuint: [0.22, 1, 0.36, 1],
-  easeInOutQuint: [0.83, 0, 0.17, 1],
-  easeInExpo: [0.7, 0, 0.84, 0],
-  easeOutExpo: [0.16, 1, 0.3, 1],
-  easeInOutExpo: [0.87, 0, 0.13, 1],
-  easeInCirc: [0.55, 0, 1, 0.45],
-  easeOutCirc: [0, 0.55, 0.45, 1],
-  easeInOutCirc: [0.85, 0, 0.15, 1],
-  easeInBack: [0.36, 0, 0.66, -0.56],
-  easeOutBack: [0.34, 1.56, 0.64, 1],
-  easeInOutBack: [0.68, -0.6, 0.32, 1.6]
-};
-__spreadValues({
-  linear: identity
-}, _TransitionPresets);
-const DEFAULT_PING_MESSAGE = "ping";
-function resolveNestedOptions(options) {
-  if (options === true)
-    return {};
-  return options;
-}
-function useWebSocket(url, options = {}) {
-  const {
-    onConnected,
-    onDisconnected,
-    onError,
-    onMessage,
-    immediate = true,
-    autoClose = true,
-    protocols = []
-  } = options;
-  const data = ref(null);
-  const status = ref("CLOSED");
-  const wsRef = ref();
-  const urlRef = resolveRef(url);
-  let heartbeatPause;
-  let heartbeatResume;
-  let explicitlyClosed = false;
-  let retried = 0;
-  let bufferedData = [];
-  let pongTimeoutWait;
-  const close = (code = 1e3, reason) => {
-    if (!wsRef.value)
-      return;
-    explicitlyClosed = true;
-    heartbeatPause == null ? void 0 : heartbeatPause();
-    wsRef.value.close(code, reason);
-  };
-  const _sendBuffer = () => {
-    if (bufferedData.length && wsRef.value && status.value === "OPEN") {
-      for (const buffer of bufferedData)
-        wsRef.value.send(buffer);
-      bufferedData = [];
-    }
-  };
-  const resetHeartbeat = () => {
-    clearTimeout(pongTimeoutWait);
-    pongTimeoutWait = void 0;
-  };
-  const send = (data2, useBuffer = true) => {
-    if (!wsRef.value || status.value !== "OPEN") {
-      if (useBuffer)
-        bufferedData.push(data2);
-      return false;
-    }
-    _sendBuffer();
-    wsRef.value.send(data2);
-    return true;
-  };
-  const _init = () => {
-    if (explicitlyClosed || typeof urlRef.value === "undefined")
-      return;
-    const ws = new WebSocket(urlRef.value, protocols);
-    wsRef.value = ws;
-    status.value = "CONNECTING";
-    ws.onopen = () => {
-      status.value = "OPEN";
-      onConnected == null ? void 0 : onConnected(ws);
-      heartbeatResume == null ? void 0 : heartbeatResume();
-      _sendBuffer();
-    };
-    ws.onclose = (ev) => {
-      status.value = "CLOSED";
-      wsRef.value = void 0;
-      onDisconnected == null ? void 0 : onDisconnected(ws, ev);
-      if (!explicitlyClosed && options.autoReconnect) {
-        const {
-          retries = -1,
-          delay = 1e3,
-          onFailed
-        } = resolveNestedOptions(options.autoReconnect);
-        retried += 1;
-        if (typeof retries === "number" && (retries < 0 || retried < retries))
-          setTimeout(_init, delay);
-        else if (typeof retries === "function" && retries())
-          setTimeout(_init, delay);
-        else
-          onFailed == null ? void 0 : onFailed();
-      }
-    };
-    ws.onerror = (e) => {
-      onError == null ? void 0 : onError(ws, e);
-    };
-    ws.onmessage = (e) => {
-      if (options.heartbeat) {
-        resetHeartbeat();
-        const {
-          message = DEFAULT_PING_MESSAGE
-        } = resolveNestedOptions(options.heartbeat);
-        if (e.data === message)
-          return;
-      }
-      data.value = e.data;
-      onMessage == null ? void 0 : onMessage(ws, e);
-    };
-  };
-  if (options.heartbeat) {
-    const {
-      message = DEFAULT_PING_MESSAGE,
-      interval = 1e3,
-      pongTimeout = 1e3
-    } = resolveNestedOptions(options.heartbeat);
-    const { pause, resume } = useIntervalFn(() => {
-      send(message, false);
-      if (pongTimeoutWait != null)
-        return;
-      pongTimeoutWait = setTimeout(() => {
-        close();
-      }, pongTimeout);
-    }, interval, { immediate: false });
-    heartbeatPause = pause;
-    heartbeatResume = resume;
-  }
-  if (autoClose) {
-    useEventListener(window, "beforeunload", () => close());
-    tryOnScopeDispose(close);
-  }
-  const open = () => {
-    close();
-    explicitlyClosed = false;
-    retried = 0;
-    _init();
-  };
-  if (immediate)
-    watch(urlRef, open, { immediate: true });
-  return {
-    data,
-    status,
-    close,
-    send,
-    open,
-    ws: wsRef
-  };
-}
 function processWebSocket(message, global2, notificationProvider) {
   switch (message.type) {
     case "test": {
@@ -41476,6 +41669,22 @@ const upscaleFlagDefault = {
   tile_padding: 10,
   model: "RealESRGAN_x4plus_anime_6B"
 };
+const deepShrinkFlagDefault = {
+  enabled: false,
+  depth_1: 3,
+  stop_at_1: 0.15,
+  depth_2: 4,
+  stop_at_2: 0.3,
+  scaler: "bislerp",
+  base_scale: 0.5,
+  early_out: false
+};
+const scaleCrafterFlagDefault = {
+  enabled: false,
+  base: "sd15",
+  unsafe_resolutions: true,
+  disperse: false
+};
 const defaultSettings = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
@@ -41514,7 +41723,9 @@ const defaultSettings = {
     self_attention_scale: 0,
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
-    upscale: cloneObj(upscaleFlagDefault)
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault)
   },
   img2img: {
     width: 512,
@@ -41532,7 +41743,9 @@ const defaultSettings = {
     self_attention_scale: 0,
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
-    upscale: cloneObj(upscaleFlagDefault)
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault)
   },
   inpainting: {
     prompt: "",
@@ -41550,7 +41763,9 @@ const defaultSettings = {
     self_attention_scale: 0,
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
-    upscale: cloneObj(upscaleFlagDefault)
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault)
   },
   controlnet: {
     prompt: "",
@@ -41573,7 +41788,9 @@ const defaultSettings = {
     self_attention_scale: 0,
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
-    upscale: cloneObj(upscaleFlagDefault)
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault)
   },
   upscale: {
     image: "",
@@ -41766,12 +41983,15 @@ function getSchedulerOptions() {
       type: "group",
       label: "Diffusers",
       key: "diffusers",
-      children: Object.keys(diffusersSchedulerTuple).map((key) => {
-        return {
-          label: key,
-          value: diffusersSchedulerTuple[key]
-        };
-      })
+      children: [
+        ...Object.keys(diffusersSchedulerTuple).map((key) => {
+          return {
+            label: key,
+            value: diffusersSchedulerTuple[key]
+          };
+        }),
+        { label: "SASolverMultistep", value: "sasolver" }
+      ]
     }
   ];
   return scheduler_options;
@@ -42134,30 +42354,34 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-91ace41f"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-fd90df03"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { class: "top-bar" };
 const _hoisted_2$1 = { key: 0 };
-const _hoisted_3$1 = { key: 1 };
-const _hoisted_4$1 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
+const _hoisted_3$1 = { key: 0 };
+const _hoisted_4$1 = { key: 1 };
+const _hoisted_5$1 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
   src: "https://i.imgflip.com/84840n.jpg",
   style: { "max-width": "30vw", "max-height": "30vh" }
 }, null, -1));
-const _hoisted_5$1 = { key: 2 };
-const _hoisted_6$1 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
-const _hoisted_7$1 = { style: { "display": "flex", "flex-direction": "row", "align-items": "center" } };
-const _hoisted_8 = { style: { "display": "inline-flex" } };
-const _hoisted_9 = { key: 0 };
-const _hoisted_10 = { style: { "display": "inline-flex" } };
-const _hoisted_11 = { key: 1 };
-const _hoisted_12 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
-const _hoisted_13 = { key: 0 };
-const _hoisted_14 = { style: { "display": "inline-flex" } };
-const _hoisted_15 = { key: 1 };
-const _hoisted_16 = { class: "progress-container" };
-const _hoisted_17 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _hoisted_6$1 = { key: 2 };
+const _hoisted_7$1 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
+const _hoisted_8 = { style: { "display": "flex", "flex-direction": "row", "align-items": "center" } };
+const _hoisted_9 = { style: { "display": "inline-flex" } };
+const _hoisted_10 = { key: 0 };
+const _hoisted_11 = { style: { "display": "inline-flex" } };
+const _hoisted_12 = { key: 1 };
+const _hoisted_13 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
+const _hoisted_14 = { key: 0 };
+const _hoisted_15 = { style: { "display": "inline-flex" } };
+const _hoisted_16 = { key: 1 };
+const _hoisted_17 = { class: "progress-container" };
+const _hoisted_18 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
+    useCssVars((_ctx) => ({
+      "0ccf3a18": topBarWidth.value
+    }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
     const global2 = useState2();
@@ -42680,12 +42904,31 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
           break;
       }
     }
+    const topBarWidth = computed(() => {
+      return isLargeScreen.value ? "calc(100% - 64px)" : "100%";
+    });
     startWebsocket(message);
     return (_ctx, _cache) => {
       var _a2;
       return openBlock(), createElementBlock("div", _hoisted_1$2, [
+        !unref(isLargeScreen) ? (openBlock(), createBlock(unref(NButton), {
+          key: 0,
+          bordered: false,
+          style: { "margin": "0 2px", "padding": "8px 8px" },
+          onClick: _cache[0] || (_cache[0] = ($event) => unref(global2).state.collapsibleBarActive = true)
+        }, {
+          default: withCtx(() => [
+            createVNode(unref(NIcon), { size: "24" }, {
+              default: withCtx(() => [
+                createVNode(unref(Menu))
+              ]),
+              _: 1
+            })
+          ]),
+          _: 1
+        })) : createCommentVNode("", true),
         createVNode(unref(NSelect), {
-          style: { "max-width": "250px", "padding-left": "12px", "padding-right": "12px" },
+          style: { "max-width": "250px", "padding-right": "4px" },
           options: generatedModelOptions.value,
           "onUpdate:value": onModelChange,
           loading: modelsLoading.value,
@@ -42695,18 +42938,26 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
           filterable: ""
         }, null, 8, ["options", "loading", "value"]),
         createVNode(unref(NButton), {
-          onClick: _cache[0] || (_cache[0] = ($event) => showModal.value = true),
+          onClick: _cache[1] || (_cache[1] = ($event) => showModal.value = true),
           loading: modelsLoading.value,
           type: unref(settings).data.settings.model ? "default" : "success"
         }, {
           default: withCtx(() => [
-            createTextVNode(" Load Model")
+            unref(isLargeScreen) ? (openBlock(), createElementBlock("p", _hoisted_2$1, "Load Model")) : (openBlock(), createBlock(unref(NIcon), {
+              key: 1,
+              size: "18"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(Add))
+              ]),
+              _: 1
+            }))
           ]),
           _: 1
         }, 8, ["loading", "type"]),
         createVNode(unref(NModal), {
           show: showModal.value,
-          "onUpdate:show": _cache[4] || (_cache[4] = ($event) => showModal.value = $event),
+          "onUpdate:show": _cache[5] || (_cache[5] = ($event) => showModal.value = $event),
           closable: "",
           "mask-closable": "",
           preset: "card",
@@ -42715,7 +42966,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
           "auto-focus": false
         }, {
           default: withCtx(() => [
-            unref(websocketState).readyState === "CLOSED" ? (openBlock(), createElementBlock("div", _hoisted_2$1, [
+            unref(websocketState).readyState === "CLOSED" ? (openBlock(), createElementBlock("div", _hoisted_3$1, [
               createVNode(unref(NResult), {
                 title: "You are not connected to the server",
                 description: "Click the button below to reconnect",
@@ -42725,7 +42976,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                 footer: withCtx(() => [
                   createVNode(unref(NButton), {
                     type: "success",
-                    onClick: _cache[1] || (_cache[1] = ($event) => unref(startWebsocket)(unref(message)))
+                    onClick: _cache[2] || (_cache[2] = ($event) => unref(startWebsocket)(unref(message)))
                   }, {
                     default: withCtx(() => [
                       createTextVNode("Reconnect")
@@ -42735,7 +42986,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                 ]),
                 _: 1
               })
-            ])) : unref(global2).state.models.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_3$1, [
+            ])) : unref(global2).state.models.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_4$1, [
               createVNode(unref(NResult), {
                 title: "No models found",
                 style: { "height": "70vh", "display": "flex", "align-items": "center", "justify-content": "center", "flex-direction": "column" },
@@ -42746,7 +42997,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                     trigger: withCtx(() => [
                       createVNode(unref(NButton), {
                         type: "success",
-                        onClick: _cache[2] || (_cache[2] = () => {
+                        onClick: _cache[3] || (_cache[3] = () => {
                           unref(global2).state.modelManager.tab = "civitai";
                           unref(router2).push("/models");
                           showModal.value = false;
@@ -42759,18 +43010,18 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                       })
                     ]),
                     default: withCtx(() => [
-                      _hoisted_4$1
+                      _hoisted_5$1
                     ]),
                     _: 1
                   })
                 ]),
                 _: 1
               })
-            ])) : (openBlock(), createElementBlock("div", _hoisted_5$1, [
-              createBaseVNode("div", _hoisted_6$1, [
+            ])) : (openBlock(), createElementBlock("div", _hoisted_6$1, [
+              createBaseVNode("div", _hoisted_7$1, [
                 createVNode(unref(NInput), {
                   value: filter.value,
-                  "onUpdate:value": _cache[3] || (_cache[3] = ($event) => filter.value = $event),
+                  "onUpdate:value": _cache[4] || (_cache[4] = ($event) => filter.value = $event),
                   clearable: "",
                   placeholder: "Filter Models"
                 }, null, 8, ["value"]),
@@ -42817,7 +43068,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                           style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
                                           key: model.path
                                         }, [
-                                          createBaseVNode("div", _hoisted_7$1, [
+                                          createBaseVNode("div", _hoisted_8, [
                                             createVNode(unref(NTag), {
                                               type: getModelTag(model.type)[1],
                                               ghost: "",
@@ -42830,7 +43081,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                             }, 1032, ["type"]),
                                             createBaseVNode("p", null, toDisplayString(model.name), 1)
                                           ]),
-                                          createBaseVNode("div", _hoisted_8, [
+                                          createBaseVNode("div", _hoisted_9, [
                                             model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
                                               key: 0,
                                               type: "error",
@@ -42878,7 +43129,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 default: withCtx(() => [
                                   createVNode(unref(NCard), { title: vae_title.value }, {
                                     default: withCtx(() => [
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_9, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_10, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(vaeModels.value, (vae) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42886,7 +43137,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                             key: vae.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(vae.name), 1),
-                                            createBaseVNode("div", _hoisted_10, [
+                                            createBaseVNode("div", _hoisted_11, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.vae) == vae.path ? (openBlock(), createBlock(unref(NButton), {
                                                 key: 0,
                                                 type: "error",
@@ -42913,7 +43164,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_11, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_12, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42942,12 +43193,12 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                         title: "Usage of textual inversion"
                                       }, {
                                         default: withCtx(() => [
-                                          _hoisted_12,
+                                          _hoisted_13,
                                           createTextVNode(". The name of the inversion that is displayed here will be the actual token (easynegative.pt -> easynegative) ")
                                         ]),
                                         _: 1
                                       }),
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_13, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_14, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (textualInversion) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42955,7 +43206,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                             key: textualInversion.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
-                                            createBaseVNode("div", _hoisted_14, [
+                                            createBaseVNode("div", _hoisted_15, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.textual_inversions.includes(
                                                 textualInversion.path
                                               )) ? (openBlock(), createBlock(unref(NButton), {
@@ -42984,7 +43235,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_15, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_16, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -43119,7 +43370,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_16, [
+        createBaseVNode("div", _hoisted_17, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -43139,7 +43390,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_17, [
+        createBaseVNode("div", _hoisted_18, [
           createVNode(unref(NDropdown), {
             options: dropdownOptions,
             onSelect: dropdownSelected
@@ -43151,7 +43402,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                 "icon-placement": "left",
                 "render-icon": renderIcon(unref(Wifi)),
                 loading: unref(websocketState).loading,
-                onClick: _cache[5] || (_cache[5] = ($event) => unref(startWebsocket)(unref(message)))
+                onClick: _cache[6] || (_cache[6] = ($event) => unref(startWebsocket)(unref(message)))
               }, null, 8, ["type", "render-icon", "loading"])
             ]),
             _: 1
@@ -43161,13 +43412,13 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_91ace41f_lang = "";
-const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-91ace41f"]]);
+const TopBar_vue_vue_type_style_index_0_scoped_fd90df03_lang = "";
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-fd90df03"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
-const ControlNet_vue_vue_type_style_index_0_scoped_97c56df6_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_bfd46a0a_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_1193df1f_lang = "";
+const ControlNet_vue_vue_type_style_index_0_scoped_d4ff54ab_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_a4145f6c_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_b1671b35_lang = "";
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_241a4664_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _hoisted_1$1 = { style: { "margin": "16px 0" } };
@@ -43293,7 +43544,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NNotificationProvider), {
         placement: "bottom-right",
-        max: 3
+        max: 2
       }, {
         default: withCtx(() => [
           createVNode(unref(NLoadingBarProvider), null, {
@@ -43305,7 +43556,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                   createVNode(unref(_sfc_main$9)),
                   createVNode(unref(TopBar)),
                   createVNode(unref(_sfc_main$8)),
-                  createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
+                  createVNode(routerContainerVue, { class: "router-container" }),
                   createVNode(unref(_sfc_main$6)),
                   createVNode(unref(_sfc_main$7)),
                   createVNode(unref(_sfc_main$3))
@@ -43321,19 +43572,21 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
+const Content_vue_vue_type_style_index_0_lang = "";
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => {
       var _a2, _b, _c;
       return {
-        "4c7ba08e": theme.value.common.popoverColor,
-        "01ab46a4": theme.value.common.borderRadius,
-        "e4e78d9e": theme.value.common.pressedColor,
-        "d0777f2a": theme.value.common.primaryColorHover,
-        "98485856": blur.value,
-        "6a1d04dc": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
-        "344206c2": backgroundImage.value
+        "e68ef196": theme.value.common.popoverColor,
+        "3f674355": theme.value.common.borderRadius,
+        "646dc050": theme.value.common.pressedColor,
+        "96bf2bb8": theme.value.common.primaryColorHover,
+        "b08f9a64": blur.value,
+        "139458d6": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
+        "31f48ff4": backgroundImage.value,
+        "3ac72808": marginLeft.value
       };
     });
     const settings = useSettings();
@@ -43379,6 +43632,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         document.body.style.backgroundColor = ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.common) == null ? void 0 : _b.baseColor) ?? theme.value.common.baseColor;
       }
     );
+    const marginLeft = computed(() => {
+      return isLargeScreen.value ? "64px" : "0px";
+    });
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NConfigProvider), {
         theme: theme.value,
@@ -43501,7 +43757,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js","assets/Settings.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js","assets/Settings.js"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -43584,9 +43840,9 @@ export {
   NIconSwitchTransition as aI,
   NBaseLoading as aJ,
   ChevronRightIcon as aK,
-  VResizeObserver as aL,
-  warn$2 as aM,
-  cssrAnchorMetaName as aN,
+  cssrAnchorMetaName as aL,
+  VResizeObserver as aM,
+  warn$2 as aN,
   VVirtualList as aO,
   NEmpty as aP,
   repeat as aQ,
@@ -43627,7 +43883,7 @@ export {
   depx as ay,
   formatLength as az,
   createBaseVNode as b,
-  VTarget as b$,
+  VBinder as b$,
   NProgress as b0,
   NFadeInExpandTransition as b1,
   EyeIcon as b2,
@@ -43638,65 +43894,66 @@ export {
   useCssVars as b7,
   themeOverridesKey as b8,
   reactive as b9,
-  convertToTextString as bA,
-  themeKey as bB,
-  useNotification as bC,
-  defaultSettings as bD,
-  getCurrentInstance as bE,
-  formLight$1 as bF,
-  commonVariables$m as bG,
-  formItemInjectionKey as bH,
-  resolveDynamicComponent as bI,
-  checkboxLight$1 as bJ,
-  urlFromPath as bK,
-  diffusersSchedulerTuple as bL,
-  useRouter as bM,
-  isBrowser$3 as bN,
-  fadeInTransition as bO,
-  imageLight as bP,
-  isMounted as bQ,
-  LazyTeleport as bR,
-  zindexable$1 as bS,
-  kebabCase$1 as bT,
-  useCompitable as bU,
-  descriptionsLight$1 as bV,
-  NAlert as bW,
-  rgba as bX,
-  inputNumberLight$1 as bY,
-  XButton as bZ,
-  VBinder as b_,
+  NTag as bA,
+  convertToTextString as bB,
+  themeKey as bC,
+  useNotification as bD,
+  defaultSettings as bE,
+  getCurrentInstance as bF,
+  formLight$1 as bG,
+  commonVariables$m as bH,
+  formItemInjectionKey as bI,
+  NAlert as bJ,
+  resolveDynamicComponent as bK,
+  checkboxLight$1 as bL,
+  urlFromPath as bM,
+  diffusersSchedulerTuple as bN,
+  useRouter as bO,
+  isBrowser$3 as bP,
+  fadeInTransition as bQ,
+  imageLight as bR,
+  isMounted as bS,
+  LazyTeleport as bT,
+  zindexable$1 as bU,
+  kebabCase$1 as bV,
+  useCompitable as bW,
+  descriptionsLight$1 as bX,
+  rgba as bY,
+  inputNumberLight$1 as bZ,
+  XButton as b_,
   onMounted as ba,
   normalizeStyle as bb,
   NText as bc,
   withModifiers as bd,
   huggingfaceModelsFile as be,
-  NModal as bf,
-  NDivider as bg,
-  Backends as bh,
-  stepsLight$1 as bi,
-  FinishedIcon as bj,
-  ErrorIcon$1 as bk,
-  upperFirst$1 as bl,
-  toString as bm,
-  createCompounder as bn,
-  cloneVNode as bo,
-  onBeforeUpdate as bp,
-  indexMap as bq,
-  onUpdated as br,
-  resolveSlotWithProps as bs,
-  withDirectives as bt,
-  vShow as bu,
-  getPreciseEventTarget as bv,
-  carouselLight$1 as bw,
-  color2Class as bx,
-  rateLight as by,
-  NTag as bz,
+  Menu as bf,
+  NModal as bg,
+  NDivider as bh,
+  Backends as bi,
+  stepsLight$1 as bj,
+  FinishedIcon as bk,
+  ErrorIcon$1 as bl,
+  upperFirst$1 as bm,
+  toString as bn,
+  createCompounder as bo,
+  cloneVNode as bp,
+  onBeforeUpdate as bq,
+  indexMap as br,
+  onUpdated as bs,
+  resolveSlotWithProps as bt,
+  withDirectives as bu,
+  vShow as bv,
+  getPreciseEventTarget as bw,
+  carouselLight$1 as bx,
+  color2Class as by,
+  rateLight as bz,
   createBlock as c,
-  VFollower as c0,
-  sliderLight$1 as c1,
-  isSlotEmpty as c2,
-  switchLight$1 as c3,
-  NResult as c4,
+  VTarget as c0,
+  VFollower as c1,
+  sliderLight$1 as c2,
+  isSlotEmpty as c3,
+  switchLight$1 as c4,
+  NResult as c5,
   defineComponent as d,
   createVNode as e,
   unref as f,

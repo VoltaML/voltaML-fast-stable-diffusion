@@ -94,10 +94,14 @@
 
         <ResizeFromDimensionsInput
           :dimensions-object="settings.data.settings.txt2img"
-          v-if="settings.data.settings.model?.type === 'SDXL'"
+          v-if="isSelectedModelSDXL"
         />
         <XLRefiner v-if="isSelectedModelSDXL" />
-        <HighResFix tab="txt2img" />
+
+        <!-- Scaling techniques -->
+        <HighResFixTabs tab="txt2img" />
+
+        <!-- Upscaling -->
         <Upscale tab="txt2img" />
       </NGi>
 
@@ -129,7 +133,7 @@ import {
   CFGScale,
   DimensionsInput,
   GenerateSection,
-  HighResFix,
+  HighResFixTabs,
   ImageOutput,
   OutputStats,
   Prompt,
@@ -254,6 +258,31 @@ const generate = () => {
                   settings.data.settings.flags.refiner.negative_aesthetic_score,
                 steps: settings.data.settings.flags.refiner.steps,
                 strength: settings.data.settings.flags.refiner.strength,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.txt2img.deepshrink.enabled
+          ? {
+              deepshrink: {
+                early_out: settings.data.settings.txt2img.deepshrink.early_out,
+                depth_1: settings.data.settings.txt2img.deepshrink.depth_1,
+                stop_at_1: settings.data.settings.txt2img.deepshrink.stop_at_1,
+                depth_2: settings.data.settings.txt2img.deepshrink.depth_2,
+                stop_at_2: settings.data.settings.txt2img.deepshrink.stop_at_2,
+                scaler: settings.data.settings.txt2img.deepshrink.scaler,
+                base_scale:
+                  settings.data.settings.txt2img.deepshrink.base_scale,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.txt2img.scalecrafter.enabled
+          ? {
+              scalecrafter: {
+                unsafe_resolutions:
+                  settings.data.settings.txt2img.scalecrafter
+                    .unsafe_resolutions,
+                base: settings.data.settings.model?.type,
+                disperse: settings.data.settings.txt2img.scalecrafter.disperse,
               },
             }
           : {}),

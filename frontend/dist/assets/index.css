@@ -2,14 +2,15 @@
   margin: 0 12px;
 }
 
-.split {
-  width: 50%;
-}
-
 .flex-container {
   width: 100%;
   display: inline-flex;
   align-items: center;
+  gap: 0 8px;
+}
+
+.flex-container.space-between {
+  justify-content: space-between;
 }
 
 .slider-label {
@@ -58,23 +59,23 @@
   justify-content: center;
 }
 
-.progress-container[data-v-91ace41f] {
+.progress-container[data-v-fd90df03] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-91ace41f] {
+.top-bar[data-v-fd90df03] {
   display: inline-flex;
   align-items: center;
   padding-top: 10px;
   padding-bottom: 10px;
-  width: calc(100% - 64px);
+  width: var(--0ccf3a18);
   height: 32px;
   position: fixed;
   top: 0;
   z-index: 1;
 }
-.logo[data-v-91ace41f] {
+.logo[data-v-fd90df03] {
   margin-right: 16px;
   margin-left: 16px;
 }
@@ -85,39 +86,39 @@
   margin-bottom: 10px;
 }
 
-.image-container img[data-v-97c56df6] {
+.image-container img[data-v-d4ff54ab] {
   width: 100%;
   height: 100%;
   object-fit: contain;
   overflow: hidden;
 }
-.image-container[data-v-97c56df6] {
+.image-container[data-v-d4ff54ab] {
   height: 70vh;
   width: 100%;
   display: flex;
   justify-content: center;
 }
 
-.image-container img[data-v-bfd46a0a] {
+.image-container img[data-v-a4145f6c] {
   width: 100%;
   height: 100%;
   object-fit: contain;
   overflow: hidden;
 }
-.image-container[data-v-bfd46a0a] {
+.image-container[data-v-a4145f6c] {
   height: 70vh;
   width: 100%;
   display: flex;
   justify-content: center;
 }
 
-.hidden-input[data-v-1193df1f] {
+.hidden-input[data-v-b1671b35] {
   display: none;
 }
-.utility-button[data-v-1193df1f] {
+.utility-button[data-v-b1671b35] {
   margin-right: 8px;
 }
-.file-upload[data-v-1193df1f] {
+.file-upload[data-v-b1671b35] {
   appearance: none;
   background-color: transparent;
   border: 1px solid #63e2b7;
@@ -137,21 +138,21 @@
   vertical-align: middle;
   white-space: nowrap;
 }
-.file-upload[data-v-1193df1f]:focus:not(:focus-visible):not(.focus-visible) {
+.file-upload[data-v-b1671b35]:focus:not(:focus-visible):not(.focus-visible) {
   box-shadow: none;
   outline: none;
 }
-.file-upload[data-v-1193df1f]:focus {
+.file-upload[data-v-b1671b35]:focus {
   box-shadow: rgba(46, 164, 79, 0.4) 0 0 0 3px;
   outline: none;
 }
-.file-upload[data-v-1193df1f]:disabled {
+.file-upload[data-v-b1671b35]:disabled {
   background-color: #94d3a2;
   border-color: rgba(27, 31, 35, 0.1);
   color: rgba(255, 255, 255, 0.8);
   cursor: default;
 }
-.image-container[data-v-1193df1f] {
+.image-container[data-v-b1671b35] {
   width: 100%;
   display: flex;
   justify-content: center;
@@ -170,6 +171,10 @@
   width: 100%;
   padding: 10px 0px;
 }
+
+.router-container {
+  margin-top: 52px;
+}
 .autocomplete {
   position: relative;
   display: inline-block;
@@ -177,52 +182,54 @@
 .autocomplete-items {
   position: absolute;
   z-index: 99;
-  background-color: var(--4c7ba08e);
-  border-radius: var(--01ab46a4);
+  background-color: var(--e68ef196);
+  border-radius: var(--3f674355);
   padding: 2px;
 }
 .autocomplete-items div {
   padding: 8px;
   cursor: pointer;
-  border-radius: var(--01ab46a4);
+  border-radius: var(--3f674355);
 }
 .autocomplete-active {
-  background-color: var(--e4e78d9e);
-  color: var(--d0777f2a);
+  background-color: var(--646dc050);
+  color: var(--96bf2bb8);
 }
 #autocomplete-list {
   max-height: min(600px, 70vh);
   overflow-y: auto;
 }
 .n-card {
-  backdrop-filter: var(--98485856);
+  backdrop-filter: var(--b08f9a64);
 }
 .navbar .n-layout {
-  backdrop-filter: var(--98485856);
+  backdrop-filter: var(--b08f9a64);
 }
 .navbar .n-layout-toggle-button {
-  backdrop-filter: var(--98485856);
+  backdrop-filter: var(--b08f9a64);
 }
 .top-bar {
-  backdrop-filter: var(--98485856);
-  background-color: var(--6a1d04dc);
+  backdrop-filter: var(--b08f9a64);
+  background-color: var(--139458d6);
 }
 .navbar {
-  backdrop-filter: var(--98485856);
+  backdrop-filter: var(--b08f9a64);
 }
 #background {
   width: 100vw;
   height: 100vh;
   position: fixed;
-  background-image: var(--344206c2);
+  background-image: var(--31f48ff4);
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   top: 0;
   left: 0;
   z-index: -99;
+}
+.main {
+  margin-left: var(--3ac72808);
 }body {
-  margin-left: 64px;
   color: #fff;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
@@ -258,4 +265,8 @@ a,
 
 .n-menu-item:last-child {
   margin-top: auto;
+}
+
+.n-drawer-content-wrapper {
+  backdrop-filter: blur(10px);
 }

@@ -134,7 +134,7 @@
           </NSpace>
         </NCard>
 
-        <HighResFix v-if="!isSelectedModelSDXL" tab="img2img" />
+        <HighResFixTabs tab="img2img" />
         <Upscale tab="img2img" />
       </NGi>
 
@@ -168,7 +168,7 @@ import {
   CFGScale,
   DimensionsInput,
   GenerateSection,
-  HighResFix,
+  HighResFixTabs,
   ImageOutput,
   ImageUpload,
   OutputStats,
@@ -189,7 +189,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { computed, onUnmounted } from "vue";
+import { onUnmounted } from "vue";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
@@ -205,10 +205,6 @@ const checkSeed = (seed: number) => {
 
   return seed;
 };
-
-const isSelectedModelSDXL = computed(() => {
-  return settings.data.settings.model?.type === "SDXL";
-});
 
 const imageSelectCallback = (base64Image: string) => {
   settings.data.settings.img2img.image = base64Image;
@@ -258,6 +254,22 @@ const generate = () => {
           prompt_to_prompt: settings.data.settings.api.prompt_to_prompt,
         },
       },
+      ...(settings.data.settings.img2img.deepshrink.enabled
+        ? {
+            flags: {
+              deepshrink: {
+                early_out: settings.data.settings.img2img.deepshrink.early_out,
+                depth_1: settings.data.settings.img2img.deepshrink.depth_1,
+                stop_at_1: settings.data.settings.img2img.deepshrink.stop_at_1,
+                depth_2: settings.data.settings.img2img.deepshrink.depth_2,
+                stop_at_2: settings.data.settings.img2img.deepshrink.stop_at_2,
+                scaler: settings.data.settings.img2img.deepshrink.scaler,
+                base_scale:
+                  settings.data.settings.img2img.deepshrink.base_scale,
+              },
+            },
+          }
+        : {}),
       model: settings.data.settings.model?.path,
       flags: {
         ...(settings.data.settings.img2img.highres.enabled

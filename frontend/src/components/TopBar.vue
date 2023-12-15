@@ -31,7 +31,7 @@
       :type="settings.data.settings.model ? 'default' : 'success'"
     >
       <p v-if="isLargeScreen">Load Model</p>
-      <NIcon size="18">
+      <NIcon size="18" v-else>
         <Add />
       </NIcon>
     </NButton>

@@ -80,13 +80,13 @@
 
       <SamplerPicker type="controlnet" target="defaultSettings" />
       <Upscale tab="controlnet" target="defaultSettings" />
-      <HighResFix tab="controlnet" target="defaultSettings" />
+      <HighResFixTabs tab="controlnet" target="defaultSettings" />
     </NForm>
   </NCard>
 </template>
 
 <script lang="ts" setup>
-import { HighResFix, SamplerPicker, Upscale } from "@/components";
+import { HighResFixTabs, SamplerPicker, Upscale } from "@/components";
 import { useSettings } from "@/store/settings";
 import {
   NCard,

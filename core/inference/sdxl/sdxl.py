@@ -22,7 +22,7 @@ from api.websockets import Data
 from api.websockets.notification import Notification
 from core.config import config
 from core.files import get_full_model_path
-from core.flags import SDXLFlag, SDXLRefinerFlag
+from core.flags import SDXLFlag, SDXLRefinerFlag, DeepshrinkFlag, ScalecrafterFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import (
     convert_vaept_to_diffusers,
@@ -260,6 +260,14 @@ class SDXLStableDiffusion(InferenceModel):
         total_images: Union[List[Image.Image], torch.Tensor] = []
         output_type = get_output_type(job)
 
+        deepshrink = None
+        if "deepshrink" in job.flags:
+            deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
+
+        scalecrafter = None
+        if "scalecrafter" in job.flags:
+            scalecrafter = ScalecrafterFlag.from_dict(job.flags["scalecrafter"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             xl_flag = None
             if "sdxl" in job.flags:
@@ -281,7 +289,7 @@ class SDXLStableDiffusion(InferenceModel):
                     xl_flag.original_size.width,
                 ]
 
-            data = pipe.text2img(
+            data = pipe(
                 original_size=original_size,
                 generator=generator,
                 prompt=job.data.prompt,
@@ -298,6 +306,8 @@ class SDXLStableDiffusion(InferenceModel):
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
                 refiner=refiner,
                 refiner_model=refiner_model,
+                deepshrink=deepshrink,
+                scalecrafter=scalecrafter,
             )
 
             if refiner is not None and config.api.sdxl_refiner == "separate":
@@ -384,8 +394,12 @@ class SDXLStableDiffusion(InferenceModel):
                 xl_flag.original_size.width,
             ]
 
+        deepshrink = None
+        if "deepshrink" in job.flags:
+            deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            data = pipe.img2img(
+            data = pipe(
                 original_size=original_size,
                 generator=generator,
                 prompt=job.data.prompt,
@@ -403,6 +417,7 @@ class SDXLStableDiffusion(InferenceModel):
                 seed=job.data.seed,
                 self_attention_scale=job.data.self_attention_scale,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                deepshrink=deepshrink,
             )
 
             images: Union[List[Image.Image], torch.Tensor] = data[0]  # type: ignore
@@ -461,8 +476,12 @@ class SDXLStableDiffusion(InferenceModel):
                 xl_flag.original_size.width,
             ]
 
+        deepshrink = None
+        if "deepshrink" in job.flags:
+            deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            data = pipe.inpaint(
+            data = pipe(
                 original_size=original_size,
                 generator=generator,
                 prompt=job.data.prompt,
@@ -480,6 +499,7 @@ class SDXLStableDiffusion(InferenceModel):
                 seed=job.data.seed,
                 self_attention_scale=job.data.self_attention_scale,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                deepshrink=deepshrink,
             )
 
             images: Union[List[Image.Image], torch.Tensor] = data[0]  # type: ignore

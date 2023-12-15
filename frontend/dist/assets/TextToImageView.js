@@ -289,7 +289,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       return seed;
     };
     const generate = () => {
-      var _a;
+      var _a, _b;
       if (settings.data.settings.txt2img.seed === null) {
         messageHandler.error("Please set a seed");
         return;
@@ -354,6 +354,24 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 strength: settings.data.settings.flags.refiner.strength
               }
             } : {},
+            ...settings.data.settings.txt2img.deepshrink.enabled ? {
+              deepshrink: {
+                early_out: settings.data.settings.txt2img.deepshrink.early_out,
+                depth_1: settings.data.settings.txt2img.deepshrink.depth_1,
+                stop_at_1: settings.data.settings.txt2img.deepshrink.stop_at_1,
+                depth_2: settings.data.settings.txt2img.deepshrink.depth_2,
+                stop_at_2: settings.data.settings.txt2img.deepshrink.stop_at_2,
+                scaler: settings.data.settings.txt2img.deepshrink.scaler,
+                base_scale: settings.data.settings.txt2img.deepshrink.base_scale
+              }
+            } : {},
+            ...settings.data.settings.txt2img.scalecrafter.enabled ? {
+              scalecrafter: {
+                unsafe_resolutions: settings.data.settings.txt2img.scalecrafter.unsafe_resolutions,
+                base: (_b = settings.data.settings.model) == null ? void 0 : _b.type,
+                disperse: settings.data.settings.txt2img.scalecrafter.disperse
+              }
+            } : {},
             ...settings.data.settings.txt2img.upscale.enabled ? {
               upscale: {
                 upscale_factor: settings.data.settings.txt2img.upscale.upscale_factor,
@@ -402,108 +420,105 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         }, {
           default: withCtx(() => [
             createVNode(unref(NGi), null, {
-              default: withCtx(() => {
-                var _a;
-                return [
-                  createVNode(unref(NCard), { title: "Settings" }, {
-                    default: withCtx(() => [
-                      createVNode(unref(NSpace), {
-                        vertical: "",
-                        class: "left-container"
-                      }, {
-                        default: withCtx(() => [
-                          createVNode(unref(Prompt), { tab: "txt2img" }),
-                          createVNode(unref(_sfc_main$4), { type: "txt2img" }),
-                          createVNode(unref(_sfc_main$5), {
-                            "dimensions-object": unref(settings).data.settings.txt2img
-                          }, null, 8, ["dimensions-object"]),
-                          createBaseVNode("div", _hoisted_2, [
-                            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                              trigger: withCtx(() => [
-                                _hoisted_3
-                              ]),
-                              default: withCtx(() => [
-                                createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
-                                _hoisted_4
-                              ]),
-                              _: 1
-                            }),
-                            createVNode(unref(NSlider), {
-                              value: unref(settings).data.settings.txt2img.steps,
-                              "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings.txt2img.steps = $event),
-                              min: 5,
-                              max: 300,
-                              style: { "margin-right": "12px" }
-                            }, null, 8, ["value"]),
-                            createVNode(unref(NInputNumber), {
-                              value: unref(settings).data.settings.txt2img.steps,
-                              "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.txt2img.steps = $event),
-                              size: "small",
-                              style: { "min-width": "96px", "width": "96px" }
-                            }, null, 8, ["value"])
-                          ]),
-                          createVNode(unref(_sfc_main$6), { tab: "txt2img" }),
-                          createVNode(unref(_sfc_main$7), { tab: "txt2img" }),
-                          createBaseVNode("div", _hoisted_5, [
-                            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                              trigger: withCtx(() => [
-                                _hoisted_6
-                              ]),
-                              default: withCtx(() => [
-                                createTextVNode(" Number of images to generate after each other. ")
-                              ]),
-                              _: 1
-                            }),
-                            createVNode(unref(NSlider), {
-                              value: unref(settings).data.settings.txt2img.batch_count,
-                              "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).data.settings.txt2img.batch_count = $event),
-                              min: 1,
-                              max: 9,
-                              style: { "margin-right": "12px" }
-                            }, null, 8, ["value"]),
-                            createVNode(unref(NInputNumber), {
-                              value: unref(settings).data.settings.txt2img.batch_count,
-                              "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).data.settings.txt2img.batch_count = $event),
-                              size: "small",
-                              style: { "min-width": "96px", "width": "96px" }
-                            }, null, 8, ["value"])
-                          ]),
-                          createVNode(unref(_sfc_main$8), {
-                            "batch-size-object": unref(settings).data.settings.txt2img
-                          }, null, 8, ["batch-size-object"]),
-                          createBaseVNode("div", _hoisted_7, [
-                            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                              trigger: withCtx(() => [
-                                _hoisted_8
-                              ]),
-                              default: withCtx(() => [
-                                createTextVNode(" Seed is a number that represents the starting canvas of your image. If you want to create the same image as your friend, you can use the same settings and seed to do so. "),
-                                _hoisted_9
-                              ]),
-                              _: 1
-                            }),
-                            createVNode(unref(NInputNumber), {
-                              value: unref(settings).data.settings.txt2img.seed,
-                              "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).data.settings.txt2img.seed = $event),
-                              size: "small",
-                              style: { "flex-grow": "1" }
-                            }, null, 8, ["value"])
-                          ])
+              default: withCtx(() => [
+                createVNode(unref(NCard), { title: "Settings" }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NSpace), {
+                      vertical: "",
+                      class: "left-container"
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(unref(Prompt), { tab: "txt2img" }),
+                        createVNode(unref(_sfc_main$4), { type: "txt2img" }),
+                        createVNode(unref(_sfc_main$5), {
+                          "dimensions-object": unref(settings).data.settings.txt2img
+                        }, null, 8, ["dimensions-object"]),
+                        createBaseVNode("div", _hoisted_2, [
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                            trigger: withCtx(() => [
+                              _hoisted_3
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
+                              _hoisted_4
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSlider), {
+                            value: unref(settings).data.settings.txt2img.steps,
+                            "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings.txt2img.steps = $event),
+                            min: 5,
+                            max: 300,
+                            style: { "margin-right": "12px" }
+                          }, null, 8, ["value"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(settings).data.settings.txt2img.steps,
+                            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.txt2img.steps = $event),
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" }
+                          }, null, 8, ["value"])
                         ]),
-                        _: 1
-                      })
-                    ]),
-                    _: 1
-                  }),
-                  ((_a = unref(settings).data.settings.model) == null ? void 0 : _a.type) === "SDXL" ? (openBlock(), createBlock(unref(_sfc_main$3), {
-                    key: 0,
-                    "dimensions-object": unref(settings).data.settings.txt2img
-                  }, null, 8, ["dimensions-object"])) : createCommentVNode("", true),
-                  isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$2), { key: 1 })) : createCommentVNode("", true),
-                  createVNode(unref(_sfc_main$9), { tab: "txt2img" }),
-                  createVNode(unref(_sfc_main$a), { tab: "txt2img" })
-                ];
-              }),
+                        createVNode(unref(_sfc_main$6), { tab: "txt2img" }),
+                        createVNode(unref(_sfc_main$7), { tab: "txt2img" }),
+                        createBaseVNode("div", _hoisted_5, [
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                            trigger: withCtx(() => [
+                              _hoisted_6
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" Number of images to generate after each other. ")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSlider), {
+                            value: unref(settings).data.settings.txt2img.batch_count,
+                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).data.settings.txt2img.batch_count = $event),
+                            min: 1,
+                            max: 9,
+                            style: { "margin-right": "12px" }
+                          }, null, 8, ["value"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(settings).data.settings.txt2img.batch_count,
+                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).data.settings.txt2img.batch_count = $event),
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" }
+                          }, null, 8, ["value"])
+                        ]),
+                        createVNode(unref(_sfc_main$8), {
+                          "batch-size-object": unref(settings).data.settings.txt2img
+                        }, null, 8, ["batch-size-object"]),
+                        createBaseVNode("div", _hoisted_7, [
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                            trigger: withCtx(() => [
+                              _hoisted_8
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" Seed is a number that represents the starting canvas of your image. If you want to create the same image as your friend, you can use the same settings and seed to do so. "),
+                              _hoisted_9
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(settings).data.settings.txt2img.seed,
+                            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).data.settings.txt2img.seed = $event),
+                            size: "small",
+                            style: { "flex-grow": "1" }
+                          }, null, 8, ["value"])
+                        ])
+                      ]),
+                      _: 1
+                    })
+                  ]),
+                  _: 1
+                }),
+                isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$3), {
+                  key: 0,
+                  "dimensions-object": unref(settings).data.settings.txt2img
+                }, null, 8, ["dimensions-object"])) : createCommentVNode("", true),
+                isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$2), { key: 1 })) : createCommentVNode("", true),
+                createVNode(unref(_sfc_main$9), { tab: "txt2img" }),
+                createVNode(unref(_sfc_main$a), { tab: "txt2img" })
+              ]),
               _: 1
             }),
             createVNode(unref(NGi), null, {
