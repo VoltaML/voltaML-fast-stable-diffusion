@@ -23,13 +23,19 @@ from tqdm import tqdm
 from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
 from core.config import config
+from core.flags import DeepshrinkFlag, ScalecrafterFlag
 from core.inference.utilities import (
+    ScalecrafterSettings,
     calculate_cfg,
     full_vae,
+    get_scalecrafter_config,
     get_timesteps,
     get_weighted_text_embeddings,
+    modify_kohya,
     numpy_to_pil,
     pad_tensor,
+    post_scalecrafter,
+    postprocess_kohya,
     prepare_extra_step_kwargs,
     prepare_image,
     prepare_latents,
@@ -37,16 +43,10 @@ from core.inference.utilities import (
     prepare_mask_latents,
     preprocess_adapter_image,
     preprocess_image,
-    modify_kohya,
-    postprocess_kohya,
-    get_scalecrafter_config,
-    post_scalecrafter,
-    step_scalecrafter,
     setup_scalecrafter,
-    ScalecrafterSettings,
+    step_scalecrafter,
 )
 from core.inference.utilities.philox import PhiloxGenerator
-from core.flags import DeepshrinkFlag, ScalecrafterFlag
 from core.optimizations import ensure_correct_device, inference_context, unload_all
 from core.scheduling import KdiffusionSchedulerAdapter
 
@@ -97,6 +97,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         feature_extractor: Any = None,
         requires_safety_checker: bool = False,
         controlnet: Optional[ControlNetModel] = None,
+        image_encoder: Any = None,
     ):
         super().__init__(
             vae=vae,

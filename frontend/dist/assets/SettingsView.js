@@ -1569,7 +1569,8 @@ const _hoisted_4 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, 
 const _hoisted_5 = /* @__PURE__ */ createBaseVNode("b", null, "LARGE (1024x1024+)", -1);
 const _hoisted_6 = { key: 2 };
 const _hoisted_7 = { key: 3 };
-const _hoisted_8 = { key: 4 };
+const _hoisted_8 = { key: 0 };
+const _hoisted_9 = { style: { "margin-bottom": "12px", "display": "flex", "flex-direction": "row", "flex-wrap": "wrap", "gap": "8px 0" } };
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "ReproducibilitySettings",
   setup(__props) {
@@ -1964,60 +1965,134 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
-          unref(settings).defaultSettings.api.free_u ? (openBlock(), createElementBlock("div", _hoisted_8, [
-            createVNode(unref(NFormItem), {
-              label: "Free U S1",
-              "label-placement": "left"
-            }, {
-              default: withCtx(() => [
-                createVNode(unref(NInputNumber), {
-                  value: unref(settings).defaultSettings.api.free_u_s1,
-                  "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(settings).defaultSettings.api.free_u_s1 = $event),
-                  step: 0.01
-                }, null, 8, ["value"])
-              ]),
-              _: 1
-            }),
-            createVNode(unref(NFormItem), {
-              label: "Free U S2",
-              "label-placement": "left"
-            }, {
-              default: withCtx(() => [
-                createVNode(unref(NInputNumber), {
-                  value: unref(settings).defaultSettings.api.free_u_s2,
-                  "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(settings).defaultSettings.api.free_u_s2 = $event),
-                  step: 0.01
-                }, null, 8, ["value"])
-              ]),
-              _: 1
-            }),
-            createVNode(unref(NFormItem), {
-              label: "Free U B1",
-              "label-placement": "left"
-            }, {
-              default: withCtx(() => [
-                createVNode(unref(NInputNumber), {
-                  value: unref(settings).defaultSettings.api.free_u_b1,
-                  "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(settings).defaultSettings.api.free_u_b1 = $event),
-                  step: 0.01
-                }, null, 8, ["value"])
-              ]),
-              _: 1
-            }),
-            createVNode(unref(NFormItem), {
-              label: "Free U B2",
-              "label-placement": "left"
-            }, {
-              default: withCtx(() => [
-                createVNode(unref(NInputNumber), {
-                  value: unref(settings).defaultSettings.api.free_u_b2,
-                  "onUpdate:value": _cache[22] || (_cache[22] = ($event) => unref(settings).defaultSettings.api.free_u_b2 = $event),
-                  step: 0.01
-                }, null, 8, ["value"])
-              ]),
-              _: 1
-            })
-          ])) : createCommentVNode("", true),
+          createVNode(unref(NCard), {
+            bordered: false,
+            style: { "margin-bottom": "12px" }
+          }, {
+            default: withCtx(() => [
+              unref(settings).defaultSettings.api.free_u ? (openBlock(), createElementBlock("div", _hoisted_8, [
+                createBaseVNode("div", _hoisted_9, [
+                  createVNode(unref(NButton), {
+                    style: { "margin-left": "12px" },
+                    ghost: "",
+                    type: "info",
+                    onClick: _cache[19] || (_cache[19] = () => {
+                      unref(settings).defaultSettings.api.free_u_b1 = 1.3;
+                      unref(settings).defaultSettings.api.free_u_b2 = 1.4;
+                      unref(settings).defaultSettings.api.free_u_s1 = 0.9;
+                      unref(settings).defaultSettings.api.free_u_s2 = 0.2;
+                    })
+                  }, {
+                    default: withCtx(() => [
+                      createTextVNode(" Apply SD 1.4 Defaults ")
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(unref(NButton), {
+                    style: { "margin-left": "12px" },
+                    ghost: "",
+                    type: "warning",
+                    onClick: _cache[20] || (_cache[20] = () => {
+                      unref(settings).defaultSettings.api.free_u_b1 = 1.5;
+                      unref(settings).defaultSettings.api.free_u_b2 = 1.6;
+                      unref(settings).defaultSettings.api.free_u_s1 = 0.9;
+                      unref(settings).defaultSettings.api.free_u_s2 = 0.2;
+                    })
+                  }, {
+                    default: withCtx(() => [
+                      createTextVNode(" Apply SD 1.5 Defaults ")
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(unref(NButton), {
+                    style: { "margin-left": "12px" },
+                    ghost: "",
+                    type: "success",
+                    onClick: _cache[21] || (_cache[21] = () => {
+                      unref(settings).defaultSettings.api.free_u_b1 = 1.4;
+                      unref(settings).defaultSettings.api.free_u_b2 = 1.6;
+                      unref(settings).defaultSettings.api.free_u_s1 = 0.9;
+                      unref(settings).defaultSettings.api.free_u_s2 = 0.2;
+                    })
+                  }, {
+                    default: withCtx(() => [
+                      createTextVNode(" Apply SD 2.1 Defaults ")
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(unref(NButton), {
+                    style: { "margin-left": "12px" },
+                    ghost: "",
+                    type: "error",
+                    onClick: _cache[22] || (_cache[22] = () => {
+                      unref(settings).defaultSettings.api.free_u_b1 = 1.3;
+                      unref(settings).defaultSettings.api.free_u_b2 = 1.4;
+                      unref(settings).defaultSettings.api.free_u_s1 = 0.9;
+                      unref(settings).defaultSettings.api.free_u_s2 = 0.2;
+                    })
+                  }, {
+                    default: withCtx(() => [
+                      createTextVNode(" Apply SDXL Defaults ")
+                    ]),
+                    _: 1
+                  })
+                ]),
+                createVNode(unref(NFormItem), {
+                  label: "Free U B1",
+                  "label-placement": "left"
+                }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NInputNumber), {
+                      value: unref(settings).defaultSettings.api.free_u_b1,
+                      "onUpdate:value": _cache[23] || (_cache[23] = ($event) => unref(settings).defaultSettings.api.free_u_b1 = $event),
+                      step: 0.01
+                    }, null, 8, ["value"])
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NFormItem), {
+                  label: "Free U B2",
+                  "label-placement": "left"
+                }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NInputNumber), {
+                      value: unref(settings).defaultSettings.api.free_u_b2,
+                      "onUpdate:value": _cache[24] || (_cache[24] = ($event) => unref(settings).defaultSettings.api.free_u_b2 = $event),
+                      step: 0.01
+                    }, null, 8, ["value"])
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NFormItem), {
+                  label: "Free U S1",
+                  "label-placement": "left"
+                }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NInputNumber), {
+                      value: unref(settings).defaultSettings.api.free_u_s1,
+                      "onUpdate:value": _cache[25] || (_cache[25] = ($event) => unref(settings).defaultSettings.api.free_u_s1 = $event),
+                      step: 0.01
+                    }, null, 8, ["value"])
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NFormItem), {
+                  label: "Free U S2",
+                  "label-placement": "left"
+                }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NInputNumber), {
+                      value: unref(settings).defaultSettings.api.free_u_s2,
+                      "onUpdate:value": _cache[26] || (_cache[26] = ($event) => unref(settings).defaultSettings.api.free_u_s2 = $event),
+                      step: 0.01
+                    }, null, 8, ["value"])
+                  ]),
+                  _: 1
+                })
+              ])) : createCommentVNode("", true)
+            ]),
+            _: 1
+          }),
           createVNode(unref(NFormItem), {
             label: "Upcast VAE",
             "label-placement": "left"
@@ -2025,7 +2100,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.upcast_vae,
-                "onUpdate:value": _cache[23] || (_cache[23] = ($event) => unref(settings).defaultSettings.api.upcast_vae = $event)
+                "onUpdate:value": _cache[27] || (_cache[27] = ($event) => unref(settings).defaultSettings.api.upcast_vae = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -2037,7 +2112,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.apply_unsharp_mask,
-                "onUpdate:value": _cache[24] || (_cache[24] = ($event) => unref(settings).defaultSettings.api.apply_unsharp_mask = $event)
+                "onUpdate:value": _cache[28] || (_cache[28] = ($event) => unref(settings).defaultSettings.api.apply_unsharp_mask = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -2049,7 +2124,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSlider), {
                 value: cfgRescaleValue.value,
-                "onUpdate:value": _cache[25] || (_cache[25] = ($event) => cfgRescaleValue.value = $event),
+                "onUpdate:value": _cache[29] || (_cache[29] = ($event) => cfgRescaleValue.value = $event),
                 disabled: !enabledCfg.value,
                 min: 2,
                 max: 30,
@@ -2057,7 +2132,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               }, null, 8, ["value", "disabled"]),
               createVNode(unref(NSwitch), {
                 value: enabledCfg.value,
-                "onUpdate:value": _cache[26] || (_cache[26] = ($event) => enabledCfg.value = $event)
+                "onUpdate:value": _cache[30] || (_cache[30] = ($event) => enabledCfg.value = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
