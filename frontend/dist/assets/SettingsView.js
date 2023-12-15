@@ -1,4 +1,4 @@
-import { d as defineComponent, u as useSettings, o as openBlock, c as createBlock, w as withCtx, e as createVNode, f as unref, I as NInput, m as NSelect, N as NCard, b9 as reactive, i as computed, bA as convertToTextString, y as ref, s as serverUrl, J as watch, a as useState, b as createBaseVNode, g as createElementBlock, L as renderList, bc as NText, k as createTextVNode, B as toDisplayString, F as Fragment, h as createCommentVNode, C as NTabPane, D as NTabs, R as inject, bB as themeKey, z as NButton, l as NTooltip, n as useMessage, bC as useNotification, p as onUnmounted, bD as defaultSettings } from "./index.js";
+import { d as defineComponent, u as useSettings, o as openBlock, c as createBlock, w as withCtx, e as createVNode, f as unref, I as NInput, m as NSelect, N as NCard, b9 as reactive, i as computed, bB as convertToTextString, y as ref, s as serverUrl, J as watch, a as useState, b as createBaseVNode, g as createElementBlock, L as renderList, bc as NText, k as createTextVNode, B as toDisplayString, F as Fragment, h as createCommentVNode, C as NTabPane, D as NTabs, R as inject, bC as themeKey, z as NButton, l as NTooltip, n as useMessage, bD as useNotification, p as onUnmounted, bE as defaultSettings } from "./index.js";
 import { c as NFormItem, _ as _sfc_main$g, b as _sfc_main$h, a as _sfc_main$i, N as NForm } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
@@ -1162,7 +1162,7 @@ const _hoisted_1$2 = {
   key: 0,
   class: "flex-container"
 };
-const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Subquadratic chunk size (affects VRAM usage)", -1);
+const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Subquadratic chunk size (affects VRAM usage)", -1);
 const _hoisted_3$1 = { "flex-direction": "row" };
 const _hoisted_4$1 = { key: 1 };
 const _hoisted_5$1 = { key: 2 };
@@ -1244,7 +1244,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             _: 1
           }),
           unref(settings).defaultSettings.api.attention_processor == "subquadratic" ? (openBlock(), createElementBlock("div", _hoisted_1$2, [
-            _hoisted_2$1,
+            _hoisted_2$2,
             createVNode(unref(NSlider), {
               value: unref(settings).defaultSettings.api.subquadratic_size,
               "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.subquadratic_size = $event),
@@ -1563,7 +1563,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   }
 });
 const _hoisted_1$1 = { key: 1 };
-const _hoisted_2 = { class: "flex-container" };
+const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Hypertile UNet chunk size", -1);
 const _hoisted_4 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, 'PyTorch ONLY. Recommended sizes are 1/4th your desired resolution or plain "256."', -1);
 const _hoisted_5 = /* @__PURE__ */ createBaseVNode("b", null, "LARGE (1024x1024+)", -1);
@@ -1780,7 +1780,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             _: 1
           }),
           unref(settings).defaultSettings.api.hypertile ? (openBlock(), createElementBlock("div", _hoisted_1$1, [
-            createBaseVNode("div", _hoisted_2, [
+            createBaseVNode("div", _hoisted_2$1, [
               createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                 trigger: withCtx(() => [
                   _hoisted_3
@@ -2140,6 +2140,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   }
 });
 const _hoisted_1 = { class: "main-container" };
+const _hoisted_2 = { style: { "width": "100%", "display": "flex", "justify-content": "end", "margin-bottom": "12px" } };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "SettingsView",
   setup(__props) {
@@ -2176,33 +2177,33 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
+        createBaseVNode("div", _hoisted_2, [
+          createVNode(unref(NButton), {
+            type: "error",
+            ghost: "",
+            style: { "margin-right": "12px" },
+            onClick: resetSettings
+          }, {
+            default: withCtx(() => [
+              createTextVNode("Reset Settings")
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NButton), {
+            type: "success",
+            ghost: "",
+            onClick: saveSettings,
+            loading: saving.value
+          }, {
+            default: withCtx(() => [
+              createTextVNode("Save Settings")
+            ]),
+            _: 1
+          }, 8, ["loading"])
+        ]),
         createVNode(unref(NCard), null, {
           default: withCtx(() => [
             createVNode(unref(NTabs), null, {
-              suffix: withCtx(() => [
-                createVNode(unref(NButton), {
-                  type: "error",
-                  ghost: "",
-                  style: { "margin-right": "12px" },
-                  onClick: resetSettings
-                }, {
-                  default: withCtx(() => [
-                    createTextVNode("Reset Settings")
-                  ]),
-                  _: 1
-                }),
-                createVNode(unref(NButton), {
-                  type: "success",
-                  ghost: "",
-                  onClick: saveSettings,
-                  loading: saving.value
-                }, {
-                  default: withCtx(() => [
-                    createTextVNode("Save Settings")
-                  ]),
-                  _: 1
-                }, 8, ["loading"])
-              ]),
               default: withCtx(() => [
                 createVNode(unref(NTabPane), { name: "Autoload" }, {
                   default: withCtx(() => [

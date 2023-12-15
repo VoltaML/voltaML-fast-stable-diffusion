@@ -59,23 +59,23 @@
   justify-content: center;
 }
 
-.progress-container[data-v-91ace41f] {
+.progress-container[data-v-fd90df03] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-91ace41f] {
+.top-bar[data-v-fd90df03] {
   display: inline-flex;
   align-items: center;
   padding-top: 10px;
   padding-bottom: 10px;
-  width: calc(100% - 64px);
+  width: var(--0ccf3a18);
   height: 32px;
   position: fixed;
   top: 0;
   z-index: 1;
 }
-.logo[data-v-91ace41f] {
+.logo[data-v-fd90df03] {
   margin-right: 16px;
   margin-left: 16px;
 }
@@ -171,6 +171,10 @@
   width: 100%;
   padding: 10px 0px;
 }
+
+.router-container {
+  margin-top: 52px;
+}
 .autocomplete {
   position: relative;
   display: inline-block;
@@ -178,52 +182,54 @@
 .autocomplete-items {
   position: absolute;
   z-index: 99;
-  background-color: var(--4c7ba08e);
-  border-radius: var(--01ab46a4);
+  background-color: var(--e68ef196);
+  border-radius: var(--3f674355);
   padding: 2px;
 }
 .autocomplete-items div {
   padding: 8px;
   cursor: pointer;
-  border-radius: var(--01ab46a4);
+  border-radius: var(--3f674355);
 }
 .autocomplete-active {
-  background-color: var(--e4e78d9e);
-  color: var(--d0777f2a);
+  background-color: var(--646dc050);
+  color: var(--96bf2bb8);
 }
 #autocomplete-list {
   max-height: min(600px, 70vh);
   overflow-y: auto;
 }
 .n-card {
-  backdrop-filter: var(--98485856);
+  backdrop-filter: var(--b08f9a64);
 }
 .navbar .n-layout {
-  backdrop-filter: var(--98485856);
+  backdrop-filter: var(--b08f9a64);
 }
 .navbar .n-layout-toggle-button {
-  backdrop-filter: var(--98485856);
+  backdrop-filter: var(--b08f9a64);
 }
 .top-bar {
-  backdrop-filter: var(--98485856);
-  background-color: var(--6a1d04dc);
+  backdrop-filter: var(--b08f9a64);
+  background-color: var(--139458d6);
 }
 .navbar {
-  backdrop-filter: var(--98485856);
+  backdrop-filter: var(--b08f9a64);
 }
 #background {
   width: 100vw;
   height: 100vh;
   position: fixed;
-  background-image: var(--344206c2);
+  background-image: var(--31f48ff4);
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   top: 0;
   left: 0;
   z-index: -99;
+}
+.main {
+  margin-left: var(--3ac72808);
 }body {
-  margin-left: 64px;
   color: #fff;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
@@ -259,4 +265,8 @@ a,
 
 .n-menu-item:last-child {
   margin-top: auto;
+}
+
+.n-drawer-content-wrapper {
+  backdrop-filter: blur(10px);
 }
