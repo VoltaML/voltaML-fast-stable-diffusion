@@ -46,22 +46,14 @@
     <NSelect
       v-model:value="types"
       :options="[
-        {
-          value: '',
-          label: 'All',
-        },
+        { value: '', label: 'All' },
         {
           value: 'Checkpoint',
           label: 'Checkpoint',
         },
-        {
-          value: 'TextualInversion',
-          label: 'Textual Inversion',
-        },
-        {
-          value: 'LORA',
-          label: 'LORA',
-        },
+        { value: 'TextualInversion', label: 'Textual Inversion' },
+        { value: 'LORA', label: 'LORA' },
+        { value: 'VAE', label: 'VAE' },
       ]"
       style="margin-right: 4px"
     />
@@ -113,7 +105,8 @@ const theme = inject(themeOverridesKey);
 const loadingLock = ref(false);
 const currentPage = ref(1);
 const sortBy = ref("Most Downloaded");
-const types: Ref<"Checkpoint" | "TextualInversion" | "LORA" | ""> = ref("");
+const types: Ref<"Checkpoint" | "TextualInversion" | "LORA" | "VAE" | ""> =
+  ref("");
 
 const currentModel = ref<ICivitAIModel | null>(null);
 const showModal = ref(false);

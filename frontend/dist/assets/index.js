@@ -42354,7 +42354,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-fd90df03"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-3a99505a"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { class: "top-bar" };
 const _hoisted_2$1 = { key: 0 };
 const _hoisted_3$1 = { key: 0 };
@@ -42380,7 +42380,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "0ccf3a18": topBarWidth.value
+      "ca9a9586": topBarWidth.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -42659,7 +42659,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              model: global2.state.selected_model.name,
+              model: global2.state.selected_model.path,
               vae: vae.path
             })
           });
@@ -42680,7 +42680,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              model: global2.state.selected_model.name,
+              model: global2.state.selected_model.path,
               textual_inversion: textualInversion.path
             })
           });
@@ -43412,14 +43412,14 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_fd90df03_lang = "";
-const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-fd90df03"]]);
+const TopBar_vue_vue_type_style_index_0_scoped_3a99505a_lang = "";
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-3a99505a"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
 const ControlNet_vue_vue_type_style_index_0_scoped_d4ff54ab_lang = "";
 const Img2Img_vue_vue_type_style_index_0_scoped_a4145f6c_lang = "";
 const Inpainting_vue_vue_type_style_index_0_scoped_b1671b35_lang = "";
-const CivitAIDownload_vue_vue_type_style_index_0_scoped_241a4664_lang = "";
+const CivitAIDownload_vue_vue_type_style_index_0_scoped_89afc237_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _hoisted_1$1 = { style: { "margin": "16px 0" } };
 const _hoisted_2 = /* @__PURE__ */ createBaseVNode("b", null, "Key in question:", -1);
