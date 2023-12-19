@@ -59,23 +59,23 @@
   justify-content: center;
 }
 
-.progress-container[data-v-fd90df03] {
+.progress-container[data-v-3a99505a] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-fd90df03] {
+.top-bar[data-v-3a99505a] {
   display: inline-flex;
   align-items: center;
   padding-top: 10px;
   padding-bottom: 10px;
-  width: var(--0ccf3a18);
+  width: var(--ca9a9586);
   height: 32px;
   position: fixed;
   top: 0;
   z-index: 1;
 }
-.logo[data-v-fd90df03] {
+.logo[data-v-3a99505a] {
   margin-right: 16px;
   margin-left: 16px;
 }
@@ -158,13 +158,13 @@
   justify-content: center;
 }
 
-.image-grid[data-v-241a4664] {
+.image-grid[data-v-89afc237] {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   grid-gap: 8px;
 }
-.top-bar[data-v-241a4664] {
-  background-color: var(--3d50ed98);
+.top-bar[data-v-89afc237] {
+  background-color: var(--66e6d45b);
 }
 
 .install[data-v-b405f046] {

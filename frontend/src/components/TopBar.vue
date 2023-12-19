@@ -784,7 +784,7 @@ async function loadVAE(vae: ModelEntry) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: global.state.selected_model.name,
+          model: global.state.selected_model.path,
           vae: vae.path,
         }),
       });
@@ -806,7 +806,7 @@ async function loadTextualInversion(textualInversion: ModelEntry) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: global.state.selected_model.name,
+          model: global.state.selected_model.path,
           textual_inversion: textualInversion.path,
         }),
       });

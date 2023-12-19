@@ -31,7 +31,7 @@ class APIConfig:
         "xformers", "sdpa", "cross-attention", "subquadratic", "multihead"
     ] = "sdpa"
     subquadratic_size: int = 512
-    attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
+    attention_slicing: Union[int, Literal["auto", "disabled"]] = "auto"
     channels_last: bool = True
     trace_model: bool = False
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
@@ -88,7 +88,7 @@ class APIConfig:
 
     # Hypertile
     hypertile: bool = False
-    hypertile_unet_chunk: int = 256
+    hypertile_unet_chunk: int = 512
 
     # Kohya Deep-Shrink
     deepshrink_enabled: bool = True

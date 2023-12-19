@@ -249,7 +249,7 @@ def delete_model(req: DeleteModelRequest):
 
 @router.post("/download-model")
 def download_checkpoint(
-    link: str, model_type: Literal["Checkpoint", "TextualInversion", "LORA"]
+    link: str, model_type: Literal["Checkpoint", "TextualInversion", "LORA", "VAE"]
 ) -> str:
     "Download a model from a link and return the path to the downloaded file."
 
@@ -260,7 +260,12 @@ def download_checkpoint(
         folder = "textual-inversion"
     elif mtype == "lora":
         folder = "lora"
+    elif mtype == "vae":
+        folder = "vae"
     else:
         raise ValueError(f"Unknown model type {mtype}")
 
-    return download_file(link, Path("data") / folder, True).as_posix()
+    saved_path = download_file(link, Path("data") / folder, True).as_posix()
+    websocket_manager.broadcast_sync(Data(data_type="refresh_models", data={}))
+
+    return saved_path

@@ -6602,7 +6602,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a, _b;
       return {
-        "3d50ed98": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
+        "66e6d45b": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
       };
     });
     const theme = inject(themeOverridesKey);
@@ -6767,22 +6767,14 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
             value: types.value,
             "onUpdate:value": _cache[3] || (_cache[3] = ($event) => types.value = $event),
             options: [
-              {
-                value: "",
-                label: "All"
-              },
+              { value: "", label: "All" },
               {
                 value: "Checkpoint",
                 label: "Checkpoint"
               },
-              {
-                value: "TextualInversion",
-                label: "Textual Inversion"
-              },
-              {
-                value: "LORA",
-                label: "LORA"
-              }
+              { value: "TextualInversion", label: "Textual Inversion" },
+              { value: "LORA", label: "LORA" },
+              { value: "VAE", label: "VAE" }
             ],
             style: { "margin-right": "4px" }
           }, null, 8, ["value"]),
@@ -6831,7 +6823,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-241a4664"]]);
+const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-89afc237"]]);
 const _hoisted_1$3 = ["src"];
 const _hoisted_2$3 = { style: { "position": "absolute", "width": "100%", "bottom": "0", "padding": "0 8px 0 12px", "min-height": "32px", "overflow": "hidden", "box-sizing": "border-box", "backdrop-filter": "blur(12px)", "background-color": "rgba(0, 0, 0, 0.3)" } };
 const _hoisted_3$3 = { style: { "display": "flex", "flex-direction": "column" } };
