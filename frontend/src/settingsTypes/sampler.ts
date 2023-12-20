@@ -1,0 +1,16 @@
+export enum Sampler {
+  DDIM = 1,
+  DDPM = 2,
+  PNDM = 3,
+  LMSD = 4,
+  EulerDiscrete = 5,
+  HeunDiscrete = 6,
+  EulerAncestralDiscrete = 7,
+  DPMSolverMultistep = 8,
+  DPMSolverSinglestep = 9,
+  KDPM2Discrete = 10,
+  KDPM2AncestralDiscrete = 11,
+  DEISMultistep = 12,
+  UniPCMultistep = 13,
+  DPMSolverSDEScheduler = 14,
+}

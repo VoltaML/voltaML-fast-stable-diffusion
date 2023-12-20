@@ -21,7 +21,7 @@ from api import websocket_manager
 from api.websockets import Data
 from api.websockets.notification import Notification
 from core.config import config
-from core.flags import DeepshrinkFlag, ScalecrafterFlag
+from core.flags import ADetailerFlag, DeepshrinkFlag, ScalecrafterFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import (
     convert_vaept_to_diffusers,
@@ -584,6 +584,23 @@ class PyTorchStableDiffusion(InferenceModel):
             )
 
         return total_images
+
+    def adetailer(
+        self,
+        job: InpaintQueueEntry,
+        flag: ADetailerFlag,
+    ):
+        from ..adetailer.adetailer import ADetailer
+
+        output = ADetailer().generate(
+            fn=self.inpaint,
+            inpaint_entry=job,
+            mask_dilation=flag.mask_dilation,
+            mask_blur=flag.mask_blur,
+            mask_padding=flag.mask_padding,
+        )
+
+        return [*output.images, *output.init_images]
 
     def generate(self, job: Job) -> Union[List[Image.Image], torch.Tensor]:
         "Generate images from the queue"

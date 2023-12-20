@@ -16,7 +16,7 @@ from api.websockets.notification import Notification
 from core import shared
 from core.config import config
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
-from core.flags import HighResFixFlag, UpscaleFlag
+from core.flags import ADetailerFlag, HighResFixFlag, UpscaleFlag
 from core.inference.ait import AITemplateStableDiffusion
 from core.inference.esrgan import RealESRGAN, Upscaler
 from core.inference.functions import is_ipex_available
@@ -28,6 +28,7 @@ from core.optimizations import is_hypertile_available
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
+    ADetailerQueueEntry,
     AITemplateBuildRequest,
     AITemplateDynamicBuildRequest,
     Capabilities,
@@ -276,6 +277,30 @@ class GPU:
             )
 
             final_images.append(self.upscale(upscale_job)[0])
+
+        return final_images
+
+    def adetailer_flag(self, job: Job, images: List[Image.Image]) -> List[Image.Image]:
+        logger.debug("Running ADetailer")
+
+        flag = ADetailerFlag(**job.flags["adetailer"])
+        data = flag.inpainting_data
+
+        assert data is not None
+
+        final_images = []
+        for image in images:
+            data.image = image  # type: ignore
+
+            adetailer_job = ADetailerQueueEntry(
+                data=data,
+                mask_blur=flag.mask_blur,
+                mask_dilation=flag.mask_dilation,
+                mask_padding=flag.mask_padding,
+                model=job.model,
+            )
+
+            final_images.append(self.run_inference(adetailer_job)[0])
 
         return final_images
 

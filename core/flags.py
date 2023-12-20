@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Literal, Optional
 
 from dataclasses_json.api import DataClassJsonMixin
+
+from core.types import InpaintData
 
 LatentScaleModel = Literal[
     "nearest",
@@ -103,3 +105,16 @@ class UpscaleFlag(Flag, DataClassJsonMixin):
     tile_size: int = field(default=128)
     tile_padding: int = field(default=10)
     model: str = field(default="RealESRGAN_x4plus_anime_6B")
+
+
+@dataclass
+class ADetailerFlag(Flag, DataClassJsonMixin):
+    "Flag for ADetailer settings"
+
+    enabled: bool = False  # For storing in json
+
+    # Inpainting
+    mask_dilation: int = 4
+    mask_blur: int = 4
+    mask_padding: int = 32
+    inpainting_data: Optional[InpaintData] = None

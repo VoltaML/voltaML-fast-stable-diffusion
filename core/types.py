@@ -222,6 +222,18 @@ class UpscaleQueueEntry(Job):
 
 
 @dataclass
+class ADetailerQueueEntry(Job):
+    "Dataclass for an ADetailer job"
+
+    data: Optional[InpaintData]
+
+    # Adetailer specific flags
+    mask_dilation: int = 4
+    mask_blur: int = 4
+    mask_padding: int = 32
+
+
+@dataclass
 class QuantizationDict:
     "Dataclass for quantization parameters"
 
