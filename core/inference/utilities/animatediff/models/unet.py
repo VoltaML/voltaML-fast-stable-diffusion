@@ -1,9 +1,11 @@
 # Adapted from https://github.com/huggingface/diffusers/blob/main/src/diffusers/models/unet_2d_condition.py
 
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint
@@ -14,6 +16,9 @@ from diffusers.configuration_utils import ConfigMixin, register_to_config
 from diffusers import ModelMixin  # type: ignore
 from diffusers.utils import BaseOutput, logging  # type: ignore
 from diffusers.models.embeddings import TimestepEmbedding, Timesteps
+
+from core.config import config
+
 from .unet_blocks import (
     CrossAttnDownBlock3D,
     CrossAttnUpBlock3D,
@@ -72,6 +77,7 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         attention_head_dim: Union[int, Tuple[int]] = 8,
         dual_cross_attention: bool = False,
         use_linear_projection: bool = False,
+        addition_embed_type: Optional[str] = None,
         class_embed_type: Optional[str] = None,
         num_class_embeds: Optional[int] = None,
         upcast_attention: bool = False,
@@ -440,6 +446,8 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         class_labels: Optional[torch.Tensor] = None,
         attention_mask: Optional[torch.Tensor] = None,
         # support controlnet
+        added_cond_kwargs: dict = {},
+        down_intrablock_additional_residuals: Optional[torch.Tensor] = None,
         down_block_additional_residuals: Optional[Tuple[torch.Tensor]] = None,
         mid_block_additional_residual: Optional[torch.Tensor] = None,
         return_dict: bool = True,
@@ -481,8 +489,13 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
             sample = 2 * sample - 1.0  # type: ignore
 
         # time
-        timesteps = timestep
-        if not torch.is_tensor(timesteps):
+        if isinstance(timestep, list):
+            timesteps = timestep[0]
+            step = len(timestep)
+        else:
+            timesteps = timestep
+            step = 1
+        if not torch.is_tensor(timesteps) and (not isinstance(timesteps, list)):
             # This would be a good case for the `match` statement (Python 3.10+)
             is_mps = sample.device.type == "mps"
             if isinstance(timestep, float):
@@ -490,12 +503,18 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
             else:
                 dtype = torch.int32 if is_mps else torch.int64
             timesteps = torch.tensor([timesteps], dtype=dtype, device=sample.device)
-        elif len(timesteps.shape) == 0:  # type: ignore
+        elif (not isinstance(timesteps, list)) and len(timesteps.shape) == 0:  # type: ignore
             timesteps = timesteps[None].to(sample.device)  # type: ignore
 
         # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
-        timesteps = timesteps.expand(sample.shape[0])  # type: ignore
+        if (not isinstance(timesteps, list)) and len(timesteps.shape) == 1:  # type: ignore
+            # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
+            timesteps = timesteps.expand(sample.shape[0])  # type: ignore
+        elif isinstance(timesteps, list):
+            # timesteps list, such as [981,961,941]
+            from core.inference.utilities.faster_diffusion import warp_timestep
 
+            timesteps = warp_timestep(timesteps, sample.shape[0]).to(sample.device)  # type: ignore
         t_emb = self.time_proj(timesteps)
 
         # timesteps does not contain any weights and will always return f32 tensors
@@ -504,72 +523,280 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         t_emb = t_emb.to(dtype=self.dtype)
         emb = self.time_embedding(t_emb)
 
-        if self.class_embedding is not None:
-            if class_labels is None:
+        aug_emb = None
+
+        if self.config["addition_embed_type"] == "text":
+            aug_emb = self.add_embedding(encoder_hidden_states)
+        elif self.config["addition_embed_type"] == "text_time":
+            # SDXL - style
+            if "text_embeds" not in added_cond_kwargs:
                 raise ValueError(
-                    "class_labels should be provided when num_class_embeds > 0"
+                    f"{self.__class__} has the config param `addition_embed_type` set to 'text_time' which requires the keyword argument `text_embeds` to be passed in `added_cond_kwargs`"
                 )
-
-            if self.config["class_embed_type"] == "timestep":
-                class_labels = self.time_proj(class_labels)
-
-            class_emb = self.class_embedding(class_labels).to(dtype=self.dtype)
-            emb = emb + class_emb
-
-        # pre-process
-        sample = self.conv_in(sample)
-
-        # down
-        down_block_res_samples = (sample,)
-        for downsample_block in self.down_blocks:
-            if (
-                hasattr(downsample_block, "has_cross_attention")
-                and downsample_block.has_cross_attention
-            ):
-                sample, res_samples = downsample_block(
-                    hidden_states=sample,
-                    temb=emb,
-                    encoder_hidden_states=encoder_hidden_states,
-                    attention_mask=attention_mask,
+            text_embeds = added_cond_kwargs.get("text_embeds")
+            if "time_ids" not in added_cond_kwargs:
+                raise ValueError(
+                    f"{self.__class__} has the config param `addition_embed_type` set to 'text_time' which requires the keyword argument `time_ids` to be passed in `added_cond_kwargs`"
                 )
-            else:
-                sample, res_samples = downsample_block(
-                    hidden_states=sample,
-                    temb=emb,
-                    encoder_hidden_states=encoder_hidden_states,
-                )
+            time_ids = added_cond_kwargs.get("time_ids")
+            time_embeds = self.add_time_proj(time_ids.flatten())  # type: ignore
+            time_embeds = time_embeds.reshape((text_embeds.shape[0], -1))  # type: ignore
+            add_embeds = torch.concat([text_embeds, time_embeds], dim=-1)  # type: ignore
+            add_embeds = add_embeds.to(emb.dtype)
+            aug_emb = self.add_embedding(add_embeds)
 
-            down_block_res_samples += res_samples
+        emb = emb + aug_emb if aug_emb is not None else emb
+        mod = config.api.drop_encode_decode
 
-        # support controlnet
-        down_block_res_samples = list(down_block_res_samples)
-        if down_block_additional_residuals is not None:
-            for i, down_block_additional_residual in enumerate(
-                down_block_additional_residuals
-            ):
-                if down_block_additional_residual.dim() == 4:  # boardcast
-                    down_block_additional_residual = (
-                        down_block_additional_residual.unsqueeze(2)
+        if mod == "off":
+            # pre-process
+            sample = self.conv_in(sample)
+
+            # down
+            down_block_res_samples = (sample,)
+            for downsample_block in self.down_blocks:
+                if (
+                    hasattr(downsample_block, "has_cross_attention")
+                    and downsample_block.has_cross_attention
+                ):
+                    sample, res_samples = downsample_block(
+                        hidden_states=sample,
+                        temb=emb,
+                        encoder_hidden_states=encoder_hidden_states,
+                        attention_mask=attention_mask,
                     )
-                down_block_res_samples[i] = (  # type: ignore
-                    down_block_res_samples[i] + down_block_additional_residual
-                )
+                else:
+                    sample, res_samples = downsample_block(
+                        hidden_states=sample,
+                        temb=emb,
+                        encoder_hidden_states=encoder_hidden_states,
+                    )
 
-        # mid
-        sample = self.mid_block(  # type: ignore
-            sample,
-            emb,
-            encoder_hidden_states=encoder_hidden_states,
-            attention_mask=attention_mask,
-        )
+                down_block_res_samples += res_samples
 
-        # support controlnet
-        if mid_block_additional_residual is not None:
-            if mid_block_additional_residual.dim() == 4:  # boardcast
-                mid_block_additional_residual = mid_block_additional_residual.unsqueeze(
-                    2
+            # support controlnet
+            down_block_res_samples = list(down_block_res_samples)
+            if down_block_additional_residuals is not None:
+                for i, down_block_additional_residual in enumerate(
+                    down_block_additional_residuals
+                ):
+                    if down_block_additional_residual.dim() == 4:  # boardcast
+                        down_block_additional_residual = (
+                            down_block_additional_residual.unsqueeze(2)
+                        )
+                    down_block_res_samples[i] = (  # type: ignore
+                        down_block_res_samples[i] + down_block_additional_residual
+                    )
+
+            # mid
+            sample = self.mid_block(  # type: ignore
+                sample,
+                emb,
+                encoder_hidden_states=encoder_hidden_states,
+                attention_mask=attention_mask,
+            )
+
+            # support controlnet
+            if mid_block_additional_residual is not None:
+                if mid_block_additional_residual.dim() == 4:  # boardcast
+                    mid_block_additional_residual = (
+                        mid_block_additional_residual.unsqueeze(2)
+                    )
+                sample = sample + mid_block_additional_residual  # type: ignore
+        else:
+            from core.inference.utilities.faster_diffusion import (
+                warp_controlnet_block_samples,
+                warp_feature,
+                warp_timestep,
+                warp_text,
+            )
+
+            order = self.order  # timestep, start by 0
+
+            ipow = int(np.sqrt(9 + 8 * order))
+            cond = order in [0, 1, 2, 3, 5, 10, 15, 25, 35]
+            mod = config.api.drop_encode_decode
+            if isinstance(mod, int):
+                cond = order % mod == 0
+            elif mod == "pro":
+                cond = ipow * ipow == (9 + 8 * order)
+            elif mod == "50ls":
+                cond = order in [
+                    0,
+                    1,
+                    2,
+                    3,
+                    5,
+                    10,
+                    15,
+                    25,
+                    35,
+                ]  # 40 #[0,1,2,3, 5, 10, 15] #[0, 1, 2, 3, 5, 10, 15, 25, 35, 40]
+            elif mod == "50ls2":
+                cond = order in [
+                    0,
+                    10,
+                    11,
+                    12,
+                    15,
+                    20,
+                    25,
+                    30,
+                    35,
+                    45,
+                ]  # 40 #[0,1,2,3, 5, 10, 15] #[0, 1, 2, 3, 5, 10, 15, 25, 35, 40]
+            elif mod == "50ls3":
+                cond = order in [
+                    0,
+                    20,
+                    25,
+                    30,
+                    35,
+                    45,
+                    46,
+                    47,
+                    48,
+                    49,
+                ]  # 40 #[0,1,2,3, 5, 10, 15] #[0, 1, 2, 3, 5, 10, 15, 25, 35, 40]
+            elif mod == "50ls4":
+                cond = order in [
+                    0,
+                    9,
+                    13,
+                    14,
+                    15,
+                    28,
+                    29,
+                    32,
+                    36,
+                    45,
+                ]  # 40 #[0,1,2,3, 5, 10, 15] #[0, 1, 2, 3, 5, 10, 15, 25, 35, 40]
+            elif mod == "100ls":
+                cond = order > 85 or order < 10 or order % 5 == 0
+            elif mod == "75ls":
+                cond = order > 65 or order < 10 or order % 5 == 0
+            elif mod == "s2":
+                cond = order < 20 or order > 40 or order % 2 == 0
+
+            if cond:
+                if down_intrablock_additional_residuals is not None:
+                    down_intrablock_additional_residuals = list(
+                        warp_controlnet_block_samples(  # type: ignore
+                            down_intrablock_additional_residuals
+                        )
+                    )
+
+                # 2. pre-process
+                sample = self.conv_in(sample)
+
+                # 3. down
+                down_block_res_samples = (sample,)
+                for downsample_block in self.down_blocks:
+                    if (
+                        hasattr(downsample_block, "has_cross_attention")
+                        and downsample_block.has_cross_attention
+                    ):
+                        additional = {}
+                        if (
+                            down_intrablock_additional_residuals is not None
+                            and len(down_intrablock_additional_residuals) > 0
+                        ):
+                            additional["additional_residuals"] = down_intrablock_additional_residuals.pop(0)  # type: ignore
+
+                        sample, res_samples = downsample_block(
+                            hidden_states=sample,
+                            temb=emb,
+                            encoder_hidden_states=encoder_hidden_states,
+                            **additional,
+                        )
+                    else:
+                        sample, res_samples = downsample_block(
+                            hidden_states=sample, temb=emb
+                        )
+                        if (
+                            down_intrablock_additional_residuals is not None
+                            and len(down_intrablock_additional_residuals) > 0
+                        ):
+                            sample += down_intrablock_additional_residuals.pop(0)  # type: ignore
+
+                    down_block_res_samples += res_samples
+
+                if down_block_additional_residuals is not None:
+                    new_down_block_res_samples = ()
+
+                    for down_block_res_sample, down_block_additional_residual in zip(
+                        down_block_res_samples, down_block_additional_residuals
+                    ):
+                        down_block_res_sample = (
+                            down_block_res_sample + down_block_additional_residual
+                        )
+                        new_down_block_res_samples += (down_block_res_sample,)
+
+                    down_block_res_samples = new_down_block_res_samples
+
+                # 4. mid
+                if self.mid_block is not None:
+                    sample = self.mid_block(
+                        sample,
+                        emb,
+                        encoder_hidden_states=encoder_hidden_states,
+                    )
+                    if (
+                        down_intrablock_additional_residuals is not None
+                        and len(down_intrablock_additional_residuals) > 0
+                        and sample.shape
+                        == down_intrablock_additional_residuals[0].shape
+                    ):
+                        sample += down_intrablock_additional_residuals.pop(0)  # type: ignore
+
+                if mid_block_additional_residual is not None:
+                    sample = sample + mid_block_additional_residual  # type: ignore
+
+                # ----------------------save feature-------------------------
+                # setattr(self, 'skip_feature', (tmp_sample.clone() for tmp_sample in down_block_res_samples))
+                setattr(self, "skip_feature", deepcopy(down_block_res_samples))
+                setattr(self, "toup_feature", sample.detach().clone())
+                # -----------------------save feature------------------------
+
+                # -------------------expand feature for parallel---------------
+                if isinstance(timestep, list):
+                    # timesteps list, such as [981,961,941]
+                    timesteps = warp_timestep(timestep, sample.shape[0]).to(  # type: ignore
+                        sample.device
+                    )
+                    t_emb = self.time_proj(timesteps)
+
+                    # `Timesteps` does not contain any weights and will always return f32 tensors
+                    # but time_embedding might actually be running in fp16. so we need to cast here.
+                    # there might be better ways to encapsulate this.
+                    t_emb = t_emb.to(dtype=self.dtype)
+
+                    emb = self.time_embedding(t_emb, None)
+                    # print(emb.shape)
+
+                # print(step, sample.shape)
+                down_block_res_samples = warp_controlnet_block_samples(
+                    down_block_res_samples, step
                 )
-            sample = sample + mid_block_additional_residual  # type: ignore
+                sample = warp_feature(sample, step)  # type: ignore
+                # print(step, sample.shape)
+
+                encoder_hidden_states = warp_text(encoder_hidden_states, step)
+
+                # print(emb.shape)
+
+                # -------------------expand feature for parallel---------------
+            else:
+                down_block_res_samples = self.skip_feature
+                sample = self.toup_feature
+
+                # -------------------expand feature for parallel---------------
+                down_block_res_samples = warp_controlnet_block_samples(
+                    down_block_res_samples, step
+                )
+                sample = warp_feature(sample, step)  # type: ignore
+                encoder_hidden_states = warp_text(encoder_hidden_states, step)
+                # -------------------expand feature for parallel---------------
 
         # up
         for i, upsample_block in enumerate(self.up_blocks):

@@ -320,7 +320,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             )  # type: ignore
 
         # 0. Default height and width to unet
-        with inference_context(self.unet, self.vae, height, width) as context:
+        with inference_context(self.unet, self.vae, height, width) as context:  # type: ignore
             self.unet = context.unet  # type: ignore
             self.vae = context.vae  # type: ignore
 
@@ -440,6 +440,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 dtype,
                 device,
                 generator,
+                None,
                 latents,
             )
 
@@ -684,7 +685,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
 
             # 11. Convert to PIL
             if output_type == "pil":
-                image = numpy_to_pil(image)
+                image = numpy_to_pil(image)  # type: ignore
 
             unload_all()
 

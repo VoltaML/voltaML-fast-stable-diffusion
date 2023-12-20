@@ -42,6 +42,20 @@ class APIConfig:
     )
     cache_fp16_weight: bool = False  # only works on float8. Used for LoRAs.
 
+    # Approximation-type optimizations
+    approximate_controlnet: bool = False  # only infer controlnet on specific steps.
+    parallel_timestep_processing: bool = (  # isn't working currently (no errors, but wtf are those outputs)
+        False  # should result in big speedups on cards with more cuda cores.
+    )
+    drop_encode_decode: Union[
+        int,  # if int, drop every x-th step
+        Literal["off", "on"],  # on = first 5 + every 5th
+    ] = "on"  # "on" results in a ~30% increase in performance, without ruining quality too much
+
+    # TODO: hook these up:
+    deepcache_enabled: bool = False
+    deepcache_cache_interval: int = 3  # cache every x-th layer
+
     # CUDA specific optimizations
     reduced_precision: bool = False
     cudnn_benchmark: bool = False

@@ -65,7 +65,6 @@ def convert_image_to_stream(
         image.seek(0)
         return image
 
-    assert image is Image.Image
     stream = BytesIO()
     image.save(stream, format=_format, quality=quality)
     stream.seek(0)
@@ -255,9 +254,8 @@ def convert_images_to_base64_grid(
         quality = max(quality - 20, 20)
         return convert_image_to_base64(images[0], quality=quality, image_format="gif")
     else:
-        assert images is List[Image.Image]
         return convert_image_to_base64(
-            image_grid(images), quality=quality, image_format=image_format
+            image_grid(images), quality=quality, image_format=image_format  # type: ignore
         )
 
 

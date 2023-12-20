@@ -72,9 +72,9 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
 
     # DDIM ONLY!!! (for now)
     # Probably self-explanatory, but increases generation time to {freeinit_iterations}x.
-    freeinit_iterations: int = -1  # -1 to disable, 5 recommended
+    freeinit_iterations: int = 3  # -1 to disable, 5 recommended
     freeinit_fast_sampling: bool = (
-        True  # decreases quality, but reduces generation time by ~60%
+        False  # decreases quality, but reduces generation time by ~60%
     )
     freeinit_method: Literal["butterworth", "gaussian", "ideal", "box"] = "butterworth"
     freeinit_n: int = 4

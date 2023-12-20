@@ -54,7 +54,7 @@ def callback(step: int, _timestep: int, tensor: torch.Tensor):
                 "image": convert_images_to_base64_grid(
                     images, quality=60, image_format="webp"
                 )
-                if send_image
+                if len(images) > 0
                 else "",
             },
         )
