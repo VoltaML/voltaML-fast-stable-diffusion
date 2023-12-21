@@ -855,7 +855,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         mid_block_additional_residual=mid_block_res_sample,  # type: ignore
                         down_intrablock_additional_residuals=down_intrablock_additional_residuals,  # type: ignore
                     )
-                    
+
                     # perform guidance
                     if do_classifier_free_guidance:
                         if not split_latents_into_two:
@@ -878,7 +878,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             store_processor,  # type: ignore
                             x,
                             noise_pred_uncond,  # type: ignore
-                            t,
+                            t,  # type: ignore
                             map_size,  # type: ignore
                             text_embeddings,
                             self_attention_scale,
@@ -932,7 +932,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                     for iter in range(iteration_count):
                         if hasattr(self.scheduler, "_step_index"):
-                            self.scheduler._step_index = None
+                            self.scheduler._step_index = None  # type: ignore
                         if freq_filter is not None:
                             if iter == 0:
                                 assert latents is not None
@@ -1028,11 +1028,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 if output_type == "pil":
                     converted_image = numpy_to_pil(converted_image)
 
-                unload_all()
-
-                if not return_dict:
-                    return converted_image, False
-
         if inf.profiler is not None:
             try:
                 inf.profiler.export_memory_timeline("data/memory.json")
@@ -1045,11 +1040,11 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             except Exception:
                 pass
 
-            unload_all()
+        unload_all()
 
-            if not return_dict:
-                return converted_image, False
+        if not return_dict:
+            return converted_image, False  # type: ignore
 
-            return StableDiffusionPipelineOutput(
-                images=converted_image, nsfw_content_detected=False  # type: ignore
-            )
+        return StableDiffusionPipelineOutput(
+            images=converted_image, nsfw_content_detected=False  # type: ignore
+        )
