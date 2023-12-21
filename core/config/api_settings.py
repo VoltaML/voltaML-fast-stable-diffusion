@@ -39,24 +39,52 @@ class APIConfig:
     data_type: Literal[
         "float32", "float16", "bfloat16", "float8_e4m3fn", "float8_e5m2"
     ] = "float16"
-    dont_merge_latents: bool = (
-        False  # Will drop performance, but could help with some VRAM issues
-    )
+
+    # VRAM optimizations
+    # whether to run both parts of CFG>1 generations in one call. Increases VRAM usage during inference,
+    # halves inference speed for most -- newer than 10xx -- cards.
+    batch_cond_uncond: bool = True
+    # Whether to cache the weight of tensors for LoRA loading during float8 inference.
+    # Improves how LoRAs work when data-type is a subset of FP8, but increases system RAM usage to 2x.
+    # ONLY WORKS WHEN DATA_TYPE=FLOAT8
     cache_fp16_weight: bool = False  # only works on float8. Used for LoRAs.
 
-    # Approximation-type optimizations
-    approximate_controlnet: bool = False  # only infer controlnet on specific steps.
-    parallel_timestep_processing: bool = (  # isn't working currently (no errors, but wtf are those outputs)
-        False  # should result in big speedups on cards with more cuda cores.
-    )
+    # Approximation-type optimizations ("ruin" quality for big boosts in performance)
+    # According to the following paper: https://arxiv.org/pdf/2312.09608.pdf (Faster-Diffusion)
+    #   ControlNet infers can be "effectively skipped" after a certain point, because their control
+    #   on the images loosens up after a while.
+    #
+    #   value: from which "percentage" of the diffusion process should we skip controlnet inferring.
+    #   default: 1.0, don't skip at all.
+    #   IMPORTANT: the first min(5, n-3) steps WILL always have controlnet inferring on to avoid completely
+    #              disabling controlnet
+    approximate_controlnet: float = 1.0
+
+    # According to the following paper: https://browse.arxiv.org/html/2312.12487v1 (Adaptive Guidance)
+    #   even stopping it naively (without implementing AG, which I (Gabe) might implement later)
+    #   doesn't murder image quality. I'd compare it to how TensorRT "mutates" images.
+    #   Probably shouldn't be set to anything below 0.75
+    #
+    #   value: from which "percentage" of the diffusion process should we stop inferring uncond.
+    #   default: 1.0, don't stop inferring at all.
+    cfg_uncond_tau: float = 1.0
+
+    # Won't implement timestep pararellization since it has a tendency to "explode" VRAM usage, and I
+    # don't know if I'm ready for issues that could bring down the line...
+    # source: https://arxiv.org/pdf/2312.09608.pdf (Faster-Diffusion)
+
+    # According to the following paper: https://arxiv.org/pdf/2312.09608.pdf (Faster-Diffusion)
+    #   Dropping encode/decode -- effectively caching it -- and creating new values every nth step
+    #   produces negligible quality loss whilst boosting performance by 1/drop_encode_decode%.
+    #
+    #   value: "off" disables this. "on" infers the first 5 steps ALWAYS as full-quality ones, and then every 5th.
+    #   default: "off," due to quality loss, same reason as to why HyperTile is off by default.
     drop_encode_decode: Union[
         int,  # if int, drop every x-th step
         Literal["off", "on"],  # on = first 5 + every 5th
     ] = "on"  # "on" results in a ~30% increase in performance, without ruining quality too much
 
-    # TODO: hook these up:
-    deepcache_enabled: bool = False
-    deepcache_cache_interval: int = 3  # cache every x-th layer
+    deepcache_cache_interval: int = 1  # cache every x-th layer, 1 = disabled
 
     # CUDA specific optimizations
     reduced_precision: bool = False

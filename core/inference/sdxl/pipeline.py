@@ -1,6 +1,7 @@
 import logging
 from contextlib import ExitStack
 from typing import Callable, List, Literal, Optional, Union
+import inspect
 
 import PIL
 import torch
@@ -367,7 +368,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             do_classifier_free_guidance = guidance_scale > 1.0
             do_self_attention_guidance = self_attention_scale > 1.0
             split_latents_into_two = (
-                config.api.dont_merge_latents and do_classifier_free_guidance
+                not config.api.batch_cond_uncond and do_classifier_free_guidance
             )
 
             # 3. Encode input prompt
@@ -528,16 +529,24 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                     -2:
                 ]  # output.sample.shape[-2:] in older diffusers
 
+            classify = do_classifier_free_guidance
+
             def do_denoise(
                 x: torch.Tensor,
                 t: torch.IntTensor,
                 call: Callable[..., torch.Tensor],
                 change_source: Callable[[Callable], None],
             ) -> torch.Tensor:
-                nonlocal j, un
+                nonlocal j, un, do_classifier_free_guidance
 
                 un = modify_kohya(un, j, num_inference_steps, deepshrink)  # type: ignore
                 un = step_scalecrafter(un, scalecrafter, j, num_inference_steps)
+
+                tau = j / num_inference_steps
+
+                do_classifier_free_guidance = (
+                    classify and tau <= config.api.cfg_uncond_tau
+                )
 
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
@@ -558,7 +567,21 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                         ]
 
                 change_source(un)
+                kwargs = set(
+                    inspect.signature(un.forward).parameters.keys()  # type: ignore
+                )
                 ensure_correct_device(un)  # type: ignore
+
+                _kwargs = {
+                    "cond": prompt_embeds,
+                    "added_cond_kwargs": {
+                        "text_embeds": add_text_embeds,
+                        "time_ids": add_time_ids,
+                    },
+                    "down_intrablock_additional_residuals": down_intrablock_additional_residuals,
+                    "order": j,
+                    "drop_encode_decode": config.api.drop_encode_decode != "off",
+                }
                 if split_latents_into_two:
                     uncond, cond = prompt_embeds.chunk(2)
                     uncond_text, cond_text = add_text_embeds.chunk(2)
@@ -580,33 +603,34 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                         "time_ids": uncond_time,
                     }
 
-                    noise_pred_text = call(
-                        latent_model_input,
-                        t,
-                        cond=cond,
-                        added_cond_kwargs=added_cond_kwargs,
-                        down_intrablock_additional_residuals=cond_intra,
+                    _kwargs.update(
+                        {
+                            "added_cond_kwargs": added_cond_kwargs,
+                            "down_intrablock_additional_residuals": cond_intra,
+                            "cond": cond,
+                        }
                     )
+                    for kw, _ in _kwargs.copy().items():
+                        if kw not in kwargs:
+                            del _kwargs[kw]
+                    noise_pred_text = call(latent_model_input, t, **_kwargs)
 
-                    noise_pred_uncond = call(
-                        latent_model_input,
-                        t,
-                        cond=uncond,
-                        added_cond_kwargs=added_uncond_kwargs,
-                        down_intrablock_additional_residuals=uncond_intra,
+                    _kwargs.update(
+                        {
+                            "added_cond_kwargs": added_uncond_kwargs,
+                            "down_intrablock_additional_residuals": uncond_intra,
+                            "cond": uncond,
+                        }
                     )
+                    for kw, _ in _kwargs.copy().items():
+                        if kw not in kwargs:
+                            del _kwargs[kw]
+                    noise_pred_uncond = call(latent_model_input, t, **_kwargs)
                 else:
-                    added_cond_kwargs = {
-                        "text_embeds": add_text_embeds,
-                        "time_ids": add_time_ids,
-                    }
-                    noise_pred = call(  # type: ignore
-                        latent_model_input,
-                        t,
-                        cond=prompt_embeds,
-                        added_cond_kwargs=added_cond_kwargs,
-                        down_intrablock_additional_residuals=down_intrablock_additional_residuals,
-                    )
+                    for kw, _ in _kwargs.copy().items():
+                        if kw not in kwargs:
+                            del _kwargs[kw]
+                    noise_pred = call(latent_model_input, t, **_kwargs)  # type: ignore
 
                 un, noise_pred_vanilla = post_scalecrafter(
                     self.unet,
@@ -625,7 +649,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                     if not split_latents_into_two:
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
                     noise_pred = calculate_cfg(
-                        j, noise_pred_text, noise_pred_uncond, guidance_scale, t, noise_pred_vanilla  # type: ignore
+                        j, noise_pred_text, noise_pred_uncond, guidance_scale, t, additional_pred=noise_pred_vanilla  # type: ignore
                     )
 
                 if do_self_attention_guidance:
@@ -660,6 +684,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                     )
                     x = (init_latents_proper * mask) + (x * (1 - mask))  # type: ignore
                 j += 1
+                un = postprocess_kohya(un)
                 return x
 
             if do_self_attention_guidance:
@@ -717,7 +742,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                                 and is_cancelled_callback()
                             ):
                                 return None
-                un = postprocess_kohya(un)  # type: ignore
 
             # 9. Post-processing
             if output_type == "latent":

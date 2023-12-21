@@ -3,6 +3,7 @@
 from contextlib import ExitStack
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
 import inspect
+import math
 
 import PIL
 import torch
@@ -45,9 +46,6 @@ from core.inference.utilities import (
     prepare_mask_latents,
     preprocess_adapter_image,
     preprocess_image,
-    get_span,
-    multistep_pre,
-    adjust_steps_to_idx,
     setup_scalecrafter,
     step_scalecrafter,
 )
@@ -434,7 +432,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 # corresponds to doing no classifier free guidance.
                 do_classifier_free_guidance = guidance_scale > 1.0
                 split_latents_into_two = (
-                    config.api.dont_merge_latents and do_classifier_free_guidance
+                    not config.api.batch_cond_uncond and do_classifier_free_guidance
                 )
                 do_self_attention_guidance = self_attention_scale > 0.0
 
@@ -637,18 +635,31 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             },
                         )
 
+                classify = do_classifier_free_guidance
+                prv_feature = None
+
                 def do_denoise(
                     x: torch.Tensor,
                     t: torch.IntTensor,
                     call: Callable[..., torch.Tensor],
                     change_source: Callable[[Callable], None],
                 ):
-                    nonlocal j, idx
+                    nonlocal j, idx, do_classifier_free_guidance, prv_feature
                     # expand the latents if we are doing classifier free guidance
                     assert context_scheduler is not None
 
                     self.unet = modify_kohya(
                         self.unet, j, num_inference_steps, deepshrink
+                    )
+
+                    tau = j / num_inference_steps
+
+                    can_controlnet = (
+                        tau <= config.api.approximate_controlnet
+                        or math.floor(tau * 100) % 5 == 0
+                    )
+                    do_classifier_free_guidance = (
+                        classify and tau <= config.api.cfg_uncond_tau
                     )
 
                     noise_pred, counter = None, None
@@ -667,16 +678,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             device=latents.device,
                             dtype=latents.dtype,
                         )
-                    tau = j / num_inference_steps
-
-                    if config.api.parallel_timestep_processing:
-                        print("new latents")
-                        span, sum_steps = get_span(j + 2, num_inference_steps)
-                        _, start = get_span(j + 1, num_inference_steps)
-                        print(j, span, sum_steps, start, sep="; ")
-                        t = []  # type: ignore
-                        for k in range(start, sum_steps):
-                            t.append(self.scheduler.timesteps[k])  # type: ignore
 
                     self.unet = step_scalecrafter(
                         self.unet, scalecrafter, j, num_inference_steps
@@ -708,16 +709,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                                     state.clone() for state in adapter_state
                                 ]
 
-                        can_controlnet = (
-                            (
-                                tau <= 0.1
-                                or (tau >= 0.35 and tau <= 0.55)
-                                or (tau >= 0.9)
-                            )
-                            if config.api.approximate_controlnet
-                            else True
-                        )
-
                         down_block_res_samples, mid_block_res_sample = None, None
                         if (
                             hasattr(self, "controlnet") and self.controlnet is not None
@@ -725,7 +716,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             if guess_mode and do_classifier_free_guidance:
                                 # Infer ControlNet only for the conditional batch.
                                 control_model_input = x
-                                control_model_input = self.scheduler.scale_model_input(control_model_input, t[0] if isinstance(t, list) else t).half()  # type: ignore
+                                control_model_input = self.scheduler.scale_model_input(control_model_input, t).half()  # type: ignore
                                 controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
                             else:
                                 control_model_input = latent_model_input
@@ -738,7 +729,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             change_source(self.controlnet)
                             down_block_res_samples, mid_block_res_sample = call(
                                 control_model_input,
-                                t[0] if isinstance(t, list) else t,
+                                t,
                                 cond=controlnet_prompt_embeds,
                                 controlnet_cond=image,
                                 conditioning_scale=cond_scale,
@@ -765,41 +756,55 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             inspect.signature(self.unet.forward).parameters.keys()  # type: ignore
                         )
 
+                        _kwargs = {
+                            "down_block_additional_residuals": down_block_res_samples,
+                            "mid_block_additional_residual": mid_block_res_sample,
+                            "down_intrablock_additional_residuals": down_intrablock_additional_residuals,
+                            "order": j,
+                            "drop_encode_decode": config.api.drop_encode_decode
+                            != "off",
+                            "quick_replicate": config.api.deepcache_cache_interval > 1,
+                            "replicate_prv_feature": prv_feature,
+                        }
                         if split_latents_into_two and do_classifier_free_guidance:
                             uncond, cond = text_embeddings.chunk(2)
-                            uncond_down, uncond_mid, cond_down, cond_mid = (
-                                None,
-                                None,
-                                None,
-                                None,
-                            )
+                            uncond_down, uncond_mid = None, None
+                            cond_down, cond_mid = None, None
+                            uncond_intra, cond_intra = None, None
+
                             if down_block_res_samples is not None:
                                 uncond_down, cond_down = down_block_res_samples.chunk(2)  # type: ignore
                                 uncond_mid, cond_mid = mid_block_res_sample.chunk(2)  # type: ignore
-                            uncond_intra, cond_intra = None, None
+
                             if down_intrablock_additional_residuals is not None:
                                 uncond_intra, cond_intra = [], []
                                 for s in down_intrablock_additional_residuals:
                                     unc, cnd = s.chunk(2)
                                     uncond_intra.append(unc)
                                     cond_intra.append(cnd)
-                            _kwargs = {
-                                "down_block_additional_residuals": cond_down,
-                                "mid_block_additional_residual": cond_mid,
-                                "down_intrablock_additional_residuals": cond_intra,
-                            }
+
+                            _kwargs.update(
+                                {
+                                    "down_block_additional_residuals": cond_down,
+                                    "mid_block_additional_residual": cond_mid,
+                                    "down_intrablock_additional_residuals": cond_intra,
+                                }
+                            )
                             for kw, _ in _kwargs.copy().items():
                                 if kw not in kwargs:
                                     del _kwargs[kw]
+
                             noise_pred_text = call(
                                 latent_model_input, t, cond=cond, **_kwargs
                             )
 
-                            _kwargs = {
-                                "down_block_additional_residuals": uncond_down,
-                                "mid_block_additional_residual": uncond_mid,
-                                "down_intrablock_additional_residuals": uncond_intra,
-                            }
+                            _kwargs.update(
+                                {
+                                    "down_block_additional_residuals": uncond_down,
+                                    "mid_block_additional_residual": uncond_mid,
+                                    "down_intrablock_additional_residuals": uncond_intra,
+                                }
+                            )
                             for kw, _ in _kwargs.copy().items():
                                 if kw not in kwargs:
                                     del _kwargs[kw]
@@ -807,14 +812,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                                 latent_model_input, t, cond=uncond, **_kwargs
                             )
                         else:
-                            _kwargs = {
-                                "down_block_additional_residuals": down_block_res_samples,
-                                "mid_block_additional_residual": mid_block_res_sample,
-                                "down_intrablock_additional_residuals": down_intrablock_additional_residuals,
-                                "order": j,
-                                "drop_encode_decode": config.api.drop_encode_decode
-                                != "off",
-                            }
                             for kw, _ in _kwargs.copy().items():
                                 if kw not in kwargs:
                                     del _kwargs[kw]
@@ -866,7 +863,12 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             else:
                                 noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
                         noise_pred = calculate_cfg(
-                            j, noise_pred_text, noise_pred_uncond, guidance_scale, t, additional_pred=noise_pred_vanilla  # type: ignore
+                            j,
+                            noise_pred_text,  # type: ignore
+                            noise_pred_uncond,  # type: ignore
+                            guidance_scale,
+                            t,
+                            additional_pred=noise_pred_vanilla,
                         )
 
                     if do_self_attention_guidance:
@@ -878,7 +880,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             store_processor,  # type: ignore
                             x,
                             noise_pred_uncond,  # type: ignore
-                            t,  # type: ignore
+                            t,
                             map_size,  # type: ignore
                             text_embeddings,
                             self_attention_scale,
@@ -888,21 +890,13 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             order=j,
                         )
 
-                    if isinstance(t, list) and not isinstance(
-                        self.scheduler, KdiffusionSchedulerAdapter
-                    ):
-                        assert noise_pred is not None
-                        print(noise_pred.shape)
-                        x = multistep_pre(self.scheduler, noise_pred, t, x)  # type: ignore
-                        print(x.shape)
+                    if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+                        # compute the previous noisy sample x_t -> x_t-1
+                        x = self.scheduler.step(  # type: ignore
+                            noise_pred, t.to(noise_pred.device), x.to(noise_pred.device), **extra_step_kwargs  # type: ignore
+                        ).prev_sample  # type: ignore
                     else:
-                        if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
-                            # compute the previous noisy sample x_t -> x_t-1
-                            x = self.scheduler.step(  # type: ignore
-                                noise_pred, t.to(noise_pred.device), x.to(noise_pred.device), **extra_step_kwargs  # type: ignore
-                            ).prev_sample  # type: ignore
-                        else:
-                            x = noise_pred  # type: ignore
+                        x = noise_pred  # type: ignore
 
                     if mask is not None and num_channels_unet == 4:
                         # masking
@@ -919,6 +913,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         x = (1 - init_mask) * init_latents_proper + init_mask * x  # type: ignore
 
                     j += 1
+                    self.unet = postprocess_kohya(self.unet)  # type: ignore
                     return x
 
                 # 8. Denoising loop
@@ -997,12 +992,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                                     return ret[0]
                                 return ret
 
-                            n = len(timesteps)
-                            if config.api.parallel_timestep_processing:
-                                n = adjust_steps_to_idx(n)
-
-                            for i in tqdm(range(n), desc="PyTorch"):
-                                t = timesteps[i]
+                            for i, t in enumerate(tqdm(timesteps, desc="PyTorch")):
                                 latents = do_denoise(latents, t, _call, change)  # type: ignore
 
                                 # call the callback, if provided

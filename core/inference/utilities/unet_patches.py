@@ -6,15 +6,6 @@ from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.utils.torch_utils import apply_freeu
 import torch
 
-# import numpy as np
-
-from .faster_diffusion import (
-    warp_controlnet_block_samples,
-    warp_feature,
-    warp_text,
-    warp_timestep,
-)
-
 _dummy = None  # here so I can import this
 
 
@@ -93,12 +84,8 @@ def _unet_new_forward(
         sample = 2 * sample - 1.0  # type: ignore
 
     # 1. time
-    step = 1
     timesteps = timestep
-    if isinstance(timesteps, list):
-        timesteps = timesteps[0]
-        step = len(timestep)  # type: ignore
-    if not torch.is_tensor(timesteps) and not isinstance(timesteps, list):
+    if not torch.is_tensor(timesteps):
         # TODO: this requires sync between CPU and GPU. So try to pass timesteps as tensors if you can
         # This would be a good case for the `match` statement (Python 3.10+)
         is_mps = sample.device.type == "mps"
@@ -107,15 +94,12 @@ def _unet_new_forward(
         else:
             dtype = torch.int32 if is_mps else torch.int64
         timesteps = torch.tensor([timesteps], dtype=dtype, device=sample.device)
-    elif (not isinstance(timesteps, list)) and len(timesteps.shape) == 0:  # type: ignore
+    elif len(timesteps.shape) == 0:  # type: ignore
         timesteps = timesteps[None].to(sample.device)  # type: ignore
 
-    if (not isinstance(timesteps, list)) and len(timesteps.shape) == 1:  # type: ignore
+    if len(timesteps.shape) == 1:  # type: ignore
         # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
         timesteps = timesteps.expand(sample.shape[0])  # type: ignore
-    elif isinstance(timesteps, list):
-        # timesteps list, such as [981, 961, 941]
-        timesteps = warp_timestep(timesteps, sample.shape[0]).to(sample.device)  # type: ignore
     t_emb = self.time_proj(timesteps)
 
     # `Timesteps` does not contain any weights and will always return f32 tensors
@@ -365,22 +349,6 @@ def _unet_new_forward(
         else:
             down_block_res_samples = self.skip_feature
             sample = self.toup_feature
-
-        # 5. expand features for parallel
-        if isinstance(timestep, list):
-            # timesteps list [981, 961, 941]
-            timesteps = warp_timestep(timestep, sample.shape[0]).to(sample.device)  # type: ignore
-            t_emb = self.time_proj(timesteps).to(self.dtype)
-
-            emb = self.time_embedding(t_emb, timestep_cond)
-
-        down_block_res_samples = warp_controlnet_block_samples(
-            down_block_res_samples, step
-        )
-        sample = warp_feature(sample, step)  # type: ignore
-        encoder_hidden_states = warp_text(encoder_hidden_states, step)
-
-        # 5. expand features for parallel
 
         for i, upsample_block in enumerate(self.up_blocks):
             upsample(upsample_block, i, -len(upsample_block.resnets))
