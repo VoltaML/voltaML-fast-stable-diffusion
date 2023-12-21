@@ -866,7 +866,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             else:
                                 noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
                         noise_pred = calculate_cfg(
-                            noise_pred_text, noise_pred_uncond, guidance_scale, t, additional_pred=noise_pred_vanilla  # type: ignore
+                            j, noise_pred_text, noise_pred_uncond, guidance_scale, t, additional_pred=noise_pred_vanilla  # type: ignore
                         )
 
                     if do_self_attention_guidance:

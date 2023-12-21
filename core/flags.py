@@ -140,6 +140,7 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     video_controlnets: List[str] = field(default_factory=list)  # not working
 
 
+@dataclass
 class UpscaleFlag(Flag, DataClassJsonMixin):
     "Flag for upscaling"
 

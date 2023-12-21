@@ -17,14 +17,12 @@ from .random import create_generator, randn, randn_like
 from .vae import taesd, full_vae, cheap_approximation, numpy_to_pil, decode_latents
 from .prompt_expansion import download_model, expand
 from .cfg import calculate_cfg
-<<<<<<< HEAD
 from .faster_diffusion import (
     get_span,
     adjust_steps_to_idx,
     multistep_pre,
 )
 from .unet_patches import _dummy
-=======
 from .kohya_hires import post_process as postprocess_kohya, modify_unet as modify_kohya
 from .scalecrafter import (
     ScalecrafterSettings,
@@ -33,4 +31,3 @@ from .scalecrafter import (
     scale as step_scalecrafter,
     scale_setup as setup_scalecrafter,
 )
->>>>>>> origin/experimental
