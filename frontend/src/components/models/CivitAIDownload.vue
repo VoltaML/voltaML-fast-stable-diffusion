@@ -46,97 +46,46 @@
     <NSelect
       v-model:value="types"
       :options="[
-        {
-          value: '',
-          label: 'All',
-        },
+        { value: '', label: 'All' },
         {
           value: 'Checkpoint',
           label: 'Checkpoint',
         },
-        {
-          value: 'TextualInversion',
-          label: 'Textual Inversion',
-        },
-        {
-          value: 'LORA',
-          label: 'LORA',
-        },
+        { value: 'TextualInversion', label: 'Textual Inversion' },
+        { value: 'LORA', label: 'LORA' },
+        { value: 'VAE', label: 'VAE' },
       ]"
       style="margin-right: 4px"
     />
-    <NButton @click="refreshImages" style="margin-right: 24px" type="primary">
+    <NButton
+      @click="refreshImages"
+      style="margin-right: 24px; padding: 0px 48px"
+      type="primary"
+    >
       <NIcon>
         <SearchOutline />
       </NIcon>
     </NButton>
-
-    <NIcon style="margin-right: 12px" size="22">
-      <GridOutline />
-    </NIcon>
-    <NSlider
-      style="width: 30vw"
-      :min="1"
-      :max="10"
-      v-model:value="settings.data.settings.frontend.image_browser_columns"
-    >
-    </NSlider>
   </div>
   <div class="main-container" style="margin: 12px; margin-top: 8px">
     <div ref="scrollComponent">
-      <div class="image-grid">
+      <div class="image-grid" ref="gridRef">
         <div
-          v-for="(column, column_index) in columns"
-          v-bind:key="column_index"
-          class="image-column"
-          ref="gridColumnRefs"
+          v-for="(item, item_index) in modelData"
+          v-bind:key="item_index"
+          style="
+            border-radius: 20px;
+            position: relative;
+            border: 1px solid #505050;
+            overflow: hidden;
+            margin-bottom: 8px;
+          "
         >
-          <div
-            v-for="(item, item_index) in column"
-            v-bind:key="item_index"
-            style="
-              border-radius: 20px;
-              position: relative;
-              border: 1px solid #505050;
-              overflow: hidden;
-              margin-bottom: 8px;
-            "
-          >
-            <div v-if="item.modelVersions[0].images[0]?.url">
-              <img
-                :src="item.modelVersions[0].images[0].url"
-                :style="{
-                  width: '100%',
-                  height: 'auto',
-                  minHeight: '200px',
-                  cursor: 'pointer',
-                  borderRadius: '8px',
-                  filter:
-                    nsfwIndex(item.modelVersions[0].images[0].nsfw) >
-                    settings.data.settings.frontend.nsfw_ok_threshold
-                      ? 'blur(12px)'
-                      : 'none',
-                }"
-                @click="imgClick(column_index, item_index)"
-              />
-              <div
-                style="
-                  position: absolute;
-                  width: 100%;
-                  bottom: 0;
-                  padding: 0 8px;
-                  min-height: 32px;
-                  overflow: hidden;
-                  box-sizing: border-box;
-                  backdrop-filter: blur(12px);
-                "
-              >
-                <NText :depth="2">
-                  {{ item.name }}
-                </NText>
-              </div>
-            </div>
-          </div>
+          <CivitAIModelImage
+            :item="item"
+            :item_index="item_index"
+            @img-click="imgClick"
+          />
         </div>
       </div>
     </div>
@@ -144,80 +93,42 @@
 </template>
 
 <script lang="ts" setup>
-import { ModelPopup } from "@/components";
+import { CivitAIModelImage, ModelPopup } from "@/components";
 import { themeOverridesKey } from "@/injectionKeys";
-import { GridOutline, SearchOutline } from "@vicons/ionicons5";
-import {
-  NButton,
-  NIcon,
-  NInput,
-  NSelect,
-  NSlider,
-  NText,
-  useLoadingBar,
-} from "naive-ui";
-import {
-  computed,
-  inject,
-  onMounted,
-  onUnmounted,
-  reactive,
-  ref,
-  type Ref,
-} from "vue";
+import { SearchOutline } from "@vicons/ionicons5";
+import { NButton, NIcon, NInput, NSelect, useLoadingBar } from "naive-ui";
+import { inject, onMounted, onUnmounted, reactive, ref, type Ref } from "vue";
 import type { ICivitAIModel, ICivitAIModels } from "../../civitai";
-import { nsfwIndex } from "../../civitai";
-import { useSettings } from "../../store/settings";
 
-const settings = useSettings();
 const theme = inject(themeOverridesKey);
 
 const loadingLock = ref(false);
 const currentPage = ref(1);
 const sortBy = ref("Most Downloaded");
-const types: Ref<"Checkpoint" | "TextualInversion" | "LORA" | ""> = ref("");
+const types: Ref<"Checkpoint" | "TextualInversion" | "LORA" | "VAE" | ""> =
+  ref("");
 
 const currentModel = ref<ICivitAIModel | null>(null);
 const showModal = ref(false);
+const gridRef = ref<HTMLElement | null>(null);
 
 const scrollComponent = ref<HTMLElement | null>(null);
 
 const itemFilter = ref("");
 
-const gridColumnRefs = ref<HTMLElement[]>([]);
-
-const currentColumn = ref(0);
-const currentRowIndex = ref(0);
+const currentIndex = ref(0);
 
 const loadingBar = useLoadingBar();
 
-function imgClick(column_index: number, item_index: number) {
-  currentRowIndex.value = item_index;
-  currentColumn.value = column_index;
-  const item = columns.value[column_index][item_index];
+function imgClick(item_index: number) {
+  const item = modelData[item_index];
 
+  currentIndex.value = item_index;
   currentModel.value = item;
   showModal.value = true;
 }
 
 const modelData: ICivitAIModel[] = reactive<ICivitAIModel[]>([]);
-
-const columns = computed(() => {
-  const cols: ICivitAIModel[][] = [];
-  for (
-    let i = 0;
-    i < settings.data.settings.frontend.image_browser_columns;
-    i++
-  ) {
-    cols.push([]);
-  }
-  for (let i = 0; i < modelData.length; i++) {
-    cols[i % settings.data.settings.frontend.image_browser_columns].push(
-      modelData[i]
-    );
-  }
-  return cols;
-});
 
 async function refreshImages() {
   // Clear the data
@@ -256,16 +167,11 @@ const handleScroll = (e: Event) => {
 
   // Get the smallest possible value of the bottom of the images columns
   let minBox = 0;
-  for (const col of gridColumnRefs.value) {
-    const lastImg = col.childNodes.item(
-      col.childNodes.length - 2
-    ) as HTMLElement;
-    const bottombbox = lastImg.getBoundingClientRect().bottom;
-    if (minBox === 0) {
-      minBox = bottombbox;
-    } else if (bottombbox < minBox) {
-      minBox = bottombbox;
-    }
+  const bottombbox = gridRef.value!.getBoundingClientRect().bottom;
+  if (minBox === 0) {
+    minBox = bottombbox;
+  } else if (bottombbox < minBox) {
+    minBox = bottombbox;
   }
 
   // Extend the image limit if the bottom of the images is less than 50px from the bottom of the screen
@@ -307,21 +213,19 @@ const handleScroll = (e: Event) => {
 };
 
 function moveImage(direction: number) {
-  const numColumns = settings.data.settings.frontend.image_browser_columns;
+  if (currentModel.value === null) {
+    return;
+  }
 
   if (direction === -1) {
     // Traverse all the columns before removing one from the currentIndexOfColumn
-    if (currentColumn.value > 0) {
-      imgClick(currentColumn.value - 1, currentRowIndex.value);
-    } else {
-      imgClick(numColumns - 1, currentRowIndex.value - 1);
+    if (currentIndex.value > 0) {
+      imgClick(currentIndex.value - 1);
     }
   } else if (direction === 1) {
     // Traverse all the columns before adding one from the currentIndexOfColumn
-    if (currentColumn.value < numColumns - 1) {
-      imgClick(currentColumn.value + 1, currentRowIndex.value);
-    } else {
-      imgClick(0, currentRowIndex.value + 1);
+    if (currentIndex.value < modelData.length - 1) {
+      imgClick(currentIndex.value + 1);
     }
   }
 }
@@ -370,27 +274,13 @@ refreshImages();
 </script>
 
 <style scoped>
-.img-slider {
-  aspect-ratio: 1/1;
-  height: 182px;
-  width: auto;
-}
-
 .image-grid {
   display: grid;
-  grid-template-columns: repeat(
-    v-bind("settings.data.settings.frontend.image_browser_columns"),
-    1fr
-  );
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   grid-gap: 8px;
 }
 
 .top-bar {
   background-color: v-bind("theme?.Card?.color");
-}
-
-.image-column {
-  display: flex;
-  flex-direction: column;
 }
 </style>

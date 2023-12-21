@@ -22,6 +22,8 @@ class Flag:
 class HighResFixFlag(Flag, DataClassJsonMixin):
     "Flag to fix high resolution images"
 
+    enabled: bool = False  # For storing in json
+
     scale: float = 2
     mode: Literal["latent", "image"] = "latent"
 
@@ -35,7 +37,36 @@ class HighResFixFlag(Flag, DataClassJsonMixin):
     # Img2img
     strength: float = 0.7
     steps: int = 50
-    antialiased: bool = False
+
+
+@dataclass
+class DeepshrinkFlag(Flag, DataClassJsonMixin):
+    "Flag for deepshrink"
+
+    enabled: bool = False  # For storing in json
+
+    depth_1: int = 3  # -1 to 12; steps of 1
+    stop_at_1: float = 0.15  # 0 to 0.5; steps of 0.01
+
+    depth_2: int = 4  # -1 to 12; steps of 1
+    stop_at_2: float = 0.30  # 0 to 0.5; steps of 0.01
+
+    scaler: LatentScaleModel = "bislerp"
+    base_scale: float = 0.5  # 0.05 to 1.0; steps of 0.05
+    early_out: bool = False
+
+
+@dataclass
+class ScalecrafterFlag(Flag, DataClassJsonMixin):
+    "Flag for Scalecrafter settings"
+
+    enabled: bool = False  # For storing in json
+
+    base: str = "sd15"
+    # In other words: allow untested/"unsafe" resolutions like "1234x4321"
+    unsafe_resolutions: bool = True
+    # May produce more "appealing" images, but will triple, or even quadruple memory usage.
+    disperse: bool = False
 
 
 @dataclass
@@ -107,3 +138,14 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     input_video: str = ""  # not working
     init_image: str = ""  # not working
     video_controlnets: List[str] = field(default_factory=list)  # not working
+
+
+class UpscaleFlag(Flag, DataClassJsonMixin):
+    "Flag for upscaling"
+
+    enabled: bool = False  # For storing in json
+
+    upscale_factor: float = field(default=4)
+    tile_size: int = field(default=128)
+    tile_padding: int = field(default=10)
+    model: str = field(default="RealESRGAN_x4plus_anime_6B")

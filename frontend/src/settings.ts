@@ -1,5 +1,6 @@
 import { ControlNetType, type ModelEntry } from "./core/interfaces";
 import { serverUrl } from "./env";
+import { cloneObj } from "./functions";
 
 export enum Sampler {
   DDIM = 1,
@@ -17,6 +18,94 @@ export enum Sampler {
   UniPCMultistep = 13,
   DPMSolverSDEScheduler = 14,
 }
+
+export interface HighResFixFlag {
+  enabled: boolean;
+  scale: number;
+  mode: "latent" | "image";
+  image_upscaler: string;
+  latent_scale_mode:
+    | "nearest"
+    | "area"
+    | "bilinear"
+    | "bislerp"
+    | "bicubic"
+    | "nearest-exact";
+  antialiased: boolean;
+  strength: number;
+  steps: number;
+}
+
+const highresFixFlagDefault: HighResFixFlag = {
+  enabled: false,
+  scale: 2,
+  mode: "image",
+  image_upscaler: "RealESRGAN_x4plus_anime_6B",
+  latent_scale_mode: "bislerp",
+  antialiased: false,
+  strength: 0.65,
+  steps: 50,
+};
+
+export interface UpscaleFlag {
+  enabled: boolean;
+  upscale_factor: number;
+  tile_size: number;
+  tile_padding: number;
+  model: string;
+}
+
+const upscaleFlagDefault: UpscaleFlag = {
+  enabled: false,
+  upscale_factor: 4,
+  tile_size: 128,
+  tile_padding: 10,
+  model: "RealESRGAN_x4plus_anime_6B",
+};
+
+export interface DeepShrinkFlag {
+  enabled: boolean;
+
+  depth_1: number;
+  stop_at_1: number;
+
+  depth_2: number;
+  stop_at_2: number;
+
+  scaler: string;
+  base_scale: number;
+  early_out: boolean;
+}
+
+const deepShrinkFlagDefault: DeepShrinkFlag = {
+  enabled: false,
+
+  depth_1: 3,
+  stop_at_1: 0.15,
+
+  depth_2: 4,
+  stop_at_2: 0.3,
+
+  scaler: "bislerp",
+  base_scale: 0.5,
+  early_out: false,
+};
+
+export interface ScaleCrafterFlag {
+  enabled: boolean;
+
+  base: string;
+  unsafe_resolutions: boolean;
+  disperse: boolean;
+}
+
+const scaleCrafterFlagDefault: ScaleCrafterFlag = {
+  enabled: false,
+
+  base: "sd15",
+  unsafe_resolutions: true,
+  disperse: false,
+};
 
 export type SigmaType =
   | "automatic"
@@ -42,24 +131,6 @@ export interface ISettings {
         width: number;
         height: number;
       };
-    };
-    highres: {
-      scale: number;
-      mode: "latent" | "image";
-
-      image_upscaler: string;
-
-      latent_scale_mode:
-        | "nearest"
-        | "area"
-        | "bilinear"
-        | "bislerp"
-        | "bicubic"
-        | "nearest-exact";
-      antialiased: boolean;
-
-      strength: number;
-      steps: 50;
     };
     refiner: {
       model: string | undefined;
@@ -87,6 +158,10 @@ export interface ISettings {
     batch_size: number;
     self_attention_scale: number;
     sigmas: SigmaType;
+    highres: HighResFixFlag;
+    upscale: UpscaleFlag;
+    deepshrink: DeepShrinkFlag;
+    scalecrafter: ScaleCrafterFlag;
   };
   img2img: {
     prompt: string;
@@ -103,6 +178,10 @@ export interface ISettings {
     image: string;
     self_attention_scale: number;
     sigmas: SigmaType;
+    highres: HighResFixFlag;
+    upscale: UpscaleFlag;
+    deepshrink: DeepShrinkFlag;
+    scalecrafter: ScaleCrafterFlag;
   };
   inpainting: {
     prompt: string;
@@ -119,6 +198,10 @@ export interface ISettings {
     mask_image: string;
     self_attention_scale: number;
     sigmas: SigmaType;
+    highres: HighResFixFlag;
+    upscale: UpscaleFlag;
+    deepshrink: DeepShrinkFlag;
+    scalecrafter: ScaleCrafterFlag;
   };
   controlnet: {
     prompt: string;
@@ -140,6 +223,10 @@ export interface ISettings {
     return_preprocessed: boolean;
     self_attention_scale: number;
     sigmas: SigmaType;
+    highres: HighResFixFlag;
+    upscale: UpscaleFlag;
+    deepshrink: DeepShrinkFlag;
+    scalecrafter: ScaleCrafterFlag;
   };
   upscale: {
     image: string;
@@ -276,15 +363,6 @@ export const defaultSettings: ISettings = {
         height: 1024,
       },
     },
-    highres: {
-      image_upscaler: "RealESRGAN_x4plus_anime_6B",
-      mode: "latent",
-      scale: 2,
-      latent_scale_mode: "bislerp",
-      strength: 0.7,
-      steps: 50,
-      antialiased: false,
-    },
     refiner: {
       model: undefined,
       aesthetic_score: 6.0,
@@ -311,6 +389,10 @@ export const defaultSettings: ISettings = {
     negative_prompt: "",
     self_attention_scale: 0,
     sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
   },
   img2img: {
     width: 512,
@@ -327,6 +409,10 @@ export const defaultSettings: ISettings = {
     image: "",
     self_attention_scale: 0,
     sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
   },
   inpainting: {
     prompt: "",
@@ -343,6 +429,10 @@ export const defaultSettings: ISettings = {
     sampler: Sampler.DPMSolverMultistep,
     self_attention_scale: 0,
     sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
   },
   controlnet: {
     prompt: "",
@@ -364,6 +454,10 @@ export const defaultSettings: ISettings = {
     return_preprocessed: true,
     self_attention_scale: 0.0,
     sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
   },
   upscale: {
     image: "",

@@ -16,11 +16,13 @@ from api.websockets.notification import Notification
 from core import shared
 from core.config import config
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
+from core.flags import HighResFixFlag, UpscaleFlag
 from core.inference.ait import AITemplateStableDiffusion
 from core.inference.esrgan import RealESRGAN, Upscaler
 from core.inference.functions import is_ipex_available
 from core.inference.pytorch import PyTorchStableDiffusion
 from core.inference.sdxl import SDXLStableDiffusion
+from core.inference.utilities.latents import scale_latents
 from core.interrogation.base_interrogator import InterrogationResult
 from core.optimizations import is_hypertile_available
 from core.png_metadata import save_images
@@ -30,13 +32,18 @@ from core.types import (
     AITemplateDynamicBuildRequest,
     Capabilities,
     ControlNetQueueEntry,
+    Img2imgData,
+    Img2ImgQueueEntry,
     InferenceBackend,
     InferenceJob,
+    InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
     ONNXBuildRequest,
     PyTorchModelBase,
     TextualInversionLoadRequest,
+    Txt2ImgQueueEntry,
+    UpscaleData,
     UpscaleQueueEntry,
     VaeLoadRequest,
 )
@@ -101,13 +108,15 @@ class GPU:
         for device in [torch.device("cpu"), torch.device(config.api.device)]:
             support_map[device.type] = []
             for dt in test_suite:
-                dtype = getattr(torch, dt)
-                a = torch.tensor([1.0], device=device, dtype=dtype)
-                b = torch.tensor([2.0], device=device, dtype=dtype)
                 try:
+                    dtype = getattr(torch, dt)
+                    a = torch.tensor([1.0], device=device, dtype=dtype)
+                    b = torch.tensor([2.0], device=device, dtype=dtype)
                     torch.matmul(a, b)
                     support_map[device.type].append(dt)
                 except RuntimeError:
+                    pass
+                except AssertionError:
                     pass
         for t, s in support_map.items():
             if t == "cpu":
@@ -178,6 +187,198 @@ class GPU:
         index = torch.device(config.api.device).index
         return torch.cuda.memory_allocated(index) / 1024**2
 
+    def highres_flag(
+        self, job: Job, images: Union[List[Image.Image], torch.Tensor]
+    ) -> List[Image.Image]:
+        flag = job.flags["highres_fix"]
+        flag = HighResFixFlag.from_dict(flag)
+
+        if flag.mode == "latent":
+            assert isinstance(images, (torch.Tensor, torch.FloatTensor))
+            latents = images
+
+            latents = scale_latents(
+                latents=latents,
+                scale=flag.scale,
+                latent_scale_mode=flag.latent_scale_mode,
+            )
+
+            height = latents.shape[2] * 8
+            width = latents.shape[3] * 8
+            output_images = latents
+        else:
+            from core.shared_dependent import gpu
+
+            assert isinstance(images, List)
+            output_images = []
+
+            for image in images:
+                output: tuple[Image.Image, float] = gpu.upscale(
+                    UpscaleQueueEntry(
+                        data=UpscaleData(
+                            id=job.data.id,
+                            # FastAPI validation error, we need to do this so that we can pass in a PIL image
+                            image=image,  # type: ignore
+                            upscale_factor=flag.scale,
+                        ),
+                        model=flag.image_upscaler,
+                        save_image=False,
+                    )
+                )
+                output_images.append(output[0])
+
+            output_images = output_images[0]  # type: ignore
+            height = int(flag.scale * job.data.height)
+            width = int(flag.scale * job.data.width)
+
+        data = Img2imgData(
+            prompt=job.data.prompt,
+            negative_prompt=job.data.negative_prompt,
+            image=output_images,  # type: ignore
+            scheduler=job.data.scheduler,
+            batch_count=job.data.batch_count,
+            batch_size=job.data.batch_size,
+            strength=flag.strength,
+            steps=flag.steps,
+            guidance_scale=job.data.guidance_scale,
+            prompt_to_prompt_settings=job.data.prompt_to_prompt_settings,
+            seed=job.data.seed,
+            self_attention_scale=job.data.self_attention_scale,
+            sigmas=job.data.sigmas,
+            sampler_settings=job.data.sampler_settings,
+            height=height,
+            width=width,
+        )
+
+        img2img_job = Img2ImgQueueEntry(
+            data=data,
+            model=job.model,
+        )
+
+        result: List[Image.Image] = self.run_inference(img2img_job)
+        return result
+
+    def upscale_flag(self, job: Job, images: List[Image.Image]) -> List[Image.Image]:
+        logger.debug("Upscaling image")
+
+        flag = UpscaleFlag(**job.flags["upscale"])
+
+        final_images = []
+        for image in images:
+            upscale_job = UpscaleQueueEntry(
+                data=UpscaleData(
+                    image=image,  # type: ignore # Pydantic would cry if we extend the union
+                    upscale_factor=flag.upscale_factor,
+                    tile_padding=flag.tile_padding,
+                    tile_size=flag.tile_size,
+                ),
+                model=flag.model,
+            )
+
+            final_images.append(self.upscale(upscale_job)[0])
+
+        return final_images
+
+    def postprocess(
+        self, job: Job, images: Union[List[Image.Image], torch.Tensor]
+    ) -> List[Image.Image]:
+        "Postprocess images"
+
+        logger.debug(f"Postprocessing flags: {job.flags}")
+
+        if "highres_fix" in job.flags:
+            images = self.highres_flag(job, images)
+
+        if "upscale" in job.flags:
+            assert isinstance(images, list)
+            images = self.upscale_flag(job, images)
+
+        assert isinstance(images, list)
+        return images
+
+    def set_callback_target(self, job: Job):
+        "Set the callback target for the job, updates the shared object and also returns the target"
+
+        if isinstance(job, Txt2ImgQueueEntry):
+            target = "txt2img"
+        elif isinstance(job, Img2ImgQueueEntry):
+            target = "img2img"
+        elif isinstance(job, ControlNetQueueEntry):
+            target = "controlnet"
+        elif isinstance(job, InpaintQueueEntry):
+            target = "inpaint"
+        else:
+            raise ValueError("Unknown job type")
+
+        shared.current_method = target
+        return target
+
+    def run_inference(self, job: Job) -> List[Image.Image]:
+        try:
+            model: Union[
+                PyTorchStableDiffusion,
+                AITemplateStableDiffusion,
+                SDXLStableDiffusion,
+                "OnnxStableDiffusion",
+            ] = self.loaded_models[job.model]
+        except KeyError as err:
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "error",
+                    "Model not loaded",
+                    f"Model {job.model} is not loaded, please load it first",
+                )
+            )
+
+            logger.debug("Model not loaded on any GPU. Raising error")
+            raise ModelNotLoadedError(f"Model {job.model} is not loaded") from err
+
+        shared.interrupt = False
+
+        if job.flags:
+            logger.debug(f"Job flags: {job.flags}")
+
+        steps = job.data.steps
+
+        strength: float = getattr(job.data, "strength", 1.0)
+        steps = math.floor(steps * strength)
+
+        shared.current_done_steps = 0
+
+        if not isinstance(job, ControlNetQueueEntry):
+            from core import shared_dependent
+
+            if shared_dependent.cached_controlnet_preprocessor is not None:
+                # Wipe cached controlnet preprocessor
+                shared_dependent.cached_controlnet_preprocessor = None
+                self.memory_cleanup()
+
+        if isinstance(model, PyTorchStableDiffusion):
+            logger.debug("Generating with SD PyTorch")
+            shared.current_model = "SD1.x"
+            images: Union[List[Image.Image], torch.Tensor] = model.generate(job)
+        elif isinstance(model, SDXLStableDiffusion):
+            logger.debug("Generating with SDXL (PyTorch)")
+            shared.current_model = "SDXL"
+            images: Union[List[Image.Image], torch.Tensor] = model.generate(job)
+        elif isinstance(model, AITemplateStableDiffusion):
+            logger.debug("Generating with SD AITemplate")
+            images: Union[List[Image.Image], torch.Tensor] = model.generate(job)
+        else:
+            from core.inference.onnx import OnnxStableDiffusion
+
+            if isinstance(model, OnnxStableDiffusion):
+                logger.debug("Generating with SD ONNX")
+                images: Union[List[Image.Image], torch.Tensor] = model.generate(job)
+            else:
+                raise NotImplementedError("Unknown model type")
+
+        self.memory_cleanup()
+
+        # Run postprocessing
+        images = self.postprocess(job, images)
+        return images
+
     def generate(
         self,
         job: InferenceJob,
@@ -185,69 +386,6 @@ class GPU:
         "Generate images from the queue"
 
         job = preprocess_job(job)
-
-        def generate_thread_call(job: Job) -> List[Image.Image]:
-            try:
-                model: Union[
-                    PyTorchStableDiffusion,
-                    AITemplateStableDiffusion,
-                    SDXLStableDiffusion,
-                    "OnnxStableDiffusion",
-                ] = self.loaded_models[job.model]
-            except KeyError as err:
-                websocket_manager.broadcast_sync(
-                    Notification(
-                        "error",
-                        "Model not loaded",
-                        f"Model {job.model} is not loaded, please load it first",
-                    )
-                )
-
-                logger.debug("Model not loaded on any GPU. Raising error")
-                raise ModelNotLoadedError(f"Model {job.model} is not loaded") from err
-
-            shared.interrupt = False
-
-            if job.flags:
-                logger.debug(f"Job flags: {job.flags}")
-
-            steps = job.data.steps
-
-            strength: float = getattr(job.data, "strength", 1.0)
-            steps = math.floor(steps * strength)
-
-            shared.current_done_steps = 0
-
-            if not isinstance(job, ControlNetQueueEntry):
-                from core import shared_dependent
-
-                if shared_dependent.cached_controlnet_preprocessor is not None:
-                    # Wipe cached controlnet preprocessor
-                    shared_dependent.cached_controlnet_preprocessor = None
-                    self.memory_cleanup()
-
-            if isinstance(model, PyTorchStableDiffusion):
-                logger.debug("Generating with PyTorch")
-                shared.current_model = "SD1.x"
-                images: List[Image.Image] = model.generate(job)
-            elif isinstance(model, SDXLStableDiffusion):
-                logger.debug("Generating with SDXL (PyTorch)")
-                shared.current_model = "SDXL"
-                images: List[Image.Image] = model.generate(job)
-            elif isinstance(model, AITemplateStableDiffusion):
-                logger.debug("Generating with AITemplate")
-                images: List[Image.Image] = model.generate(job)
-            else:
-                from core.inference.onnx import OnnxStableDiffusion
-
-                if isinstance(model, OnnxStableDiffusion):
-                    logger.debug("Generating with ONNX")
-                    images: List[Image.Image] = model.generate(job)
-                else:
-                    raise NotImplementedError("Unknown model type")
-
-            self.memory_cleanup()
-            return images
 
         try:
             # Wait for turn in the queue
@@ -257,7 +395,8 @@ class GPU:
 
             # Generate images
             try:
-                generated_images = generate_thread_call(job)
+                self.set_callback_target(job)
+                generated_images = self.run_inference(job)
 
                 assert generated_images is not None
 

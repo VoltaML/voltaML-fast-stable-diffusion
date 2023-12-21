@@ -49,7 +49,9 @@ from transformers.models.clip.modeling_clip import BaseModelOutput
 
 from core.config import config
 from core.files import get_full_model_path
+from core.flags import HighResFixFlag
 from core.optimizations import compile_sfast
+from core.types import Job
 from core.utils import determine_model_type
 
 logger = logging.getLogger(__name__)
@@ -663,7 +665,7 @@ def convert_vaept_to_diffusers(path: str) -> AutoencoderKL:
         from safetensors import safe_open
 
         checkpoint = {}
-        with safe_open(path, framework="pt", device="cpu") as f:
+        with safe_open(path, framework="pt", device="cpu") as f:  # type: ignore # weird import structure, seems to be replaced at runtime in the lib
             for key in f.keys():
                 checkpoint[key] = f.get_tensor(key)
     else:
@@ -678,3 +680,14 @@ def convert_vaept_to_diffusers(path: str) -> AutoencoderKL:
     vae = AutoencoderKL(**vae_config)
     vae.load_state_dict(converted_vae_checkpoint)
     return vae
+
+
+def get_output_type(job: Job):
+    return (
+        "latent"
+        if (
+            "highres_fix" in job.flags
+            and HighResFixFlag(**job.flags["highres_fix"]).mode == "latent"
+        )
+        else "pil"
+    )

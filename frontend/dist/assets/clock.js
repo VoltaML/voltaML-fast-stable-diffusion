@@ -5,10 +5,11 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
-import { d as defineComponent, o as openBlock, j as createElementBlock, f as createBaseVNode, e as createBlock, w as withCtx, g as createVNode, h as unref, k as createTextVNode, C as toDisplayString, n as NCard, m as createCommentVNode, u as useSettings, l as NTooltip, F as Fragment, a as useState, c as computed, G as spaceRegex, B as NIcon, i as NSelect, H as promptHandleKeyUp, I as promptHandleKeyDown, J as NInput, _ as _export_sfc, K as watch, z as ref, t as serverUrl } from "./index.js";
-import { a as NSlider, N as NSwitch } from "./Switch.js";
+import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, c as createBlock, w as withCtx, e as createVNode, f as unref, k as createTextVNode, B as toDisplayString, N as NCard, h as createCommentVNode, u as useSettings, l as NTooltip, i as computed, F as Fragment, a as useState, E as spaceRegex, A as NIcon, m as NSelect, G as promptHandleKeyUp, H as promptHandleKeyDown, I as NInput, _ as _export_sfc, J as watch, y as ref, s as serverUrl } from "./index.js";
+import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import { N as NForm, a as NFormItem } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
+import { N as NForm, c as NFormItem } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
+import { N as NSwitch } from "./Switch.js";
 const _hoisted_1$4 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -147,12 +148,66 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1$2 = {
+const _hoisted_1$2 = { class: "flex-container" };
+const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CFG Scale", -1);
+const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 3-15 for most images.", -1);
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+  __name: "CFGScaleInput",
+  props: {
+    tab: {
+      type: String,
+      required: true
+    }
+  },
+  setup(__props) {
+    const props = __props;
+    const settings = useSettings();
+    const cfgMax = computed(() => {
+      var scale = 30;
+      return scale + Math.max(
+        settings.defaultSettings.api.apply_unsharp_mask ? 15 : 0,
+        settings.defaultSettings.api.cfg_rescale_threshold == "off" ? 0 : 30
+      );
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", _hoisted_1$2, [
+        createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+          trigger: withCtx(() => [
+            _hoisted_2$2
+          ]),
+          default: withCtx(() => [
+            createTextVNode(" Guidance scale indicates how close should the model stay to the prompt. Higher values might be exactly what you want, but generated images might have some artifacts. Lower values give the model more freedom, and therefore might produce more coherent/less-artifacty images, but wouldn't follow the prompt as closely. "),
+            _hoisted_3$1
+          ]),
+          _: 1
+        }),
+        createVNode(unref(NSlider), {
+          value: unref(settings).data.settings[props.tab].cfg_scale,
+          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings[props.tab].cfg_scale = $event),
+          min: 1,
+          max: cfgMax.value,
+          step: 0.5,
+          style: { "margin-right": "12px" }
+        }, null, 8, ["value", "max"]),
+        createVNode(unref(NInputNumber), {
+          value: unref(settings).data.settings[props.tab].cfg_scale,
+          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings[props.tab].cfg_scale = $event),
+          size: "small",
+          style: { "min-width": "96px", "width": "96px" },
+          min: 1,
+          max: cfgMax.value,
+          step: 0.5
+        }, null, 8, ["value", "max"])
+      ]);
+    };
+  }
+});
+const _hoisted_1$1 = {
   key: 0,
   class: "flex-container"
 };
-const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Width", -1);
-const _hoisted_3$1 = {
+const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Width", -1);
+const _hoisted_3 = {
   key: 1,
   class: "flex-container"
 };
@@ -167,7 +222,7 @@ const _hoisted_7 = {
   class: "flex-container"
 };
 const _hoisted_8 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "DimensionsInput",
   props: {
     dimensionsObject: {
@@ -180,15 +235,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     const settings = useSettings();
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
-        unref(settings).data.settings.aitDim.width ? (openBlock(), createElementBlock("div", _hoisted_1$2, [
-          _hoisted_2$2,
+        unref(settings).data.settings.aitDim.width ? (openBlock(), createElementBlock("div", _hoisted_1$1, [
+          _hoisted_2$1,
           createVNode(unref(NSlider), {
             value: props.dimensionsObject.width,
             "onUpdate:value": _cache[0] || (_cache[0] = ($event) => props.dimensionsObject.width = $event),
             min: unref(settings).data.settings.aitDim.width[0],
             max: unref(settings).data.settings.aitDim.width[1],
-            step: 64,
-            style: { "margin-right": "12px" }
+            step: 64
           }, null, 8, ["value", "min", "max"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.width,
@@ -199,15 +253,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             max: unref(settings).data.settings.aitDim.width[1],
             step: 64
           }, null, 8, ["value", "min", "max"])
-        ])) : (openBlock(), createElementBlock("div", _hoisted_3$1, [
+        ])) : (openBlock(), createElementBlock("div", _hoisted_3, [
           _hoisted_4,
           createVNode(unref(NSlider), {
             value: props.dimensionsObject.width,
             "onUpdate:value": _cache[2] || (_cache[2] = ($event) => props.dimensionsObject.width = $event),
             min: 128,
             max: 2048,
-            step: 1,
-            style: { "margin-right": "12px" }
+            step: 1
           }, null, 8, ["value"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.width,
@@ -224,8 +277,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[4] || (_cache[4] = ($event) => props.dimensionsObject.height = $event),
             min: unref(settings).data.settings.aitDim.height[0],
             max: unref(settings).data.settings.aitDim.height[1],
-            step: 64,
-            style: { "margin-right": "12px" }
+            step: 64
           }, null, 8, ["value", "min", "max"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.height,
@@ -243,8 +295,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[6] || (_cache[6] = ($event) => props.dimensionsObject.height = $event),
             min: 128,
             max: 2048,
-            step: 1,
-            style: { "margin-right": "12px" }
+            step: 1
           }, null, 8, ["value"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.height,
@@ -258,7 +309,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "Prompt",
   props: {
     tab: {
@@ -411,61 +462,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Prompt = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-780680bc"]]);
-const _hoisted_1$1 = { class: "flex-container" };
-const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CFG Scale", -1);
-const _hoisted_3 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 3-15 for most images.", -1);
-const _sfc_main$1 = /* @__PURE__ */ defineComponent({
-  __name: "CFGScaleInput",
-  props: {
-    tab: {
-      type: String,
-      required: true
-    }
-  },
-  setup(__props) {
-    const props = __props;
-    const settings = useSettings();
-    const cfgMax = computed(() => {
-      var scale = 30;
-      return scale + Math.max(
-        settings.defaultSettings.api.apply_unsharp_mask ? 15 : 0,
-        settings.defaultSettings.api.cfg_rescale_threshold == "off" ? 0 : 30
-      );
-    });
-    return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$1, [
-        createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-          trigger: withCtx(() => [
-            _hoisted_2$1
-          ]),
-          default: withCtx(() => [
-            createTextVNode(" Guidance scale indicates how close should the model stay to the prompt. Higher values might be exactly what you want, but generated images might have some artifacts. Lower values give the model more freedom, and therefore might produce more coherent/less-artifacty images, but wouldn't follow the prompt as closely. "),
-            _hoisted_3
-          ]),
-          _: 1
-        }),
-        createVNode(unref(NSlider), {
-          value: unref(settings).data.settings[props.tab].cfg_scale,
-          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings[props.tab].cfg_scale = $event),
-          min: 1,
-          max: cfgMax.value,
-          step: 0.5,
-          style: { "margin-right": "12px" }
-        }, null, 8, ["value", "max"]),
-        createVNode(unref(NInputNumber), {
-          value: unref(settings).data.settings[props.tab].cfg_scale,
-          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings[props.tab].cfg_scale = $event),
-          size: "small",
-          style: { "min-width": "96px", "width": "96px" },
-          min: 1,
-          max: cfgMax.value,
-          step: 0.5
-        }, null, 8, ["value", "max"])
-      ]);
-    };
-  }
-});
+const Prompt = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-780680bc"]]);
 const _hoisted_1 = {
   key: 0,
   class: "flex-container"
@@ -585,8 +582,8 @@ class BurnerClock {
 export {
   BurnerClock as B,
   Prompt as P,
-  _sfc_main$3 as _,
-  _sfc_main$1 as a,
+  _sfc_main$2 as _,
+  _sfc_main$3 as a,
   _sfc_main as b,
   _sfc_main$4 as c,
   _sfc_main$5 as d

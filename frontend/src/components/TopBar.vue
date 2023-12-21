@@ -1,7 +1,18 @@
 <template>
   <div class="top-bar">
+    <NButton
+      :bordered="false"
+      v-if="!isLargeScreen"
+      style="margin: 0 2px; padding: 8px 8px"
+      @click="global.state.collapsibleBarActive = true"
+    >
+      <NIcon size="24">
+        <Menu />
+      </NIcon>
+    </NButton>
+
     <NSelect
-      style="max-width: 250px; padding-left: 12px; padding-right: 12px"
+      style="max-width: 250px; padding-right: 4px"
       :options="generatedModelOptions"
       @update:value="onModelChange"
       :loading="modelsLoading"
@@ -19,8 +30,11 @@
       :loading="modelsLoading"
       :type="settings.data.settings.model ? 'default' : 'success'"
     >
-      Load Model</NButton
-    >
+      <p v-if="isLargeScreen">Load Model</p>
+      <NIcon size="18" v-else>
+        <Add />
+      </NIcon>
+    </NButton>
     <NModal
       v-model:show="showModal"
       closable
@@ -417,9 +431,12 @@ import {
 
 import { serverUrl } from "@/env";
 import { startWebsocket } from "@/functions";
+import { isLargeScreen } from "@/helper";
 import { useWebsocket } from "@/store/websockets";
 import {
+  Add,
   DocumentText,
+  Menu,
   PowerSharp,
   SettingsSharp,
   StatsChart,
@@ -767,7 +784,7 @@ async function loadVAE(vae: ModelEntry) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: global.state.selected_model.name,
+          model: global.state.selected_model.path,
           vae: vae.path,
         }),
       });
@@ -789,7 +806,7 @@ async function loadTextualInversion(textualInversion: ModelEntry) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: global.state.selected_model.name,
+          model: global.state.selected_model.path,
           textual_inversion: textualInversion.path,
         }),
       });
@@ -1046,6 +1063,10 @@ async function dropdownSelected(key: string) {
   }
 }
 
+const topBarWidth = computed(() => {
+  return isLargeScreen.value ? "calc(100% - 64px)" : "100%";
+});
+
 startWebsocket(message);
 </script>
 
@@ -1061,7 +1082,7 @@ startWebsocket(message);
   align-items: center;
   padding-top: 10px;
   padding-bottom: 10px;
-  width: calc(100% - 64px);
+  width: v-bind(topBarWidth);
   height: 32px;
   position: fixed;
   top: 0;

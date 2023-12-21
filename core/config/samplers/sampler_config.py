@@ -131,7 +131,7 @@ class SamplerConfig:
     euler: Euler = field(default_factory=Euler)
     lms: LMS = field(default_factory=LMS)
     heun: Heun = field(default_factory=Heun)
-    heunpp: Heun = field(default_factory=Heunpp)
+    heunpp: Heunpp = field(default_factory=Heunpp)
     dpm_fast: DPM_fast = field(default_factory=DPM_fast)
     dpm_adaptive: DPM_adaptive = field(default_factory=DPM_adaptive)
     dpm2: DPM_2 = field(default_factory=DPM_2)

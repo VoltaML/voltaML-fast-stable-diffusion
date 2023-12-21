@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Union
 
 import torch
 from diffusers.models.autoencoder_kl import AutoencoderKL
@@ -20,12 +20,15 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets import Data
 from api.websockets.notification import Notification
-from core import shared
 from core.config import config
 from core.files import get_full_model_path
-from core.flags import SDXLFlag, SDXLRefinerFlag
+from core.flags import SDXLFlag, SDXLRefinerFlag, DeepshrinkFlag, ScalecrafterFlag
 from core.inference.base_model import InferenceModel
-from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
+from core.inference.functions import (
+    convert_vaept_to_diffusers,
+    get_output_type,
+    load_pytorch_pipeline,
+)
 from core.inference.utilities import change_scheduler, create_generator
 from core.inference_callbacks import callback
 from core.optimizations import optimize_vae
@@ -211,106 +214,6 @@ class SDXLStableDiffusion(InferenceModel):
 
         return pipe, unl
 
-    def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
-        "Generate an image from a prompt"
-
-        total_images: List[Image.Image] = []
-
-        pipe = self.create_pipe(
-            scheduler=(job.data.scheduler, job.data.sigmas),
-            sampler_settings=job.data.sampler_settings,
-        )
-        generator = create_generator(job.data.seed)
-        shared.current_method = "txt2img"
-
-        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            output_type = "pil"
-
-            xl_flag = None
-            if "sdxl" in job.flags:
-                xl_flag = SDXLFlag.from_dict(job.flags["sdxl"])
-
-            refiner = None
-            if "refiner" in job.flags:
-                output_type = "latent"
-                refiner = SDXLRefinerFlag.from_dict(job.flags["refiner"])
-
-            refiner_model, unload = None, lambda: ""
-            if config.api.sdxl_refiner == "joint" and refiner is not None:
-                refiner_model, unload = self.load_refiner(refiner, job)
-
-            original_size = None
-            if xl_flag:
-                original_size = [
-                    xl_flag.original_size.height,
-                    xl_flag.original_size.width,
-                ]
-
-            data = pipe.text2img(
-                original_size=original_size,
-                generator=generator,
-                prompt=job.data.prompt,
-                height=job.data.height,
-                width=job.data.width,
-                num_inference_steps=job.data.steps,
-                guidance_scale=job.data.guidance_scale,
-                negative_prompt=job.data.negative_prompt,
-                output_type=output_type,
-                callback=callback,
-                num_images_per_prompt=job.data.batch_size,
-                seed=job.data.seed,
-                self_attention_scale=job.data.self_attention_scale,
-                prompt_expansion_settings=job.data.prompt_to_prompt_settings,
-                refiner=refiner,
-                refiner_model=refiner_model,
-            )
-
-            if refiner is not None and config.api.sdxl_refiner == "separate":
-                latents: torch.FloatTensor = data[0]  # type: ignore
-
-                refiner_model, unload = self.load_refiner(refiner, job)
-
-                data = pipe(
-                    aesthetic_score=refiner.aesthetic_score,
-                    negative_aesthetic_score=refiner.negative_aesthetic_score,
-                    original_size=original_size,
-                    image=latents,
-                    generator=generator,
-                    prompt=job.data.prompt,
-                    height=job.data.height,
-                    width=job.data.width,
-                    strength=refiner.strength,
-                    num_inference_steps=refiner.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    negative_prompt=job.data.negative_prompt,
-                    callback=callback,
-                    num_images_per_prompt=job.data.batch_size,
-                    return_dict=False,
-                    output_type="pil",
-                    seed=job.data.seed,
-                    self_attention_scale=job.data.self_attention_scale,
-                    prompt_expansion_settings=job.data.prompt_to_prompt_settings,
-                )
-            images: list[Image.Image] = data[0]  # type: ignore
-            total_images.extend(images)
-            unload()
-
-        websocket_manager.broadcast_sync(
-            data=Data(
-                data_type="txt2img",
-                data={
-                    "progress": 0,
-                    "current_step": 0,
-                    "total_steps": 0,
-                    "image": convert_images_to_base64_grid(
-                        total_images, quality=90, image_format="webp"
-                    ),
-                },
-            )
-        )
-
-        return total_images
-
     def create_pipe(
         self,
         controlnet: Optional[str] = "",
@@ -345,7 +248,123 @@ class SDXLStableDiffusion(InferenceModel):
 
         return pipe
 
-    def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
+    def txt2img(self, job: Txt2ImgQueueEntry) -> Union[List[Image.Image], torch.Tensor]:
+        "Generate an image from a prompt"
+
+        pipe = self.create_pipe(
+            scheduler=(job.data.scheduler, job.data.sigmas),
+            sampler_settings=job.data.sampler_settings,
+        )
+        generator = create_generator(job.data.seed)
+
+        total_images: Union[List[Image.Image], torch.Tensor] = []
+        output_type = get_output_type(job)
+
+        deepshrink = None
+        if "deepshrink" in job.flags:
+            deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
+
+        scalecrafter = None
+        if "scalecrafter" in job.flags:
+            scalecrafter = ScalecrafterFlag.from_dict(job.flags["scalecrafter"])
+
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
+            xl_flag = None
+            if "sdxl" in job.flags:
+                xl_flag = SDXLFlag.from_dict(job.flags["sdxl"])
+
+            refiner = None
+            if "refiner" in job.flags:
+                output_type = "latent"
+                refiner = SDXLRefinerFlag.from_dict(job.flags["refiner"])
+
+            refiner_model, unload = None, lambda: ""
+            if config.api.sdxl_refiner == "joint" and refiner is not None:
+                refiner_model, unload = self.load_refiner(refiner, job)
+
+            original_size = None
+            if xl_flag:
+                original_size = [
+                    xl_flag.original_size.height,
+                    xl_flag.original_size.width,
+                ]
+
+            data = pipe(
+                original_size=original_size,
+                generator=generator,
+                prompt=job.data.prompt,
+                height=job.data.height,
+                width=job.data.width,
+                num_inference_steps=job.data.steps,
+                guidance_scale=job.data.guidance_scale,
+                negative_prompt=job.data.negative_prompt,
+                output_type=output_type,
+                callback=callback,
+                num_images_per_prompt=job.data.batch_size,
+                seed=job.data.seed,
+                self_attention_scale=job.data.self_attention_scale,
+                prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                refiner=refiner,
+                refiner_model=refiner_model,
+                deepshrink=deepshrink,
+                scalecrafter=scalecrafter,
+            )
+
+            if refiner is not None and config.api.sdxl_refiner == "separate":
+                latents: torch.FloatTensor = data[0]  # type: ignore
+
+                refiner_model, unload = self.load_refiner(refiner, job)
+
+                data = pipe(
+                    aesthetic_score=refiner.aesthetic_score,
+                    negative_aesthetic_score=refiner.negative_aesthetic_score,
+                    original_size=original_size,
+                    image=latents,
+                    generator=generator,
+                    prompt=job.data.prompt,
+                    height=job.data.height,
+                    width=job.data.width,
+                    strength=refiner.strength,
+                    num_inference_steps=refiner.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    callback=callback,
+                    num_images_per_prompt=job.data.batch_size,
+                    return_dict=False,
+                    output_type=output_type,
+                    seed=job.data.seed,
+                    self_attention_scale=job.data.self_attention_scale,
+                    prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                )
+
+            images: Union[List[Image.Image], torch.Tensor] = data[0]  # type: ignore
+
+            if not isinstance(images, List):
+                total_images = images
+            else:
+                assert isinstance(total_images, List)
+                total_images.extend(images)
+
+            unload()
+
+        if isinstance(total_images, List):
+            websocket_manager.broadcast_sync(
+                data=Data(
+                    data_type="txt2img",
+                    data={
+                        "progress": 0,
+                        "current_step": 0,
+                        "total_steps": 0,
+                        "image": convert_images_to_base64_grid(
+                            total_images, quality=90, image_format="webp"
+                        ),
+                    },
+                )
+            )
+
+        return total_images
+
+    def img2img(self, job: Img2ImgQueueEntry) -> Union[List[Image.Image], torch.Tensor]:
         "Generate an image from an image"
 
         pipe = self.create_pipe(
@@ -355,11 +374,14 @@ class SDXLStableDiffusion(InferenceModel):
         generator = create_generator(job.data.seed)
 
         # Preprocess the image
-        input_image = convert_to_image(job.data.image)
-        input_image = resize(input_image, job.data.width, job.data.height)
+        if isinstance(job.data.image, (str, bytes, Image.Image)):
+            input_image = convert_to_image(job.data.image)
+            input_image = resize(input_image, job.data.width, job.data.height)
+        else:
+            input_image = job.data.image
 
-        total_images: List[Image.Image] = []
-        shared.current_method = "img2img"
+        total_images: Union[List[Image.Image], torch.Tensor] = []
+        output_type = get_output_type(job)
 
         xl_flag = None
         if "sdxl" in job.flags:
@@ -372,16 +394,22 @@ class SDXLStableDiffusion(InferenceModel):
                 xl_flag.original_size.width,
             ]
 
+        deepshrink = None
+        if "deepshrink" in job.flags:
+            deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            data = pipe.img2img(
+            data = pipe(
                 original_size=original_size,
                 generator=generator,
                 prompt=job.data.prompt,
-                image=input_image,
+                image=input_image,  # type: ignore
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
-                output_type="pil",
+                width=job.data.width,
+                height=job.data.height,
+                output_type=output_type,
                 callback=callback,
                 strength=job.data.strength,
                 return_dict=False,
@@ -389,33 +417,35 @@ class SDXLStableDiffusion(InferenceModel):
                 seed=job.data.seed,
                 self_attention_scale=job.data.self_attention_scale,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                deepshrink=deepshrink,
             )
 
-            if not data:
-                raise ValueError("No data returned from pipeline")
+            images: Union[List[Image.Image], torch.Tensor] = data[0]  # type: ignore
 
-            images = data[0]
-            assert isinstance(images, List)
+            if not isinstance(images, List):
+                total_images = images
+            else:
+                assert isinstance(total_images, List)
+                total_images.extend(images)
 
-            total_images.extend(images)
-
-        websocket_manager.broadcast_sync(
-            data=Data(
-                data_type="img2img",
-                data={
-                    "progress": 0,
-                    "current_step": 0,
-                    "total_steps": 0,
-                    "image": convert_images_to_base64_grid(
-                        total_images, quality=90, image_format="webp"
-                    ),
-                },
+        if isinstance(total_images, List):
+            websocket_manager.broadcast_sync(
+                data=Data(
+                    data_type="img2img",
+                    data={
+                        "progress": 0,
+                        "current_step": 0,
+                        "total_steps": 0,
+                        "image": convert_images_to_base64_grid(
+                            total_images, quality=90, image_format="webp"
+                        ),
+                    },
+                )
             )
-        )
 
         return total_images
 
-    def inpaint(self, job: InpaintQueueEntry) -> List[Image.Image]:
+    def inpaint(self, job: InpaintQueueEntry) -> Union[List[Image.Image], torch.Tensor]:
         "Generate an image from an image"
 
         pipe = self.create_pipe(
@@ -432,8 +462,8 @@ class SDXLStableDiffusion(InferenceModel):
         input_mask_image = ImageOps.invert(input_mask_image)
         input_mask_image = resize(input_mask_image, job.data.width, job.data.height)
 
-        total_images: List[Image.Image] = []
-        shared.current_method = "inpainting"
+        total_images: Union[List[Image.Image], torch.Tensor] = []
+        output_type = get_output_type(job)
 
         xl_flag = None
         if "sdxl" in job.flags:
@@ -446,8 +476,12 @@ class SDXLStableDiffusion(InferenceModel):
                 xl_flag.original_size.width,
             ]
 
+        deepshrink = None
+        if "deepshrink" in job.flags:
+            deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            data = pipe.inpaint(
+            data = pipe(
                 original_size=original_size,
                 generator=generator,
                 prompt=job.data.prompt,
@@ -456,7 +490,7 @@ class SDXLStableDiffusion(InferenceModel):
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
-                output_type="pil",
+                output_type=output_type,
                 callback=callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
@@ -465,33 +499,35 @@ class SDXLStableDiffusion(InferenceModel):
                 seed=job.data.seed,
                 self_attention_scale=job.data.self_attention_scale,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                deepshrink=deepshrink,
             )
 
-            if not data:
-                raise ValueError("No data returned from pipeline")
+            images: Union[List[Image.Image], torch.Tensor] = data[0]  # type: ignore
 
-            images = data[0]
-            assert isinstance(images, List)
+            if not isinstance(images, List):
+                total_images = images
+            else:
+                assert isinstance(total_images, List)
+                total_images.extend(images)
 
-            total_images.extend(images)
-
-        websocket_manager.broadcast_sync(
-            data=Data(
-                data_type="inpainting",
-                data={
-                    "progress": 0,
-                    "current_step": 0,
-                    "total_steps": 0,
-                    "image": convert_images_to_base64_grid(
-                        total_images, quality=90, image_format="webp"
-                    ),
-                },
+        if isinstance(total_images, List):
+            websocket_manager.broadcast_sync(
+                data=Data(
+                    data_type="inpainting",
+                    data={
+                        "progress": 0,
+                        "current_step": 0,
+                        "total_steps": 0,
+                        "image": convert_images_to_base64_grid(
+                            total_images, quality=90, image_format="webp"
+                        ),
+                    },
+                )
             )
-        )
 
         return total_images
 
-    def generate(self, job: Job):
+    def generate(self, job: Job) -> Union[List[Image.Image], torch.Tensor]:
         "Generate images from the queue"
 
         logging.info(f"Adding job {job.data.id} to queue")

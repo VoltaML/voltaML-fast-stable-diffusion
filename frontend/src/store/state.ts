@@ -26,6 +26,7 @@ export interface GenerationData {
 }
 
 export interface StateInterface {
+  collapsibleBarActive: boolean;
   progress: number;
   generating: boolean;
   downloading: boolean;
@@ -120,6 +121,7 @@ export interface StateInterface {
 
 export const useState = defineStore("state", () => {
   const state: StateInterface = reactive({
+    collapsibleBarActive: false,
     progress: 0,
     generating: false,
     downloading: false,

@@ -7,7 +7,6 @@
       :min="settings.data.settings.aitDim.width[0]"
       :max="settings.data.settings.aitDim.width[1]"
       :step="64"
-      style="margin-right: 12px"
     />
     <NInputNumber
       v-model:value="props.dimensionsObject.width"
@@ -25,7 +24,6 @@
       :min="128"
       :max="2048"
       :step="1"
-      style="margin-right: 12px"
     />
     <NInputNumber
       v-model:value="props.dimensionsObject.width"
@@ -41,7 +39,6 @@
       :min="settings.data.settings.aitDim.height[0]"
       :max="settings.data.settings.aitDim.height[1]"
       :step="64"
-      style="margin-right: 12px"
     />
     <NInputNumber
       v-model:value="props.dimensionsObject.height"
@@ -59,7 +56,6 @@
       :min="128"
       :max="2048"
       :step="1"
-      style="margin-right: 12px"
     />
     <NInputNumber
       v-model:value="props.dimensionsObject.height"

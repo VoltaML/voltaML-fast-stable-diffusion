@@ -15,6 +15,10 @@ export function convertToTextString(str: string): string {
   return upper.replace(/_/g, " ");
 }
 
+export function cloneObj(obj: any) {
+  return window.structuredClone(obj);
+}
+
 function addActive(x: any) {
   if (!x) return false;
   removeActive(x);

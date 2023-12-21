@@ -609,7 +609,7 @@ class OnnxStableDiffusion(InferenceModel):
                 main_folder / "text_encoder"
             )
             assert isinstance(text_encoder, CLIPTextModelWrapper)
-            text_encoder.to(dtype=dtype, device=device)
+            text_encoder.to(dtype=dtype, device=device)  # type: ignore
             text_encoder.eval()
 
             num_tokens = text_encoder.config.max_position_embeddings

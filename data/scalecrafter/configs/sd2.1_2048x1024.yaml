@@ -1,0 +1,13 @@
+ndcfg_tau: 0
+dilate_tau: 37
+inflate_tau: 0
+dilate_settings: ./assets/dilate_settings/sd2.1_2048x1024.txt
+ndcfg_dilate_settings: ./assets/ndcfg_dilate_settings/sd2.1_2048x1024.txt
+disperse_settings: ~
+disperse_transform: ~
+progressive: true
+num_inference_steps: 50
+inference_batch_size: 4
+num_iters_per_prompt: 1
+latent_height: 128
+latent_width: 256

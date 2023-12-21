@@ -24,7 +24,7 @@ from transformers.models.clip import (
 )
 
 from core.config import config
-from core.flags import SDXLRefinerFlag
+from core.flags import SDXLRefinerFlag, DeepshrinkFlag, ScalecrafterFlag
 from core.inference.utilities import (
     calculate_cfg,
     full_vae,
@@ -40,6 +40,13 @@ from core.inference.utilities import (
     preprocess_image,
     preprocess_mask,
     sag,
+    modify_kohya,
+    postprocess_kohya,
+    get_scalecrafter_config,
+    post_scalecrafter,
+    step_scalecrafter,
+    setup_scalecrafter,
+    ScalecrafterSettings,
 )
 from core.optimizations import ensure_correct_device, inference_context, unload_all
 from core.scheduling import KdiffusionSchedulerAdapter
@@ -307,6 +314,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         adapter_conditioning_factor: float = 1.0,
         refiner: Optional[SDXLRefinerFlag] = None,
         refiner_model: Optional["StableDiffusionXLLongPromptWeightingPipeline"] = None,
+        deepshrink: Optional[DeepshrinkFlag] = None,
+        scalecrafter: Optional[ScalecrafterFlag] = None,  # type: ignore
     ):
         if original_size is None:
             original_size = [height, width]
@@ -323,6 +332,18 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         with inference_context(self.unet, self.vae, height, width) as context:  # type: ignore
             self.unet = context.unet  # type: ignore
             self.vae = context.vae  # type: ignore
+
+            if scalecrafter is not None:
+                unsafe = scalecrafter.unsafe_resolutions  # type: ignore
+                scalecrafter: ScalecrafterSettings = get_scalecrafter_config("sd15", height, width, scalecrafter.disperse)  # type: ignore
+                logger.info(
+                    f'Applying ScaleCrafter with (base="{scalecrafter.base}", res="{scalecrafter.height * 8}x{scalecrafter.width * 8}", dis="{scalecrafter.disperse is not None}")'
+                )
+                if not unsafe and (
+                    (scalecrafter.height * 8) != height
+                    or (scalecrafter.width * 8) != width
+                ):
+                    height, width = scalecrafter.height * 8, scalecrafter.width * 8
 
             refiner_steps = 10000
             if refiner_model is not None:
@@ -449,6 +470,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 scheduler=self.scheduler, generator=generator, eta=eta
             )
 
+            setup_scalecrafter(self.unet, scalecrafter)  # type: ignore
+
             if hasattr(self, "adapter"):
                 if isinstance(self.adapter, MultiAdapter):
                     adapter_state = self.adapter(
@@ -512,6 +535,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 change_source: Callable[[Callable], None],
             ) -> torch.Tensor:
                 nonlocal j, un
+
+                un = modify_kohya(un, j, num_inference_steps, deepshrink)  # type: ignore
+                un = step_scalecrafter(un, scalecrafter, j, num_inference_steps)
 
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
@@ -582,12 +608,24 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                         down_intrablock_additional_residuals=down_intrablock_additional_residuals,
                     )
 
+                un, noise_pred_vanilla = post_scalecrafter(
+                    self.unet,
+                    scalecrafter,
+                    j,
+                    num_inference_steps,
+                    call,
+                    latent_model_input,
+                    t,
+                    cond=prompt_embeds,
+                    down_intrablock_additional_residuals=down_intrablock_additional_residuals,
+                )
+
                 # perform guidance
                 if do_classifier_free_guidance:
                     if not split_latents_into_two:
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
                     noise_pred = calculate_cfg(
-                        noise_pred_text, noise_pred_uncond, guidance_scale, t  # type: ignore
+                        j, noise_pred_text, noise_pred_uncond, guidance_scale, t, noise_pred_vanilla  # type: ignore
                     )
 
                 if do_self_attention_guidance:
@@ -679,8 +717,13 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                                 and is_cancelled_callback()
                             ):
                                 return None
+                un = postprocess_kohya(un)  # type: ignore
 
             # 9. Post-processing
+            if output_type == "latent":
+                unload_all()
+                return latents, False
+
             image = full_vae(latents, self.vae, height=height, width=width)  # type: ignore
 
             # 11. Convert to PIL
@@ -695,159 +738,3 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             return StableDiffusionPipelineOutput(
                 images=image, nsfw_content_detected=False  # type: ignore
             )
-
-    def text2img(
-        self,
-        generator: Union[torch.Generator, philox.PhiloxGenerator],
-        prompt: str,
-        seed: int,
-        aesthetic_score: float = 6.0,
-        negative_aesthetic_score: float = 2.5,
-        original_size: Optional[List[int]] = None,
-        negative_prompt: Optional[str] = None,
-        height: int = 512,
-        width: int = 512,
-        num_inference_steps: int = 50,
-        guidance_scale: float = 7.5,
-        num_images_per_prompt: int = 1,
-        eta: float = 0.0,
-        latents: Optional[torch.FloatTensor] = None,
-        max_embeddings_multiples: Optional[int] = 100,
-        output_type: Literal["pil", "latent"] = "pil",
-        return_dict: bool = True,
-        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
-        is_cancelled_callback: Optional[Callable[[], bool]] = None,
-        callback_steps: int = 1,
-        prompt_expansion_settings=None,
-        self_attention_scale: float = 0,
-        refiner: Optional[SDXLRefinerFlag] = None,
-        refiner_model: Optional["StableDiffusionXLLongPromptWeightingPipeline"] = None,
-    ):
-        return self.__call__(
-            aesthetic_score=aesthetic_score,
-            negative_aesthetic_score=negative_aesthetic_score,
-            original_size=original_size,
-            prompt=prompt,
-            negative_prompt=negative_prompt,
-            seed=seed,
-            height=height,
-            width=width,
-            num_inference_steps=num_inference_steps,
-            guidance_scale=guidance_scale,
-            num_images_per_prompt=num_images_per_prompt,
-            eta=eta,
-            generator=generator,
-            latents=latents,
-            max_embeddings_multiples=max_embeddings_multiples,
-            output_type=output_type,
-            return_dict=return_dict,
-            callback=callback,
-            is_cancelled_callback=is_cancelled_callback,
-            callback_steps=callback_steps,
-            self_attention_scale=self_attention_scale,
-            prompt_expansion_settings=prompt_expansion_settings,
-            refiner=refiner,
-            refiner_model=refiner_model,
-        )
-
-    def img2img(
-        self,
-        image: Union[torch.FloatTensor, Image.Image],
-        prompt: str,
-        seed: int,
-        generator: Union[torch.Generator, philox.PhiloxGenerator],
-        aesthetic_score: float = 6.0,
-        negative_aesthetic_score: float = 2.5,
-        original_size: Optional[List[int]] = None,
-        negative_prompt: Optional[str] = None,
-        strength: float = 0.8,
-        num_inference_steps: int = 50,
-        guidance_scale: Optional[float] = 7.5,
-        num_images_per_prompt: int = 1,
-        eta: Optional[float] = 0.0,
-        max_embeddings_multiples: Optional[int] = 100,
-        output_type: Literal["pil", "latent"] = "pil",
-        return_dict: bool = True,
-        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
-        is_cancelled_callback: Optional[Callable[[], bool]] = None,
-        self_attention_scale: float = 0,
-        callback_steps: int = 1,
-        prompt_expansion_settings=None,
-    ):
-        return self.__call__(
-            self_attention_scale=self_attention_scale,
-            aesthetic_score=aesthetic_score,
-            negative_aesthetic_score=negative_aesthetic_score,
-            original_size=original_size,
-            prompt=prompt,
-            seed=seed,
-            negative_prompt=negative_prompt,
-            image=image,
-            num_inference_steps=num_inference_steps,  # type: ignore
-            guidance_scale=guidance_scale,  # type: ignore
-            strength=strength,
-            num_images_per_prompt=num_images_per_prompt,
-            eta=eta,  # type: ignore
-            generator=generator,
-            max_embeddings_multiples=max_embeddings_multiples,
-            output_type=output_type,
-            return_dict=return_dict,
-            callback=callback,
-            is_cancelled_callback=is_cancelled_callback,
-            callback_steps=callback_steps,
-            prompt_expansion_settings=prompt_expansion_settings,
-        )
-
-    def inpaint(
-        self,
-        image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
-        mask_image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
-        prompt: str,
-        seed: int,
-        generator: Union[torch.Generator, philox.PhiloxGenerator],
-        aesthetic_score: float = 6.0,
-        negative_aesthetic_score: float = 2.5,
-        original_size: Optional[List[int]] = None,
-        negative_prompt: Optional[str] = None,
-        strength: float = 0.8,
-        num_inference_steps: Optional[int] = 50,
-        guidance_scale: Optional[float] = 7.5,
-        num_images_per_prompt: int = 1,
-        eta: Optional[float] = 0.0,
-        max_embeddings_multiples: Optional[int] = 100,
-        output_type: Literal["pil", "latent"] = "pil",
-        return_dict: bool = True,
-        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
-        is_cancelled_callback: Optional[Callable[[], bool]] = None,
-        callback_steps: int = 1,
-        width: int = 512,
-        height: int = 512,
-        self_attention_scale: float = 0,
-        prompt_expansion_settings=None,
-    ):
-        return self.__call__(
-            self_attention_scale=self_attention_scale,
-            aesthetic_score=aesthetic_score,
-            negative_aesthetic_score=negative_aesthetic_score,
-            original_size=original_size,
-            prompt=prompt,
-            seed=seed,
-            negative_prompt=negative_prompt,
-            image=image,
-            mask_image=mask_image,
-            num_inference_steps=num_inference_steps,  # type: ignore
-            guidance_scale=guidance_scale,  # type: ignore
-            strength=strength,
-            num_images_per_prompt=num_images_per_prompt,
-            eta=eta,  # type: ignore
-            generator=generator,
-            max_embeddings_multiples=max_embeddings_multiples,
-            output_type=output_type,
-            return_dict=return_dict,
-            callback=callback,
-            is_cancelled_callback=is_cancelled_callback,
-            callback_steps=callback_steps,
-            width=width,
-            height=height,
-            prompt_expansion_settings=prompt_expansion_settings,
-        )

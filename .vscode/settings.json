@@ -3,20 +3,9 @@
 	"python.testing.unittestEnabled": false,
 	"python.testing.pytestEnabled": true,
 	"python.analysis.typeCheckingMode": "basic",
-<<<<<<< HEAD
-	"python.formatting.provider": "none",
-=======
->>>>>>> origin/experimental
 	"python.languageServer": "Pylance",
-	"rust-analyzer.linkedProjects": [
-		"./manager/Cargo.toml"
-	],
+	"rust-analyzer.linkedProjects": ["./manager/Cargo.toml"],
 	"[python]": {
 		"editor.defaultFormatter": "ms-python.black-formatter"
-<<<<<<< HEAD
 	}
-=======
-	},
-	"python.formatting.provider": "none"
->>>>>>> experimental
 }

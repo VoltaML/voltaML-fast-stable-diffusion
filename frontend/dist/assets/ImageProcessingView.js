@@ -1,24 +1,24 @@
-import { d as defineComponent, a as useState, u as useSettings, p as useMessage, c as computed, b as upscalerOptions, o as openBlock, j as createElementBlock, g as createVNode, w as withCtx, h as unref, r as NGi, n as NCard, N as NSpace, f as createBaseVNode, i as NSelect, l as NTooltip, k as createTextVNode, s as NGrid, t as serverUrl, v as pushScopeId, x as popScopeId, _ as _export_sfc, e as createBlock, D as NTabPane, E as NTabs } from "./index.js";
+import { d as defineComponent, a as useState, u as useSettings, n as useMessage, i as computed, K as upscalerOptions, o as openBlock, g as createElementBlock, e as createVNode, w as withCtx, f as unref, q as NGi, N as NCard, j as NSpace, b as createBaseVNode, m as NSelect, l as NTooltip, k as createTextVNode, r as NGrid, s as serverUrl, c as createBlock, C as NTabPane, D as NTabs } from "./index.js";
 import { _ as _sfc_main$2 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { a as NSlider } from "./Switch.js";
+import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
+import "./Switch.js";
 import "./TrashBin.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-5358ed01"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
-const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1));
+const _hoisted_3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
 const _hoisted_4 = { class: "flex-container" };
-const _hoisted_5 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Scale Factor", -1));
+const _hoisted_5 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Scale Factor", -1);
 const _hoisted_6 = { class: "flex-container" };
-const _hoisted_7 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Tile Size", -1));
+const _hoisted_7 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Tile Size", -1);
 const _hoisted_8 = { class: "flex-container" };
-const _hoisted_9 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Tile Padding", -1));
+const _hoisted_9 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Tile Padding", -1);
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
-  __name: "Upscale",
+  __name: "ESRGAN",
   setup(__props) {
     const global = useState();
     const settings = useSettings();
@@ -208,7 +208,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Upscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-5358ed01"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageProcessingView",
   setup(__props) {
@@ -225,7 +224,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             name: "upscale"
           }, {
             default: withCtx(() => [
-              createVNode(unref(Upscale))
+              createVNode(unref(_sfc_main$1))
             ]),
             _: 1
           })

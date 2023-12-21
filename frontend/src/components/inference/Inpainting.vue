@@ -239,6 +239,9 @@
             </div>
           </NSpace>
         </NCard>
+
+        <HighResFixTabs tab="inpainting" />
+        <Upscale tab="inpainting" />
       </NGi>
 
       <!-- Split -->
@@ -267,13 +270,15 @@
 import "@/assets/2img.css";
 import { BurnerClock } from "@/clock";
 import {
+  CFGScale,
   GenerateSection,
+  HighResFixTabs,
   ImageOutput,
   OutputStats,
   Prompt,
-  SamplerPicker,
-  CFGScale,
   SAGInput,
+  SamplerPicker,
+  Upscale,
 } from "@/components";
 import { serverUrl } from "@/env";
 import {
@@ -360,7 +365,56 @@ const generate = () => {
           prompt_to_prompt: settings.data.settings.api.prompt_to_prompt,
         },
       },
+      ...(settings.data.settings.inpainting.deepshrink.enabled
+        ? {
+            flags: {
+              deepshrink: {
+                early_out:
+                  settings.data.settings.inpainting.deepshrink.early_out,
+                depth_1: settings.data.settings.inpainting.deepshrink.depth_1,
+                stop_at_1:
+                  settings.data.settings.inpainting.deepshrink.stop_at_1,
+                depth_2: settings.data.settings.inpainting.deepshrink.depth_2,
+                stop_at_2:
+                  settings.data.settings.inpainting.deepshrink.stop_at_2,
+                scaler: settings.data.settings.inpainting.deepshrink.scaler,
+                base_scale:
+                  settings.data.settings.inpainting.deepshrink.base_scale,
+              },
+            },
+          }
+        : {}),
       model: settings.data.settings.model?.path,
+      flags: {
+        ...(settings.data.settings.inpainting.highres.enabled
+          ? {
+              highres_fix: {
+                mode: settings.data.settings.inpainting.highres.mode,
+                image_upscaler:
+                  settings.data.settings.inpainting.highres.image_upscaler,
+                scale: settings.data.settings.inpainting.highres.scale,
+                latent_scale_mode:
+                  settings.data.settings.inpainting.highres.latent_scale_mode,
+                strength: settings.data.settings.inpainting.highres.strength,
+                steps: settings.data.settings.inpainting.highres.steps,
+                antialiased:
+                  settings.data.settings.inpainting.highres.antialiased,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.inpainting.upscale.enabled
+          ? {
+              upscale: {
+                upscale_factor:
+                  settings.data.settings.inpainting.upscale.upscale_factor,
+                tile_size: settings.data.settings.inpainting.upscale.tile_size,
+                tile_padding:
+                  settings.data.settings.inpainting.upscale.tile_padding,
+                model: settings.data.settings.inpainting.upscale.model,
+              },
+            }
+          : {}),
+      },
     }),
   })
     .then((res) => {

@@ -221,6 +221,9 @@
             </div>
           </NSpace>
         </NCard>
+
+        <HighResFixTabs tab="controlnet" />
+        <Upscale tab="controlnet" />
       </NGi>
 
       <!-- Split -->
@@ -250,15 +253,17 @@ import "@/assets/2img.css";
 import { BurnerClock } from "@/clock";
 import {
   BatchSizeInput,
+  CFGScale,
   DimensionsInput,
   GenerateSection,
+  HighResFixTabs,
   ImageOutput,
   ImageUpload,
   OutputStats,
   Prompt,
-  SamplerPicker,
-  CFGScale,
   SAGInput,
+  SamplerPicker,
+  Upscale,
 } from "@/components";
 import { serverUrl } from "@/env";
 import {
@@ -351,6 +356,36 @@ const generate = () => {
           settings.data.settings.controlnet.return_preprocessed,
       },
       model: settings.data.settings.model?.path,
+      flags: {
+        ...(settings.data.settings.controlnet.highres.enabled
+          ? {
+              highres_fix: {
+                mode: settings.data.settings.controlnet.highres.mode,
+                image_upscaler:
+                  settings.data.settings.controlnet.highres.image_upscaler,
+                scale: settings.data.settings.controlnet.highres.scale,
+                latent_scale_mode:
+                  settings.data.settings.controlnet.highres.latent_scale_mode,
+                strength: settings.data.settings.controlnet.highres.strength,
+                steps: settings.data.settings.controlnet.highres.steps,
+                antialiased:
+                  settings.data.settings.controlnet.highres.antialiased,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.controlnet.upscale.enabled
+          ? {
+              upscale: {
+                upscale_factor:
+                  settings.data.settings.controlnet.upscale.upscale_factor,
+                tile_size: settings.data.settings.controlnet.upscale.tile_size,
+                tile_padding:
+                  settings.data.settings.controlnet.upscale.tile_padding,
+                model: settings.data.settings.controlnet.upscale.model,
+              },
+            }
+          : {}),
+      },
     }),
   })
     .then((res) => {

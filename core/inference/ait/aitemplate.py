@@ -14,13 +14,10 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
 from api import websocket_manager
 from api.websockets.data import Data
-from core import shared
 from core.config import config
-from core.flags import HighResFixFlag
 from core.inference.ait.pipeline import StableDiffusionAITPipeline
 from core.inference.base_model import InferenceModel
-from core.inference.functions import load_pytorch_pipeline
-from core.inference.utilities.latents import scale_latents
+from core.inference.functions import get_output_type, load_pytorch_pipeline
 from core.inference_callbacks import callback
 from core.types import (
     Backend,
@@ -267,7 +264,7 @@ class AITemplateStableDiffusion(InferenceModel):
             )
         return pipe
 
-    def generate(self, job: Job) -> List[Image.Image]:
+    def generate(self, job: Job) -> Union[List[Image.Image], torch.Tensor]:
         logging.info(f"Adding job {job.data.id} to queue")
 
         if isinstance(job, Txt2ImgQueueEntry):
@@ -286,7 +283,7 @@ class AITemplateStableDiffusion(InferenceModel):
     def txt2img(
         self,
         job: Txt2ImgQueueEntry,
-    ) -> List[Image.Image]:
+    ) -> Union[List[Image.Image], torch.Tensor]:
         "Generates images from text"
         pipe = self.create_pipe(
             scheduler=(job.data.scheduler, job.data.sigmas),
@@ -295,15 +292,10 @@ class AITemplateStableDiffusion(InferenceModel):
 
         generator = create_generator(seed=job.data.seed)
 
-        total_images: List[Image.Image] = []
-        shared.current_method = "txt2img"
+        total_images: Union[List[Image.Image], torch.Tensor] = []
+        output_type = get_output_type(job)
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            output_type = "pil"
-
-            if "highres_fix" in job.flags:
-                output_type = "latent"
-
             data = pipe(
                 generator=generator,
                 prompt=job.data.prompt,
@@ -317,62 +309,37 @@ class AITemplateStableDiffusion(InferenceModel):
                 num_images_per_prompt=job.data.batch_size,
             )
 
-            if output_type == "latent":
-                latents = data[0]  # type: ignore
-                assert isinstance(latents, (torch.Tensor, torch.FloatTensor))
+            images: Union[List[Image.Image], torch.Tensor] = data[0]  # type: ignore
 
-                flag = job.flags["highres_fix"]
-                flag = HighResFixFlag.from_dict(flag)
+            if not isinstance(images, List):
+                total_images = images
+            else:
+                assert isinstance(total_images, List)
+                total_images.extend(images)
 
-                latents = scale_latents(
-                    latents=latents,
-                    scale=flag.scale,
-                    latent_scale_mode=flag.latent_scale_mode,
+        if isinstance(total_images, List):
+            websocket_manager.broadcast_sync(
+                data=Data(
+                    data_type="txt2img",
+                    data={
+                        "progress": 0,
+                        "current_step": 0,
+                        "total_steps": 0,
+                        "image": convert_images_to_base64_grid(
+                            total_images,
+                            quality=config.api.image_quality,
+                            image_format=config.api.image_extension,
+                        ),
+                    },
                 )
-
-                data = pipe(
-                    generator=generator,
-                    prompt=job.data.prompt,
-                    image=latents,
-                    height=latents.shape[2] * 8,
-                    width=latents.shape[3] * 8,
-                    num_inference_steps=flag.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    self_attention_scale=job.data.self_attention_scale,
-                    negative_prompt=job.data.negative_prompt,
-                    output_type="pil",
-                    callback=callback,
-                    strength=flag.strength,
-                    return_dict=False,
-                    num_images_per_prompt=job.data.batch_size,
-                )
-
-            images: list[Image.Image] = data[0]  # type: ignore
-
-            total_images.extend(images)
-
-        websocket_manager.broadcast_sync(
-            data=Data(
-                data_type="txt2img",
-                data={
-                    "progress": 0,
-                    "current_step": 0,
-                    "total_steps": 0,
-                    "image": convert_images_to_base64_grid(
-                        total_images,
-                        quality=config.api.image_quality,
-                        image_format=config.api.image_extension,
-                    ),
-                },
             )
-        )
 
         return total_images
 
     def img2img(
         self,
         job: Img2ImgQueueEntry,
-    ) -> List[Image.Image]:
+    ) -> Union[List[Image.Image], torch.Tensor]:
         "Generates images from images"
         pipe = self.create_pipe(
             scheduler=(job.data.scheduler, job.data.sigmas),
@@ -381,11 +348,15 @@ class AITemplateStableDiffusion(InferenceModel):
 
         generator = create_generator(seed=job.data.seed)
 
-        input_image = convert_to_image(job.data.image)
-        input_image = resize(input_image, job.data.width, job.data.height)
+        # Preprocess the image
+        if isinstance(job.data.image, (str, bytes, Image.Image)):
+            input_image = convert_to_image(job.data.image)
+            input_image = resize(input_image, job.data.width, job.data.height)
+        else:
+            input_image = job.data.image
 
-        total_images: List[Image.Image] = []
-        shared.current_method = "img2img"
+        total_images: Union[List[Image.Image], torch.Tensor] = []
+        output_type = get_output_type(job)
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe(
@@ -395,40 +366,44 @@ class AITemplateStableDiffusion(InferenceModel):
                 image=input_image,  # type: ignore
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                output_type="pil",
+                output_type=output_type,
                 callback=callback,
                 strength=job.data.strength,  # type: ignore
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
             )
 
-            images = data[0]
-            assert isinstance(images, List)
+            images: Union[List[Image.Image], torch.Tensor] = data[0]  # type: ignore
 
-            total_images.extend(images)
+            if not isinstance(images, List):
+                total_images = images
+            else:
+                assert isinstance(total_images, List)
+                total_images.extend(images)
 
-        websocket_manager.broadcast_sync(
-            data=Data(
-                data_type="img2img",
-                data={
-                    "progress": 0,
-                    "current_step": 0,
-                    "total_steps": 0,
-                    "image": convert_images_to_base64_grid(
-                        total_images,
-                        quality=config.api.image_quality,
-                        image_format=config.api.image_extension,
-                    ),
-                },
+        if isinstance(total_images, List):
+            websocket_manager.broadcast_sync(
+                data=Data(
+                    data_type="img2img",
+                    data={
+                        "progress": 0,
+                        "current_step": 0,
+                        "total_steps": 0,
+                        "image": convert_images_to_base64_grid(
+                            total_images,
+                            quality=config.api.image_quality,
+                            image_format=config.api.image_extension,
+                        ),
+                    },
+                )
             )
-        )
 
         return total_images
 
     def controlnet2img(
         self,
         job: ControlNetQueueEntry,
-    ) -> List[Image.Image]:
+    ) -> Union[List[Image.Image], torch.Tensor]:
         "Generates images from images"
         pipe = self.create_pipe(
             controlnet=job.data.controlnet,
@@ -445,8 +420,8 @@ class AITemplateStableDiffusion(InferenceModel):
         if not job.data.is_preprocessed:
             input_image = image_to_controlnet_input(input_image, job.data)
 
-        total_images: List[Image.Image] = [input_image]
-        shared.current_method = "controlnet"
+        total_images: Union[List[Image.Image], torch.Tensor] = []
+        output_type = get_output_type(job)
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe(
@@ -456,7 +431,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 image=input_image,  # type: ignore
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                output_type="pil",
+                output_type=output_type,
                 callback=callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
@@ -465,27 +440,31 @@ class AITemplateStableDiffusion(InferenceModel):
                 width=job.data.width,
             )
 
-            images = data[0]
-            assert isinstance(images, List)
+            images: Union[List[Image.Image], torch.Tensor] = data[0]  # type: ignore
 
-            total_images.extend(images)
+            if not isinstance(images, List):
+                total_images = images
+            else:
+                assert isinstance(total_images, List)
+                total_images.extend(images)
 
-        websocket_manager.broadcast_sync(
-            data=Data(
-                data_type="controlnet",
-                data={
-                    "progress": 0,
-                    "current_step": 0,
-                    "total_steps": 0,
-                    "image": convert_images_to_base64_grid(
-                        total_images
-                        if job.data.return_preprocessed
-                        else total_images[1:],
-                        quality=config.api.image_quality,
-                        image_format=config.api.image_extension,
-                    ),
-                },
+        if isinstance(total_images, List):
+            websocket_manager.broadcast_sync(
+                data=Data(
+                    data_type="controlnet",
+                    data={
+                        "progress": 0,
+                        "current_step": 0,
+                        "total_steps": 0,
+                        "image": convert_images_to_base64_grid(
+                            total_images
+                            if job.data.return_preprocessed
+                            else total_images[1:],
+                            quality=config.api.image_quality,
+                            image_format=config.api.image_extension,
+                        ),
+                    },
+                )
             )
-        )
 
         return total_images

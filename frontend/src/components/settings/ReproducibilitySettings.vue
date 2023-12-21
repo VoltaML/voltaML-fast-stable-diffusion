@@ -189,32 +189,105 @@
       <NSwitch v-model:value="settings.defaultSettings.api.free_u" />
     </NFormItem>
 
-    <div v-if="settings.defaultSettings.api.free_u">
-      <NFormItem label="Free U S1" label-placement="left">
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.free_u_s1"
-          :step="0.01"
-        />
-      </NFormItem>
-      <NFormItem label="Free U S2" label-placement="left">
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.free_u_s2"
-          :step="0.01"
-        />
-      </NFormItem>
-      <NFormItem label="Free U B1" label-placement="left">
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.free_u_b1"
-          :step="0.01"
-        />
-      </NFormItem>
-      <NFormItem label="Free U B2" label-placement="left">
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.free_u_b2"
-          :step="0.01"
-        />
-      </NFormItem>
-    </div>
+    <NCard :bordered="false" style="margin-bottom: 12px">
+      <div v-if="settings.defaultSettings.api.free_u">
+        <div
+          style="
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 8px 0;
+          "
+        >
+          <NButton
+            style="margin-left: 12px"
+            ghost
+            type="info"
+            @click="
+              () => {
+                settings.defaultSettings.api.free_u_b1 = 1.3;
+                settings.defaultSettings.api.free_u_b2 = 1.4;
+                settings.defaultSettings.api.free_u_s1 = 0.9;
+                settings.defaultSettings.api.free_u_s2 = 0.2;
+              }
+            "
+          >
+            Apply SD 1.4 Defaults
+          </NButton>
+          <NButton
+            style="margin-left: 12px"
+            ghost
+            type="warning"
+            @click="
+              () => {
+                settings.defaultSettings.api.free_u_b1 = 1.5;
+                settings.defaultSettings.api.free_u_b2 = 1.6;
+                settings.defaultSettings.api.free_u_s1 = 0.9;
+                settings.defaultSettings.api.free_u_s2 = 0.2;
+              }
+            "
+          >
+            Apply SD 1.5 Defaults
+          </NButton>
+          <NButton
+            style="margin-left: 12px"
+            ghost
+            type="success"
+            @click="
+              () => {
+                settings.defaultSettings.api.free_u_b1 = 1.4;
+                settings.defaultSettings.api.free_u_b2 = 1.6;
+                settings.defaultSettings.api.free_u_s1 = 0.9;
+                settings.defaultSettings.api.free_u_s2 = 0.2;
+              }
+            "
+          >
+            Apply SD 2.1 Defaults
+          </NButton>
+          <NButton
+            style="margin-left: 12px"
+            ghost
+            type="error"
+            @click="
+              () => {
+                settings.defaultSettings.api.free_u_b1 = 1.3;
+                settings.defaultSettings.api.free_u_b2 = 1.4;
+                settings.defaultSettings.api.free_u_s1 = 0.9;
+                settings.defaultSettings.api.free_u_s2 = 0.2;
+              }
+            "
+          >
+            Apply SDXL Defaults
+          </NButton>
+        </div>
+
+        <NFormItem label="Free U B1" label-placement="left">
+          <NInputNumber
+            v-model:value="settings.defaultSettings.api.free_u_b1"
+            :step="0.01"
+          />
+        </NFormItem>
+        <NFormItem label="Free U B2" label-placement="left">
+          <NInputNumber
+            v-model:value="settings.defaultSettings.api.free_u_b2"
+            :step="0.01"
+          />
+        </NFormItem>
+        <NFormItem label="Free U S1" label-placement="left">
+          <NInputNumber
+            v-model:value="settings.defaultSettings.api.free_u_s1"
+            :step="0.01"
+          />
+        </NFormItem>
+        <NFormItem label="Free U S2" label-placement="left">
+          <NInputNumber
+            v-model:value="settings.defaultSettings.api.free_u_s2"
+            :step="0.01"
+          />
+        </NFormItem>
+      </div>
+    </NCard>
 
     <NFormItem label="Upcast VAE" label-placement="left">
       <NSwitch v-model:value="settings.defaultSettings.api.upcast_vae" />
@@ -241,6 +314,8 @@
 
 <script lang="ts" setup>
 import {
+  NButton,
+  NCard,
   NForm,
   NFormItem,
   NInputNumber,

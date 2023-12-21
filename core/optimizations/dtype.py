@@ -1,8 +1,12 @@
 import logging
+from typing import Union
 
 import torch
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
+)
+from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import (
+    StableDiffusionXLPipeline,
 )
 
 from core.config import config
@@ -16,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def cast(
-    pipe: StableDiffusionPipeline,
+    pipe: Union[StableDiffusionPipeline, StableDiffusionXLPipeline],
     device: str,
     dtype: torch.dtype,
     offload: bool,

@@ -128,7 +128,7 @@ def _load(prompt_to_prompt_model, prompt_to_prompt_device):
         _GPT.eval()
 
     device, dtype = _device_dtype(prompt_to_prompt_device)
-    _GPT = _GPT.to(device=device, dtype=dtype)
+    _GPT = _GPT.to(device=device, dtype=dtype)  # type: ignore
 
 
 @torch.inference_mode()

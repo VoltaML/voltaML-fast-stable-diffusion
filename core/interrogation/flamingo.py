@@ -25,7 +25,7 @@ class FlamingoInterrogator(InterrogationModel):
         model = FlamingoModel.from_pretrained(config.interrogator.flamingo_model)
         assert isinstance(model, FlamingoModel)
         self.model = model
-        self.model.to(self.device, dtype=self.dtype)
+        self.model.to(self.device, dtype=self.dtype)  # type: ignore
         self.model.eval()
 
         self.processor = FlamingoProcessor(self.model.config)

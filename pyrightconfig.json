@@ -2,6 +2,7 @@
     "exclude": [
         "core/hijack/diffusers/",
         "venv/",
+        "venv-intel/",
         "core/submodules/",
         "typings/",
         "AITemplate"
