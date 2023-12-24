@@ -98,11 +98,10 @@
         />
         <XLRefiner v-if="isSelectedModelSDXL" />
 
-        <!-- Scaling techniques -->
+        <!-- Postprocessing and fixes -->
         <HighResFixTabs tab="txt2img" />
-
-        <!-- Upscaling -->
         <Upscale tab="txt2img" />
+        <Restoration tab="txt2img" />
       </NGi>
 
       <!-- Split -->
@@ -138,6 +137,7 @@ import {
   OutputStats,
   Prompt,
   ResizeFromDimensionsInput,
+  Restoration,
   SAGInput,
   SamplerPicker,
   Upscale,
@@ -295,6 +295,24 @@ const generate = () => {
                 tile_padding:
                   settings.data.settings.txt2img.upscale.tile_padding,
                 model: settings.data.settings.txt2img.upscale.model,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.txt2img.adetailer.enabled
+          ? {
+              adetailer: {
+                cfg_scale: settings.data.settings.txt2img.adetailer.cfg_scale,
+                mask_blur: settings.data.settings.txt2img.adetailer.mask_blur,
+                mask_dilation:
+                  settings.data.settings.txt2img.adetailer.mask_dilation,
+                mask_padding:
+                  settings.data.settings.txt2img.adetailer.mask_padding,
+                sampler: settings.data.settings.txt2img.adetailer.sampler,
+                seed: settings.data.settings.txt2img.adetailer.seed,
+                self_attention_scale:
+                  settings.data.settings.txt2img.adetailer.self_attention_scale,
+                sigmas: settings.data.settings.txt2img.adetailer.sigmas,
+                steps: settings.data.settings.txt2img.adetailer.steps,
               },
             }
           : {}),

@@ -1,4 +1,4 @@
-export interface ScaleCrafterFlag {
+export interface IScaleCrafterFlag {
   enabled: boolean;
 
   base: string;
@@ -6,7 +6,7 @@ export interface ScaleCrafterFlag {
   disperse: boolean;
 }
 
-export const scaleCrafterFlagDefault: ScaleCrafterFlag = Object.freeze({
+export const scaleCrafterFlagDefault: IScaleCrafterFlag = Object.freeze({
   enabled: false,
 
   base: "sd15",

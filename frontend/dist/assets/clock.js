@@ -5,7 +5,7 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
-import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, c as createBlock, w as withCtx, e as createVNode, f as unref, k as createTextVNode, B as toDisplayString, N as NCard, h as createCommentVNode, u as useSettings, l as NTooltip, i as computed, F as Fragment, a as useState, E as spaceRegex, A as NIcon, m as NSelect, G as promptHandleKeyUp, H as promptHandleKeyDown, I as NInput, _ as _export_sfc, J as watch, y as ref, s as serverUrl } from "./index.js";
+import { d as defineComponent, o as openBlock, a as createElementBlock, b as createBaseVNode, g as createBlock, w as withCtx, e as createVNode, f as unref, h as createTextVNode, D as toDisplayString, l as NCard, j as createCommentVNode, u as useSettings, N as NTooltip, c as computed, F as Fragment, k as useState, E as spaceRegex, C as NIcon, p as NSelect, G as promptHandleKeyUp, H as promptHandleKeyDown, I as NInput, _ as _export_sfc, J as watch, A as ref, v as serverUrl } from "./index.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NForm, c as NFormItem } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
@@ -157,6 +157,11 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     tab: {
       type: String,
       required: true
+    },
+    target: {
+      type: String,
+      required: false,
+      default: "settings"
     }
   },
   setup(__props) {
@@ -168,6 +173,17 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         settings.defaultSettings.api.apply_unsharp_mask ? 15 : 0,
         settings.defaultSettings.api.cfg_rescale_threshold == "off" ? 0 : 30
       );
+    });
+    const target = computed(() => {
+      if (props.target === "settings") {
+        return settings.data.settings[props.tab];
+      } else if (props.target === "adetailer") {
+        return settings.data.settings[props.tab].adetailer;
+      } else if (props.target === "defaultSettingsAdetailer") {
+        return settings.defaultSettings[props.tab].adetailer;
+      } else {
+        return settings.defaultSettings;
+      }
     });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1$2, [
@@ -182,16 +198,16 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           _: 1
         }),
         createVNode(unref(NSlider), {
-          value: unref(settings).data.settings[props.tab].cfg_scale,
-          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings[props.tab].cfg_scale = $event),
+          value: target.value.cfg_scale,
+          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => target.value.cfg_scale = $event),
           min: 1,
           max: cfgMax.value,
           step: 0.5,
           style: { "margin-right": "12px" }
         }, null, 8, ["value", "max"]),
         createVNode(unref(NInputNumber), {
-          value: unref(settings).data.settings[props.tab].cfg_scale,
-          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings[props.tab].cfg_scale = $event),
+          value: target.value.cfg_scale,
+          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => target.value.cfg_scale = $event),
           size: "small",
           style: { "min-width": "96px", "width": "96px" },
           min: 1,
@@ -474,11 +490,27 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     tab: {
       type: String,
       required: true
+    },
+    target: {
+      type: String,
+      required: false,
+      default: "settings"
     }
   },
   setup(__props) {
     const props = __props;
     const settings = useSettings();
+    const target = computed(() => {
+      if (props.target === "settings") {
+        return settings.data.settings[props.tab];
+      } else if (props.target === "adetailer") {
+        return settings.data.settings[props.tab].adetailer;
+      } else if (props.target === "defaultSettingsAdetailer") {
+        return settings.defaultSettings[props.tab].adetailer;
+      } else {
+        return settings.defaultSettings;
+      }
+    });
     return (_ctx, _cache) => {
       var _a;
       return ((_a = unref(settings).data.settings.model) == null ? void 0 : _a.backend) === "PyTorch" ? (openBlock(), createElementBlock("div", _hoisted_1, [
@@ -492,16 +524,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           _: 1
         }),
         createVNode(unref(NSlider), {
-          value: unref(settings).data.settings[props.tab].self_attention_scale,
-          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings[props.tab].self_attention_scale = $event),
+          value: target.value.self_attention_scale,
+          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => target.value.self_attention_scale = $event),
           min: 0,
           max: 1,
           step: 0.05,
           style: { "margin-right": "12px" }
         }, null, 8, ["value"]),
         createVNode(unref(NInputNumber), {
-          value: unref(settings).data.settings[props.tab].self_attention_scale,
-          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings[props.tab].self_attention_scale = $event),
+          value: target.value.self_attention_scale,
+          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => target.value.self_attention_scale = $event),
           size: "small",
           style: { "min-width": "96px", "width": "96px" },
           step: 0.05
@@ -582,9 +614,9 @@ class BurnerClock {
 export {
   BurnerClock as B,
   Prompt as P,
-  _sfc_main$2 as _,
-  _sfc_main$3 as a,
-  _sfc_main as b,
+  _sfc_main$3 as _,
+  _sfc_main as a,
+  _sfc_main$2 as b,
   _sfc_main$4 as c,
   _sfc_main$5 as d
 };

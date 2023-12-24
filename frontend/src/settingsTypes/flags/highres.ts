@@ -1,4 +1,4 @@
-export interface HighResFixFlag {
+export interface IHighResFixFlag {
   enabled: boolean;
   scale: number;
   mode: "latent" | "image";
@@ -15,7 +15,7 @@ export interface HighResFixFlag {
   steps: number;
 }
 
-export const highresFixFlagDefault: HighResFixFlag = Object.freeze({
+export const highresFixFlagDefault: IHighResFixFlag = Object.freeze({
   enabled: false,
   scale: 2,
   mode: "image",

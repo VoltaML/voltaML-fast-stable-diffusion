@@ -1,3 +1,13 @@
+import type {
+  IADetailerSettings,
+  IDeepShrinkFlag,
+  IHighResFixFlag,
+  IScaleCrafterFlag,
+  IUpscaleFlag,
+  Sampler,
+  SigmaType,
+} from ".";
+
 export interface IImg2ImgSettings {
   prompt: string;
   negative_prompt: string;
@@ -13,8 +23,9 @@ export interface IImg2ImgSettings {
   image: string;
   self_attention_scale: number;
   sigmas: SigmaType;
-  highres: HighResFixFlag;
-  upscale: UpscaleFlag;
-  deepshrink: DeepShrinkFlag;
-  scalecrafter: ScaleCrafterFlag;
+  highres: IHighResFixFlag;
+  upscale: IUpscaleFlag;
+  deepshrink: IDeepShrinkFlag;
+  scalecrafter: IScaleCrafterFlag;
+  adetailer: IADetailerSettings;
 }

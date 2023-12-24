@@ -41652,24 +41652,19 @@ function urlFromPath(path) {
   const url = new URL(path, serverUrl);
   return url.href;
 }
-const highresFixFlagDefault = {
+const defaultADetailerSettings = {
   enabled: false,
-  scale: 2,
-  mode: "image",
-  image_upscaler: "RealESRGAN_x4plus_anime_6B",
-  latent_scale_mode: "bislerp",
-  antialiased: false,
-  strength: 0.65,
-  steps: 50
+  steps: 25,
+  cfg_scale: 7,
+  seed: -1,
+  sampler: 13,
+  self_attention_scale: 0,
+  sigmas: "automatic",
+  mask_dilation: 0,
+  mask_blur: 0,
+  mask_padding: 0
 };
-const upscaleFlagDefault = {
-  enabled: false,
-  upscale_factor: 4,
-  tile_size: 128,
-  tile_padding: 10,
-  model: "RealESRGAN_x4plus_anime_6B"
-};
-const deepShrinkFlagDefault = {
+const deepShrinkFlagDefault = Object.freeze({
   enabled: false,
   depth_1: 3,
   stop_at_1: 0.15,
@@ -41678,13 +41673,47 @@ const deepShrinkFlagDefault = {
   scaler: "bislerp",
   base_scale: 0.5,
   early_out: false
-};
-const scaleCrafterFlagDefault = {
+});
+const highresFixFlagDefault = Object.freeze({
+  enabled: false,
+  scale: 2,
+  mode: "image",
+  image_upscaler: "RealESRGAN_x4plus_anime_6B",
+  latent_scale_mode: "bislerp",
+  antialiased: false,
+  strength: 0.65,
+  steps: 50
+});
+const scaleCrafterFlagDefault = Object.freeze({
   enabled: false,
   base: "sd15",
   unsafe_resolutions: true,
   disperse: false
-};
+});
+const upscaleFlagDefault = Object.freeze({
+  enabled: false,
+  upscale_factor: 4,
+  tile_size: 128,
+  tile_padding: 10,
+  model: "RealESRGAN_x4plus_anime_6B"
+});
+var Sampler = /* @__PURE__ */ ((Sampler2) => {
+  Sampler2[Sampler2["DDIM"] = 1] = "DDIM";
+  Sampler2[Sampler2["DDPM"] = 2] = "DDPM";
+  Sampler2[Sampler2["PNDM"] = 3] = "PNDM";
+  Sampler2[Sampler2["LMSD"] = 4] = "LMSD";
+  Sampler2[Sampler2["EulerDiscrete"] = 5] = "EulerDiscrete";
+  Sampler2[Sampler2["HeunDiscrete"] = 6] = "HeunDiscrete";
+  Sampler2[Sampler2["EulerAncestralDiscrete"] = 7] = "EulerAncestralDiscrete";
+  Sampler2[Sampler2["DPMSolverMultistep"] = 8] = "DPMSolverMultistep";
+  Sampler2[Sampler2["DPMSolverSinglestep"] = 9] = "DPMSolverSinglestep";
+  Sampler2[Sampler2["KDPM2Discrete"] = 10] = "KDPM2Discrete";
+  Sampler2[Sampler2["KDPM2AncestralDiscrete"] = 11] = "KDPM2AncestralDiscrete";
+  Sampler2[Sampler2["DEISMultistep"] = 12] = "DEISMultistep";
+  Sampler2[Sampler2["UniPCMultistep"] = 13] = "UniPCMultistep";
+  Sampler2[Sampler2["DPMSolverSDEScheduler"] = 14] = "DPMSolverSDEScheduler";
+  return Sampler2;
+})(Sampler || {});
 const defaultSettings = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
@@ -41714,7 +41743,7 @@ const defaultSettings = {
     height: 512,
     seed: -1,
     cfg_scale: 7,
-    sampler: 8,
+    sampler: Sampler.DPMSolverMultistep,
     prompt: "",
     steps: 25,
     batch_count: 1,
@@ -41725,14 +41754,15 @@ const defaultSettings = {
     highres: cloneObj(highresFixFlagDefault),
     upscale: cloneObj(upscaleFlagDefault),
     deepshrink: cloneObj(deepShrinkFlagDefault),
-    scalecrafter: cloneObj(scaleCrafterFlagDefault)
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
+    adetailer: cloneObj(defaultADetailerSettings)
   },
   img2img: {
     width: 512,
     height: 512,
     seed: -1,
     cfg_scale: 7,
-    sampler: 8,
+    sampler: Sampler.DPMSolverMultistep,
     prompt: "",
     steps: 25,
     batch_count: 1,
@@ -41745,7 +41775,8 @@ const defaultSettings = {
     highres: cloneObj(highresFixFlagDefault),
     upscale: cloneObj(upscaleFlagDefault),
     deepshrink: cloneObj(deepShrinkFlagDefault),
-    scalecrafter: cloneObj(scaleCrafterFlagDefault)
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
+    adetailer: cloneObj(defaultADetailerSettings)
   },
   inpainting: {
     prompt: "",
@@ -41759,18 +41790,19 @@ const defaultSettings = {
     seed: -1,
     batch_count: 1,
     batch_size: 1,
-    sampler: 8,
+    sampler: Sampler.DPMSolverMultistep,
     self_attention_scale: 0,
     sigmas: "automatic",
     highres: cloneObj(highresFixFlagDefault),
     upscale: cloneObj(upscaleFlagDefault),
     deepshrink: cloneObj(deepShrinkFlagDefault),
-    scalecrafter: cloneObj(scaleCrafterFlagDefault)
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
+    adetailer: cloneObj(defaultADetailerSettings)
   },
   controlnet: {
     prompt: "",
     image: "",
-    sampler: 8,
+    sampler: Sampler.DPMSolverMultistep,
     controlnet: ControlNetType.CANNY,
     negative_prompt: "",
     width: 512,
@@ -41790,7 +41822,8 @@ const defaultSettings = {
     highres: cloneObj(highresFixFlagDefault),
     upscale: cloneObj(upscaleFlagDefault),
     deepshrink: cloneObj(deepShrinkFlagDefault),
-    scalecrafter: cloneObj(scaleCrafterFlagDefault)
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
+    adetailer: cloneObj(defaultADetailerSettings)
   },
   upscale: {
     image: "",
@@ -41880,7 +41913,7 @@ const defaultSettings = {
     simplify_unet: false
   },
   bot: {
-    default_scheduler: 8,
+    default_scheduler: Sampler.DPMSolverMultistep,
     verbose: false,
     use_default_negative_prompt: true
   },
@@ -43790,10 +43823,10 @@ app.use(index, {
 app.mount("#app");
 export {
   createTmOptions as $,
-  NIcon as A,
-  toDisplayString as B,
-  NTabPane as C,
-  NTabs as D,
+  ref as A,
+  NButton as B,
+  NIcon as C,
+  toDisplayString as D,
   spaceRegex as E,
   Fragment as F,
   promptHandleKeyUp as G,
@@ -43803,7 +43836,7 @@ export {
   upscalerOptions as K,
   renderList as L,
   NScrollbar as M,
-  NCard as N,
+  NTooltip as N,
   replaceable as O,
   createInjectionKey as P,
   cB as Q,
@@ -43817,7 +43850,7 @@ export {
   useThemeClass as Y,
   NInternalSelectMenu as Z,
   _export_sfc as _,
-  useState2 as a,
+  createElementBlock as a,
   AddIcon as a$,
   happensIn as a0,
   call as a1,
@@ -43947,7 +43980,7 @@ export {
   carouselLight$1 as bx,
   color2Class as by,
   rateLight as bz,
-  createBlock as c,
+  computed as c,
   VTarget as c0,
   VFollower as c1,
   sliderLight$1 as c2,
@@ -43957,24 +43990,24 @@ export {
   defineComponent as d,
   createVNode as e,
   unref as f,
-  createElementBlock as g,
-  createCommentVNode as h,
-  computed as i,
-  NSpace as j,
-  createTextVNode as k,
-  NTooltip as l,
-  NSelect as m,
-  useMessage as n,
+  createBlock as g,
+  createTextVNode as h,
+  NSpace as i,
+  createCommentVNode as j,
+  useState2 as k,
+  NCard as l,
+  NTabPane as m,
+  NTabs as n,
   openBlock as o,
-  onUnmounted as p,
-  NGi as q,
-  NGrid as r,
-  serverUrl as s,
-  pushScopeId as t,
+  NSelect as p,
+  useMessage as q,
+  onUnmounted as r,
+  NGi as s,
+  NGrid as t,
   useSettings as u,
-  popScopeId as v,
+  serverUrl as v,
   withCtx as w,
-  h as x,
-  ref as y,
-  NButton as z
+  pushScopeId as x,
+  popScopeId as y,
+  h as z
 };

@@ -4,7 +4,13 @@ from typing import Optional, Union
 
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
-from core.flags import DeepshrinkFlag, HighResFixFlag, ScalecrafterFlag, UpscaleFlag
+from core.flags import (
+    ADetailerFlag,
+    DeepshrinkFlag,
+    HighResFixFlag,
+    ScalecrafterFlag,
+    UpscaleFlag,
+)
 from core.types import SigmaScheduler
 
 
@@ -22,8 +28,6 @@ class QuantDict:
 class BaseDiffusionMixin:
     width: int = 512
     height: int = 512
-    batch_count: int = 1
-    batch_size: int = 1
     seed: int = -1
     cfg_scale: int = 7
     steps: int = 40
@@ -39,6 +43,7 @@ class BaseDiffusionMixin:
     upscale: UpscaleFlag = field(default_factory=UpscaleFlag)
     deepshrink: DeepshrinkFlag = field(default_factory=DeepshrinkFlag)
     scalecrafter: ScalecrafterFlag = field(default_factory=ScalecrafterFlag)
+    adetailer: ADetailerFlag = field(default_factory=ADetailerFlag)
 
 
 @dataclass

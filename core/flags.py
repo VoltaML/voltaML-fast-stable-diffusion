@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
-from typing import Literal, Optional
+from typing import Dict, Literal, Union
 
 from dataclasses_json.api import DataClassJsonMixin
+from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
-from core.types import InpaintData
+from core.types import SigmaScheduler
 
 LatentScaleModel = Literal[
     "nearest",
@@ -111,10 +112,23 @@ class UpscaleFlag(Flag, DataClassJsonMixin):
 class ADetailerFlag(Flag, DataClassJsonMixin):
     "Flag for ADetailer settings"
 
-    enabled: bool = False  # For storing in json
+    enabled: bool = field(default=False)  # For storing in json
 
     # Inpainting
-    mask_dilation: int = 4
-    mask_blur: int = 4
-    mask_padding: int = 32
-    inpainting_data: Optional[InpaintData] = None
+    image: Union[bytes, str, None] = field(default=None)
+    mask_image: Union[bytes, str, None] = field(default=None)
+    sampler: Union[
+        int, str
+    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
+    steps: int = field(default=25)
+    cfg_scale: float = field(default=7)
+    self_attention_scale: float = field(default=0.0)
+    sigmas: SigmaScheduler = field(default="automatic")
+    seed: int = field(default=0)
+    sampler_settings: Dict = field(default_factory=dict)
+    prompt_to_prompt_settings: Dict = field(default_factory=dict)
+
+    # ADetailer specific
+    mask_dilation: int = field(default=4)
+    mask_blur: int = field(default=4)
+    mask_padding: int = field(default=32)

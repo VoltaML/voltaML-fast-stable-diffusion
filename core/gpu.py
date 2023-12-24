@@ -2,6 +2,7 @@ import logging
 import math
 import multiprocessing
 import time
+from dataclasses import asdict
 from importlib.util import find_spec
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Union
@@ -37,6 +38,7 @@ from core.types import (
     Img2ImgQueueEntry,
     InferenceBackend,
     InferenceJob,
+    InpaintData,
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
@@ -284,19 +286,27 @@ class GPU:
         logger.debug("Running ADetailer")
 
         flag = ADetailerFlag(**job.flags["adetailer"])
-        data = flag.inpainting_data
+        data = asdict(flag)
+        mask_blur = data.pop("mask_blur")
+        mask_dilation = data.pop("mask_dilation")
+        mask_padding = data.pop("mask_padding")
+        data.pop("enabled", None)
+
+        data = InpaintData(**data)
 
         assert data is not None
 
         final_images = []
         for image in images:
             data.image = image  # type: ignore
+            data.prompt = job.data.prompt
+            data.negative_prompt = job.data.negative_prompt
 
             adetailer_job = ADetailerQueueEntry(
                 data=data,
-                mask_blur=flag.mask_blur,
-                mask_dilation=flag.mask_dilation,
-                mask_padding=flag.mask_padding,
+                mask_blur=mask_blur,
+                mask_dilation=mask_dilation,
+                mask_padding=mask_padding,
                 model=job.model,
             )
 

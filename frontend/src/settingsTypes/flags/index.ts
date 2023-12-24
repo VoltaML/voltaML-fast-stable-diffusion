@@ -1,6 +1,7 @@
 import type { IRefinerSettings } from "./refiner";
 import type { ISDXLSettings } from "./sdxl";
 
+export * from "./adetailer";
 export * from "./deepshrink";
 export * from "./highres";
 export * from "./refiner";

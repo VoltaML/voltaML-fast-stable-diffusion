@@ -4,6 +4,7 @@ import { cloneObj } from "./functions";
 import {
   Sampler,
   deepShrinkFlagDefault,
+  defaultADetailerSettings,
   highresFixFlagDefault,
   scaleCrafterFlagDefault,
   upscaleFlagDefault,
@@ -86,6 +87,7 @@ export const defaultSettings: ISettings = {
     upscale: cloneObj(upscaleFlagDefault),
     deepshrink: cloneObj(deepShrinkFlagDefault),
     scalecrafter: cloneObj(scaleCrafterFlagDefault),
+    adetailer: cloneObj(defaultADetailerSettings),
   },
   img2img: {
     width: 512,
@@ -106,6 +108,7 @@ export const defaultSettings: ISettings = {
     upscale: cloneObj(upscaleFlagDefault),
     deepshrink: cloneObj(deepShrinkFlagDefault),
     scalecrafter: cloneObj(scaleCrafterFlagDefault),
+    adetailer: cloneObj(defaultADetailerSettings),
   },
   inpainting: {
     prompt: "",
@@ -126,6 +129,7 @@ export const defaultSettings: ISettings = {
     upscale: cloneObj(upscaleFlagDefault),
     deepshrink: cloneObj(deepShrinkFlagDefault),
     scalecrafter: cloneObj(scaleCrafterFlagDefault),
+    adetailer: cloneObj(defaultADetailerSettings),
   },
   controlnet: {
     prompt: "",
@@ -151,6 +155,7 @@ export const defaultSettings: ISettings = {
     upscale: cloneObj(upscaleFlagDefault),
     deepshrink: cloneObj(deepShrinkFlagDefault),
     scalecrafter: cloneObj(scaleCrafterFlagDefault),
+    adetailer: cloneObj(defaultADetailerSettings),
   },
   upscale: {
     image: "",

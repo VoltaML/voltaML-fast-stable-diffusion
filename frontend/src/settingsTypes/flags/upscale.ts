@@ -1,4 +1,4 @@
-export interface UpscaleFlag {
+export interface IUpscaleFlag {
   enabled: boolean;
   upscale_factor: number;
   tile_size: number;
@@ -6,7 +6,7 @@ export interface UpscaleFlag {
   model: string;
 }
 
-export const upscaleFlagDefault: UpscaleFlag = Object.freeze({
+export const upscaleFlagDefault: IUpscaleFlag = Object.freeze({
   enabled: false,
   upscale_factor: 4,
   tile_size: 128,

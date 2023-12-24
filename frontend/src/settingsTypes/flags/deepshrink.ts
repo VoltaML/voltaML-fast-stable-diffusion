@@ -1,4 +1,4 @@
-export interface DeepShrinkFlag {
+export interface IDeepShrinkFlag {
   enabled: boolean;
 
   depth_1: number;
@@ -12,7 +12,7 @@ export interface DeepShrinkFlag {
   early_out: boolean;
 }
 
-export const deepShrinkFlagDefault: DeepShrinkFlag = Object.freeze({
+export const deepShrinkFlagDefault: IDeepShrinkFlag = Object.freeze({
   enabled: false,
 
   depth_1: 3,

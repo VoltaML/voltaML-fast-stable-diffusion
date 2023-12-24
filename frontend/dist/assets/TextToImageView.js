@@ -1,8 +1,8 @@
-import { d as defineComponent, u as useSettings, a as useState, o as openBlock, c as createBlock, w as withCtx, b as createBaseVNode, e as createVNode, f as unref, g as createElementBlock, h as createCommentVNode, N as NCard, i as computed, j as NSpace, k as createTextVNode, l as NTooltip, m as NSelect, n as useMessage, p as onUnmounted, q as NGi, r as NGrid, s as serverUrl } from "./index.js";
-import { _ as _sfc_main$b } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
-import { _ as _sfc_main$c } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
-import { B as BurnerClock, P as Prompt, _ as _sfc_main$5, a as _sfc_main$6, b as _sfc_main$7, c as _sfc_main$8, d as _sfc_main$d } from "./clock.js";
-import { _ as _sfc_main$4, a as _sfc_main$9, b as _sfc_main$a } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
+import { d as defineComponent, u as useSettings, c as computed, o as openBlock, a as createElementBlock, b as createBaseVNode, e as createVNode, f as unref, g as createBlock, w as withCtx, h as createTextVNode, N as NTooltip, i as NSpace, j as createCommentVNode, F as Fragment, k as useState, l as NCard, m as NTabPane, n as NTabs, p as NSelect, q as useMessage, r as onUnmounted, s as NGi, t as NGrid, v as serverUrl } from "./index.js";
+import { _ as _sfc_main$d } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$e } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$7, a as _sfc_main$8, B as BurnerClock, P as Prompt, b as _sfc_main$9, c as _sfc_main$a, d as _sfc_main$f } from "./clock.js";
+import { _ as _sfc_main$6, a as _sfc_main$b, b as _sfc_main$c } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
@@ -11,6 +11,114 @@ import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";
 import "./DescriptionsItem.js";
 import "./Settings.js";
+const _hoisted_1$3 = { class: "flex-container" };
+const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("div", { class: "slider-label" }, [
+  /* @__PURE__ */ createBaseVNode("p", null, "Enabled")
+], -1);
+const _hoisted_3$3 = { class: "flex-container" };
+const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1);
+const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1);
+const _hoisted_6$3 = { class: "flex-container" };
+const _hoisted_7$3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Seed", -1);
+const _hoisted_8$2 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "For random seed use -1.", -1);
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
+  __name: "ADetailer",
+  props: {
+    tab: {
+      type: String,
+      required: true
+    },
+    target: {
+      type: String,
+      required: false,
+      default: "settings"
+    }
+  },
+  setup(__props) {
+    const props = __props;
+    const settings = useSettings();
+    const target = computed(() => {
+      if (props.target === "settings") {
+        return settings.data.settings;
+      }
+      return settings.defaultSettings;
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock(Fragment, null, [
+        createBaseVNode("div", _hoisted_1$3, [
+          _hoisted_2$3,
+          createVNode(unref(NSwitch), {
+            value: target.value[props.tab].adetailer.enabled,
+            "onUpdate:value": _cache[0] || (_cache[0] = ($event) => target.value[props.tab].adetailer.enabled = $event)
+          }, null, 8, ["value"])
+        ]),
+        target.value[props.tab].adetailer.enabled ? (openBlock(), createBlock(unref(NSpace), {
+          key: 0,
+          vertical: "",
+          class: "left-container"
+        }, {
+          default: withCtx(() => [
+            createVNode(unref(_sfc_main$6), { type: "inpainting" }),
+            createBaseVNode("div", _hoisted_3$3, [
+              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                trigger: withCtx(() => [
+                  _hoisted_4$3
+                ]),
+                default: withCtx(() => [
+                  createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
+                  _hoisted_5$3
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NSlider), {
+                value: target.value[props.tab].adetailer.steps,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => target.value[props.tab].adetailer.steps = $event),
+                min: 5,
+                max: 300,
+                style: { "margin-right": "12px" }
+              }, null, 8, ["value"]),
+              createVNode(unref(NInputNumber), {
+                value: target.value[props.tab].adetailer.steps,
+                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => target.value[props.tab].adetailer.steps = $event),
+                size: "small",
+                style: { "min-width": "96px", "width": "96px" }
+              }, null, 8, ["value"])
+            ]),
+            createVNode(unref(_sfc_main$7), {
+              tab: "inpainting",
+              target: "adetailer"
+            }),
+            createVNode(unref(_sfc_main$8), {
+              tab: "inpainting",
+              target: "adetailer"
+            }),
+            createBaseVNode("div", _hoisted_6$3, [
+              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                trigger: withCtx(() => [
+                  _hoisted_7$3
+                ]),
+                default: withCtx(() => [
+                  createTextVNode(" Seed is a number that represents the starting canvas of your image. If you want to create the same image as your friend, you can use the same settings and seed to do so. "),
+                  _hoisted_8$2
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NInputNumber), {
+                value: target.value[props.tab].adetailer.seed,
+                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => target.value[props.tab].adetailer.seed = $event),
+                size: "small",
+                min: -1,
+                max: 999999999999,
+                style: { "flex-grow": "1" }
+              }, null, 8, ["value"])
+            ])
+          ]),
+          _: 1
+        })) : createCommentVNode("", true)
+      ], 64);
+    };
+  }
+});
 const _hoisted_1$2 = { class: "flex-container" };
 const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Enabled", -1);
 const _hoisted_3$2 = { key: 0 };
@@ -18,7 +126,7 @@ const _hoisted_4$2 = { class: "flex-container" };
 const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Width", -1);
 const _hoisted_6$2 = { class: "flex-container" };
 const _hoisted_7$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "ResizeFromDimensionsInput",
   setup(__props) {
     const settings = useSettings();
@@ -74,6 +182,53 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               }, null, 8, ["value"])
             ])
           ])) : createCommentVNode("", true)
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+  __name: "Restoration",
+  props: {
+    tab: {
+      type: String,
+      required: true
+    },
+    target: {
+      type: String,
+      required: false,
+      default: "settings"
+    }
+  },
+  setup(__props) {
+    const props = __props;
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NCard), {
+        title: "Restoration",
+        class: "generate-extra-card"
+      }, {
+        default: withCtx(() => [
+          createVNode(unref(NTabs), {
+            animated: "",
+            type: "segment"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NTabPane), {
+                tab: "ADetailer",
+                name: "adetailer"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(_sfc_main$5), {
+                    tab: props.tab,
+                    target: props.target
+                  }, null, 8, ["tab", "target"])
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
         ]),
         _: 1
       });
@@ -379,6 +534,19 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 tile_padding: settings.data.settings.txt2img.upscale.tile_padding,
                 model: settings.data.settings.txt2img.upscale.model
               }
+            } : {},
+            ...settings.data.settings.txt2img.adetailer.enabled ? {
+              adetailer: {
+                cfg_scale: settings.data.settings.txt2img.adetailer.cfg_scale,
+                mask_blur: settings.data.settings.txt2img.adetailer.mask_blur,
+                mask_dilation: settings.data.settings.txt2img.adetailer.mask_dilation,
+                mask_padding: settings.data.settings.txt2img.adetailer.mask_padding,
+                sampler: settings.data.settings.txt2img.adetailer.sampler,
+                seed: settings.data.settings.txt2img.adetailer.seed,
+                self_attention_scale: settings.data.settings.txt2img.adetailer.self_attention_scale,
+                sigmas: settings.data.settings.txt2img.adetailer.sigmas,
+                steps: settings.data.settings.txt2img.adetailer.steps
+              }
             } : {}
           }
         })
@@ -429,8 +597,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     }, {
                       default: withCtx(() => [
                         createVNode(unref(Prompt), { tab: "txt2img" }),
-                        createVNode(unref(_sfc_main$4), { type: "txt2img" }),
-                        createVNode(unref(_sfc_main$5), {
+                        createVNode(unref(_sfc_main$6), { type: "txt2img" }),
+                        createVNode(unref(_sfc_main$9), {
                           "dimensions-object": unref(settings).data.settings.txt2img
                         }, null, 8, ["dimensions-object"]),
                         createBaseVNode("div", _hoisted_2, [
@@ -458,8 +626,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             style: { "min-width": "96px", "width": "96px" }
                           }, null, 8, ["value"])
                         ]),
-                        createVNode(unref(_sfc_main$6), { tab: "txt2img" }),
                         createVNode(unref(_sfc_main$7), { tab: "txt2img" }),
+                        createVNode(unref(_sfc_main$8), { tab: "txt2img" }),
                         createBaseVNode("div", _hoisted_5, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
@@ -484,7 +652,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             style: { "min-width": "96px", "width": "96px" }
                           }, null, 8, ["value"])
                         ]),
-                        createVNode(unref(_sfc_main$8), {
+                        createVNode(unref(_sfc_main$a), {
                           "batch-size-object": unref(settings).data.settings.txt2img
                         }, null, 8, ["batch-size-object"]),
                         createBaseVNode("div", _hoisted_7, [
@@ -511,26 +679,27 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                   ]),
                   _: 1
                 }),
-                isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$3), {
+                isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$4), {
                   key: 0,
                   "dimensions-object": unref(settings).data.settings.txt2img
                 }, null, 8, ["dimensions-object"])) : createCommentVNode("", true),
                 isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$2), { key: 1 })) : createCommentVNode("", true),
-                createVNode(unref(_sfc_main$9), { tab: "txt2img" }),
-                createVNode(unref(_sfc_main$a), { tab: "txt2img" })
+                createVNode(unref(_sfc_main$b), { tab: "txt2img" }),
+                createVNode(unref(_sfc_main$c), { tab: "txt2img" }),
+                createVNode(unref(_sfc_main$3), { tab: "txt2img" })
               ]),
               _: 1
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(unref(_sfc_main$b), { generate }),
-                createVNode(unref(_sfc_main$c), {
+                createVNode(unref(_sfc_main$d), { generate }),
+                createVNode(unref(_sfc_main$e), {
                   "current-image": unref(global).state.txt2img.currentImage,
                   images: unref(global).state.txt2img.images,
                   data: unref(settings).data.settings.txt2img,
                   onImageClicked: _cache[5] || (_cache[5] = ($event) => unref(global).state.txt2img.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
-                createVNode(unref(_sfc_main$d), {
+                createVNode(unref(_sfc_main$f), {
                   style: { "margin-top": "12px" },
                   "gen-data": unref(global).state.txt2img.genData
                 }, null, 8, ["gen-data"])
