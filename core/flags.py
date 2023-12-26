@@ -117,14 +117,15 @@ class ADetailerFlag(Flag, DataClassJsonMixin):
     # Inpainting
     image: Union[bytes, str, None] = field(default=None)
     mask_image: Union[bytes, str, None] = field(default=None)
-    sampler: Union[
+    scheduler: Union[
         int, str
     ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
-    steps: int = field(default=25)
+    steps: int = field(default=40)
     cfg_scale: float = field(default=7)
-    self_attention_scale: float = field(default=0.0)
+    self_attention_scale: float = field(default=1.0)
     sigmas: SigmaScheduler = field(default="automatic")
     seed: int = field(default=0)
+    strength: float = field(default=0.45)
     sampler_settings: Dict = field(default_factory=dict)
     prompt_to_prompt_settings: Dict = field(default_factory=dict)
 

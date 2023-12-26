@@ -10,6 +10,9 @@
     vertical
     class="left-container"
     v-if="target[props.tab].adetailer.enabled"
+    :builtin-theme-overrides="{
+      gapMedium: '0 12px',
+    }"
   >
     <!-- Sampler -->
     <SamplerPicker type="inpainting" />
@@ -57,6 +60,80 @@
         size="small"
         :min="-1"
         :max="999_999_999_999"
+        style="flex-grow: 1"
+      />
+    </div>
+
+    <!-- Strength -->
+    <div class="flex-container">
+      <NTooltip style="max-width: 600px">
+        <template #trigger>
+          <p class="slider-label">Strength</p>
+        </template>
+        How much should the masked are be changed from the original
+      </NTooltip>
+      <NSlider
+        v-model:value="target[props.tab].adetailer.strength"
+        :min="0"
+        :max="1"
+        :step="0.01"
+        style="margin-right: 12px"
+      />
+      <NInputNumber
+        v-model:value="target[props.tab].adetailer.strength"
+        size="small"
+        style="min-width: 96px; width: 96px"
+        :min="0"
+        :max="1"
+        :step="0.01"
+      />
+    </div>
+
+    <!-- Mask Dilation -->
+    <div class="flex-container">
+      <NTooltip style="max-width: 600px">
+        <template #trigger>
+          <p class="slider-label">Mask Dilation</p>
+        </template>
+        Expands bright pixels in the mask to cover more of the image.
+      </NTooltip>
+      <NInputNumber
+        v-model:value="target[props.tab].adetailer.mask_dilation"
+        size="small"
+        :min="0"
+        style="flex-grow: 1"
+      />
+    </div>
+
+    <!-- Mask Blur -->
+    <div class="flex-container">
+      <NTooltip style="max-width: 600px">
+        <template #trigger>
+          <p class="slider-label">Mask Blur</p>
+        </template>
+        Makes for a smooth transition between masked and unmasked areas.
+      </NTooltip>
+      <NInputNumber
+        v-model:value="target[props.tab].adetailer.mask_blur"
+        size="small"
+        :min="0"
+        style="flex-grow: 1"
+      />
+    </div>
+
+    <!-- Mask Padding -->
+    <div class="flex-container">
+      <NTooltip style="max-width: 600px">
+        <template #trigger>
+          <p class="slider-label">Mask Padding</p>
+        </template>
+        Image will be cropped to the mask size plus padding. More padding might
+        mean smoother transitions but slower generation.
+      </NTooltip>
+      <NInputNumber
+        v-model:value="target[props.tab].adetailer.mask_padding"
+        size="small"
+        :min="0"
         style="flex-grow: 1"
       />
     </div>

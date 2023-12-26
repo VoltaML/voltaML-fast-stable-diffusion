@@ -10,6 +10,7 @@ export interface IADetailerSettings {
   sampler: Sampler | string;
   self_attention_scale: number;
   sigmas: SigmaType;
+  strength: number;
 
   // ADetailer specific
   mask_dilation: number;
@@ -26,6 +27,7 @@ export const defaultADetailerSettings: IADetailerSettings = {
   sampler: 13,
   self_attention_scale: 0,
   sigmas: "automatic",
+  strength: 0.4,
 
   mask_dilation: 0,
   mask_blur: 0,

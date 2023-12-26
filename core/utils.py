@@ -17,15 +17,7 @@ from requests.adapters import HTTPAdapter, Retry
 from tqdm import tqdm
 
 from core.thread import ThreadWithReturnValue
-from core.types import (
-    ControlNetQueueEntry,
-    ImageFormats,
-    Img2ImgQueueEntry,
-    InpaintQueueEntry,
-    PyTorchModelBase,
-    PyTorchModelStage,
-    Txt2ImgQueueEntry,
-)
+from core.types import ImageFormats, InferenceJob, PyTorchModelBase, PyTorchModelStage
 
 logger = logging.getLogger(__name__)
 content_disposition_regex = re.compile(r"filename=[\"]?([^\";\n]+)[\"]?")
@@ -313,9 +305,5 @@ def download_file(url: str, file: Path, add_filename: bool = False):
     return file
 
 
-def preprocess_job(
-    job: Union[
-        Txt2ImgQueueEntry, Img2ImgQueueEntry, InpaintQueueEntry, ControlNetQueueEntry
-    ]
-):
+def preprocess_job(job: InferenceJob):
     return job

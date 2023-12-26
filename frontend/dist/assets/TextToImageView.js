@@ -21,6 +21,14 @@ const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }
 const _hoisted_6$3 = { class: "flex-container" };
 const _hoisted_7$3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Seed", -1);
 const _hoisted_8$2 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "For random seed use -1.", -1);
+const _hoisted_9$2 = { class: "flex-container" };
+const _hoisted_10$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Strength", -1);
+const _hoisted_11$1 = { class: "flex-container" };
+const _hoisted_12$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Mask Dilation", -1);
+const _hoisted_13$1 = { class: "flex-container" };
+const _hoisted_14$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Mask Blur", -1);
+const _hoisted_15$1 = { class: "flex-container" };
+const _hoisted_16$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Mask Padding", -1);
 const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "ADetailer",
   props: {
@@ -55,7 +63,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
         target.value[props.tab].adetailer.enabled ? (openBlock(), createBlock(unref(NSpace), {
           key: 0,
           vertical: "",
-          class: "left-container"
+          class: "left-container",
+          "builtin-theme-overrides": {
+            gapMedium: "0 12px"
+          }
         }, {
           default: withCtx(() => [
             createVNode(unref(_sfc_main$6), { type: "inpainting" }),
@@ -109,6 +120,88 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                 size: "small",
                 min: -1,
                 max: 999999999999,
+                style: { "flex-grow": "1" }
+              }, null, 8, ["value"])
+            ]),
+            createBaseVNode("div", _hoisted_9$2, [
+              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                trigger: withCtx(() => [
+                  _hoisted_10$1
+                ]),
+                default: withCtx(() => [
+                  createTextVNode(" How much should the masked are be changed from the original ")
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NSlider), {
+                value: target.value[props.tab].adetailer.strength,
+                "onUpdate:value": _cache[4] || (_cache[4] = ($event) => target.value[props.tab].adetailer.strength = $event),
+                min: 0,
+                max: 1,
+                step: 0.01,
+                style: { "margin-right": "12px" }
+              }, null, 8, ["value"]),
+              createVNode(unref(NInputNumber), {
+                value: target.value[props.tab].adetailer.strength,
+                "onUpdate:value": _cache[5] || (_cache[5] = ($event) => target.value[props.tab].adetailer.strength = $event),
+                size: "small",
+                style: { "min-width": "96px", "width": "96px" },
+                min: 0,
+                max: 1,
+                step: 0.01
+              }, null, 8, ["value"])
+            ]),
+            createBaseVNode("div", _hoisted_11$1, [
+              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                trigger: withCtx(() => [
+                  _hoisted_12$1
+                ]),
+                default: withCtx(() => [
+                  createTextVNode(" Expands bright pixels in the mask to cover more of the image. ")
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NInputNumber), {
+                value: target.value[props.tab].adetailer.mask_dilation,
+                "onUpdate:value": _cache[6] || (_cache[6] = ($event) => target.value[props.tab].adetailer.mask_dilation = $event),
+                size: "small",
+                min: 0,
+                style: { "flex-grow": "1" }
+              }, null, 8, ["value"])
+            ]),
+            createBaseVNode("div", _hoisted_13$1, [
+              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                trigger: withCtx(() => [
+                  _hoisted_14$1
+                ]),
+                default: withCtx(() => [
+                  createTextVNode(" Makes for a smooth transition between masked and unmasked areas. ")
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NInputNumber), {
+                value: target.value[props.tab].adetailer.mask_blur,
+                "onUpdate:value": _cache[7] || (_cache[7] = ($event) => target.value[props.tab].adetailer.mask_blur = $event),
+                size: "small",
+                min: 0,
+                style: { "flex-grow": "1" }
+              }, null, 8, ["value"])
+            ]),
+            createBaseVNode("div", _hoisted_15$1, [
+              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                trigger: withCtx(() => [
+                  _hoisted_16$1
+                ]),
+                default: withCtx(() => [
+                  createTextVNode(" Image will be cropped to the mask size plus padding. More padding might mean smoother transitions but slower generation. ")
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NInputNumber), {
+                value: target.value[props.tab].adetailer.mask_padding,
+                "onUpdate:value": _cache[8] || (_cache[8] = ($event) => target.value[props.tab].adetailer.mask_padding = $event),
+                size: "small",
+                min: 0,
                 style: { "flex-grow": "1" }
               }, null, 8, ["value"])
             ])
@@ -541,7 +634,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 mask_blur: settings.data.settings.txt2img.adetailer.mask_blur,
                 mask_dilation: settings.data.settings.txt2img.adetailer.mask_dilation,
                 mask_padding: settings.data.settings.txt2img.adetailer.mask_padding,
-                sampler: settings.data.settings.txt2img.adetailer.sampler,
+                scheduler: settings.data.settings.txt2img.adetailer.sampler,
+                strength: settings.data.settings.txt2img.adetailer.strength,
                 seed: settings.data.settings.txt2img.adetailer.seed,
                 self_attention_scale: settings.data.settings.txt2img.adetailer.self_attention_scale,
                 sigmas: settings.data.settings.txt2img.adetailer.sigmas,

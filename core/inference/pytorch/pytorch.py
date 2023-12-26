@@ -21,7 +21,7 @@ from api import websocket_manager
 from api.websockets import Data
 from api.websockets.notification import Notification
 from core.config import config
-from core.flags import ADetailerFlag, DeepshrinkFlag, ScalecrafterFlag
+from core.flags import DeepshrinkFlag, ScalecrafterFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import (
     convert_vaept_to_diffusers,
@@ -37,6 +37,7 @@ from core.inference.utilities import (
 from core.inference_callbacks import callback
 from core.optimizations import optimize_vae
 from core.types import (
+    ADetailerQueueEntry,
     Backend,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
@@ -477,6 +478,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 seed=job.data.seed,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
                 deepshrink=deepshrink,
+                strength=job.data.strength,
             )
 
             images: Union[List[Image.Image], torch.Tensor] = data[0]  # type: ignore
@@ -587,17 +589,25 @@ class PyTorchStableDiffusion(InferenceModel):
 
     def adetailer(
         self,
-        job: InpaintQueueEntry,
-        flag: ADetailerFlag,
+        job: ADetailerQueueEntry,
     ):
         from ..adetailer.adetailer import ADetailer
 
+        data = job.data
+        assert data is not None
+
+        entry = InpaintQueueEntry(
+            data=data,
+            model=job.model,
+            save_image=job.save_image,
+        )
+
         output = ADetailer().generate(
             fn=self.inpaint,
-            inpaint_entry=job,
-            mask_dilation=flag.mask_dilation,
-            mask_blur=flag.mask_blur,
-            mask_padding=flag.mask_padding,
+            inpaint_entry=entry,
+            mask_dilation=job.mask_dilation,
+            mask_blur=job.mask_blur,
+            mask_padding=job.mask_padding,
         )
 
         return [*output.images, *output.init_images]
@@ -616,6 +626,8 @@ class PyTorchStableDiffusion(InferenceModel):
                 images = self.inpaint(job)
             elif isinstance(job, ControlNetQueueEntry):
                 images = self.controlnet2img(job)
+            elif isinstance(job, ADetailerQueueEntry):
+                images = self.adetailer(job)
             else:
                 raise ValueError("Invalid job type for this pipeline")
         except Exception as e:

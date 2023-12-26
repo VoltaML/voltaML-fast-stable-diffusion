@@ -23,6 +23,7 @@ export interface IInpaintingSettings {
   mask_image: string;
   self_attention_scale: number;
   sigmas: SigmaType;
+  strength: number;
   highres: IHighResFixFlag;
   upscale: IUpscaleFlag;
   deepshrink: IDeepShrinkFlag;

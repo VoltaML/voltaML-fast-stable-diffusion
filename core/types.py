@@ -112,7 +112,7 @@ class Img2imgData:
 
 @dataclass
 class InpaintData:
-    "Dataclass for the data of an img2img request"
+    "Dataclass for the data of an inpainting request"
 
     prompt: str
     image: Union[bytes, str]
@@ -129,6 +129,7 @@ class InpaintData:
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
+    strength: float = field(default=0.6)
     sampler_settings: Dict = field(default_factory=dict)
     prompt_to_prompt_settings: Dict = field(default_factory=dict)
 

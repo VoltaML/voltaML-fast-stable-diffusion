@@ -122,6 +122,7 @@ export const defaultSettings: ISettings = {
     seed: -1,
     batch_count: 1,
     batch_size: 1,
+    strength: 0.65,
     sampler: Sampler.DPMSolverMultistep,
     self_attention_scale: 0,
     sigmas: "automatic",

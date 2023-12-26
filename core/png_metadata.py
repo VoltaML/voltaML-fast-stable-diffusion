@@ -65,7 +65,7 @@ def create_metadata(
     elif isinstance(job, Img2ImgQueueEntry):
         procedure = "img2img"
     elif isinstance(job, InpaintQueueEntry):
-        procedure = "inpaint"
+        procedure = "inpainting"
     elif isinstance(job, ControlNetQueueEntry):
         procedure = "control_net"
     elif isinstance(job, UpscaleQueueEntry):

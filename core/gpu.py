@@ -292,6 +292,9 @@ class GPU:
         mask_padding = data.pop("mask_padding")
         data.pop("enabled", None)
 
+        data["prompt"] = job.data.prompt
+        data["negative_prompt"] = job.data.negative_prompt
+
         data = InpaintData(**data)
 
         assert data is not None
@@ -310,7 +313,7 @@ class GPU:
                 model=job.model,
             )
 
-            final_images.append(self.run_inference(adetailer_job)[0])
+            final_images.extend(self.run_inference(adetailer_job))
 
         return final_images
 
@@ -323,6 +326,10 @@ class GPU:
 
         if "highres_fix" in job.flags:
             images = self.highres_flag(job, images)
+
+        if "adetailer" in job.flags:
+            assert isinstance(images, list)
+            images = self.adetailer_flag(job, images)
 
         if "upscale" in job.flags:
             assert isinstance(images, list)
@@ -341,7 +348,7 @@ class GPU:
         elif isinstance(job, ControlNetQueueEntry):
             target = "controlnet"
         elif isinstance(job, InpaintQueueEntry):
-            target = "inpaint"
+            target = "inpainting"
         else:
             raise ValueError("Unknown job type")
 

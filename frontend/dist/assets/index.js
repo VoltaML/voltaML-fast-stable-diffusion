@@ -41660,6 +41660,7 @@ const defaultADetailerSettings = {
   sampler: 13,
   self_attention_scale: 0,
   sigmas: "automatic",
+  strength: 0.4,
   mask_dilation: 0,
   mask_blur: 0,
   mask_padding: 0
@@ -41790,6 +41791,7 @@ const defaultSettings = {
     seed: -1,
     batch_count: 1,
     batch_size: 1,
+    strength: 0.65,
     sampler: Sampler.DPMSolverMultistep,
     self_attention_scale: 0,
     sigmas: "automatic",
@@ -43451,7 +43453,7 @@ const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
 const ControlNet_vue_vue_type_style_index_0_scoped_d4ff54ab_lang = "";
 const Img2Img_vue_vue_type_style_index_0_scoped_a4145f6c_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_b1671b35_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_23b19530_lang = "";
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_89afc237_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _hoisted_1$1 = { style: { "margin": "16px 0" } };

@@ -73,6 +73,7 @@ class ADetailer:
                     logger.info(f"No object in {ordinal(k + 1)} mask.")
                     continue
                 mask = mask_gaussian_blur(mask, mask_blur)
+                # mask.save(f"mask_{j}_{k}.png")
                 bbox_padded = bbox_padding(bbox, input_image.size, mask_padding)
 
                 inpaint_output = self.process_inpainting(
@@ -82,7 +83,7 @@ class ADetailer:
                     mask,
                     bbox_padded,
                 )
-                inpaint_image: Image.Image = inpaint_output[0][0]  # type: ignore
+                inpaint_image: Image.Image = inpaint_output[0]  # type: ignore
 
                 final_image = composite(
                     input_image,
@@ -92,8 +93,8 @@ class ADetailer:
                 )
                 input_image = final_image
 
-        if final_image is not None:
-            final_images.append(final_image)
+        assert final_image is not None
+        final_images.append(final_image)
 
         return ADOutput(init_images, final_images)
 

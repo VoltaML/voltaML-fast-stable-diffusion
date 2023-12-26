@@ -37,6 +37,8 @@ class BaseDiffusionMixin:
         int, str
     ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     sigmas: SigmaScheduler = "automatic"
+    batch_count: int = 1
+    batch_size: int = 1
 
     # Flags
     highres: HighResFixFlag = field(default_factory=HighResFixFlag)
@@ -67,6 +69,7 @@ class InpaintingConfig(BaseDiffusionMixin):
     "Configuration for the inpainting pipeline"
 
     self_attention_scale: float = 0.0
+    strength: float = 0.6
 
 
 @dataclass
