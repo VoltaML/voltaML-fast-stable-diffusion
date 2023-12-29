@@ -9,15 +9,13 @@ import torch
 import torch.nn as nn
 import torch.utils.checkpoint
 
-from safetensors.torch import load_file
-
 from diffusers.configuration_utils import ConfigMixin, register_to_config
 from diffusers import ModelMixin  # type: ignore
 from diffusers.utils import BaseOutput, logging  # type: ignore
 from diffusers.models.embeddings import TimestepEmbedding, Timesteps
 
 from core.config import config
-
+from core.inference.utilities.load import load_checkpoint
 from .unet_blocks import (
     CrossAttnDownBlock3D,
     CrossAttnUpBlock3D,
@@ -677,7 +675,6 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
             )
         else:
             assert order is not None
-            from core.config import config
 
             mod = config.api.drop_encode_decode
 
@@ -770,21 +767,10 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
 
         # load the motion module weights
         if motion_module_path.exists() and motion_module_path.is_file():
-            if motion_module_path.suffix.lower() in [".pth", ".pt", ".ckpt"]:
-                motion_state_dict = torch.load(
-                    motion_module_path,
-                    weights_only=True,
-                    map_location=config.api.load_device,
-                )
-            elif motion_module_path.suffix.lower() == ".safetensors":
-                dev = str(config.api.load_device)
-                if "cuda" in dev:
-                    dev = int(dev.split(":")[1])
-                motion_state_dict = load_file(motion_module_path, device=dev)  # type: ignore
-            else:
-                raise RuntimeError(
-                    f"unknown file format for motion module weights: {motion_module_path.suffix}"
-                )
+            motion_state_dict = load_checkpoint(
+                motion_module_path.as_posix(),
+                motion_module_path.suffix.lower() == ".safetensors",
+            )
         else:
             raise FileNotFoundError(
                 f"no motion module weights found in {motion_module_path}"

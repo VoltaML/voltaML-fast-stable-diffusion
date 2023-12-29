@@ -96,6 +96,12 @@ class APIConfig:
     # Where to load the models onto first. By default, diffusers has a kind of stupid way of
     # first loading models to cpu and then onto the device.
     load_location: Union[str, Literal["on-device", "cpu"]] = "on-device"
+    # Load models using streaming instead of mmaping. Mmaping is faster 99% of the time,
+    # however WSL2s drvfs fucks these things up and just streaming the loading is usually faster.
+    # Only case where users may run into these issues is when loading from the host NTFS drive from WSL2, or when having some cloud
+    # service set as their drive.
+    # Evem then, highly recommend leaving this on False.
+    stream_load: bool = False
 
     # Critical
     enable_shutdown: bool = True

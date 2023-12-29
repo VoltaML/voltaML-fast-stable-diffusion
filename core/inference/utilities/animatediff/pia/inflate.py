@@ -1,12 +1,16 @@
 from typing import TYPE_CHECKING
-from safetensors.torch import load_file
+import logging
+
 import torch
 
-from core.config import config
+from core.inference.utilities.load import load_checkpoint
 from ..models.resnet import InflatedConv3d
 
 if TYPE_CHECKING:
     from ..models.unet import UNet3DConditionModel
+
+
+logger = logging.getLogger(__name__)
 
 
 def patch_conv3d(unet: "UNet3DConditionModel", pia_path: str) -> "UNet3DConditionModel":
@@ -26,16 +30,7 @@ def patch_conv3d(unet: "UNet3DConditionModel", pia_path: str) -> "UNet3DConditio
     unet.conv_in = new_conv
     unet.config["in_channels"] = 9
 
-    if pia_path.endswith("safetensors"):
-        dev = str(config.api.load_device)
-        if "cuda" in dev:
-            dev = int(dev.split(":")[1])
-        state_dict = load_file(pia_path, device=dev)  # type: ignore
-    else:
-        state_dict = torch.load(
-            pia_path,
-            weights_only=True,
-            map_location=config.api.load_device,
-        )
-    unet.load_state_dict(state_dict, strict=False)
+    checkpoint = load_checkpoint(pia_path, pia_path.endswith("safetensors"))
+    m, u = unet.load_state_dict(checkpoint, strict=False)
+    logger.debug(f"Missing keys: {m}, unexpected: {u}")
     return unet

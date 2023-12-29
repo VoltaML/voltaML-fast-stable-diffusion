@@ -356,14 +356,12 @@ def load_pytorch_pipeline(
             pipe = download_from_original_stable_diffusion_ckpt(
                 str(get_full_model_path(model_id_or_path)),
                 from_safetensors=use_safetensors,
-                load_safety_checker=False,
                 extract_ema=True,
             )
         except KeyError:
             pipe = download_from_original_stable_diffusion_ckpt(
                 str(get_full_model_path(model_id_or_path)),
                 from_safetensors=use_safetensors,
-                load_safety_checker=False,
                 extract_ema=False,
             )
     else:
