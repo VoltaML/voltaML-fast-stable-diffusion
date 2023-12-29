@@ -2,8 +2,6 @@ import multiprocessing
 from dataclasses import dataclass, field
 from typing import Optional, Union
 
-from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
-
 from core.flags import (
     ADetailerFlag,
     DeepshrinkFlag,
@@ -30,13 +28,13 @@ class BaseDiffusionMixin:
     height: int = 512
     seed: int = -1
     cfg_scale: int = 7
-    steps: int = 40
+    steps: int = 25
     prompt: str = ""
-    negative_prompt: str = ""
-    sampler: Union[
-        int, str
-    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
-    sigmas: SigmaScheduler = "automatic"
+    negative_prompt: str = (
+        "(worst quality, low quality:1.4), monochrome, (interlocked fingers:1.2),"
+    )
+    sampler: Union[int, str] = "dpmpp_2m"
+    sigmas: SigmaScheduler = "exponential"
     batch_count: int = 1
     batch_size: int = 1
 
