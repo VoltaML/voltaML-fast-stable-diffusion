@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 from safetensors.torch import load_file
 import torch
 
+from core.config import config
 from ..models.resnet import InflatedConv3d
 
 if TYPE_CHECKING:
@@ -26,8 +27,15 @@ def patch_conv3d(unet: "UNet3DConditionModel", pia_path: str) -> "UNet3DConditio
     unet.config["in_channels"] = 9
 
     if pia_path.endswith("safetensors"):
-        state_dict = load_file(pia_path)
+        dev = str(config.api.load_device)
+        if "cuda" in dev:
+            dev = int(dev.split(":")[1])
+        state_dict = load_file(pia_path, device=dev)  # type: ignore
     else:
-        state_dict = torch.load(pia_path)
+        state_dict = torch.load(
+            pia_path,
+            weights_only=True,
+            map_location=config.api.load_device,
+        )
     unet.load_state_dict(state_dict, strict=False)
     return unet

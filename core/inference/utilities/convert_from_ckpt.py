@@ -130,14 +130,6 @@ def renew_attention_paths(old_list, n_shave_prefix_segments=0):
     for old_item in old_list:
         new_item = old_item
 
-        #         new_item = new_item.replace('norm.weight', 'group_norm.weight')
-        #         new_item = new_item.replace('norm.bias', 'group_norm.bias')
-
-        #         new_item = new_item.replace('proj_out.weight', 'proj_attn.weight')
-        #         new_item = new_item.replace('proj_out.bias', 'proj_attn.bias')
-
-        #         new_item = shave_segments(new_item, n_shave_prefix_segments=n_shave_prefix_segments)
-
         mapping.append({"old": old_item, "new": new_item})
 
     return mapping
@@ -1164,10 +1156,6 @@ def convert_open_clip_checkpoint(
     local_files_only=False,
     **config_kwargs,
 ):
-    # text_model = CLIPTextModel.from_pretrained("stabilityai/stable-diffusion-2", subfolder="text_encoder")
-    # text_model = CLIPTextModelWithProjection.from_pretrained(
-    #    "laion/CLIP-ViT-bigG-14-laion2B-39B-b160k", projection_dim=1280
-    # )
     try:
         config = CLIPTextConfig.from_pretrained(
             config_name, **config_kwargs, local_files_only=local_files_only
@@ -1532,10 +1520,8 @@ def download_from_original_stable_diffusion_ckpt(
         else:
             checkpoint = torch.load(
                 checkpoint_path_or_dict,
-                map_location=lambda storage, _: storage.to(
-                    device=volta_config.api.load_device,
-                    dtype=volta_config.api.load_dtype,
-                ),
+                weights_only=True,
+                map_location=volta_config.api.load_device,
             )
     elif isinstance(checkpoint_path_or_dict, dict):
         checkpoint = checkpoint_path_or_dict
@@ -1999,19 +1985,11 @@ def download_controlnet_from_original_ckpt(
         if "cuda" in dev:
             dev = int(dev.split(":")[1])
         checkpoint = safe_load(checkpoint_path, device=dev)  # type: ignore
-        # checkpoint = {}
-        # with safe_open(checkpoint_path, framework="pt", device=str(volta_config.api.load_device)) as f:  # type: ignore
-        #     for key in f.keys():  # type: ignore
-        #         checkpoint[key] = f.get_tensor(key).to(
-        #             dtype=volta_config.api.load_dtype
-        #         )
     else:
         checkpoint = torch.load(
             checkpoint_path,
-            map_location=lambda storage, _: storage.to(
-                device=volta_config.api.load_device,
-                dtype=volta_config.api.load_dtype,
-            ),
+            weights_only=True,
+            map_location=volta_config.api.load_device,
         )
 
     # NOTE: this while loop isn't great but this controlnet checkpoint has one additional

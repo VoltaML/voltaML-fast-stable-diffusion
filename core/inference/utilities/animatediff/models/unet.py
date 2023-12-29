@@ -16,6 +16,8 @@ from diffusers import ModelMixin  # type: ignore
 from diffusers.utils import BaseOutput, logging  # type: ignore
 from diffusers.models.embeddings import TimestepEmbedding, Timesteps
 
+from core.config import config
+
 from .unet_blocks import (
     CrossAttnDownBlock3D,
     CrossAttnUpBlock3D,
@@ -770,10 +772,15 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         if motion_module_path.exists() and motion_module_path.is_file():
             if motion_module_path.suffix.lower() in [".pth", ".pt", ".ckpt"]:
                 motion_state_dict = torch.load(
-                    motion_module_path, map_location="cpu", weights_only=True
+                    motion_module_path,
+                    weights_only=True,
+                    map_location=config.api.load_device,
                 )
             elif motion_module_path.suffix.lower() == ".safetensors":
-                motion_state_dict = load_file(motion_module_path, device="cpu")
+                dev = str(config.api.load_device)
+                if "cuda" in dev:
+                    dev = int(dev.split(":")[1])
+                motion_state_dict = load_file(motion_module_path, device=dev)  # type: ignore
             else:
                 raise RuntimeError(
                     f"unknown file format for motion module weights: {motion_module_path.suffix}"

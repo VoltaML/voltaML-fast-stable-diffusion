@@ -352,13 +352,6 @@ def load_pytorch_pipeline(
         else:
             logger.info("Loading model as checkpoint")
 
-        # This function does not inherit the channels so we need to hack it like this
-        # in_channels = 9 if "inpaint" in model_id_or_path.casefold() else 4
-
-        # type = determine_model_type(get_full_model_path(model_id_or_path))
-        # cl = StableDiffusionXLPipeline if type[1] == "SDXL" else StableDiffusionPipeline
-        # I never knew this existed, but this is pretty handy :)
-        # cl.__init__ = partialmethod(cl.__init__, low_cpu_mem_usage=True)  # type: ignore
         try:
             pipe = download_from_original_stable_diffusion_ckpt(
                 str(get_full_model_path(model_id_or_path)),
