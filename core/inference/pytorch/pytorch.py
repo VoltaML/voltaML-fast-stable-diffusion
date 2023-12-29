@@ -566,6 +566,9 @@ class PyTorchStableDiffusion(InferenceModel):
                 assert isinstance(total_images, List)
                 total_images.extend(images)
 
+        if job.data.return_preprocessed and isinstance(total_images, List):
+            total_images.append(input_image)
+
         if isinstance(total_images, List):
             websocket_manager.broadcast_sync(
                 data=Data(
