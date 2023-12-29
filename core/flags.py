@@ -98,7 +98,7 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     "Flag for AnimateDiff"
 
     motion_model: str = ""
-    frames: int = 24
+    frames: int = 16
     fps: int = 10  # not working
 
     # Depends on seed whether or not it works??? Weird... investigate later...
@@ -122,7 +122,7 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     # - https://github.com/guoyww/AnimateDiff/pull/8/files
 
     # only active when frames > 16 --> sliding context window.
-    context_size: int = 24
+    context_size: int = 16
     frame_stride: int = 2
     frame_overlap: int = 4
     context_scheduler: Literal["uniform", "uniform_constant", "uniform_v2"] = "uniform"
@@ -142,7 +142,7 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     use_pia: bool = True
     pia_checkpont: str = "pia.ckpt"  # /data/pia/{ckpt}
     pia_cond_frame: int = 0
-    pia_motion: int = 2  # 0 - 2 - motion settings, 0 is lowest, 2 is highest
+    pia_motion: int = 1  # 0 - 2 - motion settings, 0 is lowest, 2 is highest
     pia_motion_type: Literal["normal", "closed_loop", "style_transfer"] = "normal"
 
 

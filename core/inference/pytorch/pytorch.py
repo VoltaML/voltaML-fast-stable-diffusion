@@ -431,6 +431,12 @@ class PyTorchStableDiffusion(InferenceModel):
         if "deepshrink" in job.flags:
             deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
 
+        animatediff = AnimateDiffFlag(
+            motion_model="data/motion-models/v3_sd15_mm.ckpt",
+        )
+        if "animatediff" in job.flags:
+            animatediff = AnimateDiffFlag.from_dict(job.flags["animatediff"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe(
                 generator=generator,
@@ -450,6 +456,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 seed=job.data.seed,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
                 deepshrink=deepshrink,
+                animatediff=animatediff,
             )
 
             images: Union[List[Image.Image], torch.Tensor] = data[0]  # type: ignore

@@ -93,6 +93,9 @@ class APIConfig:
 
     # Device settings
     device: str = "cuda:0"
+    # Where to load the models onto first. By default, diffusers has a kind of stupid way of
+    # first loading models to cpu and then onto the device.
+    load_location: Union[str, Literal["on-device", "cpu"]] = "on-device"
 
     # Critical
     enable_shutdown: bool = True
@@ -199,6 +202,15 @@ class APIConfig:
     def dtype(self) -> torch.dtype:
         "Return selected data type"
         return getattr(torch, self.data_type)
+
+    @property
+    def load_device(self) -> torch.device:
+        "Device to use for loading models onto."
+        return (
+            torch.device(self.device)
+            if self.load_location == "on-device"
+            else torch.device(self.load_location)
+        )
 
     @property
     def load_dtype(self) -> torch.dtype:
