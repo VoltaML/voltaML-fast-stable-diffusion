@@ -468,7 +468,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
 
             # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
             extra_step_kwargs = prepare_extra_step_kwargs(
-                scheduler=self.scheduler, generator=generator, eta=eta
+                scheduler=self.scheduler, generator=generator, eta=eta, device=device
             )
 
             setup_scalecrafter(self.unet, scalecrafter)  # type: ignore

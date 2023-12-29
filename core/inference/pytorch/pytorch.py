@@ -21,7 +21,7 @@ from api import websocket_manager
 from api.websockets import Data
 from api.websockets.notification import Notification
 from core.config import config
-from core.flags import DeepshrinkFlag, ScalecrafterFlag
+from core.flags import AnimateDiffFlag, DeepshrinkFlag, ScalecrafterFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import (
     convert_vaept_to_diffusers,
@@ -315,24 +315,70 @@ class PyTorchStableDiffusion(InferenceModel):
         if "scalecrafter" in job.flags:
             scalecrafter = ScalecrafterFlag.from_dict(job.flags["scalecrafter"])
 
+        animatediff = AnimateDiffFlag(
+            motion_model="data/motion-models/mm_sd_v15_v2.ckpt",
+        )
+        if "animatediff" in job.flags:
+            animatediff = AnimateDiffFlag.from_dict(job.flags["animatediff"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            data = pipe(
-                generator=generator,
-                prompt=job.data.prompt,
-                height=job.data.height,
-                width=job.data.width,
-                num_inference_steps=job.data.steps,
-                guidance_scale=job.data.guidance_scale,
-                self_attention_scale=job.data.self_attention_scale,
-                negative_prompt=job.data.negative_prompt,
-                output_type=output_type,
-                callback=callback,
-                num_images_per_prompt=job.data.batch_size,
-                seed=job.data.seed,
-                prompt_expansion_settings=job.data.prompt_to_prompt_settings,
-                deepshrink=deepshrink,
-                scalecrafter=scalecrafter,
-            )
+            if animatediff is not None and animatediff.use_pia:
+                base_image = pipe(  # type: ignore
+                    generator=generator,
+                    prompt=job.data.prompt,
+                    height=job.data.height,
+                    width=job.data.width,
+                    num_inference_steps=job.data.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    self_attention_scale=job.data.self_attention_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    output_type=output_type,
+                    callback=callback,
+                    num_images_per_prompt=job.data.batch_size,
+                    seed=job.data.seed,
+                    prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                    deepshrink=deepshrink,
+                    scalecrafter=scalecrafter,
+                    animatediff=None,
+                )[0][0]
+                data = pipe(
+                    generator=generator,
+                    prompt=job.data.prompt,
+                    image=base_image,
+                    height=job.data.height,
+                    width=job.data.width,
+                    num_inference_steps=job.data.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    self_attention_scale=job.data.self_attention_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    output_type=output_type,
+                    callback=callback,
+                    num_images_per_prompt=job.data.batch_size,
+                    seed=job.data.seed,
+                    prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                    deepshrink=deepshrink,
+                    scalecrafter=scalecrafter,
+                    animatediff=animatediff,
+                )
+            else:
+                data = pipe(
+                    generator=generator,
+                    prompt=job.data.prompt,
+                    height=job.data.height,
+                    width=job.data.width,
+                    num_inference_steps=job.data.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    self_attention_scale=job.data.self_attention_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    output_type=output_type,
+                    callback=callback,
+                    num_images_per_prompt=job.data.batch_size,
+                    seed=job.data.seed,
+                    prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                    deepshrink=deepshrink,
+                    scalecrafter=scalecrafter,
+                    animatediff=animatediff,
+                )
 
             images: Union[List[Image.Image], torch.Tensor] = data[0]  # type: ignore
 

@@ -52,6 +52,7 @@ def prepare_extra_step_kwargs(
     scheduler: SchedulerMixin,
     eta: Optional[float],
     generator: Union[PhiloxGenerator, torch.Generator],
+    device: torch.device,
 ):
     """prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
     eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
@@ -74,7 +75,9 @@ def prepare_extra_step_kwargs(
         in set(inspect.signature(scheduler.step).parameters.keys())  # type: ignore
         and config.api.generator != "philox"
     )
-    if accepts_generator:
+    if accepts_generator and (
+        hasattr(generator, "device") and generator.device == device  # type: ignore
+    ):
         extra_step_kwargs["generator"] = generator
     return extra_step_kwargs
 

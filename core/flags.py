@@ -98,12 +98,12 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     "Flag for AnimateDiff"
 
     motion_model: str = ""
-    frames: int = 16
+    frames: int = 24
     fps: int = 10  # not working
 
-    # DDIM ONLY!!! (for now)
+    # Depends on seed whether or not it works??? Weird... investigate later...
     # Probably self-explanatory, but increases generation time to {freeinit_iterations}x.
-    freeinit_iterations: int = 3  # -1 to disable, 5 recommended
+    freeinit_iterations: int = -1  # -1 to disable, 5 recommended
     freeinit_fast_sampling: bool = (
         False  # decreases quality, but reduces generation time by ~60%
     )
@@ -122,12 +122,10 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     # - https://github.com/guoyww/AnimateDiff/pull/8/files
 
     # only active when frames > 16 --> sliding context window.
-    context_size: int = 16
-    frame_stride: int = 1
+    context_size: int = 24
+    frame_stride: int = 2
     frame_overlap: int = 4
-    context_scheduler: Literal[
-        "uniform", "uniform_constant", "uniform_v2"
-    ] = "uniform_v2"
+    context_scheduler: Literal["uniform", "uniform_constant", "uniform_v2"] = "uniform"
 
     closed_loop: bool = True
 
@@ -138,6 +136,14 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     input_video: str = ""  # not working
     init_image: str = ""  # not working
     video_controlnets: List[str] = field(default_factory=list)  # not working
+
+    # PIA is a new technique using a 9-channel unet3d instead of the traditional 4-channel unet3d.
+    # In theory it improves animation quality by a large margin.
+    use_pia: bool = True
+    pia_checkpont: str = "pia.ckpt"  # /data/pia/{ckpt}
+    pia_cond_frame: int = 0
+    pia_motion: int = 2  # 0 - 2 - motion settings, 0 is lowest, 2 is highest
+    pia_motion_type: Literal["normal", "closed_loop", "style_transfer"] = "normal"
 
 
 @dataclass

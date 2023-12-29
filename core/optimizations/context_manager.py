@@ -1,4 +1,5 @@
 from contextlib import ExitStack
+from types import TracebackType
 from typing import List, Optional, Type
 
 import torch
@@ -14,6 +15,9 @@ from .hypertile import is_hypertile_available, hypertile
 class InferenceContext(ExitStack):
     """inference context"""
 
+    old_device: torch.device
+    old_dtype: torch.dtype
+    old_unet: torch.nn.Module | None = None
     unet: torch.nn.Module
     vae: torch.nn.Module
     profiler: Optional[torch.profiler.profile] = None
@@ -33,6 +37,17 @@ class InferenceContext(ExitStack):
             return [x for x in self.flags if isinstance(x, _type)].pop()
         except IndexError:
             return None
+
+    def __exit__(
+        self,
+        __exc_type: type[BaseException] | None,
+        __exc_value: BaseException | None,
+        __traceback: TracebackType | None,
+    ) -> bool:
+        ret = super().__exit__(__exc_type, __exc_value, __traceback)
+        if self.old_unet is not None:
+            self.old_unet.to(device=self.old_device, dtype=self.old_dtype)
+        return ret
 
     def enable_xformers_memory_efficient_attention(self):
         self.unet.enable_xformers_memory_efficient_attention()
@@ -72,6 +87,9 @@ def inference_context(
         )
     s.flags = flags
 
+    s.old_device = s.unet.device
+    s.old_dtype = s.unet.dtype
+
     animatediff: Optional[AnimateDiffFlag] = s.get_flag(AnimateDiffFlag)  # type: ignore
     if animatediff is not None:
         from core.inference.utilities.animatediff.models.unet import (
@@ -80,16 +98,18 @@ def inference_context(
         from core.inference.utilities.animatediff import patch as patch_animatediff
 
         s.unet.to("cpu")
+        s.old_unet = s.unet
         s.unet = UNet3DConditionModel.from_pretrained_2d(  # type: ignore
             s.unet, animatediff.motion_model  # type: ignore
         )
+
+        if animatediff.use_pia:
+            s.unet = s.unet.convert_to_pia(animatediff.pia_checkpont)
 
         if config.api.clear_memory_policy == "always":
             from core.shared_dependent import gpu
 
             gpu.memory_cleanup()
-
-        s.components.update({"unet": s.unet})
 
         from .pytorch_optimizations import optimize_model
 
@@ -111,6 +131,7 @@ def inference_context(
         # set_offload(s.unet, config.api.device, "model")  # type: ignore
 
         patch_animatediff(s)
+        s.components.update({"unet": s.unet})
     if is_hypertile_available() and config.api.hypertile:
         s.enter_context(hypertile(unet, height, width))
     if config.api.torch_compile:

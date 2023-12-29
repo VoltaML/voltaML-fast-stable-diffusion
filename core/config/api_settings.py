@@ -80,9 +80,9 @@ class APIConfig:
     #   value: "off" disables this. "on" infers the first 5 steps ALWAYS as full-quality ones, and then every 5th.
     #   default: "off," due to quality loss, same reason as to why HyperTile is off by default.
     drop_encode_decode: Union[
-        int,  # if int, drop every x-th step
+        int,  # if int, drop every x-th step excluding the first 5
         Literal["off", "on"],  # on = first 5 + every 5th
-    ] = "on"  # "on" results in a ~30% increase in performance, without ruining quality too much
+    ] = "off"  # "on" results in a ~30% increase in performance, without ruining quality too much -- highly depends on seed
 
     deepcache_cache_interval: int = 1  # cache every x-th layer, 1 = disabled
 

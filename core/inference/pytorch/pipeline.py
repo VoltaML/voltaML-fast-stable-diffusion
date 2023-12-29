@@ -384,11 +384,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-
-        # animatediff = AnimateDiffFlag(
-        #    motion_model="data/motion-models/mm_sd_v15_v2.ckpt",
-        # )
-
         with inference_context(
             self.unet, self.vae, height, width, [animatediff]
         ) as inf:
@@ -419,7 +414,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     global_pool_conditions = self.controlnet.config.global_pool_conditions  # type: ignore
                     guess_mode = guess_mode or global_pool_conditions
 
-                num_channels_unet = self.unet.config.in_channels  # type: ignore
+                num_channels_unet = self.unet.config["in_channels"]
 
                 # 2. Define call parameters
                 batch_size = 1 if isinstance(prompt, str) else len(prompt)
@@ -471,44 +466,28 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                 # 4. Preprocess image and mask
                 if isinstance(image, PIL.Image.Image):  # type: ignore
-                    width, height = image.size  # type: ignore
-                    if not hasattr(self, "controlnet"):
-                        image = preprocess_image(image)
+                    if animatediff is not None and animatediff.use_pia:
+                        mask_image = image
+                        image = None
                     else:
-                        image = prepare_image(
-                            image,
-                            width,
-                            height,
-                            batch_size,
-                            num_images_per_prompt,
-                            device,
-                            dtype,
-                        )
+                        width, height = image.size  # type: ignore
+                        if not hasattr(self, "controlnet"):
+                            image = preprocess_image(image)
+                        else:
+                            image = prepare_image(
+                                image,
+                                width,
+                                height,
+                                batch_size,
+                                num_images_per_prompt,
+                                device,
+                                dtype,
+                            )
                 if image is not None:
                     image = image.to(device=self.device, dtype=dtype)
-                if mask_image is not None:
-                    mask, masked_image, _ = prepare_mask_and_masked_image(
-                        image, mask_image, height, width
-                    )
-                    mask, masked_image_latents = prepare_mask_latents(
-                        mask,
-                        masked_image,
-                        batch_size * num_images_per_prompt,  # type: ignore
-                        height,
-                        width,
-                        dtype,
-                        device,
-                        do_classifier_free_guidance,
-                        self.vae,
-                        self.vae_scale_factor,
-                        self.vae.config.scaling_factor,  # type: ignore
-                        generator=generator,
-                    )
-                else:
-                    mask = None
 
                 # 5. set timesteps
-                self.scheduler.set_timesteps(num_inference_steps, device=device)  # type: ignore
+                self.scheduler.set_timesteps(num_inference_steps, device=latents_device)  # type: ignore
                 timesteps, num_inference_steps = get_timesteps(
                     self.scheduler,
                     num_inference_steps,
@@ -533,14 +512,65 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     latents_device,
                     generator,
                     latents=latents,
-                    latent_channels=None if mask is None else self.vae.config.latent_channels,  # type: ignore
+                    latent_channels=None,
                     frames=None if animatediff is None else animatediff.frames,
                 )
 
+                if mask_image is not None:
+                    if animatediff is not None and animatediff.use_pia:
+                        assert latents is not None
+                        # fmt: off
+                        mask_image = preprocess_image(mask_image)
+                        mask_image = mask_image.to(device=self.vae.device, dtype=self.vae.dtype)
+                        image_latent = self.vae.encode(mask_image).latent_dist.sample(generator)
+                        image_latent = image_latent.to(device="cpu", dtype=torch.float32)
+                        image_latent = torch.nn.functional.interpolate(image_latent, size=(latents.shape[-2], latents.shape[-1]))
+                        image_latent = image_latent * 0.18215
+                        image_latent = image_latent.to(device=latents_device, dtype=latents.dtype)
+                        mask = torch.zeros(latents.shape[0], 1, latents.shape[2], latents.shape[3], latents.shape[4]) \
+                                .to(device=latents_device, dtype=latents.dtype)
+                        
+                        from core.inference.utilities.animatediff.pia.masking import prepare_mask_coef_by_statistics
+                        
+                        sim_range = animatediff.pia_motion
+                        if animatediff.pia_motion_type == "closed_loop":
+                            sim_range += 3
+                        elif animatediff.pia_motion_type == "style_transfer":
+                            sim_range = -1 * sim_range - 1
+
+                        mask_coef = prepare_mask_coef_by_statistics(animatediff.frames, animatediff.pia_cond_frame, sim_range)
+                        
+                        masked_image = torch.zeros(latents.shape[0], 4, latents.shape[2], latents.shape[3], latents.shape[4]) \
+                                .to(device=latents_device, dtype=latents.dtype)
+                        for f in range(animatediff.frames):
+                            mask[:, :, f, :, :] = mask_coef[f]
+                            masked_image[:, :, f, :, :] = image_latent.clone()
+                        # fmt: on
+                    else:
+                        mask, masked_image, _ = prepare_mask_and_masked_image(
+                            image, mask_image, height, width
+                        )
+                        mask, masked_image_latents = prepare_mask_latents(
+                            mask,
+                            masked_image,
+                            batch_size * num_images_per_prompt,  # type: ignore
+                            height,
+                            width,
+                            dtype,
+                            device,
+                            do_classifier_free_guidance,
+                            self.vae,
+                            self.vae_scale_factor,
+                            self.vae.config.scaling_factor,  # type: ignore
+                            generator=generator,
+                        )
+                else:
+                    mask = None
+
                 assert latents is not None
 
-                # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
-                extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta, generator)  # type: ignore
+                # 7. Prepare extra step kwargs.
+                extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta, generator, latents_device)  # type: ignore
 
                 setup_scalecrafter(self.unet, scalecrafter)  # type: ignore
 
@@ -601,11 +631,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 f_scheduler: DDIMScheduler = None  # type: ignore
                 f_fast_sampling = False
                 if animatediff is not None:
-                    if split_latents_into_two:
-                        logger.warn(
-                            "AnimateDiff doesn't work with non-merged latents! Disabling."
-                        )
-                        split_latents_into_two = False
                     context_args = [
                         animatediff.frames,
                         animatediff.context_size,
@@ -652,14 +677,16 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         self.unet, j, num_inference_steps, deepshrink
                     )
 
-                    tau = j / num_inference_steps
+                    tau = min(j / num_inference_steps, 1.0)
 
                     can_controlnet = (
                         tau <= config.api.approximate_controlnet
                         or math.floor(tau * 100) % 5 == 0
                     )
-                    do_classifier_free_guidance = (
-                        classify and tau <= config.api.cfg_uncond_tau
+                    do_classifier_free_guidance = classify and (
+                        tau <= config.api.cfg_uncond_tau
+                        or config.api.cfg_uncond_tau == 1.0
+                        or animatediff is not None
                     )
 
                     noise_pred, counter = None, None
@@ -688,14 +715,26 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             latent_model_input = x[:, :, context].repeat(
                                 2 if do_classifier_free_guidance else 1, 1, 1, 1, 1
                             )
+                            if mask is not None:
+                                assert masked_image is not None
+                                # fmt: off
+                                latent_mask = torch.cat([mask[:, :, context]] * 2) if do_classifier_free_guidance else mask[:, :, context]
+                                latent_masked_image = torch.cat([masked_image[:, :, context]] * 2) if do_classifier_free_guidance else masked_image[:, :, context]
+                                # fmt: on
                         else:
                             latent_model_input = (
                                 torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
                             )
-                        latent_model_input = self.scheduler.scale_model_input(latent_model_input, t[0] if isinstance(t, list) else t)  # type: ignore
+                            if mask is not None:
+                                assert masked_image_latents is not None
+                                # fmt: off
+                                latent_mask = mask
+                                latent_masked_image = masked_image_latents
+                                # fmt: on
+                        latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
                         if num_channels_unet == 9:
-                            latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
+                            latent_model_input = torch.cat([latent_model_input, latent_mask, latent_masked_image], dim=1)  # type: ignore
                         latent_model_input = latent_model_input.to(
                             device=latents_device
                         )
@@ -794,9 +833,25 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                                 if kw not in kwargs:
                                     del _kwargs[kw]
 
-                            noise_pred_text = call(
-                                latent_model_input, t, cond=cond, **_kwargs
-                            )
+                            if animatediff is not None:
+                                assert noise_pred is not None
+                                assert counter is not None
+                                # fmt: off
+                                # This is an abomination with formatting enabled
+                                lmi = latent_model_input.to(dtype=dtype, device=device)
+                                noise_pred[1, :, context] = noise_pred[1, :, context] \
+                                    + call(
+                                        lmi,
+                                        t,
+                                        cond=cond,
+                                        **_kwargs,
+                                    )[0].to(dtype=noise_pred.dtype, device=noise_pred.device)
+                                counter[1, :, context] = counter[1, :, context] + 1
+                                # fmt: on
+                            else:
+                                noise_pred_text = call(
+                                    latent_model_input, t, cond=cond, **_kwargs
+                                )
 
                             _kwargs.update(
                                 {
@@ -808,9 +863,25 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             for kw, _ in _kwargs.copy().items():
                                 if kw not in kwargs:
                                     del _kwargs[kw]
-                            noise_pred_uncond = call(
-                                latent_model_input, t, cond=uncond, **_kwargs
-                            )
+                            if animatediff is not None:
+                                assert noise_pred is not None
+                                assert counter is not None
+                                # fmt: off
+                                # This is an abomination with formatting enabled
+                                lmi = latent_model_input.to(dtype=dtype, device=device)
+                                noise_pred[0, :, context] = noise_pred[0, :, context] \
+                                    + call(
+                                        lmi,
+                                        t,
+                                        cond=uncond,
+                                        **_kwargs,
+                                    )[0].to(dtype=noise_pred.dtype, device=noise_pred.device)
+                                counter[0, :, context] = counter[0, :, context] + 1
+                                # fmt: on
+                            else:
+                                noise_pred_uncond = call(
+                                    latent_model_input, t, cond=uncond, **_kwargs
+                                )
                         else:
                             for kw, _ in _kwargs.copy().items():
                                 if kw not in kwargs:
@@ -892,6 +963,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                     if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                         # compute the previous noisy sample x_t -> x_t-1
+                        assert noise_pred is not None
                         x = self.scheduler.step(  # type: ignore
                             noise_pred, t.to(noise_pred.device), x.to(noise_pred.device), **extra_step_kwargs  # type: ignore
                         ).prev_sample  # type: ignore
@@ -921,6 +993,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 latents = latents.to(dtype=dtype)  # type: ignore
                 if image_latents is not None:
                     image_latents = image_latents.to(dtype=dtype)  # type: ignore
+
                 with ExitStack() as gs:
                     if do_self_attention_guidance:
                         gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore

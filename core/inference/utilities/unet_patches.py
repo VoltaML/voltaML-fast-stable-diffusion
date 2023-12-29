@@ -289,7 +289,8 @@ def _unet_new_forward(
         # ipow = int(np.sqrt(9 + 8 * order))
         cond = order <= 5 or order % 5 == 0
         if isinstance(mod, int):
-            cond = order % mod == 0
+            # First 5 steps always full cond, just to make sure samples aren't being wasted
+            cond = order <= 5 or order % mod == 0
 
         if cond:
             # 2. pre-process

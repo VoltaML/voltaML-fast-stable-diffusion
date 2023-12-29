@@ -28,25 +28,6 @@ def memory_required(input_shape: tuple):
         return (((area * 0.6) / 0.9) + 1024) * (1024 * 1024)
 
 
-def groupnorm_factory(flag: AnimateDiffFlag):
-    def groupnorm_mm_forward(self, input: torch.Tensor) -> torch.Tensor:
-        # axes_factor normalizes batch based on total conds and unconds passed in batch;
-        # the conds and unconds per batch can change based on VRAM optimizations that may kick in
-        if not flag.frames > 16:
-            axes_factor = input.size(0) // flag.frames
-        else:
-            axes_factor = input.size(0) // flag.context_size
-
-        input = einops.rearrange(input, "(b f) c h w -> b c f h w", b=axes_factor)
-        input = torch.nn.functional.group_norm(
-            input, self.num_groups, self.weight, self.bias, self.eps
-        )
-        input = einops.rearrange(input, "b c f h w -> (b f) c h w", b=axes_factor)
-        return input
-
-    return groupnorm_mm_forward
-
-
 def ordered_halving(val):
     "Returns fraction that has denominator that is a power of 2"
 
@@ -180,9 +161,7 @@ UNIFORM_CONTEXT_MAPPING = {
 
 
 def get_context_scheduler(name: str):
-    context_func = UNIFORM_CONTEXT_MAPPING.get(name, None)
-    assert context_func is not None
-    return context_func
+    return UNIFORM_CONTEXT_MAPPING.get(name, nil_scheduler)
 
 
 def nil_scheduler(*args, **kwargs):
@@ -196,16 +175,5 @@ def patch(context: InferenceContext) -> InferenceContext:
 
     flag: AnimateDiffFlag | None = context.get_flag(AnimateDiffFlag)  # type: ignore
     assert flag is not None
-
-    #    def replace_groupnorm_forward(module):
-    #        if isinstance(module, torch.nn.GroupNorm):
-    #            module.forward = groupnorm_factory(module, flag)
-    #        for m in module.modules():
-    #            replace_groupnorm_forward(m)
-    #
-    #    for module in context.unet.modules():
-    #        replace_groupnorm_forward(module)
-
-    # torch.nn.GroupNorm.forward = groupnorm_factory(flag)
 
     return context
