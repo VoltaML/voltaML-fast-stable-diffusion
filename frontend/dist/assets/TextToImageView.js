@@ -1,4 +1,4 @@
-import { d as defineComponent, u as useSettings, c as computed, o as openBlock, a as createElementBlock, b as createBaseVNode, e as createVNode, f as unref, g as createBlock, w as withCtx, h as createTextVNode, N as NTooltip, i as NSpace, j as createCommentVNode, F as Fragment, k as useState, l as NCard, m as NTabPane, n as NTabs, p as NSelect, q as useMessage, r as onUnmounted, s as NGi, t as NGrid, v as serverUrl } from "./index.js";
+import { d as defineComponent, u as useSettings, c as computed, o as openBlock, a as createElementBlock, b as createBaseVNode, e as createVNode, f as unref, g as createBlock, w as withCtx, h as createTextVNode, N as NTooltip, i as isDev, j as NSpace, k as createCommentVNode, F as Fragment, l as useState, m as NCard, n as NTabPane, p as NTabs, q as NSelect, r as useMessage, s as onUnmounted, t as NGi, v as NGrid, x as serverUrl } from "./index.js";
 import { _ as _sfc_main$d } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$e } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$7, a as _sfc_main$8, B as BurnerClock, P as Prompt, b as _sfc_main$9, c as _sfc_main$a, d as _sfc_main$f } from "./clock.js";
@@ -222,10 +222,11 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NInputNumber), {
                 value: target.value[props.tab].adetailer.iterations,
                 "onUpdate:value": _cache[9] || (_cache[9] = ($event) => target.value[props.tab].adetailer.iterations = $event),
+                disabled: !unref(isDev),
                 size: "small",
                 min: 1,
                 style: { "flex-grow": "1" }
-              }, null, 8, ["value"])
+              }, null, 8, ["value", "disabled"])
             ]),
             createBaseVNode("div", _hoisted_19, [
               createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {

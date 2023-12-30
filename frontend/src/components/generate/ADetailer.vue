@@ -148,6 +148,7 @@
       </NTooltip>
       <NInputNumber
         v-model:value="target[props.tab].adetailer.iterations"
+        :disabled="!isDev"
         size="small"
         :min="1"
         style="flex-grow: 1"
@@ -185,6 +186,7 @@
 
 <script setup lang="ts">
 import { CFGScale, SAGInput, SamplerPicker } from "@/components";
+import { isDev } from "@/env";
 import type { ISettings } from "@/settings";
 import { useSettings } from "@/store/settings";
 import { NInputNumber, NSlider, NSpace, NSwitch, NTooltip } from "naive-ui";

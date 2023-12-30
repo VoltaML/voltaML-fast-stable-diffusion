@@ -15,3 +15,5 @@ export const webSocketUrl = import.meta.env.DEV
 export const huggingfaceModelsFile = import.meta.env.DEV
   ? `${serverUrl}/api/test/huggingface-models.json`
   : "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
+
+export const isDev = import.meta.env.DEV;

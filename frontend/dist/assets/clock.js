@@ -5,7 +5,7 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
-import { d as defineComponent, o as openBlock, a as createElementBlock, b as createBaseVNode, g as createBlock, w as withCtx, e as createVNode, f as unref, h as createTextVNode, D as toDisplayString, l as NCard, j as createCommentVNode, u as useSettings, N as NTooltip, c as computed, F as Fragment, k as useState, E as spaceRegex, C as NIcon, p as NSelect, G as promptHandleKeyUp, H as promptHandleKeyDown, I as NInput, _ as _export_sfc, J as watch, A as ref, v as serverUrl } from "./index.js";
+import { d as defineComponent, o as openBlock, a as createElementBlock, b as createBaseVNode, g as createBlock, w as withCtx, e as createVNode, f as unref, h as createTextVNode, E as toDisplayString, m as NCard, k as createCommentVNode, u as useSettings, N as NTooltip, c as computed, F as Fragment, l as useState, G as spaceRegex, D as NIcon, q as NSelect, H as promptHandleKeyUp, I as promptHandleKeyDown, J as NInput, _ as _export_sfc, K as watch, B as ref, x as serverUrl } from "./index.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NForm, c as NFormItem } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
