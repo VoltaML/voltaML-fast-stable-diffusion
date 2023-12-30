@@ -31,7 +31,7 @@ class BaseDiffusionMixin:
     steps: int = 25
     prompt: str = ""
     negative_prompt: str = (
-        "(worst quality, low quality:1.4), monochrome, (interlocked fingers:1.2),"
+        "(worst quality, low quality:1.4), monochrome, (interlocked fingers:1.2)"
     )
     sampler: Union[int, str] = "dpmpp_2m"
     sigmas: SigmaScheduler = "exponential"

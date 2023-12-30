@@ -20,6 +20,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets import Data
 from api.websockets.notification import Notification
+from core import shared
 from core.config import config
 from core.flags import DeepshrinkFlag, ScalecrafterFlag
 from core.inference.base_model import InferenceModel
@@ -346,7 +347,7 @@ class PyTorchStableDiffusion(InferenceModel):
         if isinstance(total_images, List):
             websocket_manager.broadcast_sync(
                 data=Data(
-                    data_type="txt2img",
+                    data_type=shared.current_method or "txt2img",
                     data={
                         "progress": 0,
                         "current_step": 0,
@@ -418,7 +419,7 @@ class PyTorchStableDiffusion(InferenceModel):
         if isinstance(total_images, List):
             websocket_manager.broadcast_sync(
                 data=Data(
-                    data_type="img2img",
+                    data_type=shared.current_method or "img2img",
                     data={
                         "progress": 0,
                         "current_step": 0,
@@ -492,7 +493,7 @@ class PyTorchStableDiffusion(InferenceModel):
         if isinstance(total_images, List):
             websocket_manager.broadcast_sync(
                 data=Data(
-                    data_type="inpainting",
+                    data_type=shared.current_method or "inpainting",
                     data={
                         "progress": 0,
                         "current_step": 0,
@@ -572,7 +573,7 @@ class PyTorchStableDiffusion(InferenceModel):
         if isinstance(total_images, List):
             websocket_manager.broadcast_sync(
                 data=Data(
-                    data_type="controlnet",
+                    data_type=shared.current_method or "controlnet",
                     data={
                         "progress": 0,
                         "current_step": 0,
