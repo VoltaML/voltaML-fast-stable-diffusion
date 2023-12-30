@@ -232,6 +232,8 @@ class ADetailerQueueEntry(Job):
     mask_dilation: int = 4
     mask_blur: int = 4
     mask_padding: int = 32
+    iterations: int = 1
+    upscale: int = 2
 
 
 @dataclass

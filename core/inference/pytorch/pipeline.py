@@ -568,6 +568,10 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 change_source: Callable[[Callable], None],
             ):
                 nonlocal j
+                nonlocal timesteps
+
+                # Find current index because ksampling will not give it to us
+                i = torch.nonzero(timesteps == t).item().__int__()
 
                 self.unet = modify_kohya(self.unet, j, num_inference_steps, deepshrink)
 
@@ -721,12 +725,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     init_latents_proper = image_latents[:1]  # type: ignore
                     init_mask = mask[:1]
                     init_mask = pad_tensor(init_mask, 8, (x.shape[2], x.shape[3]))
-
-                    if i < len(timesteps) - 1:
-                        noise_timestep = timesteps[i + 1]
-                        init_latents_proper = self.scheduler.add_noise(
-                            init_latents_proper, noise, torch.tensor([noise_timestep])  # type: ignore
-                        )
 
                     x = (1 - init_mask) * init_latents_proper + init_mask * x  # type: ignore
                 j += 1

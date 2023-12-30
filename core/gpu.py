@@ -290,6 +290,8 @@ class GPU:
         mask_blur = data.pop("mask_blur")
         mask_dilation = data.pop("mask_dilation")
         mask_padding = data.pop("mask_padding")
+        iterations = data.pop("iterations")
+        upscale = data.pop("upscale")
         data.pop("enabled", None)
 
         data["prompt"] = job.data.prompt
@@ -310,6 +312,8 @@ class GPU:
                 mask_blur=mask_blur,
                 mask_dilation=mask_dilation,
                 mask_padding=mask_padding,
+                iterations=iterations,
+                upscale=upscale,
                 model=job.model,
             )
 

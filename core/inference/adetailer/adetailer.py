@@ -14,7 +14,7 @@ from asdff.utils import (
     mask_gaussian_blur,
 )
 from asdff.yolo import yolo_detector
-from PIL import Image
+from PIL import Image, ImageOps
 
 from core.types import InpaintQueueEntry
 from core.utils import convert_to_image
@@ -44,6 +44,8 @@ class ADetailer:
         mask_dilation: int = 4,
         mask_blur: int = 4,
         mask_padding: int = 32,
+        iterations: int = 1,
+        upscale: int = 2,
         yolo_model: Optional[str] = None,
     ) -> ADOutput:
         if detectors is None:
@@ -73,30 +75,34 @@ class ADetailer:
                     logger.info(f"No object in {ordinal(k + 1)} mask.")
                     continue
                 mask = mask_gaussian_blur(mask, mask_blur)
-                # mask.save(f"mask_{j}_{k}.png")
                 bbox_padded = bbox_padding(bbox, input_image.size, mask_padding)
+                inverted_mask = ImageOps.invert(mask)
 
-                inpaint_output = self.process_inpainting(
-                    fn,
-                    inpaint_entry,
-                    input_image,
-                    mask,
-                    bbox_padded,
-                )
-                inpaint_image: Image.Image = inpaint_output[0]  # type: ignore
+                for _i in range(iterations):
+                    inpaint_output: List[Image.Image] = self.process_inpainting(
+                        fn,
+                        inpaint_entry,
+                        input_image,
+                        inverted_mask,
+                        bbox_padded,
+                        upscale=upscale,
+                    )
 
-                final_image = composite(
-                    input_image,
-                    mask,
-                    inpaint_image,
-                    bbox_padded,
-                )
-                input_image = final_image
+                    inpaint_image: Image.Image = inpaint_output[0]  # type: ignore
+
+                    final_image = composite(
+                        input_image,
+                        mask,
+                        inpaint_image,
+                        bbox_padded,
+                    )
+
+                    input_image = final_image
 
         assert final_image is not None
         final_images.append(final_image)
 
-        return ADOutput(init_images, final_images)
+        return ADOutput(images=final_images, init_images=init_images)
 
     def process_inpainting(
         self,
@@ -105,9 +111,20 @@ class ADetailer:
         init_image: Image.Image,
         mask: Image.Image,
         bbox_padded: tuple[int, int, int, int],
+        upscale: int = 2,
     ):  # -> tuple[PipelineImageInput, Any | None] | StableDiffusionPipelineOutput:
         crop_image = init_image.crop(bbox_padded)
         crop_mask = mask.crop(bbox_padded)
+
+        # Get the current size of the images
+        width, height = crop_image.size
+
+        # Calculate the new size
+        new_size = (int(width * upscale), int(height * upscale))
+
+        # Resize the images
+        crop_image = crop_image.resize(new_size, resample=Image.LANCZOS)
+        crop_mask = crop_mask.resize(new_size, resample=Image.LANCZOS)
 
         inpaint_entry.data.image = crop_image  # type: ignore
         inpaint_entry.data.mask_image = crop_mask  # type: ignore
@@ -115,4 +132,10 @@ class ADetailer:
         inpaint_entry.data.width = crop_image.width
         inpaint_entry.data.height = crop_image.height
 
-        return fn(inpaint_entry)
+        out: List[Image.Image] = fn(inpaint_entry)
+        # Resize back to original size
+        out_resized = []
+        for image in out:
+            out_resized.append(image.resize((width, height), resample=Image.LANCZOS))
+
+        return out_resized

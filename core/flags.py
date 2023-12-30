@@ -130,3 +130,5 @@ class ADetailerFlag(Flag, DataClassJsonMixin):
     mask_dilation: int = field(default=4)
     mask_blur: int = field(default=4)
     mask_padding: int = field(default=32)
+    iterations: int = field(default=1)
+    upscale: int = field(default=2)

@@ -307,6 +307,8 @@ const generate = () => {
                   settings.data.settings.txt2img.adetailer.mask_dilation,
                 mask_padding:
                   settings.data.settings.txt2img.adetailer.mask_padding,
+                iterations: settings.data.settings.txt2img.adetailer.iterations,
+                upscale: settings.data.settings.txt2img.adetailer.upscale,
                 scheduler: settings.data.settings.txt2img.adetailer.sampler,
                 strength: settings.data.settings.txt2img.adetailer.strength,
                 seed: settings.data.settings.txt2img.adetailer.seed,

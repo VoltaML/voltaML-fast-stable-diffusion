@@ -137,6 +137,49 @@
         style="flex-grow: 1"
       />
     </div>
+
+    <!-- Iterations -->
+    <div class="flex-container">
+      <NTooltip style="max-width: 600px">
+        <template #trigger>
+          <p class="slider-label">Iterations</p>
+        </template>
+        Iterations should increase the quality of the image at the cost of time.
+      </NTooltip>
+      <NInputNumber
+        v-model:value="target[props.tab].adetailer.iterations"
+        size="small"
+        :min="1"
+        style="flex-grow: 1"
+      />
+    </div>
+
+    <!-- Upscale -->
+    <div class="flex-container">
+      <NTooltip style="max-width: 600px">
+        <template #trigger>
+          <p class="slider-label">Upscale</p>
+        </template>
+        Hom much should the image be upscaled before processing. This increases
+        the quality of the image at the cost of time as bigger canvas can
+        usually hold more detail.
+      </NTooltip>
+      <NSlider
+        v-model:value="target[props.tab].adetailer.upscale"
+        :min="1"
+        :max="4"
+        :step="0.1"
+        style="margin-right: 12px"
+      />
+      <NInputNumber
+        v-model:value="target[props.tab].adetailer.upscale"
+        size="small"
+        style="min-width: 96px; width: 96px"
+        :min="1"
+        :max="4"
+        :step="0.1"
+      />
+    </div>
   </NSpace>
 </template>
 

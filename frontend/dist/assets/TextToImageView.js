@@ -29,6 +29,10 @@ const _hoisted_13$1 = { class: "flex-container" };
 const _hoisted_14$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Mask Blur", -1);
 const _hoisted_15$1 = { class: "flex-container" };
 const _hoisted_16$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Mask Padding", -1);
+const _hoisted_17 = { class: "flex-container" };
+const _hoisted_18 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Iterations", -1);
+const _hoisted_19 = { class: "flex-container" };
+const _hoisted_20 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Upscale", -1);
 const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "ADetailer",
   props: {
@@ -203,6 +207,52 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                 size: "small",
                 min: 0,
                 style: { "flex-grow": "1" }
+              }, null, 8, ["value"])
+            ]),
+            createBaseVNode("div", _hoisted_17, [
+              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                trigger: withCtx(() => [
+                  _hoisted_18
+                ]),
+                default: withCtx(() => [
+                  createTextVNode(" Iterations should increase the quality of the image at the cost of time. ")
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NInputNumber), {
+                value: target.value[props.tab].adetailer.iterations,
+                "onUpdate:value": _cache[9] || (_cache[9] = ($event) => target.value[props.tab].adetailer.iterations = $event),
+                size: "small",
+                min: 1,
+                style: { "flex-grow": "1" }
+              }, null, 8, ["value"])
+            ]),
+            createBaseVNode("div", _hoisted_19, [
+              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                trigger: withCtx(() => [
+                  _hoisted_20
+                ]),
+                default: withCtx(() => [
+                  createTextVNode(" Hom much should the image be upscaled before processing. This increases the quality of the image at the cost of time as bigger canvas can usually hold more detail. ")
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NSlider), {
+                value: target.value[props.tab].adetailer.upscale,
+                "onUpdate:value": _cache[10] || (_cache[10] = ($event) => target.value[props.tab].adetailer.upscale = $event),
+                min: 1,
+                max: 4,
+                step: 0.1,
+                style: { "margin-right": "12px" }
+              }, null, 8, ["value"]),
+              createVNode(unref(NInputNumber), {
+                value: target.value[props.tab].adetailer.upscale,
+                "onUpdate:value": _cache[11] || (_cache[11] = ($event) => target.value[props.tab].adetailer.upscale = $event),
+                size: "small",
+                style: { "min-width": "96px", "width": "96px" },
+                min: 1,
+                max: 4,
+                step: 0.1
               }, null, 8, ["value"])
             ])
           ]),
@@ -634,6 +684,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 mask_blur: settings.data.settings.txt2img.adetailer.mask_blur,
                 mask_dilation: settings.data.settings.txt2img.adetailer.mask_dilation,
                 mask_padding: settings.data.settings.txt2img.adetailer.mask_padding,
+                iterations: settings.data.settings.txt2img.adetailer.iterations,
+                upscale: settings.data.settings.txt2img.adetailer.upscale,
                 scheduler: settings.data.settings.txt2img.adetailer.sampler,
                 strength: settings.data.settings.txt2img.adetailer.strength,
                 seed: settings.data.settings.txt2img.adetailer.seed,

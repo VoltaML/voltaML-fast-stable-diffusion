@@ -611,6 +611,8 @@ class PyTorchStableDiffusion(InferenceModel):
             mask_dilation=job.mask_dilation,
             mask_blur=job.mask_blur,
             mask_padding=job.mask_padding,
+            upscale=job.upscale,
+            iterations=job.iterations,
         )
 
         return [*output.images, *output.init_images]

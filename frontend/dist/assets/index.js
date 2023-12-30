@@ -41654,16 +41654,18 @@ function urlFromPath(path) {
 }
 const defaultADetailerSettings = {
   enabled: false,
-  steps: 25,
+  steps: 30,
   cfg_scale: 7,
   seed: -1,
-  sampler: 13,
+  sampler: "dpmpp_2m",
   self_attention_scale: 0,
-  sigmas: "automatic",
+  sigmas: "exponential",
   strength: 0.4,
   mask_dilation: 0,
   mask_blur: 0,
-  mask_padding: 0
+  mask_padding: 0,
+  iterations: 1,
+  upscale: 2
 };
 const deepShrinkFlagDefault = Object.freeze({
   enabled: false,
@@ -41988,7 +41990,7 @@ const upscalerOptions = [
     value: "RealESR-general-x4v3"
   }
 ];
-function getSchedulerOptions() {
+function getSamplerOptions() {
   const scheduler_options = [
     {
       type: "group",
@@ -42136,8 +42138,8 @@ function getControlNetOptions() {
 const deepcopiedSettings = JSON.parse(JSON.stringify(recievedSettings));
 const useSettings = defineStore("settings", () => {
   const data = reactive(new Settings(recievedSettings));
-  const scheduler_options = computed(() => {
-    return getSchedulerOptions();
+  const samplers = computed(() => {
+    return getSamplerOptions();
   });
   const controlnet_options = computed(() => {
     return getControlNetOptions();
@@ -42164,7 +42166,7 @@ const useSettings = defineStore("settings", () => {
   const defaultSettings$1 = reactive(deepcopiedSettings);
   return {
     data,
-    scheduler_options,
+    scheduler_options: samplers,
     controlnet_options,
     defaultSettings: defaultSettings$1,
     resetSettings,
