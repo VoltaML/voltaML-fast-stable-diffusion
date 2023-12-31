@@ -570,9 +570,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 nonlocal j
                 nonlocal timesteps
 
-                # Find current index because ksampling will not give it to us
-                i = torch.nonzero(timesteps == t).item().__int__()
-
                 self.unet = modify_kohya(self.unet, j, num_inference_steps, deepshrink)
 
                 # expand the latents if we are doing classifier free guidance
