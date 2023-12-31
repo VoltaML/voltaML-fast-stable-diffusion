@@ -328,7 +328,7 @@ def prepare_latents(
 
         init_latents_orig = init_latents
         shape = init_latents.shape
-        if latent_channels is not None:
+        if latent_channels is not None and latent_channels != shape[1]:
             shape = (
                 batch_size,
                 latent_channels,  # type: ignore

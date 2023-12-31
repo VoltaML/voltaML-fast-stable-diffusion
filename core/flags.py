@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
-from typing import Literal, List, Union
+from typing import Dict, Literal, Union
 
 from dataclasses_json.api import DataClassJsonMixin
+
+from core.types import SigmaScheduler
 
 LatentScaleModel = Literal[
     "nearest",
@@ -158,3 +160,30 @@ class UpscaleFlag(Flag, DataClassJsonMixin):
     tile_size: int = field(default=128)
     tile_padding: int = field(default=10)
     model: str = field(default="RealESRGAN_x4plus_anime_6B")
+
+
+@dataclass
+class ADetailerFlag(Flag, DataClassJsonMixin):
+    "Flag for ADetailer settings"
+
+    enabled: bool = field(default=False)  # For storing in json
+
+    # Inpainting
+    image: Union[bytes, str, None] = field(default=None)
+    mask_image: Union[bytes, str, None] = field(default=None)
+    scheduler: Union[int, str] = "dpmpp_2m"
+    steps: int = field(default=40)
+    cfg_scale: float = field(default=7)
+    self_attention_scale: float = field(default=1.0)
+    sigmas: SigmaScheduler = field(default="exponential")
+    seed: int = field(default=0)
+    strength: float = field(default=0.45)
+    sampler_settings: Dict = field(default_factory=dict)
+    prompt_to_prompt_settings: Dict = field(default_factory=dict)
+
+    # ADetailer specific
+    mask_dilation: int = field(default=4)
+    mask_blur: int = field(default=4)
+    mask_padding: int = field(default=32)
+    iterations: int = field(default=1)
+    upscale: int = field(default=2)

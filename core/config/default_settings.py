@@ -2,9 +2,13 @@ import multiprocessing
 from dataclasses import dataclass, field
 from typing import Optional, Union
 
-from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
-
-from core.flags import DeepshrinkFlag, HighResFixFlag, ScalecrafterFlag, UpscaleFlag
+from core.flags import (
+    ADetailerFlag,
+    DeepshrinkFlag,
+    HighResFixFlag,
+    ScalecrafterFlag,
+    UpscaleFlag,
+)
 from core.types import SigmaScheduler
 
 
@@ -22,23 +26,24 @@ class QuantDict:
 class BaseDiffusionMixin:
     width: int = 512
     height: int = 512
-    batch_count: int = 1
-    batch_size: int = 1
     seed: int = -1
     cfg_scale: int = 7
-    steps: int = 40
+    steps: int = 25
     prompt: str = ""
-    negative_prompt: str = ""
-    sampler: Union[
-        int, str
-    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
-    sigmas: SigmaScheduler = "automatic"
+    negative_prompt: str = (
+        "(worst quality, low quality:1.4), monochrome, (interlocked fingers:1.2)"
+    )
+    sampler: Union[int, str] = "dpmpp_2m"
+    sigmas: SigmaScheduler = "exponential"
+    batch_count: int = 1
+    batch_size: int = 1
 
     # Flags
     highres: HighResFixFlag = field(default_factory=HighResFixFlag)
     upscale: UpscaleFlag = field(default_factory=UpscaleFlag)
     deepshrink: DeepshrinkFlag = field(default_factory=DeepshrinkFlag)
     scalecrafter: ScalecrafterFlag = field(default_factory=ScalecrafterFlag)
+    adetailer: ADetailerFlag = field(default_factory=ADetailerFlag)
 
 
 @dataclass
@@ -62,6 +67,7 @@ class InpaintingConfig(BaseDiffusionMixin):
     "Configuration for the inpainting pipeline"
 
     self_attention_scale: float = 0.0
+    strength: float = 0.6
 
 
 @dataclass
