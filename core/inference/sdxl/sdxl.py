@@ -20,6 +20,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets import Data
 from api.websockets.notification import Notification
+from core import shared
 from core.config import config
 from core.files import get_full_model_path
 from core.flags import SDXLFlag, SDXLRefinerFlag, DeepshrinkFlag, ScalecrafterFlag
@@ -33,6 +34,7 @@ from core.inference.utilities import change_scheduler, create_generator
 from core.inference_callbacks import callback
 from core.optimizations import optimize_vae
 from core.types import (
+    ADetailerQueueEntry,
     Backend,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
@@ -350,7 +352,7 @@ class SDXLStableDiffusion(InferenceModel):
         if isinstance(total_images, List):
             websocket_manager.broadcast_sync(
                 data=Data(
-                    data_type="txt2img",
+                    data_type=shared.current_method or "txt2img",
                     data={
                         "progress": 0,
                         "current_step": 0,
@@ -431,7 +433,7 @@ class SDXLStableDiffusion(InferenceModel):
         if isinstance(total_images, List):
             websocket_manager.broadcast_sync(
                 data=Data(
-                    data_type="img2img",
+                    data_type=shared.current_method or "img2img",
                     data={
                         "progress": 0,
                         "current_step": 0,
@@ -497,6 +499,7 @@ class SDXLStableDiffusion(InferenceModel):
                 width=job.data.width,
                 height=job.data.height,
                 seed=job.data.seed,
+                strength=job.data.strength,
                 self_attention_scale=job.data.self_attention_scale,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
                 deepshrink=deepshrink,
@@ -513,7 +516,7 @@ class SDXLStableDiffusion(InferenceModel):
         if isinstance(total_images, List):
             websocket_manager.broadcast_sync(
                 data=Data(
-                    data_type="inpainting",
+                    data_type=shared.current_method or "inpainting",
                     data={
                         "progress": 0,
                         "current_step": 0,
@@ -526,6 +529,33 @@ class SDXLStableDiffusion(InferenceModel):
             )
 
         return total_images
+
+    def adetailer(
+        self,
+        job: ADetailerQueueEntry,
+    ):
+        from ..adetailer.adetailer import ADetailer
+
+        data = job.data
+        assert data is not None
+
+        entry = InpaintQueueEntry(
+            data=data,
+            model=job.model,
+            save_image=job.save_image,
+        )
+
+        output = ADetailer().generate(
+            fn=self.inpaint,
+            inpaint_entry=entry,
+            mask_dilation=job.mask_dilation,
+            mask_blur=job.mask_blur,
+            mask_padding=job.mask_padding,
+            upscale=job.upscale,
+            iterations=job.iterations,
+        )
+
+        return [*output.images, *output.init_images]
 
     def generate(self, job: Job) -> Union[List[Image.Image], torch.Tensor]:
         "Generate images from the queue"
@@ -540,6 +570,8 @@ class SDXLStableDiffusion(InferenceModel):
                 images = self.img2img(job)
             elif isinstance(job, InpaintQueueEntry):
                 images = self.inpaint(job)
+            elif isinstance(job, ADetailerQueueEntry):
+                images = self.adetailer(job)
             else:
                 raise ValueError("Invalid job type for this pipeline")
         except Exception as e:

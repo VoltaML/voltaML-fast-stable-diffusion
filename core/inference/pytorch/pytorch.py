@@ -20,6 +20,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets import Data
 from api.websockets.notification import Notification
+from core import shared
 from core.config import config
 from core.flags import DeepshrinkFlag, ScalecrafterFlag
 from core.inference.base_model import InferenceModel
@@ -37,6 +38,7 @@ from core.inference.utilities import (
 from core.inference_callbacks import callback
 from core.optimizations import optimize_vae
 from core.types import (
+    ADetailerQueueEntry,
     Backend,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
@@ -345,7 +347,7 @@ class PyTorchStableDiffusion(InferenceModel):
         if isinstance(total_images, List):
             websocket_manager.broadcast_sync(
                 data=Data(
-                    data_type="txt2img",
+                    data_type=shared.current_method or "txt2img",
                     data={
                         "progress": 0,
                         "current_step": 0,
@@ -417,7 +419,7 @@ class PyTorchStableDiffusion(InferenceModel):
         if isinstance(total_images, List):
             websocket_manager.broadcast_sync(
                 data=Data(
-                    data_type="img2img",
+                    data_type=shared.current_method or "img2img",
                     data={
                         "progress": 0,
                         "current_step": 0,
@@ -477,6 +479,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 seed=job.data.seed,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
                 deepshrink=deepshrink,
+                strength=job.data.strength,
             )
 
             images: Union[List[Image.Image], torch.Tensor] = data[0]  # type: ignore
@@ -490,7 +493,7 @@ class PyTorchStableDiffusion(InferenceModel):
         if isinstance(total_images, List):
             websocket_manager.broadcast_sync(
                 data=Data(
-                    data_type="inpainting",
+                    data_type=shared.current_method or "inpainting",
                     data={
                         "progress": 0,
                         "current_step": 0,
@@ -564,10 +567,13 @@ class PyTorchStableDiffusion(InferenceModel):
                 assert isinstance(total_images, List)
                 total_images.extend(images)
 
+        if job.data.return_preprocessed and isinstance(total_images, List):
+            total_images.append(input_image)
+
         if isinstance(total_images, List):
             websocket_manager.broadcast_sync(
                 data=Data(
-                    data_type="controlnet",
+                    data_type=shared.current_method or "controlnet",
                     data={
                         "progress": 0,
                         "current_step": 0,
@@ -585,6 +591,33 @@ class PyTorchStableDiffusion(InferenceModel):
 
         return total_images
 
+    def adetailer(
+        self,
+        job: ADetailerQueueEntry,
+    ):
+        from ..adetailer.adetailer import ADetailer
+
+        data = job.data
+        assert data is not None
+
+        entry = InpaintQueueEntry(
+            data=data,
+            model=job.model,
+            save_image=job.save_image,
+        )
+
+        output = ADetailer().generate(
+            fn=self.inpaint,
+            inpaint_entry=entry,
+            mask_dilation=job.mask_dilation,
+            mask_blur=job.mask_blur,
+            mask_padding=job.mask_padding,
+            upscale=job.upscale,
+            iterations=job.iterations,
+        )
+
+        return [*output.images, *output.init_images]
+
     def generate(self, job: Job) -> Union[List[Image.Image], torch.Tensor]:
         "Generate images from the queue"
 
@@ -599,6 +632,8 @@ class PyTorchStableDiffusion(InferenceModel):
                 images = self.inpaint(job)
             elif isinstance(job, ControlNetQueueEntry):
                 images = self.controlnet2img(job)
+            elif isinstance(job, ADetailerQueueEntry):
+                images = self.adetailer(job)
             else:
                 raise ValueError("Invalid job type for this pipeline")
         except Exception as e:

@@ -112,7 +112,7 @@ class Img2imgData:
 
 @dataclass
 class InpaintData:
-    "Dataclass for the data of an img2img request"
+    "Dataclass for the data of an inpainting request"
 
     prompt: str
     image: Union[bytes, str]
@@ -129,6 +129,7 @@ class InpaintData:
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
+    strength: float = field(default=0.6)
     sampler_settings: Dict = field(default_factory=dict)
     prompt_to_prompt_settings: Dict = field(default_factory=dict)
 
@@ -219,6 +220,20 @@ class UpscaleQueueEntry(Job):
     "Dataclass for a real esrgan job"
 
     data: UpscaleData
+
+
+@dataclass
+class ADetailerQueueEntry(Job):
+    "Dataclass for an ADetailer job"
+
+    data: Optional[InpaintData]
+
+    # Adetailer specific flags
+    mask_dilation: int = 4
+    mask_blur: int = 4
+    mask_padding: int = 32
+    iterations: int = 1
+    upscale: int = 2
 
 
 @dataclass

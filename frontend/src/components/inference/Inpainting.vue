@@ -174,6 +174,31 @@
 
             <SAGInput tab="inpainting" />
 
+            <!-- Strength -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Strength</p>
+                </template>
+                How much should the masked are be changed from the original
+              </NTooltip>
+              <NSlider
+                v-model:value="settings.data.settings.inpainting.strength"
+                :min="0"
+                :max="1"
+                :step="0.01"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="settings.data.settings.inpainting.strength"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="0"
+                :max="1"
+                :step="0.01"
+              />
+            </div>
+
             <!-- Number of images -->
             <div class="flex-container">
               <NTooltip style="max-width: 600px">

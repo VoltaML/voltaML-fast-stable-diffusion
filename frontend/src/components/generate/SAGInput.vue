@@ -14,14 +14,14 @@
     </NTooltip>
 
     <NSlider
-      v-model:value="settings.data.settings[props.tab].self_attention_scale"
+      v-model:value="target.self_attention_scale"
       :min="0"
       :max="1"
       :step="0.05"
       style="margin-right: 12px"
     />
     <NInputNumber
-      v-model:value="settings.data.settings[props.tab].self_attention_scale"
+      v-model:value="target.self_attention_scale"
       size="small"
       style="min-width: 96px; width: 96px"
       :step="0.05"
@@ -30,10 +30,10 @@
 </template>
 
 <script lang="ts" setup>
-import { NTooltip, NSlider, NInputNumber } from "naive-ui";
 import { useSettings } from "@/store/settings";
-import type { PropType } from "vue";
 import type { InferenceTabs } from "@/types";
+import { NInputNumber, NSlider, NTooltip } from "naive-ui";
+import { computed, type PropType } from "vue";
 
 const settings = useSettings();
 
@@ -42,5 +42,24 @@ const props = defineProps({
     type: String as PropType<InferenceTabs>,
     required: true,
   },
+  target: {
+    type: String as PropType<
+      "settings" | "defaultSettings" | "adetailer" | "defaultSettingsAdetailer"
+    >,
+    required: false,
+    default: "settings",
+  },
+});
+
+const target = computed<any>(() => {
+  if (props.target === "settings") {
+    return settings.data.settings[props.tab];
+  } else if (props.target === "adetailer") {
+    return settings.data.settings[props.tab].adetailer;
+  } else if (props.target === "defaultSettingsAdetailer") {
+    return settings.defaultSettings[props.tab].adetailer;
+  } else {
+    return settings.defaultSettings;
+  }
 });
 </script>

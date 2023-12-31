@@ -49,7 +49,7 @@ export const upscalerOptions: SelectMixedOption[] = [
   },
 ];
 
-export function getSchedulerOptions() {
+export function getSamplerOptions() {
   const scheduler_options: SelectMixedOption[] = [
     {
       type: "group",
@@ -205,8 +205,8 @@ const deepcopiedSettings = JSON.parse(JSON.stringify(recievedSettings));
 
 export const useSettings = defineStore("settings", () => {
   const data = reactive(new Settings(recievedSettings));
-  const scheduler_options = computed(() => {
-    return getSchedulerOptions();
+  const samplers = computed(() => {
+    return getSamplerOptions();
   });
   const controlnet_options = computed(() => {
     return getControlNetOptions();
@@ -238,7 +238,7 @@ export const useSettings = defineStore("settings", () => {
 
   return {
     data,
-    scheduler_options,
+    scheduler_options: samplers,
     controlnet_options,
     defaultSettings,
     resetSettings,

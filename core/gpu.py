@@ -2,6 +2,7 @@ import logging
 import math
 import multiprocessing
 import time
+from dataclasses import asdict
 from importlib.util import find_spec
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Union
@@ -16,7 +17,7 @@ from api.websockets.notification import Notification
 from core import shared
 from core.config import config
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
-from core.flags import HighResFixFlag, UpscaleFlag
+from core.flags import ADetailerFlag, HighResFixFlag, UpscaleFlag
 from core.inference.ait import AITemplateStableDiffusion
 from core.inference.esrgan import RealESRGAN, Upscaler
 from core.inference.functions import is_ipex_available
@@ -28,6 +29,7 @@ from core.optimizations import is_hypertile_available
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
+    ADetailerQueueEntry,
     AITemplateBuildRequest,
     AITemplateDynamicBuildRequest,
     Capabilities,
@@ -36,6 +38,7 @@ from core.types import (
     Img2ImgQueueEntry,
     InferenceBackend,
     InferenceJob,
+    InpaintData,
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
@@ -279,6 +282,45 @@ class GPU:
 
         return final_images
 
+    def adetailer_flag(self, job: Job, images: List[Image.Image]) -> List[Image.Image]:
+        logger.debug("Running ADetailer")
+
+        flag = ADetailerFlag(**job.flags["adetailer"])
+        data = asdict(flag)
+        mask_blur = data.pop("mask_blur")
+        mask_dilation = data.pop("mask_dilation")
+        mask_padding = data.pop("mask_padding")
+        iterations = data.pop("iterations")
+        upscale = data.pop("upscale")
+        data.pop("enabled", None)
+
+        data["prompt"] = job.data.prompt
+        data["negative_prompt"] = job.data.negative_prompt
+
+        data = InpaintData(**data)
+
+        assert data is not None
+
+        final_images = []
+        for image in images:
+            data.image = image  # type: ignore
+            data.prompt = job.data.prompt
+            data.negative_prompt = job.data.negative_prompt
+
+            adetailer_job = ADetailerQueueEntry(
+                data=data,
+                mask_blur=mask_blur,
+                mask_dilation=mask_dilation,
+                mask_padding=mask_padding,
+                iterations=iterations,
+                upscale=upscale,
+                model=job.model,
+            )
+
+            final_images.extend(self.run_inference(adetailer_job))
+
+        return final_images
+
     def postprocess(
         self, job: Job, images: Union[List[Image.Image], torch.Tensor]
     ) -> List[Image.Image]:
@@ -288,6 +330,10 @@ class GPU:
 
         if "highres_fix" in job.flags:
             images = self.highres_flag(job, images)
+
+        if "adetailer" in job.flags:
+            assert isinstance(images, list)
+            images = self.adetailer_flag(job, images)
 
         if "upscale" in job.flags:
             assert isinstance(images, list)
@@ -306,7 +352,7 @@ class GPU:
         elif isinstance(job, ControlNetQueueEntry):
             target = "controlnet"
         elif isinstance(job, InpaintQueueEntry):
-            target = "inpaint"
+            target = "inpainting"
         else:
             raise ValueError("Unknown job type")
 
