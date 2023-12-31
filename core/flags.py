@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, Literal, Union
+from typing import Dict, Literal, List, Union
 
 from dataclasses_json.api import DataClassJsonMixin
 
@@ -166,6 +166,10 @@ class UpscaleFlag(Flag, DataClassJsonMixin):
 class ADetailerFlag(Flag, DataClassJsonMixin):
     "Flag for ADetailer settings"
 
+    # I hate pydantic
+    sampler_settings: Dict = field(default_factory=dict)
+    prompt_to_prompt_settings: Dict = field(default_factory=dict)
+
     enabled: bool = field(default=False)  # For storing in json
 
     # Inpainting
@@ -178,8 +182,6 @@ class ADetailerFlag(Flag, DataClassJsonMixin):
     sigmas: SigmaScheduler = field(default="exponential")
     seed: int = field(default=0)
     strength: float = field(default=0.45)
-    sampler_settings: Dict = field(default_factory=dict)
-    prompt_to_prompt_settings: Dict = field(default_factory=dict)
 
     # ADetailer specific
     mask_dilation: int = field(default=4)
