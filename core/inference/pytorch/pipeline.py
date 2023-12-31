@@ -605,7 +605,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         control_model_input = latent_model_input
                         controlnet_prompt_embeds = text_embeddings
 
-                    cond_scale = controlnet_conditioning_scale * controlnet_keep[i]
+                    cond_scale = controlnet_conditioning_scale * controlnet_keep[j]
 
                     change_source(self.controlnet)
                     down_block_res_samples, mid_block_res_sample = call(
