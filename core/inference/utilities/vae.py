@@ -1,24 +1,27 @@
+from contextlib import ExitStack
 from typing import Callable, Optional
 
 import numpy as np
 import torch
 from PIL import Image
 
+from core import shared
 from core.config import config
+from core.optimizations import autocast, ensure_correct_device
 
 taesd_model = None
 
 
 def taesd(
     samples: torch.Tensor, height: Optional[int] = None, width: Optional[int] = None
-) -> torch.Tensor:
+) -> np.ndarray:
     global taesd_model
 
     if taesd_model is None:
         from diffusers.models.autoencoder_tiny import AutoencoderTiny
 
         model = "madebyollin/taesd"
-        if False:  # TODO: if is_sdxl:
+        if shared.current_model == "SDXL":
             model = "madebyollin/taesdxl"
         taesd_model = AutoencoderTiny.from_pretrained(
             model, torch_dtype=torch.float16
@@ -46,7 +49,7 @@ def cheap_approximation(sample: torch.Tensor) -> Image.Image:
         [-0.158, 0.189, 0.264],
         [-0.184, -0.271, -0.473],
     ]
-    if False:  # TODO: if is_sdxl:
+    if shared.current_model == "SDXL":
         coeffs = [
             [0.3448, 0.4168, 0.4395],
             [-0.1953, -0.0290, 0.0250],
@@ -67,12 +70,20 @@ def cheap_approximation(sample: torch.Tensor) -> Image.Image:
 
 def full_vae(
     samples: torch.Tensor,
-    overwrite: Callable[[torch.Tensor], torch.Tensor],
+    vae,
     height: Optional[int] = None,
     width: Optional[int] = None,
-) -> torch.Tensor:
+) -> np.ndarray:
+    ensure_correct_device(vae)
+
+    def decode(sample):
+        with ExitStack() as gs:
+            if vae.config["force_upcast"] or config.api.upcast_vae:
+                gs.enter_context(autocast(dtype=torch.float32))
+            return vae.decode(sample, return_dict=False)[0]
+
     return decode_latents(
-        overwrite,
+        decode,  # type: ignore
         samples,
         height or samples[0].shape[1] * 8,
         width or samples[0].shape[2] * 8,
@@ -84,9 +95,10 @@ def decode_latents(
     latents: torch.Tensor,
     height: int,
     width: int,
-) -> torch.Tensor:
+    scaling_factor: float = 0.18215,
+) -> np.ndarray:
     "Decode latents"
-    latents = 1 / 0.18215 * latents
+    latents = 1 / scaling_factor * latents
     image = decode_lambda(latents)  # type: ignore
     image = (image / 2 + 0.5).clamp(0, 1)
     # we always cast to float32 as this does not cause significant overhead and is compatible with bfloat16
@@ -95,17 +107,13 @@ def decode_latents(
     return img
 
 
-def numpy_to_pil(images):
+def numpy_to_pil(images: np.ndarray):
     """
     Convert a numpy image or a batch of images to a PIL image.
     """
     if images.ndim == 3:
         images = images[None, ...]
-    images = (images * 255).round().astype("uint8")
-    if images.shape[-1] == 1:
-        # special case for grayscale (single channel) images
-        pil_images = [Image.fromarray(image.squeeze(), mode="L") for image in images]
-    else:
-        pil_images = [Image.fromarray(image) for image in images]
+    images = (images * 255).round().astype(np.uint8)
+    pil_images = [Image.fromarray(image) for image in images]
 
     return pil_images

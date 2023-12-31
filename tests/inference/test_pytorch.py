@@ -37,6 +37,8 @@ def test_txt2img_scheduler_sweep(
             prompt="This is a test",
             scheduler=str(unwrap_enum(scheduler)),
             id="test",
+            width=128,
+            height=128,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
@@ -44,8 +46,8 @@ def test_txt2img_scheduler_sweep(
     pipe.generate(job)
 
 
-@pytest.mark.parametrize("height", [256, 512, 1024])
-@pytest.mark.parametrize("width", [256, 512, 1024])
+@pytest.mark.parametrize("height", [128, 256, 512])
+@pytest.mark.parametrize("width", [128, 256, 512])
 def test_txt2img_res_sweep(pipe: PyTorchStableDiffusion, height: int, width: int):
     "Sweep multiple resolutions with Text to Image"
 
@@ -73,6 +75,8 @@ def test_txt2img_multi(pipe: PyTorchStableDiffusion):
             id="test",
             batch_size=2,
             batch_count=2,
+            width=128,
+            height=128,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
@@ -89,6 +93,8 @@ def test_txt2img_self_attention(pipe: PyTorchStableDiffusion):
             scheduler=KarrasDiffusionSchedulers.DPMSolverMultistepScheduler,
             id="test",
             self_attention_scale=1,
+            width=128,
+            height=128,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
@@ -105,6 +111,8 @@ def test_txt2img_karras_sigmas_diffusers(pipe: PyTorchStableDiffusion):
             scheduler=KarrasDiffusionSchedulers.KDPM2AncestralDiscreteScheduler,
             id="test",
             sigmas="karras",
+            width=128,
+            height=128,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
@@ -120,6 +128,8 @@ def test_txt2img_hr_fix(pipe: PyTorchStableDiffusion):
             prompt="This is a test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
+            width=128,
+            height=128,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
         flags={
@@ -145,6 +155,8 @@ def test_img2img(pipe: PyTorchStableDiffusion):
             prompt="This is a test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
+            width=128,
+            height=128,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
@@ -155,7 +167,7 @@ def test_img2img(pipe: PyTorchStableDiffusion):
 def test_inpaint(pipe: PyTorchStableDiffusion):
     "Generate an image with Inpainting"
 
-    np_mask = np.random.randint(0, 1, size=(256, 256, 3), dtype=np.uint8)
+    np_mask = np.random.randint(0, 1, size=(128, 128, 3), dtype=np.uint8)
     mask = Image.fromarray(np_mask)
     encoded_mask = convert_image_to_base64(mask, prefix_js=False)
 
@@ -166,6 +178,8 @@ def test_inpaint(pipe: PyTorchStableDiffusion):
             mask_image=encoded_mask,
             id="test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            width=128,
+            height=128,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
@@ -173,7 +187,8 @@ def test_inpaint(pipe: PyTorchStableDiffusion):
     pipe.generate(job)
 
 
-def test_controlnet(pipe: PyTorchStableDiffusion):
+@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers) + ["dpmpp_2m"])
+def test_controlnet(pipe: PyTorchStableDiffusion, scheduler):
     "Generate an image with ControlNet Image to Image"
 
     job = ControlNetQueueEntry(
@@ -181,8 +196,10 @@ def test_controlnet(pipe: PyTorchStableDiffusion):
             image=generate_random_image_base64(),
             prompt="This is a test",
             id="test",
-            scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            scheduler=scheduler,
             controlnet="lllyasviel/sd-controlnet-canny",
+            width=128,
+            height=128,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
@@ -218,6 +235,8 @@ def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             controlnet="lllyasviel/control_v11p_sd15_canny",
             is_preprocessed=True,
+            width=128,
+            height=128,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
@@ -233,6 +252,8 @@ def test_txt2img_with_lora(pipe: PyTorchStableDiffusion):
             prompt="1girl, blonde, <lora:more_details:0.5>",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
+            width=128,
+            height=128,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )

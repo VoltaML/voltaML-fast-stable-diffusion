@@ -101,7 +101,7 @@
             <Prompt tab="inpainting" />
 
             <!-- Sampler -->
-            <SamplerPicker type="inpainting" />
+            <SamplerPicker tab="inpainting" />
 
             <!-- Dimensions -->
             <div class="flex-container">
@@ -170,74 +170,32 @@
               />
             </div>
 
-            <!-- CFG Scale -->
+            <CFGScale tab="inpainting" />
+
+            <SAGInput tab="inpainting" />
+
+            <!-- Strength -->
             <div class="flex-container">
               <NTooltip style="max-width: 600px">
                 <template #trigger>
-                  <p class="slider-label">CFG Scale</p>
+                  <p class="slider-label">Strength</p>
                 </template>
-                Guidance scale indicates how much should model stay close to the
-                prompt. Higher values might be exactly what you want, but
-                generated images might have some artefacts. Lower values
-                indicates that model can "dream" about this prompt more.
-                <b class="highlight"
-                  >We recommend using 3-15 for most images.</b
-                >
+                How much should the masked are be changed from the original
               </NTooltip>
               <NSlider
-                v-model:value="settings.data.settings.inpainting.cfg_scale"
-                :min="1"
-                :max="30"
-                :step="0.5"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="settings.data.settings.inpainting.cfg_scale"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="30"
-                :step="0.5"
-              />
-            </div>
-
-            <!-- Self Attention Scale -->
-            <div
-              class="flex-container"
-              v-if="
-                Number.isInteger(settings.data.settings.inpainting.sampler) &&
-                settings.data.settings.model?.backend === 'PyTorch'
-              "
-            >
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">Self Attention Scale</p>
-                </template>
-                <b class="highlight">PyTorch ONLY.</b> If self attention is >0,
-                SAG will guide the model and improve the quality of the image at
-                the cost of speed. Higher values will follow the guidance more
-                closely, which can lead to better, more sharp and detailed
-                outputs.
-              </NTooltip>
-
-              <NSlider
-                v-model:value="
-                  settings.data.settings.inpainting.self_attention_scale
-                "
+                v-model:value="settings.data.settings.inpainting.strength"
                 :min="0"
                 :max="1"
-                :step="0.05"
+                :step="0.01"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="
-                  settings.data.settings.inpainting.self_attention_scale
-                "
+                v-model:value="settings.data.settings.inpainting.strength"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="0"
                 :max="1"
-                :step="0.05"
+                :step="0.01"
               />
             </div>
 
@@ -306,6 +264,10 @@
             </div>
           </NSpace>
         </NCard>
+
+        <HighResFixTabs tab="inpainting" />
+        <Upscale tab="inpainting" />
+        <Restoration tab="inpainting" />
       </NGi>
 
       <!-- Split -->
@@ -334,11 +296,16 @@
 import "@/assets/2img.css";
 import { BurnerClock } from "@/clock";
 import {
+  CFGScale,
   GenerateSection,
+  HighResFixTabs,
   ImageOutput,
   OutputStats,
   Prompt,
+  Restoration,
+  SAGInput,
   SamplerPicker,
+  Upscale,
 } from "@/components";
 import { serverUrl } from "@/env";
 import {
@@ -425,7 +392,81 @@ const generate = () => {
           prompt_to_prompt: settings.data.settings.api.prompt_to_prompt,
         },
       },
+      ...(settings.data.settings.inpainting.deepshrink.enabled
+        ? {
+            flags: {
+              deepshrink: {
+                early_out:
+                  settings.data.settings.inpainting.deepshrink.early_out,
+                depth_1: settings.data.settings.inpainting.deepshrink.depth_1,
+                stop_at_1:
+                  settings.data.settings.inpainting.deepshrink.stop_at_1,
+                depth_2: settings.data.settings.inpainting.deepshrink.depth_2,
+                stop_at_2:
+                  settings.data.settings.inpainting.deepshrink.stop_at_2,
+                scaler: settings.data.settings.inpainting.deepshrink.scaler,
+                base_scale:
+                  settings.data.settings.inpainting.deepshrink.base_scale,
+              },
+            },
+          }
+        : {}),
       model: settings.data.settings.model?.path,
+      flags: {
+        ...(settings.data.settings.inpainting.highres.enabled
+          ? {
+              highres_fix: {
+                mode: settings.data.settings.inpainting.highres.mode,
+                image_upscaler:
+                  settings.data.settings.inpainting.highres.image_upscaler,
+                scale: settings.data.settings.inpainting.highres.scale,
+                latent_scale_mode:
+                  settings.data.settings.inpainting.highres.latent_scale_mode,
+                strength: settings.data.settings.inpainting.highres.strength,
+                steps: settings.data.settings.inpainting.highres.steps,
+                antialiased:
+                  settings.data.settings.inpainting.highres.antialiased,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.inpainting.upscale.enabled
+          ? {
+              upscale: {
+                upscale_factor:
+                  settings.data.settings.inpainting.upscale.upscale_factor,
+                tile_size: settings.data.settings.inpainting.upscale.tile_size,
+                tile_padding:
+                  settings.data.settings.inpainting.upscale.tile_padding,
+                model: settings.data.settings.inpainting.upscale.model,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.inpainting.adetailer.enabled
+          ? {
+              adetailer: {
+                cfg_scale:
+                  settings.data.settings.inpainting.adetailer.cfg_scale,
+                mask_blur:
+                  settings.data.settings.inpainting.adetailer.mask_blur,
+                mask_dilation:
+                  settings.data.settings.inpainting.adetailer.mask_dilation,
+                mask_padding:
+                  settings.data.settings.inpainting.adetailer.mask_padding,
+                iterations:
+                  settings.data.settings.inpainting.adetailer.iterations,
+                upscale: settings.data.settings.inpainting.adetailer.upscale,
+                sampler: settings.data.settings.inpainting.adetailer.sampler,
+                strength: settings.data.settings.inpainting.adetailer.strength,
+                seed: settings.data.settings.inpainting.adetailer.seed,
+                self_attention_scale:
+                  settings.data.settings.inpainting.adetailer
+                    .self_attention_scale,
+                sigmas: settings.data.settings.inpainting.adetailer.sigmas,
+                steps: settings.data.settings.inpainting.adetailer.steps,
+              },
+            }
+          : {}),
+      },
     }),
   })
     .then((res) => {

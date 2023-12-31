@@ -1,9 +1,97 @@
-import { d as defineComponent, b6 as useCssVars, a as useState, u as useSettings, R as inject, z as ref, c as computed, bI as urlFromPath, b8 as reactive, b9 as onMounted, q as onUnmounted, o as openBlock, j as createElementBlock, f as createBaseVNode, g as createVNode, h as unref, w as withCtx, F as Fragment, L as renderList, b7 as themeOverridesKey, t as serverUrl, J as NInput, B as NIcon, bd as NModal, s as NGrid, r as NGi, A as NButton, k as createTextVNode, M as NScrollbar, e as createBlock, by as convertToTextString, C as toDisplayString, m as createCommentVNode, bJ as diffusersSchedulerTuple, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, b7 as useCssVars, a as useState, u as useSettings, R as inject, y as ref, i as computed, bN as urlFromPath, b9 as reactive, ba as onMounted, p as onUnmounted, e as createVNode, f as unref, w as withCtx, F as Fragment, L as renderList, b8 as themeOverridesKey, s as serverUrl, I as NInput, A as NIcon, bg as NModal, r as NGrid, q as NGi, z as NButton, k as createTextVNode, M as NScrollbar, c as createBlock, bB as convertToTextString, B as toDisplayString, h as createCommentVNode, bO as diffusersSchedulerTuple, _ as _export_sfc } from "./index.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { G as GridOutline } from "./GridOutline.js";
 import { N as NImage, T as TrashBin } from "./TrashBin.js";
-import { a as NSlider } from "./Switch.js";
+import { N as NSlider } from "./Slider.js";
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
+import "./Switch.js";
+const _hoisted_1$1 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
+  "rect",
+  {
+    x: "48",
+    y: "48",
+    width: "176",
+    height: "176",
+    rx: "20",
+    ry: "20",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "stroke-width": "32"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
+  "rect",
+  {
+    x: "288",
+    y: "48",
+    width: "176",
+    height: "176",
+    rx: "20",
+    ry: "20",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "stroke-width": "32"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode(
+  "rect",
+  {
+    x: "48",
+    y: "288",
+    width: "176",
+    height: "176",
+    rx: "20",
+    ry: "20",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "stroke-width": "32"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5 = /* @__PURE__ */ createBaseVNode(
+  "rect",
+  {
+    x: "288",
+    y: "288",
+    width: "176",
+    height: "176",
+    rx: "20",
+    ry: "20",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "stroke-width": "32"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_6 = [_hoisted_2$1, _hoisted_3$1, _hoisted_4$1, _hoisted_5];
+const GridOutline = defineComponent({
+  name: "GridOutline",
+  render: function render(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_6);
+  }
+});
 const _hoisted_1 = {
   style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "margin-top": "52px", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "fixed", "top": "0", "z-index": "1" },
   class: "top-bar"

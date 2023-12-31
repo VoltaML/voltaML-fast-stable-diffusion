@@ -42,7 +42,7 @@ def autocast(
 
     global _initialized_directml
 
-    if dtype == torch.float32 or disable:
+    if disable:
         return contextlib.nullcontext()
     if "privateuseone" in config.api.device:
         if not _initialized_directml:

@@ -40,9 +40,13 @@ def download_model():
             folder.mkdir()
         if isinstance(d, tuple):
             download_file(d[0], folder, add_filename=True)
-            os.rename(
-                (folder / "fooocus_expansion.bin").absolute().resolve().as_posix(),
-                (folder / "pytorch_model.bin").absolute().resolve().as_posix(),
-            )
+            try:
+                # Should fix weird cases where it thinks d is a tuple while it is not???
+                os.rename(
+                    (folder / "fooocus_expansion.bin").absolute().resolve().as_posix(),
+                    (folder / "pytorch_model.bin").absolute().resolve().as_posix(),
+                )
+            except Exception:
+                pass
         else:
             download_file(d, folder, add_filename=True)

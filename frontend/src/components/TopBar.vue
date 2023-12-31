@@ -1,7 +1,18 @@
 <template>
   <div class="top-bar">
+    <NButton
+      :bordered="false"
+      v-if="!isLargeScreen"
+      style="margin: 0 2px; padding: 8px 8px"
+      @click="global.state.collapsibleBarActive = true"
+    >
+      <NIcon size="24">
+        <Menu />
+      </NIcon>
+    </NButton>
+
     <NSelect
-      style="max-width: 250px; padding-left: 12px; padding-right: 12px"
+      style="max-width: 250px; padding-right: 4px"
       :options="generatedModelOptions"
       @update:value="onModelChange"
       :loading="modelsLoading"
@@ -19,8 +30,11 @@
       :loading="modelsLoading"
       :type="settings.data.settings.model ? 'default' : 'success'"
     >
-      Load Model</NButton
-    >
+      <p v-if="isLargeScreen">Load Model</p>
+      <NIcon size="18" v-else>
+        <Add />
+      </NIcon>
+    </NButton>
     <NModal
       v-model:show="showModal"
       closable
@@ -119,7 +133,22 @@
                       v-for="model in pyTorchModels"
                       v-bind:key="model.path"
                     >
-                      <p>{{ model.name }}</p>
+                      <div
+                        style="
+                          display: flex;
+                          flex-direction: row;
+                          align-items: center;
+                        "
+                      >
+                        <NTag
+                          :type="getModelTag(model.type)[1]"
+                          ghost
+                          style="margin-right: 8px"
+                        >
+                          {{ getModelTag(model.type)[0] }}
+                        </NTag>
+                        <p>{{ model.name }}</p>
+                      </div>
                       <div style="display: inline-flex">
                         <NButton
                           type="error"
@@ -302,6 +331,7 @@
                 </NCard>
               </NScrollbar>
             </NTabPane>
+
             <NTabPane name="ONNX">
               <NScrollbar style="height: 70vh">
                 <NCard title="Models" style="height: 100%">
@@ -377,40 +407,42 @@
 <script lang="ts" setup>
 import type { ModelEntry } from "@/core/interfaces";
 import {
-NCard,
-NDropdown,
-NGi,
-NGrid,
-NIcon,
-NInput,
-NModal,
-NScrollbar,
-NSelect,
-NTabPane,
-NTabs,
-NText,
-type DropdownOption,
+  NAlert,
+  NButton,
+  NCard,
+  NDropdown,
+  NGi,
+  NGrid,
+  NIcon,
+  NInput,
+  NModal,
+  NProgress,
+  NResult,
+  NScrollbar,
+  NSelect,
+  NTabPane,
+  NTabs,
+  NTag,
+  NText,
+  NTooltip,
+  useMessage,
+  type DropdownOption,
 } from "naive-ui";
 
 import { serverUrl } from "@/env";
 import { startWebsocket } from "@/functions";
+import { isLargeScreen } from "@/helper";
 import { useWebsocket } from "@/store/websockets";
 import {
-DocumentText,
-PowerSharp,
-SettingsSharp,
-StatsChart,
-SyncSharp,
-Wifi,
+  Add,
+  DocumentText,
+  Menu,
+  PowerSharp,
+  SettingsSharp,
+  StatsChart,
+  SyncSharp,
+  Wifi,
 } from "@vicons/ionicons5";
-import {
-NAlert,
-NButton,
-NProgress,
-NResult,
-NTooltip,
-useMessage,
-} from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { computed, h, ref, type Component, type ComputedRef } from "vue";
 import { useRouter } from "vue-router";
@@ -425,7 +457,7 @@ const settings = useSettings();
 const modelsLoading = ref(false);
 const filter = ref("");
 
-const filteredModels = computed(() => {
+const filteredModels = computed<ModelEntry[]>(() => {
   return global.state.models.filter((model) => {
     return (
       model.path.toLowerCase().includes(filter.value.toLowerCase()) ||
@@ -434,7 +466,7 @@ const filteredModels = computed(() => {
   });
 });
 
-const pyTorchModels = computed(() => {
+const pyTorchModels = computed<ModelEntry[]>(() => {
   return filteredModels.value
     .filter((model) => {
       return model.backend === "PyTorch" && model.valid === true;
@@ -451,7 +483,7 @@ const pyTorchModels = computed(() => {
     });
 });
 
-const aitModels = computed(() => {
+const aitModels = computed<ModelEntry[]>(() => {
   return filteredModels.value
     .filter((model) => {
       return model.backend === "AITemplate";
@@ -468,7 +500,7 @@ const aitModels = computed(() => {
     });
 });
 
-const onnxModels = computed(() => {
+const onnxModels = computed<ModelEntry[]>(() => {
   return filteredModels.value
     .filter((model) => {
       return model.backend === "ONNX";
@@ -485,35 +517,75 @@ const onnxModels = computed(() => {
     });
 });
 
-const vaeModels = computed(() => {
+const manualVAEModels = computed<ModelEntry[]>(() => {
+  const selectedModel = global.state.selected_model;
+  if (selectedModel?.type === "SDXL") {
+    return [
+      {
+        name: "Default VAE (fp32)",
+        path: "default",
+        backend: "VAE",
+        valid: true,
+        state: "not loaded",
+        vae: "default",
+        textual_inversions: [],
+        type: "SDXL",
+        stage: "last_stage",
+      } as ModelEntry,
+      {
+        name: "FP16 VAE",
+        path: "madebyollin/sdxl-vae-fp16-fix",
+        backend: "VAE",
+        valid: true,
+        state: "not loaded",
+        vae: "fp16",
+        textual_inversions: [],
+        type: "SDXL",
+        stage: "last_stage",
+      } as ModelEntry,
+    ];
+  } else {
+    return [
+      {
+        name: "Default VAE",
+        path: "default",
+        backend: "VAE",
+        valid: true,
+        state: "not loaded",
+        vae: "default",
+        textual_inversions: [],
+        type: "SD1.x",
+        stage: "last_stage",
+      } as ModelEntry,
+      {
+        name: "Tiny VAE (fast)",
+        path: "madebyollin/taesd",
+        backend: "VAE",
+        valid: true,
+        state: "not loaded",
+        vae: "madebyollin/taesd",
+        textual_inversions: [],
+        type: "SD1.x",
+        stage: "last_stage",
+      } as ModelEntry,
+      {
+        name: "Asymmetric VAE",
+        path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+        backend: "VAE",
+        valid: true,
+        state: "not loaded",
+        vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+        textual_inversions: [],
+        type: "SD1.x",
+        stage: "last_stage",
+      } as ModelEntry,
+    ];
+  }
+});
+
+const vaeModels = computed<ModelEntry[]>(() => {
   return [
-    {
-      name: "Default VAE",
-      path: "default",
-      backend: "VAE",
-      valid: true,
-      state: "not loaded",
-      vae: "default",
-      textual_inversions: [],
-    } as ModelEntry,
-    {
-      name: "Tiny VAE (fast)",
-      path: "madebyollin/taesd",
-      backend: "VAE",
-      valid: true,
-      state: "not loaded",
-      vae: "madebyollin/taesd",
-      textual_inversions: [],
-    } as ModelEntry,
-    {
-      name: "Asymmetric VAE",
-      path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
-      backend: "VAE",
-      valid: true,
-      state: "not loaded",
-      vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
-      textual_inversions: [],
-    } as ModelEntry,
+    ...manualVAEModels.value,
     ...filteredModels.value
       .filter((model) => {
         return model.backend === "VAE";
@@ -659,7 +731,11 @@ async function loadModel(model: ModelEntry) {
   model.state = "loading";
   modelsLoading.value = true;
   const load_url = new URL(`${serverUrl}/api/models/load`);
-  const params = { model: model.path, backend: model.backend };
+  const params = {
+    model: model.path,
+    backend: model.backend,
+    type: model.type,
+  };
   load_url.search = new URLSearchParams(params).toString();
 
   fetch(load_url, {
@@ -708,7 +784,7 @@ async function loadVAE(vae: ModelEntry) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: global.state.selected_model.name,
+          model: global.state.selected_model.path,
           vae: vae.path,
         }),
       });
@@ -730,7 +806,7 @@ async function loadTextualInversion(textualInversion: ModelEntry) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: global.state.selected_model.name,
+          model: global.state.selected_model.path,
           textual_inversion: textualInversion.path,
         }),
       });
@@ -791,6 +867,24 @@ async function onModelChange(modelStr: string) {
 function resetModels() {
   global.state.models.splice(0, global.state.models.length);
   console.log("Reset models");
+}
+
+function getModelTag(
+  type: string
+): [string, "info" | "warning" | "success" | "error" | "primary"] {
+  switch (type) {
+    case "SD1.x":
+      return [type, "primary"];
+    case "SD2.x":
+      return [type, "info"];
+    case "SDXL":
+      return [type, "warning"];
+    case "Kandinsky 2.1":
+    case "Kandinsky 2.2":
+      return ["Kandinsky", "success"];
+    default:
+      return [type, "error"];
+  }
 }
 
 websocketState.onConnectedCallbacks.push(() => {
@@ -969,6 +1063,10 @@ async function dropdownSelected(key: string) {
   }
 }
 
+const topBarWidth = computed(() => {
+  return isLargeScreen.value ? "calc(100% - 64px)" : "100%";
+});
+
 startWebsocket(message);
 </script>
 
@@ -984,7 +1082,7 @@ startWebsocket(message);
   align-items: center;
   padding-top: 10px;
   padding-bottom: 10px;
-  width: calc(100% - 64px);
+  width: v-bind(topBarWidth);
   height: 32px;
   position: fixed;
   top: 0;

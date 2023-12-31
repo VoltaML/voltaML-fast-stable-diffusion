@@ -1,1 +1,1 @@
-export { default as Upscale } from "./Upscale.vue";
+export { default as ESRGAN } from "./ESRGAN.vue";

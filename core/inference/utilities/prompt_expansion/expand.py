@@ -98,7 +98,7 @@ def _device_dtype(prompt_to_prompt_device) -> Tuple[torch.device, torch.dtype]:
         if prompt_to_prompt_device == "gpu"
         else torch.device("cpu")
     )
-    dtype = config.api.dtype if prompt_to_prompt_device == "gpu" else torch.float32
+    dtype = config.api.load_dtype if prompt_to_prompt_device == "gpu" else torch.float32
     return (device, dtype)
 
 
@@ -128,7 +128,7 @@ def _load(prompt_to_prompt_model, prompt_to_prompt_device):
         _GPT.eval()
 
     device, dtype = _device_dtype(prompt_to_prompt_device)
-    _GPT = _GPT.to(device=device, dtype=dtype)
+    _GPT = _GPT.to(device=device, dtype=dtype)  # type: ignore
 
 
 @torch.inference_mode()

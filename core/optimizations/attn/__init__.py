@@ -39,6 +39,8 @@ ATTENTION_PROCESSORS = {
     )
     is None,
     # ---
+    "flashattention": lambda p: apply_flash_attention(p.unet) is None,
+    # ---
     "multihead": lambda p: apply_multihead_attention(p.unet) is None,
     # ---
     "flash-attn": lambda p: apply_flash_attention(p.unet) is None,
@@ -68,5 +70,6 @@ def set_attention_processor(pipe):
 __all__ = [
     "apply_subquadratic_attention",
     "apply_multihead_attention",
+    "apply_flash_attention",
     "set_attention_processor",
 ]

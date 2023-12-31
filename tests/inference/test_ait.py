@@ -22,7 +22,7 @@ except ModuleNotFoundError:
 
 from core.inference.ait import AITemplateStableDiffusion
 
-model = "Azher--Anything-v4.5-vae-fp16-diffuser__512-1024x512-1024x1-1"
+model = "Azher--Anything-v4.5-vae-fp16-diffuser__128-512x128-512x1-1"
 MODIFIED_KDIFF_SAMPLERS = deepcopy(KDIFF_SAMPLERS)
 MODIFIED_KDIFF_SAMPLERS.remove("unipc_multistep")
 
@@ -45,6 +45,8 @@ def test_aitemplate_txt2img(
             prompt="This is a test",
             scheduler=scheduler,
             id="test",
+            width=128,
+            height=128,
         ),
         model=model,
     )
@@ -64,6 +66,8 @@ def test_aitemplate_img2img(
             image=generate_random_image_base64(),
             scheduler=scheduler,
             id="test",
+            width=128,
+            height=128,
         ),
         model=model,
     )
@@ -84,6 +88,8 @@ def test_aitemplate_controlnet(
             scheduler=scheduler,
             controlnet="lllyasviel/sd-controlnet-canny",
             id="test",
+            width=128,
+            height=128,
         ),
         model=model,
     )

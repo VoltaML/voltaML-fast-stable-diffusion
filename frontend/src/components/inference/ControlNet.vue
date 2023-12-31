@@ -16,7 +16,7 @@
             <Prompt tab="controlnet" />
 
             <!-- Sampler -->
-            <SamplerPicker type="controlnet" />
+            <SamplerPicker tab="controlnet" />
 
             <!-- ControlNet mode -->
             <div class="flex-container">
@@ -77,36 +77,9 @@
               />
             </div>
 
-            <!-- CFG Scale -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">CFG Scale</p>
-                </template>
-                Guidance scale indicates how much should model stay close to the
-                prompt. Higher values might be exactly what you want, but
-                generated images might have some artefacts. Lower values
-                indicates that model can "dream" about this prompt more.
-                <b class="highlight"
-                  >We recommend using 3-15 for most images.</b
-                >
-              </NTooltip>
-              <NSlider
-                v-model:value="settings.data.settings.controlnet.cfg_scale"
-                :min="1"
-                :max="30"
-                :step="0.5"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="settings.data.settings.controlnet.cfg_scale"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="30"
-                :step="0.5"
-              />
-            </div>
+            <CFGScale tab="controlnet" />
+
+            <SAGInput tab="controlnet" />
 
             <!-- Number of images -->
             <div class="flex-container">
@@ -248,6 +221,10 @@
             </div>
           </NSpace>
         </NCard>
+
+        <HighResFixTabs tab="controlnet" />
+        <Upscale tab="controlnet" />
+        <Restoration tab="controlnet" />
       </NGi>
 
       <!-- Split -->
@@ -277,13 +254,18 @@ import "@/assets/2img.css";
 import { BurnerClock } from "@/clock";
 import {
   BatchSizeInput,
+  CFGScale,
   DimensionsInput,
   GenerateSection,
+  HighResFixTabs,
   ImageOutput,
   ImageUpload,
   OutputStats,
   Prompt,
+  Restoration,
+  SAGInput,
   SamplerPicker,
+  Upscale,
 } from "@/components";
 import { serverUrl } from "@/env";
 import {
@@ -376,6 +358,61 @@ const generate = () => {
           settings.data.settings.controlnet.return_preprocessed,
       },
       model: settings.data.settings.model?.path,
+      flags: {
+        ...(settings.data.settings.controlnet.highres.enabled
+          ? {
+              highres_fix: {
+                mode: settings.data.settings.controlnet.highres.mode,
+                image_upscaler:
+                  settings.data.settings.controlnet.highres.image_upscaler,
+                scale: settings.data.settings.controlnet.highres.scale,
+                latent_scale_mode:
+                  settings.data.settings.controlnet.highres.latent_scale_mode,
+                strength: settings.data.settings.controlnet.highres.strength,
+                steps: settings.data.settings.controlnet.highres.steps,
+                antialiased:
+                  settings.data.settings.controlnet.highres.antialiased,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.controlnet.upscale.enabled
+          ? {
+              upscale: {
+                upscale_factor:
+                  settings.data.settings.controlnet.upscale.upscale_factor,
+                tile_size: settings.data.settings.controlnet.upscale.tile_size,
+                tile_padding:
+                  settings.data.settings.controlnet.upscale.tile_padding,
+                model: settings.data.settings.controlnet.upscale.model,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.controlnet.adetailer.enabled
+          ? {
+              adetailer: {
+                cfg_scale:
+                  settings.data.settings.controlnet.adetailer.cfg_scale,
+                mask_blur:
+                  settings.data.settings.controlnet.adetailer.mask_blur,
+                mask_dilation:
+                  settings.data.settings.controlnet.adetailer.mask_dilation,
+                mask_padding:
+                  settings.data.settings.controlnet.adetailer.mask_padding,
+                iterations:
+                  settings.data.settings.controlnet.adetailer.iterations,
+                upscale: settings.data.settings.controlnet.adetailer.upscale,
+                sampler: settings.data.settings.controlnet.adetailer.sampler,
+                strength: settings.data.settings.controlnet.adetailer.strength,
+                seed: settings.data.settings.controlnet.adetailer.seed,
+                self_attention_scale:
+                  settings.data.settings.controlnet.adetailer
+                    .self_attention_scale,
+                sigmas: settings.data.settings.controlnet.adetailer.sigmas,
+                steps: settings.data.settings.controlnet.adetailer.steps,
+              },
+            }
+          : {}),
+      },
     }),
   })
     .then((res) => {

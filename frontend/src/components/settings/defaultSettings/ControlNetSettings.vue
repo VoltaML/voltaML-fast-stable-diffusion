@@ -77,13 +77,22 @@
           :step="8"
         />
       </NFormItem>
-      <SamplerPicker type="controlnet" target="defaultSettings" />
+
+      <SamplerPicker tab="controlnet" target="defaultSettings" />
+      <Upscale tab="controlnet" target="defaultSettings" />
+      <HighResFixTabs tab="controlnet" target="defaultSettings" />
+      <Restoration tab="controlnet" target="defaultSettings" />
     </NForm>
   </NCard>
 </template>
 
 <script lang="ts" setup>
-import SamplerPicker from "@/components/generate/SamplerPicker.vue";
+import {
+  HighResFixTabs,
+  Restoration,
+  SamplerPicker,
+  Upscale,
+} from "@/components";
 import { useSettings } from "@/store/settings";
 import {
   NCard,

@@ -1,12 +1,12 @@
 {
-	"configurations": [
-		{
-			"name": "Python: File",
-			"type": "python",
-			"request": "launch",
-			"program": "main.py",
-			"args": ["--log-level=DEBUG"],
-			"justMyCode": false
-		}
-	]
+  "configurations": [
+    {
+      "name": "VoltaML API Debug",
+      "type": "python",
+      "request": "launch",
+      "program": "main.py",
+      "args": ["--log-level=DEBUG"],
+      "justMyCode": false
+    }
+  ]
 }

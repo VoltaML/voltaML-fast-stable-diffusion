@@ -2,7 +2,7 @@ import io
 import json
 import logging
 import os
-from functools import partialmethod
+from functools import partial
 from importlib.util import find_spec
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
@@ -10,16 +10,19 @@ from typing import Any, Dict, Optional, Tuple, Union
 import requests
 import torch
 from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.pipelines.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     assign_to_checkpoint,
     conv_attn_to_linear,
     create_vae_diffusers_config,
-    download_from_original_stable_diffusion_ckpt,
     renew_vae_attention_paths,
     renew_vae_resnet_paths,
 )
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
+)
+from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import (
+    StableDiffusionXLPipeline,
 )
 from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
 from diffusers.utils.constants import (
@@ -42,11 +45,14 @@ from huggingface_hub.utils._errors import (
 from omegaconf import OmegaConf
 from packaging import version
 from requests import HTTPError
-from transformers import CLIPTextModel
+from transformers.models.clip.modeling_clip import BaseModelOutput
 
 from core.config import config
 from core.files import get_full_model_path
+from core.flags import HighResFixFlag
 from core.optimizations import compile_sfast
+from core.types import Job
+from core.utils import determine_model_type
 
 logger = logging.getLogger(__name__)
 config_name = "model_index.json"
@@ -355,97 +361,123 @@ def load_pytorch_pipeline(
         # This function does not inherit the channels so we need to hack it like this
         in_channels = 9 if "inpaint" in model_id_or_path.casefold() else 4
 
-        cl = StableDiffusionPipeline
+        type = determine_model_type(get_full_model_path(model_id_or_path))
+        cl = StableDiffusionXLPipeline if type[1] == "SDXL" else StableDiffusionPipeline
         # I never knew this existed, but this is pretty handy :)
-        cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
+        # cl.__init__ = partialmethod(cl.__init__, low_cpu_mem_usage=True)  # type: ignore
         try:
-            pipe = download_from_original_stable_diffusion_ckpt(
+            pipe = cl.from_single_file(
                 str(get_full_model_path(model_id_or_path)),
-                pipeline_class=cl,  # type: ignore
-                from_safetensors=use_safetensors,
-                extract_ema=True,
                 load_safety_checker=False,
+                torch_dtype=config.api.load_dtype,
+                resume_download=True,
                 num_in_channels=in_channels,
+                extract_ema=True,
             )
         except KeyError:
-            pipe = download_from_original_stable_diffusion_ckpt(
+            pipe = cl.from_single_file(
                 str(get_full_model_path(model_id_or_path)),
-                pipeline_class=cl,  # type: ignore
-                from_safetensors=use_safetensors,
-                extract_ema=False,
                 load_safety_checker=False,
+                torch_dtype=config.api.load_dtype,
+                resume_download=True,
                 num_in_channels=in_channels,
             )
     else:
-        pipe = StableDiffusionPipeline.from_pretrained(
+        pipe = DiffusionPipeline.from_pretrained(
             pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
-            torch_dtype=config.api.dtype,
+            torch_dtype=config.api.load_dtype,
             safety_checker=None,
             feature_extractor=None,
             low_cpu_mem_usage=True,
         )
 
-        assert isinstance(pipe, StableDiffusionPipeline)
-
     logger.debug(f"Loaded {model_id_or_path} with {config.api.data_type}")
 
-    assert isinstance(pipe, StableDiffusionPipeline)
+    for name, text_encoder in [x for x in vars(pipe).items() if "text_encoder" in x[0]]:
+        if text_encoder is not None:
 
-    # AIT freaks out if any of these are lost
-    if not is_for_aitemplate:
-        conf = pipe.text_encoder.config
-        conf.num_hidden_layers = 13 - config.api.clip_skip
-        pipe.text_encoder = CLIPTextModel.from_pretrained(
-            None, config=conf, state_dict=pipe.text_encoder.state_dict()
-        )
-        if config.api.clip_quantization != "full":
-            from transformers import BitsAndBytesConfig
-            from transformers.utils.bitsandbytes import (
-                get_keys_to_not_convert,
-                replace_with_bnb_linear,
-                set_module_quantized_tensor_to_device,
-            )
-
-            state_dict = pipe.text_encoder.state_dict()  # type: ignore
-            bnbconfig = BitsAndBytesConfig(
-                load_in_8bit=config.api.clip_quantization == "int8",
-                load_in_4bit=config.api.clip_quantization == "int4",
-            )
-
-            dont_convert = get_keys_to_not_convert(pipe.text_encoder)
-            pipe.text_encoder = replace_with_bnb_linear(
-                pipe.text_encoder.to(config.api.device, config.api.dtype),  # type: ignore
-                dont_convert,
-                quantization_config=bnbconfig,
-            )
-
-            pipe.text_encoder.is_loaded_in_8bit = True
-            pipe.text_encoder.is_quantized = True
-
-            # This shouldn't even be needed, but diffusers likes meta tensors a bit too much
-            # Not that I don't see their purpose, it's just less general
-            for k, v in state_dict.items():
-                set_module_quantized_tensor_to_device(
-                    pipe.text_encoder, k, config.api.device, v
+            def new_forward(
+                inputs_embeds,
+                attention_mask: Optional[torch.Tensor] = None,
+                causal_attention_mask: Optional[torch.Tensor] = None,
+                output_attentions: Optional[bool] = None,
+                output_hidden_states: Optional[bool] = None,
+                return_dict: Optional[bool] = None,
+                bober=None,
+            ):
+                output_hidden_states = True
+                original = bober.old_forward(  # type: ignore
+                    inputs_embeds,
+                    attention_mask=attention_mask,
+                    causal_attention_mask=causal_attention_mask,
+                    output_attentions=output_attentions,
+                    output_hidden_states=output_hidden_states,
+                    return_dict=return_dict,
                 )
-            del state_dict, dont_convert
-        del conf
+
+                hidden_states = (_ := original[1])[: len(_) - config.api.clip_skip]
+                last_hidden_state = hidden_states[-1]
+
+                attentions = original[2] if output_attentions else None
+
+                if not return_dict:
+                    return last_hidden_state, hidden_states, attentions
+                return BaseModelOutput(
+                    last_hidden_state=last_hidden_state,
+                    hidden_states=hidden_states,
+                    attentions=attentions,
+                )
+
+            if config.api.clip_quantization != "full":
+                from transformers import BitsAndBytesConfig
+                from transformers.utils.bitsandbytes import (
+                    get_keys_to_not_convert,
+                    replace_with_bnb_linear,
+                    set_module_quantized_tensor_to_device,
+                )
+
+                state_dict = text_encoder.state_dict()  # type: ignore
+                bnbconfig = BitsAndBytesConfig(
+                    load_in_8bit=config.api.clip_quantization == "int8",
+                    load_in_4bit=config.api.clip_quantization == "int4",
+                )
+
+                dont_convert = get_keys_to_not_convert(text_encoder)
+                text_encoder.is_loaded_in_8bit = True  # type: ignore
+                text_encoder.is_quantized = True  # type: ignore
+                nt = replace_with_bnb_linear(
+                    pipe.text_encoder.to(config.api.device, config.api.load_dtype),  # type: ignore
+                    dont_convert,
+                    quantization_config=bnbconfig,
+                )
+
+                # This shouldn't even be needed, but diffusers likes meta tensors a bit too much
+                # Not that I don't see their purpose, it's just less general
+                for k, v in state_dict.items():
+                    set_module_quantized_tensor_to_device(nt, k, config.api.device, v)
+                setattr(pipe, name, nt)
+                del state_dict, dont_convert
+
+            text_encoder.text_model.encoder.old_forward = text_encoder.text_model.encoder.forward  # type: ignore
+            # fuck you python
+            # enjoy bober
+            text_encoder.text_model.encoder.forward = partial(new_forward, bober=text_encoder.text_model.encoder)  # type: ignore
+            logger.debug(f"Overwritten {name}s final_layer_norm.")
 
     if optimize:
         from core.optimizations import optimize_model
 
         optimize_model(
-            pipe=pipe,
+            pipe=pipe,  # type: ignore
             device=device,
             is_for_aitemplate=is_for_aitemplate,
         )
+        if config.api.sfast_compile:
+            pipe = compile_sfast(pipe)
     else:
-        pipe.to(device)
+        pipe.to(device, config.api.load_dtype)
 
-    if config.api.sfast_compile:
-        pipe = compile_sfast(pipe)
-
-    return pipe
+    return pipe  # type: ignore
 
 
 def _custom_convert_ldm_vae_checkpoint(checkpoint, conf):
@@ -633,7 +665,7 @@ def convert_vaept_to_diffusers(path: str) -> AutoencoderKL:
         from safetensors import safe_open
 
         checkpoint = {}
-        with safe_open(path, framework="pt", device="cpu") as f:
+        with safe_open(path, framework="pt", device="cpu") as f:  # type: ignore # weird import structure, seems to be replaced at runtime in the lib
             for key in f.keys():
                 checkpoint[key] = f.get_tensor(key)
     else:
@@ -648,3 +680,14 @@ def convert_vaept_to_diffusers(path: str) -> AutoencoderKL:
     vae = AutoencoderKL(**vae_config)
     vae.load_state_dict(converted_vae_checkpoint)
     return vae
+
+
+def get_output_type(job: Job):
+    return (
+        "latent"
+        if (
+            "highres_fix" in job.flags
+            and HighResFixFlag(**job.flags["highres_fix"]).mode == "latent"
+        )
+        else "pil"
+    )

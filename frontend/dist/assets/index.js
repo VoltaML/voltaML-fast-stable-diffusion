@@ -1552,7 +1552,7 @@ function renderComponentRoot(instance) {
     slots,
     attrs,
     emit: emit2,
-    render: render15,
+    render: render17,
     renderCache,
     data,
     setupState,
@@ -1566,7 +1566,7 @@ function renderComponentRoot(instance) {
     if (vnode.shapeFlag & 4) {
       const proxyToUse = withProxy || proxy;
       result = normalizeVNode(
-        render15.call(
+        render17.call(
           proxyToUse,
           proxyToUse,
           renderCache,
@@ -2668,7 +2668,7 @@ function applyOptions(instance) {
     beforeUnmount,
     destroyed,
     unmounted,
-    render: render15,
+    render: render17,
     renderTracked,
     renderTriggered,
     errorCaptured,
@@ -2767,8 +2767,8 @@ function applyOptions(instance) {
       instance.exposed = {};
     }
   }
-  if (render15 && instance.render === NOOP) {
-    instance.render = render15;
+  if (render17 && instance.render === NOOP) {
+    instance.render = render17;
   }
   if (inheritAttrs != null) {
     instance.inheritAttrs = inheritAttrs;
@@ -3000,7 +3000,7 @@ function createAppContext() {
   };
 }
 let uid$1 = 0;
-function createAppAPI(render15, hydrate) {
+function createAppAPI(render17, hydrate) {
   return function createApp2(rootComponent, rootProps = null) {
     if (!isFunction$2(rootComponent)) {
       rootComponent = extend({}, rootComponent);
@@ -3069,7 +3069,7 @@ function createAppAPI(render15, hydrate) {
           if (isHydrate && hydrate) {
             hydrate(vnode, rootContainer);
           } else {
-            render15(vnode, rootContainer, isSVG2);
+            render17(vnode, rootContainer, isSVG2);
           }
           isMounted2 = true;
           app2._container = rootContainer;
@@ -3079,7 +3079,7 @@ function createAppAPI(render15, hydrate) {
       },
       unmount() {
         if (isMounted2) {
-          render15(null, app2._container);
+          render17(null, app2._container);
           delete app2._container.__vue_app__;
         }
       },
@@ -4794,7 +4794,7 @@ function baseCreateRenderer(options, createHydrationFns) {
     }
     return hostNextSibling(vnode.anchor || vnode.el);
   };
-  const render15 = (vnode, container, isSVG2) => {
+  const render17 = (vnode, container, isSVG2) => {
     if (vnode == null) {
       if (container._vnode) {
         unmount2(container._vnode, null, null, true);
@@ -4826,9 +4826,9 @@ function baseCreateRenderer(options, createHydrationFns) {
     );
   }
   return {
-    render: render15,
+    render: render17,
     hydrate,
-    createApp: createAppAPI(render15, hydrate)
+    createApp: createAppAPI(render17, hydrate)
   };
 }
 function toggleRecurse({ effect, update }, allowed) {
@@ -5359,6 +5359,11 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
 }
 function createTextVNode(text = " ", flag = 0) {
   return createVNode(Text, null, text, flag);
+}
+function createStaticVNode(content, numberOfNodes) {
+  const vnode = createVNode(Static, null, content);
+  vnode.staticCount = numberOfNodes;
+  return vnode;
 }
 function createCommentVNode(text = "", asBlock = false) {
   return asBlock ? (openBlock(), createBlock(Comment, null, text)) : createVNode(Comment, null, text);
@@ -27886,8 +27891,8 @@ const NDropdownRenderOption = defineComponent({
     }
   },
   render() {
-    const { rawNode: { render: render15, props } } = this.tmNode;
-    return h("div", props, [render15 === null || render15 === void 0 ? void 0 : render15()]);
+    const { rawNode: { render: render17, props } } = this.tmNode;
+    return h("div", props, [render17 === null || render17 === void 0 ? void 0 : render17()]);
   }
 });
 const NDropdownMenu = defineComponent({
@@ -38100,12 +38105,494 @@ const NThemeEditor = defineComponent({
     });
   }
 });
-const _hoisted_1$h = {
+const loc = window.location;
+let new_uri;
+if (loc.protocol === "https:") {
+  new_uri = "wss:";
+} else {
+  new_uri = "ws:";
+}
+const serverUrl = loc.protocol + "//" + loc.host;
+const webSocketUrl = new_uri + "//" + loc.host;
+const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
+const isDev = false;
+const defaultCapabilities = {
+  supported_backends: [["CPU", "cpu"]],
+  supported_precisions_cpu: ["float32"],
+  supported_precisions_gpu: ["float32"],
+  supported_torch_compile_backends: ["inductor"],
+  supported_self_attentions: [
+    ["Cross-Attention", "cross-attention"],
+    ["Subquadratic Attention", "subquadratic"],
+    ["Multihead Attention", "multihead"]
+  ],
+  has_tensorfloat: false,
+  has_tensor_cores: false,
+  supports_xformers: false,
+  supports_triton: false,
+  supports_int8: false
+};
+async function getCapabilities() {
+  try {
+    const response = await fetch(`${serverUrl}/api/hardware/capabilities`);
+    if (response.status !== 200) {
+      console.error("Server is not responding");
+      return defaultCapabilities;
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return defaultCapabilities;
+  }
+}
+var _a;
+const isClient = typeof window !== "undefined";
+const isFunction = (val) => typeof val === "function";
+const isString = (val) => typeof val === "string";
+const noop$1 = () => {
+};
+const isIOS = isClient && ((_a = window == null ? void 0 : window.navigator) == null ? void 0 : _a.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
+function resolveUnref(r) {
+  return typeof r === "function" ? r() : unref(r);
+}
+function identity(arg) {
+  return arg;
+}
+function tryOnScopeDispose(fn) {
+  if (getCurrentScope()) {
+    onScopeDispose(fn);
+    return true;
+  }
+  return false;
+}
+function resolveRef(r) {
+  return typeof r === "function" ? computed(r) : ref(r);
+}
+function tryOnMounted(fn, sync = true) {
+  if (getCurrentInstance())
+    onMounted(fn);
+  else if (sync)
+    fn();
+  else
+    nextTick(fn);
+}
+function useIntervalFn(cb, interval = 1e3, options = {}) {
+  const {
+    immediate = true,
+    immediateCallback = false
+  } = options;
+  let timer = null;
+  const isActive = ref(false);
+  function clean() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  }
+  function pause() {
+    isActive.value = false;
+    clean();
+  }
+  function resume() {
+    const intervalValue = resolveUnref(interval);
+    if (intervalValue <= 0)
+      return;
+    isActive.value = true;
+    if (immediateCallback)
+      cb();
+    clean();
+    timer = setInterval(cb, intervalValue);
+  }
+  if (immediate && isClient)
+    resume();
+  if (isRef(interval) || isFunction(interval)) {
+    const stopWatch = watch(interval, () => {
+      if (isActive.value && isClient)
+        resume();
+    });
+    tryOnScopeDispose(stopWatch);
+  }
+  tryOnScopeDispose(pause);
+  return {
+    isActive,
+    pause,
+    resume
+  };
+}
+function unrefElement(elRef) {
+  var _a2;
+  const plain = resolveUnref(elRef);
+  return (_a2 = plain == null ? void 0 : plain.$el) != null ? _a2 : plain;
+}
+const defaultWindow = isClient ? window : void 0;
+function useEventListener(...args) {
+  let target;
+  let events2;
+  let listeners;
+  let options;
+  if (isString(args[0]) || Array.isArray(args[0])) {
+    [events2, listeners, options] = args;
+    target = defaultWindow;
+  } else {
+    [target, events2, listeners, options] = args;
+  }
+  if (!target)
+    return noop$1;
+  if (!Array.isArray(events2))
+    events2 = [events2];
+  if (!Array.isArray(listeners))
+    listeners = [listeners];
+  const cleanups = [];
+  const cleanup = () => {
+    cleanups.forEach((fn) => fn());
+    cleanups.length = 0;
+  };
+  const register = (el, event2, listener, options2) => {
+    el.addEventListener(event2, listener, options2);
+    return () => el.removeEventListener(event2, listener, options2);
+  };
+  const stopWatch = watch(() => [unrefElement(target), resolveUnref(options)], ([el, options2]) => {
+    cleanup();
+    if (!el)
+      return;
+    cleanups.push(...events2.flatMap((event2) => {
+      return listeners.map((listener) => register(el, event2, listener, options2));
+    }));
+  }, { immediate: true, flush: "post" });
+  const stop = () => {
+    stopWatch();
+    cleanup();
+  };
+  tryOnScopeDispose(stop);
+  return stop;
+}
+let _iOSWorkaround = false;
+function onClickOutside(target, handler, options = {}) {
+  const { window: window2 = defaultWindow, ignore = [], capture = true, detectIframe = false } = options;
+  if (!window2)
+    return;
+  if (isIOS && !_iOSWorkaround) {
+    _iOSWorkaround = true;
+    Array.from(window2.document.body.children).forEach((el) => el.addEventListener("click", noop$1));
+  }
+  let shouldListen = true;
+  const shouldIgnore = (event2) => {
+    return ignore.some((target2) => {
+      if (typeof target2 === "string") {
+        return Array.from(window2.document.querySelectorAll(target2)).some((el) => el === event2.target || event2.composedPath().includes(el));
+      } else {
+        const el = unrefElement(target2);
+        return el && (event2.target === el || event2.composedPath().includes(el));
+      }
+    });
+  };
+  const listener = (event2) => {
+    const el = unrefElement(target);
+    if (!el || el === event2.target || event2.composedPath().includes(el))
+      return;
+    if (event2.detail === 0)
+      shouldListen = !shouldIgnore(event2);
+    if (!shouldListen) {
+      shouldListen = true;
+      return;
+    }
+    handler(event2);
+  };
+  const cleanup = [
+    useEventListener(window2, "click", listener, { passive: true, capture }),
+    useEventListener(window2, "pointerdown", (e) => {
+      const el = unrefElement(target);
+      if (el)
+        shouldListen = !e.composedPath().includes(el) && !shouldIgnore(e);
+    }, { passive: true }),
+    detectIframe && useEventListener(window2, "blur", (event2) => {
+      var _a2;
+      const el = unrefElement(target);
+      if (((_a2 = window2.document.activeElement) == null ? void 0 : _a2.tagName) === "IFRAME" && !(el == null ? void 0 : el.contains(window2.document.activeElement)))
+        handler(event2);
+    })
+  ].filter(Boolean);
+  const stop = () => cleanup.forEach((fn) => fn());
+  return stop;
+}
+function useSupported(callback, sync = false) {
+  const isSupported = ref();
+  const update = () => isSupported.value = Boolean(callback());
+  update();
+  tryOnMounted(update, sync);
+  return isSupported;
+}
+function useMediaQuery(query2, options = {}) {
+  const { window: window2 = defaultWindow } = options;
+  const isSupported = useSupported(() => window2 && "matchMedia" in window2 && typeof window2.matchMedia === "function");
+  let mediaQuery;
+  const matches = ref(false);
+  const cleanup = () => {
+    if (!mediaQuery)
+      return;
+    if ("removeEventListener" in mediaQuery)
+      mediaQuery.removeEventListener("change", update);
+    else
+      mediaQuery.removeListener(update);
+  };
+  const update = () => {
+    if (!isSupported.value)
+      return;
+    cleanup();
+    mediaQuery = window2.matchMedia(resolveRef(query2).value);
+    matches.value = mediaQuery.matches;
+    if ("addEventListener" in mediaQuery)
+      mediaQuery.addEventListener("change", update);
+    else
+      mediaQuery.addListener(update);
+  };
+  watchEffect(update);
+  tryOnScopeDispose(() => cleanup());
+  return matches;
+}
+const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
+const globalKey = "__vueuse_ssr_handlers__";
+_global[globalKey] = _global[globalKey] || {};
+var SwipeDirection;
+(function(SwipeDirection2) {
+  SwipeDirection2["UP"] = "UP";
+  SwipeDirection2["RIGHT"] = "RIGHT";
+  SwipeDirection2["DOWN"] = "DOWN";
+  SwipeDirection2["LEFT"] = "LEFT";
+  SwipeDirection2["NONE"] = "NONE";
+})(SwipeDirection || (SwipeDirection = {}));
+var __defProp2 = Object.defineProperty;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp2 = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __spreadValues = (a, b) => {
+  for (var prop in b || (b = {}))
+    if (__hasOwnProp.call(b, prop))
+      __defNormalProp2(a, prop, b[prop]);
+  if (__getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(b)) {
+      if (__propIsEnum.call(b, prop))
+        __defNormalProp2(a, prop, b[prop]);
+    }
+  return a;
+};
+const _TransitionPresets = {
+  easeInSine: [0.12, 0, 0.39, 0],
+  easeOutSine: [0.61, 1, 0.88, 1],
+  easeInOutSine: [0.37, 0, 0.63, 1],
+  easeInQuad: [0.11, 0, 0.5, 0],
+  easeOutQuad: [0.5, 1, 0.89, 1],
+  easeInOutQuad: [0.45, 0, 0.55, 1],
+  easeInCubic: [0.32, 0, 0.67, 0],
+  easeOutCubic: [0.33, 1, 0.68, 1],
+  easeInOutCubic: [0.65, 0, 0.35, 1],
+  easeInQuart: [0.5, 0, 0.75, 0],
+  easeOutQuart: [0.25, 1, 0.5, 1],
+  easeInOutQuart: [0.76, 0, 0.24, 1],
+  easeInQuint: [0.64, 0, 0.78, 0],
+  easeOutQuint: [0.22, 1, 0.36, 1],
+  easeInOutQuint: [0.83, 0, 0.17, 1],
+  easeInExpo: [0.7, 0, 0.84, 0],
+  easeOutExpo: [0.16, 1, 0.3, 1],
+  easeInOutExpo: [0.87, 0, 0.13, 1],
+  easeInCirc: [0.55, 0, 1, 0.45],
+  easeOutCirc: [0, 0.55, 0.45, 1],
+  easeInOutCirc: [0.85, 0, 0.15, 1],
+  easeInBack: [0.36, 0, 0.66, -0.56],
+  easeOutBack: [0.34, 1.56, 0.64, 1],
+  easeInOutBack: [0.68, -0.6, 0.32, 1.6]
+};
+__spreadValues({
+  linear: identity
+}, _TransitionPresets);
+const DEFAULT_PING_MESSAGE = "ping";
+function resolveNestedOptions(options) {
+  if (options === true)
+    return {};
+  return options;
+}
+function useWebSocket(url, options = {}) {
+  const {
+    onConnected,
+    onDisconnected,
+    onError,
+    onMessage,
+    immediate = true,
+    autoClose = true,
+    protocols = []
+  } = options;
+  const data = ref(null);
+  const status = ref("CLOSED");
+  const wsRef = ref();
+  const urlRef = resolveRef(url);
+  let heartbeatPause;
+  let heartbeatResume;
+  let explicitlyClosed = false;
+  let retried = 0;
+  let bufferedData = [];
+  let pongTimeoutWait;
+  const close = (code = 1e3, reason) => {
+    if (!wsRef.value)
+      return;
+    explicitlyClosed = true;
+    heartbeatPause == null ? void 0 : heartbeatPause();
+    wsRef.value.close(code, reason);
+  };
+  const _sendBuffer = () => {
+    if (bufferedData.length && wsRef.value && status.value === "OPEN") {
+      for (const buffer of bufferedData)
+        wsRef.value.send(buffer);
+      bufferedData = [];
+    }
+  };
+  const resetHeartbeat = () => {
+    clearTimeout(pongTimeoutWait);
+    pongTimeoutWait = void 0;
+  };
+  const send = (data2, useBuffer = true) => {
+    if (!wsRef.value || status.value !== "OPEN") {
+      if (useBuffer)
+        bufferedData.push(data2);
+      return false;
+    }
+    _sendBuffer();
+    wsRef.value.send(data2);
+    return true;
+  };
+  const _init = () => {
+    if (explicitlyClosed || typeof urlRef.value === "undefined")
+      return;
+    const ws = new WebSocket(urlRef.value, protocols);
+    wsRef.value = ws;
+    status.value = "CONNECTING";
+    ws.onopen = () => {
+      status.value = "OPEN";
+      onConnected == null ? void 0 : onConnected(ws);
+      heartbeatResume == null ? void 0 : heartbeatResume();
+      _sendBuffer();
+    };
+    ws.onclose = (ev) => {
+      status.value = "CLOSED";
+      wsRef.value = void 0;
+      onDisconnected == null ? void 0 : onDisconnected(ws, ev);
+      if (!explicitlyClosed && options.autoReconnect) {
+        const {
+          retries = -1,
+          delay = 1e3,
+          onFailed
+        } = resolveNestedOptions(options.autoReconnect);
+        retried += 1;
+        if (typeof retries === "number" && (retries < 0 || retried < retries))
+          setTimeout(_init, delay);
+        else if (typeof retries === "function" && retries())
+          setTimeout(_init, delay);
+        else
+          onFailed == null ? void 0 : onFailed();
+      }
+    };
+    ws.onerror = (e) => {
+      onError == null ? void 0 : onError(ws, e);
+    };
+    ws.onmessage = (e) => {
+      if (options.heartbeat) {
+        resetHeartbeat();
+        const {
+          message = DEFAULT_PING_MESSAGE
+        } = resolveNestedOptions(options.heartbeat);
+        if (e.data === message)
+          return;
+      }
+      data.value = e.data;
+      onMessage == null ? void 0 : onMessage(ws, e);
+    };
+  };
+  if (options.heartbeat) {
+    const {
+      message = DEFAULT_PING_MESSAGE,
+      interval = 1e3,
+      pongTimeout = 1e3
+    } = resolveNestedOptions(options.heartbeat);
+    const { pause, resume } = useIntervalFn(() => {
+      send(message, false);
+      if (pongTimeoutWait != null)
+        return;
+      pongTimeoutWait = setTimeout(() => {
+        close();
+      }, pongTimeout);
+    }, interval, { immediate: false });
+    heartbeatPause = pause;
+    heartbeatResume = resume;
+  }
+  if (autoClose) {
+    useEventListener(window, "beforeunload", () => close());
+    tryOnScopeDispose(close);
+  }
+  const open = () => {
+    close();
+    explicitlyClosed = false;
+    retried = 0;
+    _init();
+  };
+  if (immediate)
+    watch(urlRef, open, { immediate: true });
+  return {
+    data,
+    status,
+    close,
+    send,
+    open,
+    ws: wsRef
+  };
+}
+const isLargeScreen = useMediaQuery("(min-width: 1000px)");
+const _hoisted_1$k = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$i = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "stroke-width": "32",
+    d: "M256 112v288"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$h = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "stroke-width": "32",
+    d: "M400 256H112"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$e = [_hoisted_2$i, _hoisted_3$h];
+const Add = defineComponent({
+  name: "Add",
+  render: function render2(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$k, _hoisted_4$e);
+  }
+});
+const _hoisted_1$j = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$h = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M368 96H144a16 16 0 0 1 0-32h224a16 16 0 0 1 0 32z",
@@ -38115,7 +38602,7 @@ const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$g = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M400 144H112a16 16 0 0 1 0-32h288a16 16 0 0 1 0 32z",
@@ -38125,7 +38612,7 @@ const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M419.13 448H92.87A44.92 44.92 0 0 1 48 403.13V204.87A44.92 44.92 0 0 1 92.87 160h326.26A44.92 44.92 0 0 1 464 204.87v198.26A44.92 44.92 0 0 1 419.13 448z",
@@ -38135,10 +38622,94 @@ const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$7 = [_hoisted_2$f, _hoisted_3$e, _hoisted_4$b];
+const _hoisted_5$9 = [_hoisted_2$h, _hoisted_3$g, _hoisted_4$d];
 const Albums = defineComponent({
   name: "Albums",
-  render: function render2(_ctx, _cache) {
+  render: function render3(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$j, _hoisted_5$9);
+  }
+});
+const _hoisted_1$i = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$g = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$f = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$c = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5$8 = [_hoisted_2$g, _hoisted_3$f, _hoisted_4$c];
+const Create = defineComponent({
+  name: "Create",
+  render: function render4(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$i, _hoisted_5$8);
+  }
+});
+const _hoisted_1$h = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M440.9 136.3a4 4 0 0 0 0-6.91L288.16 40.65a64.14 64.14 0 0 0-64.33 0L71.12 129.39a4 4 0 0 0 0 6.91L254 243.88a4 4 0 0 0 4.06 0z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M54 163.51a4 4 0 0 0-6 3.49v173.89a48 48 0 0 0 23.84 41.39L234 479.51a4 4 0 0 0 6-3.46V274.3a4 4 0 0 0-2-3.46z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M272 275v201a4 4 0 0 0 6 3.46l162.15-97.23A48 48 0 0 0 464 340.89V167a4 4 0 0 0-6-3.45l-184 108a4 4 0 0 0-2 3.45z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5$7 = [_hoisted_2$f, _hoisted_3$e, _hoisted_4$b];
+const Cube = defineComponent({
+  name: "Cube",
+  render: function render5(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$h, _hoisted_5$7);
   }
 });
@@ -38150,7 +38721,7 @@ const _hoisted_1$g = {
 const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
+    d: "M428 224H288a48 48 0 0 1-48-48V36a4 4 0 0 0-4-4h-92a64 64 0 0 0-64 64v320a64 64 0 0 0 64 64h224a64 64 0 0 0 64-64V228a4 4 0 0 0-4-4zm-92 160H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32zm0-80H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32z",
     fill: "currentColor"
   },
   null,
@@ -38160,28 +38731,18 @@ const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
+    d: "M419.22 188.59L275.41 44.78a2 2 0 0 0-3.41 1.41V176a16 16 0 0 0 16 16h129.81a2 2 0 0 0 1.41-3.41z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_5$6 = [_hoisted_2$e, _hoisted_3$d, _hoisted_4$a];
-const Create = defineComponent({
-  name: "Create",
-  render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$g, _hoisted_5$6);
+const _hoisted_4$a = [_hoisted_2$e, _hoisted_3$d];
+const DocumentText = defineComponent({
+  name: "DocumentText",
+  render: function render6(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$g, _hoisted_4$a);
   }
 });
 const _hoisted_1$f = {
@@ -38192,7 +38753,7 @@ const _hoisted_1$f = {
 const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M440.9 136.3a4 4 0 0 0 0-6.91L288.16 40.65a64.14 64.14 0 0 0-64.33 0L71.12 129.39a4 4 0 0 0 0 6.91L254 243.88a4 4 0 0 0 4.06 0z",
+    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
     fill: "currentColor"
   },
   null,
@@ -38202,28 +38763,18 @@ const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M54 163.51a4 4 0 0 0-6 3.49v173.89a48 48 0 0 0 23.84 41.39L234 479.51a4 4 0 0 0 6-3.46V274.3a4 4 0 0 0-2-3.46z",
+    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M272 275v201a4 4 0 0 0 6 3.46l162.15-97.23A48 48 0 0 0 464 340.89V167a4 4 0 0 0-6-3.45l-184 108a4 4 0 0 0-2 3.45z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_5$5 = [_hoisted_2$d, _hoisted_3$c, _hoisted_4$9];
-const Cube = defineComponent({
-  name: "Cube",
-  render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_5$5);
+const _hoisted_4$9 = [_hoisted_2$d, _hoisted_3$c];
+const Duplicate = defineComponent({
+  name: "Duplicate",
+  render: function render7(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_4$9);
   }
 });
 const _hoisted_1$e = {
@@ -38234,28 +38785,18 @@ const _hoisted_1$e = {
 const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M428 224H288a48 48 0 0 1-48-48V36a4 4 0 0 0-4-4h-92a64 64 0 0 0-64 64v320a64 64 0 0 0 64 64h224a64 64 0 0 0 64-64V228a4 4 0 0 0-4-4zm-92 160H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32zm0-80H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32z",
+    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M419.22 188.59L275.41 44.78a2 2 0 0 0-3.41 1.41V176a16 16 0 0 0 16 16h129.81a2 2 0 0 0 1.41-3.41z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$8 = [_hoisted_2$c, _hoisted_3$b];
-const DocumentText = defineComponent({
-  name: "DocumentText",
-  render: function render5(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_4$8);
+const _hoisted_3$b = [_hoisted_2$c];
+const Image$1 = defineComponent({
+  name: "Image",
+  render: function render8(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_3$b);
   }
 });
 const _hoisted_1$d = {
@@ -38266,7 +38807,7 @@ const _hoisted_1$d = {
 const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
+    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
     fill: "currentColor"
   },
   null,
@@ -38276,18 +38817,18 @@ const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
+    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$7 = [_hoisted_2$b, _hoisted_3$a];
-const Duplicate = defineComponent({
-  name: "Duplicate",
-  render: function render6(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$7);
+const _hoisted_4$8 = [_hoisted_2$b, _hoisted_3$a];
+const Images = defineComponent({
+  name: "Images",
+  render: function render9(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$8);
   }
 });
 const _hoisted_1$c = {
@@ -38298,18 +38839,50 @@ const _hoisted_1$c = {
 const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
-    fill: "currentColor"
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-miterlimit": "10",
+    "stroke-width": "48",
+    d: "M88 152h336"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$9 = [_hoisted_2$a];
-const Image$1 = defineComponent({
-  name: "Image",
-  render: function render7(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_3$9);
+const _hoisted_3$9 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-miterlimit": "10",
+    "stroke-width": "48",
+    d: "M88 256h336"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$7 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-miterlimit": "10",
+    "stroke-width": "48",
+    d: "M88 360h336"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5$6 = [_hoisted_2$a, _hoisted_3$9, _hoisted_4$7];
+const Menu = defineComponent({
+  name: "Menu",
+  render: function render10(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_5$6);
   }
 });
 const _hoisted_1$b = {
@@ -38320,7 +38893,7 @@ const _hoisted_1$b = {
 const _hoisted_2$9 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
+    d: "M256 464c-114.69 0-208-93.23-208-207.82a207.44 207.44 0 0 1 74.76-160.13l16.9-14l28.17 33.72l-16.9 14A163.72 163.72 0 0 0 92 256.18c0 90.39 73.57 163.93 164 163.93s164-73.54 164-163.93a163.38 163.38 0 0 0-59.83-126.36l-17-14l28-33.82l17 14A207.13 207.13 0 0 1 464 256.18C464 370.77 370.69 464 256 464z",
     fill: "currentColor"
   },
   null,
@@ -38330,7 +38903,7 @@ const _hoisted_2$9 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
+    d: "M234 48h44v224h-44z",
     fill: "currentColor"
   },
   null,
@@ -38338,9 +38911,9 @@ const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$6 = [_hoisted_2$9, _hoisted_3$8];
-const Images = defineComponent({
-  name: "Images",
-  render: function render8(_ctx, _cache) {
+const PowerSharp = defineComponent({
+  name: "PowerSharp",
+  render: function render11(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$6);
   }
 });
@@ -38352,28 +38925,18 @@ const _hoisted_1$a = {
 const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M256 464c-114.69 0-208-93.23-208-207.82a207.44 207.44 0 0 1 74.76-160.13l16.9-14l28.17 33.72l-16.9 14A163.72 163.72 0 0 0 92 256.18c0 90.39 73.57 163.93 164 163.93s164-73.54 164-163.93a163.38 163.38 0 0 0-59.83-126.36l-17-14l28-33.82l17 14A207.13 207.13 0 0 1 464 256.18C464 370.77 370.69 464 256 464z",
+    d: "M256 176a80 80 0 1 0 80 80a80.24 80.24 0 0 0-80-80zm172.72 80a165.53 165.53 0 0 1-1.64 22.34l48.69 38.12a11.59 11.59 0 0 1 2.63 14.78l-46.06 79.52a11.64 11.64 0 0 1-14.14 4.93l-57.25-23a176.56 176.56 0 0 1-38.82 22.67l-8.56 60.78a11.93 11.93 0 0 1-11.51 9.86h-92.12a12 12 0 0 1-11.51-9.53l-8.56-60.78A169.3 169.3 0 0 1 151.05 393L93.8 416a11.64 11.64 0 0 1-14.14-4.92L33.6 331.57a11.59 11.59 0 0 1 2.63-14.78l48.69-38.12A174.58 174.58 0 0 1 83.28 256a165.53 165.53 0 0 1 1.64-22.34l-48.69-38.12a11.59 11.59 0 0 1-2.63-14.78l46.06-79.52a11.64 11.64 0 0 1 14.14-4.93l57.25 23a176.56 176.56 0 0 1 38.82-22.67l8.56-60.78A11.93 11.93 0 0 1 209.94 26h92.12a12 12 0 0 1 11.51 9.53l8.56 60.78A169.3 169.3 0 0 1 361 119l57.2-23a11.64 11.64 0 0 1 14.14 4.92l46.06 79.52a11.59 11.59 0 0 1-2.63 14.78l-48.69 38.12a174.58 174.58 0 0 1 1.64 22.66z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M234 48h44v224h-44z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$5 = [_hoisted_2$8, _hoisted_3$7];
-const PowerSharp = defineComponent({
-  name: "PowerSharp",
-  render: function render9(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$5);
+const _hoisted_3$7 = [_hoisted_2$8];
+const SettingsSharp = defineComponent({
+  name: "SettingsSharp",
+  render: function render12(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_3$7);
   }
 });
 const _hoisted_1$9 = {
@@ -38384,7 +38947,7 @@ const _hoisted_1$9 = {
 const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M256 176a80 80 0 1 0 80 80a80.24 80.24 0 0 0-80-80zm172.72 80a165.53 165.53 0 0 1-1.64 22.34l48.69 38.12a11.59 11.59 0 0 1 2.63 14.78l-46.06 79.52a11.64 11.64 0 0 1-14.14 4.93l-57.25-23a176.56 176.56 0 0 1-38.82 22.67l-8.56 60.78a11.93 11.93 0 0 1-11.51 9.86h-92.12a12 12 0 0 1-11.51-9.53l-8.56-60.78A169.3 169.3 0 0 1 151.05 393L93.8 416a11.64 11.64 0 0 1-14.14-4.92L33.6 331.57a11.59 11.59 0 0 1 2.63-14.78l48.69-38.12A174.58 174.58 0 0 1 83.28 256a165.53 165.53 0 0 1 1.64-22.34l-48.69-38.12a11.59 11.59 0 0 1-2.63-14.78l46.06-79.52a11.64 11.64 0 0 1 14.14-4.93l57.25 23a176.56 176.56 0 0 1 38.82-22.67l8.56-60.78A11.93 11.93 0 0 1 209.94 26h92.12a12 12 0 0 1 11.51 9.53l8.56 60.78A169.3 169.3 0 0 1 361 119l57.2-23a11.64 11.64 0 0 1 14.14 4.92l46.06 79.52a11.59 11.59 0 0 1-2.63 14.78l-48.69 38.12a174.58 174.58 0 0 1 1.64 22.66z",
+    d: "M425.7 118.25A240 240 0 0 0 76.32 447l.18.2c.33.35.64.71 1 1.05c.74.84 1.58 1.79 2.57 2.78a41.17 41.17 0 0 0 60.36-.42a157.13 157.13 0 0 1 231.26 0a41.18 41.18 0 0 0 60.65.06l3.21-3.5l.18-.2a239.93 239.93 0 0 0-10-328.76zM240 128a16 16 0 0 1 32 0v32a16 16 0 0 1-32 0zM128 304H96a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32zm48.8-95.2a16 16 0 0 1-22.62 0l-22.63-22.62a16 16 0 0 1 22.63-22.63l22.62 22.63a16 16 0 0 1 0 22.62zm149.3 23.1l-47.5 75.5a31 31 0 0 1-7 7a30.11 30.11 0 0 1-35-49l75.5-47.5a10.23 10.23 0 0 1 11.7 0a10.06 10.06 0 0 1 2.3 14zm31.72-23.1a16 16 0 0 1-22.62-22.62l22.62-22.63a16 16 0 0 1 22.63 22.63zm65.88 227.6zM416 304h-32a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32z",
     fill: "currentColor"
   },
   null,
@@ -38392,9 +38955,9 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_3$6 = [_hoisted_2$7];
-const SettingsSharp = defineComponent({
-  name: "SettingsSharp",
-  render: function render10(_ctx, _cache) {
+const Speedometer = defineComponent({
+  name: "Speedometer",
+  render: function render13(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_3$6);
   }
 });
@@ -38406,28 +38969,6 @@ const _hoisted_1$8 = {
 const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M425.7 118.25A240 240 0 0 0 76.32 447l.18.2c.33.35.64.71 1 1.05c.74.84 1.58 1.79 2.57 2.78a41.17 41.17 0 0 0 60.36-.42a157.13 157.13 0 0 1 231.26 0a41.18 41.18 0 0 0 60.65.06l3.21-3.5l.18-.2a239.93 239.93 0 0 0-10-328.76zM240 128a16 16 0 0 1 32 0v32a16 16 0 0 1-32 0zM128 304H96a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32zm48.8-95.2a16 16 0 0 1-22.62 0l-22.63-22.62a16 16 0 0 1 22.63-22.63l22.62 22.63a16 16 0 0 1 0 22.62zm149.3 23.1l-47.5 75.5a31 31 0 0 1-7 7a30.11 30.11 0 0 1-35-49l75.5-47.5a10.23 10.23 0 0 1 11.7 0a10.06 10.06 0 0 1 2.3 14zm31.72-23.1a16 16 0 0 1-22.62-22.62l22.62-22.63a16 16 0 0 1 22.63 22.63zm65.88 227.6zM416 304h-32a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$5 = [_hoisted_2$6];
-const Speedometer = defineComponent({
-  name: "Speedometer",
-  render: function render11(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$5);
-  }
-});
-const _hoisted_1$7 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
     d: "M104 496H72a24 24 0 0 1-24-24V328a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v144a24 24 0 0 1-24 24z",
     fill: "currentColor"
   },
@@ -38435,7 +38976,7 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M328 496h-32a24 24 0 0 1-24-24V232a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v240a24 24 0 0 1-24 24z",
@@ -38445,7 +38986,7 @@ const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M440 496h-32a24 24 0 0 1-24-24V120a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v352a24 24 0 0 1-24 24z",
@@ -38455,7 +38996,7 @@ const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_5$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M216 496h-32a24 24 0 0 1-24-24V40a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v432a24 24 0 0 1-24 24z",
@@ -38465,19 +39006,19 @@ const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_6$2 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$4, _hoisted_5$4];
+const _hoisted_6$3 = [_hoisted_2$6, _hoisted_3$5, _hoisted_4$5, _hoisted_5$5];
 const StatsChart = defineComponent({
   name: "StatsChart",
-  render: function render12(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_6$2);
+  render: function render14(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_6$3);
   }
 });
-const _hoisted_1$6 = {
+const _hoisted_1$7 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M434.67 285.59v-29.8c0-98.73-80.24-178.79-179.2-178.79a179 179 0 0 0-140.14 67.36m-38.53 82v29.8C76.8 355 157 435 256 435a180.45 180.45 0 0 0 140-66.92",
@@ -38491,7 +39032,7 @@ const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -38505,7 +39046,7 @@ const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -38519,19 +39060,19 @@ const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$3 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$3];
+const _hoisted_5$4 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$4];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
-  render: function render13(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_5$3);
+  render: function render15(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_5$4);
   }
 });
-const _hoisted_1$5 = {
+const _hoisted_1$6 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M346.65 304.3a136 136 0 0 0-180.71 0a21 21 0 1 0 27.91 31.38a94 94 0 0 1 124.89 0a21 21 0 0 0 27.91-31.4z",
@@ -38541,7 +39082,7 @@ const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M256.28 183.7a221.47 221.47 0 0 0-151.8 59.92a21 21 0 1 0 28.68 30.67a180.28 180.28 0 0 1 246.24 0a21 21 0 1 0 28.68-30.67a221.47 221.47 0 0 0-151.8-59.92z",
@@ -38551,7 +39092,7 @@ const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M462 175.86a309 309 0 0 0-411.44 0a21 21 0 1 0 28 31.29a267 267 0 0 1 355.43 0a21 21 0 0 0 28-31.31z",
@@ -38561,7 +39102,7 @@ const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
   "circle",
   {
     cx: "256.28",
@@ -38573,11 +39114,11 @@ const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_6$1 = [_hoisted_2$3, _hoisted_3$2, _hoisted_4$2, _hoisted_5$2];
+const _hoisted_6$2 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$3, _hoisted_5$3];
 const Wifi = defineComponent({
   name: "Wifi",
-  render: function render14(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_6$1);
+  render: function render16(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_6$2);
   }
 });
 /*!
@@ -38598,7 +39139,7 @@ function applyToParams(fn, params) {
   }
   return newParams;
 }
-const noop$1 = () => {
+const noop = () => {
 };
 const isArray = Array.isArray;
 const TRAILING_SLASH_RE = /\/$/;
@@ -39339,7 +39880,7 @@ function createRouterMatcher(routes, globalOptions) {
     }
     return originalMatcher ? () => {
       removeRoute(originalMatcher);
-    } : noop$1;
+    } : noop;
   }
   function removeRoute(matcherRef) {
     if (isRouteName(matcherRef)) {
@@ -39702,7 +40243,7 @@ function useLink(props) {
       return router2[unref(props.replace) ? "replace" : "push"](
         unref(props.to)
         // avoid uncaught errors are they are logged anyway
-      ).catch(noop$1);
+      ).catch(noop);
     }
     return Promise.resolve();
   }
@@ -40180,7 +40721,7 @@ function createRouter(options) {
       const toLocation = resolve2(to);
       const shouldRedirect = handleRedirectRecord(toLocation);
       if (shouldRedirect) {
-        pushWithRedirect(assign(shouldRedirect, { replace: true }), toLocation).catch(noop$1);
+        pushWithRedirect(assign(shouldRedirect, { replace: true }), toLocation).catch(noop);
         return;
       }
       pendingLocation = toLocation;
@@ -40213,7 +40754,7 @@ function createRouter(options) {
             ) && !info.delta && info.type === NavigationType.pop) {
               routerHistory.go(-1, false);
             }
-          }).catch(noop$1);
+          }).catch(noop);
           return Promise.reject();
         }
         if (info.delta) {
@@ -40245,7 +40786,7 @@ function createRouter(options) {
           }
         }
         triggerAfterEach(toLocation, from, failure);
-      }).catch(noop$1);
+      }).catch(noop);
     });
   }
   let readyHandlers = useCallbacks();
@@ -40378,159 +40919,9 @@ function extractChangingRecords(to, from) {
 function useRouter() {
   return inject(routerKey);
 }
-const _hoisted_1$4 = { class: "navbar" };
-const _sfc_main$8 = /* @__PURE__ */ defineComponent({
-  __name: "CollapsibleNavbar",
-  setup(__props) {
-    function renderIcon(icon) {
-      return () => h(NIcon, null, { default: () => h(icon) });
-    }
-    const menuOptionsMain = [
-      {
-        label: () => h(RouterLink, { to: "/" }, { default: () => "Text to Image" }),
-        key: "txt2img",
-        icon: renderIcon(Image$1)
-      },
-      {
-        label: () => h(RouterLink, { to: "/img2img" }, { default: () => "Image to Image" }),
-        key: "img2img",
-        icon: renderIcon(Images)
-      },
-      {
-        label: () => h(
-          RouterLink,
-          { to: "/imageProcessing" },
-          { default: () => "Image Processing" }
-        ),
-        key: "imageProcessing",
-        icon: renderIcon(Duplicate)
-      },
-      {
-        label: () => h(RouterLink, { to: "/tagger" }, { default: () => "Tagger" }),
-        key: "tagger",
-        icon: renderIcon(Create)
-      },
-      {
-        label: () => h(
-          RouterLink,
-          { to: "/imageBrowser" },
-          { default: () => "Image Browser" }
-        ),
-        key: "imageBrowser",
-        icon: renderIcon(Albums)
-      },
-      {
-        label: () => h(RouterLink, { to: "/models" }, { default: () => "Models" }),
-        key: "models",
-        icon: renderIcon(Cube)
-      },
-      {
-        label: () => h(RouterLink, { to: "/accelerate" }, { default: () => "Accelerate" }),
-        key: "plugins",
-        icon: renderIcon(Speedometer)
-      },
-      // {
-      //   label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
-      //   key: "extra",
-      //   icon: renderIcon(Archive),
-      // },
-      {
-        label: () => h(RouterLink, { to: "/settings" }, { default: () => "Settings" }),
-        key: "settings",
-        icon: renderIcon(SettingsSharp)
-      }
-    ];
-    let collapsed = ref(true);
-    return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$4, [
-        createVNode(unref(NLayout), {
-          style: { "height": "100%", "overflow": "visible" },
-          "has-sider": "",
-          "content-style": "overflow: visible"
-        }, {
-          default: withCtx(() => [
-            createVNode(unref(NLayoutSider), {
-              bordered: "",
-              "collapse-mode": "width",
-              "collapsed-width": 64,
-              width: 240,
-              collapsed: unref(collapsed),
-              "show-trigger": "",
-              onCollapse: _cache[0] || (_cache[0] = ($event) => isRef(collapsed) ? collapsed.value = true : collapsed = true),
-              onExpand: _cache[1] || (_cache[1] = ($event) => isRef(collapsed) ? collapsed.value = false : collapsed = false),
-              style: { "overflow": "visible", "overflow-x": "visible" }
-            }, {
-              default: withCtx(() => [
-                createVNode(unref(NSpace), {
-                  vertical: "",
-                  justify: "space-between",
-                  style: { "height": "100%", "overflow": "visible", "overflow-x": "visible" },
-                  "item-style": "height: 100%"
-                }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NMenu), {
-                      collapsed: unref(collapsed),
-                      "collapsed-width": 64,
-                      "collapsed-icon-size": 22,
-                      options: menuOptionsMain,
-                      style: { "height": "100%", "display": "flex", "flex-direction": "column" }
-                    }, null, 8, ["collapsed"])
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            }, 8, ["collapsed"])
-          ]),
-          _: 1
-        })
-      ]);
-    };
-  }
-});
-const CollapsibleNavbar_vue_vue_type_style_index_0_lang = "";
-const loc = window.location;
-let new_uri;
-if (loc.protocol === "https:") {
-  new_uri = "wss:";
-} else {
-  new_uri = "ws:";
-}
-const serverUrl = loc.protocol + "//" + loc.host;
-const webSocketUrl = new_uri + "//" + loc.host;
-const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
-const defaultCapabilities = {
-  supported_backends: [["CPU", "cpu"]],
-  supported_precisions_cpu: ["float32"],
-  supported_precisions_gpu: ["float32"],
-  supported_torch_compile_backends: ["inductor"],
-  supported_self_attentions: [
-    ["Cross-Attention", "cross-attention"],
-    ["Subquadratic Attention", "subquadratic"],
-    ["Multihead Attention", "multihead"]
-  ],
-  has_tensorfloat: false,
-  has_tensor_cores: false,
-  supports_xformers: false,
-  supports_triton: false,
-  supports_int8: false
-};
-async function getCapabilities() {
-  try {
-    const response = await fetch(`${serverUrl}/api/hardware/capabilities`);
-    if (response.status !== 200) {
-      console.error("Server is not responding");
-      return defaultCapabilities;
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(error);
-    return defaultCapabilities;
-  }
-}
 const useState2 = defineStore("state", () => {
   const state2 = reactive({
+    collapsibleBarActive: false,
     progress: 0,
     generating: false,
     downloading: false,
@@ -40550,6 +40941,8 @@ const useState2 = defineStore("state", () => {
     txt2img: {
       images: [],
       highres: false,
+      refiner: false,
+      sdxl_resize: false,
       currentImage: "",
       genData: {
         time_taken: null,
@@ -40631,8 +41024,14 @@ const useState2 = defineStore("state", () => {
     },
     autofill: [],
     autofill_special: [],
-    capabilities: defaultCapabilities
+    capabilities: defaultCapabilities,
     // Should get replaced at runtime
+    settings_diff: {
+      active: false,
+      default_value: "",
+      current_value: "",
+      key: []
+    }
   });
   async function fetchCapabilites() {
     state2.capabilities = await getCapabilities();
@@ -40650,16 +41049,182 @@ const useState2 = defineStore("state", () => {
   }
   return { state: state2, fetchCapabilites, fetchAutofill };
 });
+const _hoisted_1$5 = { class: "navbar" };
+const _sfc_main$9 = /* @__PURE__ */ defineComponent({
+  __name: "CollapsibleNavbar",
+  setup(__props) {
+    const global2 = useState2();
+    function renderIcon(icon) {
+      return () => h(NIcon, null, { default: () => h(icon) });
+    }
+    const menuOptionsMain = [
+      {
+        label: () => h(RouterLink, { to: "/" }, { default: () => "Text to Image" }),
+        key: "txt2img",
+        icon: renderIcon(Image$1)
+      },
+      {
+        label: () => h(RouterLink, { to: "/img2img" }, { default: () => "Image to Image" }),
+        key: "img2img",
+        icon: renderIcon(Images)
+      },
+      {
+        label: () => h(
+          RouterLink,
+          { to: "/imageProcessing" },
+          { default: () => "Image Processing" }
+        ),
+        key: "imageProcessing",
+        icon: renderIcon(Duplicate)
+      },
+      {
+        label: () => h(RouterLink, { to: "/tagger" }, { default: () => "Tagger" }),
+        key: "tagger",
+        icon: renderIcon(Create)
+      },
+      {
+        label: () => h(
+          RouterLink,
+          { to: "/imageBrowser" },
+          { default: () => "Image Browser" }
+        ),
+        key: "imageBrowser",
+        icon: renderIcon(Albums)
+      },
+      {
+        label: () => h(RouterLink, { to: "/models" }, { default: () => "Models" }),
+        key: "models",
+        icon: renderIcon(Cube)
+      },
+      {
+        label: () => h(RouterLink, { to: "/accelerate" }, { default: () => "Accelerate" }),
+        key: "plugins",
+        icon: renderIcon(Speedometer)
+      },
+      // {
+      //   label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
+      //   key: "extra",
+      //   icon: renderIcon(Archive),
+      // },
+      {
+        label: () => h(RouterLink, { to: "/settings" }, { default: () => "Settings" }),
+        key: "settings",
+        icon: renderIcon(SettingsSharp)
+      }
+    ];
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", _hoisted_1$5, [
+        unref(isLargeScreen) ? (openBlock(), createBlock(unref(NLayout), {
+          key: 0,
+          style: { "height": "100%", "overflow": "visible" },
+          "has-sider": "",
+          "content-style": "overflow: visible"
+        }, {
+          default: withCtx(() => [
+            createVNode(unref(NLayoutSider), {
+              bordered: "",
+              "collapse-mode": "width",
+              "collapsed-width": 64,
+              width: 240,
+              collapsed: !unref(global2).state.collapsibleBarActive,
+              "show-trigger": "",
+              onCollapse: _cache[0] || (_cache[0] = ($event) => unref(global2).state.collapsibleBarActive = false),
+              onExpand: _cache[1] || (_cache[1] = ($event) => unref(global2).state.collapsibleBarActive = true),
+              style: { "overflow": "visible", "overflow-x": "visible" }
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NSpace), {
+                  vertical: "",
+                  justify: "space-between",
+                  style: { "height": "100%", "overflow": "visible", "overflow-x": "visible" },
+                  "item-style": "height: 100%"
+                }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NMenu), {
+                      collapsed: !unref(global2).state.collapsibleBarActive,
+                      "collapsed-width": 64,
+                      "collapsed-icon-size": 22,
+                      options: menuOptionsMain,
+                      style: { "height": "100%", "display": "flex", "flex-direction": "column" }
+                    }, null, 8, ["collapsed"])
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            }, 8, ["collapsed"])
+          ]),
+          _: 1
+        })) : (openBlock(), createBlock(unref(NDrawer), {
+          key: 1,
+          show: unref(global2).state.collapsibleBarActive,
+          "onUpdate:show": _cache[2] || (_cache[2] = ($event) => unref(global2).state.collapsibleBarActive = $event),
+          placement: "left",
+          width: "272px"
+        }, {
+          default: withCtx(() => [
+            createVNode(unref(NDrawerContent), { "body-content-style": {
+              padding: "0px"
+            } }, {
+              default: withCtx(() => [
+                createVNode(unref(NLayout), {
+                  style: { "height": "100%", "overflow": "visible" },
+                  "has-sider": "",
+                  "content-style": "overflow: visible"
+                }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NLayoutSider), {
+                      bordered: "",
+                      "collapse-mode": "width",
+                      collapsed: false,
+                      style: { "overflow": "visible", "overflow-x": "visible" }
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(unref(NSpace), {
+                          vertical: "",
+                          justify: "space-between",
+                          style: { "height": "100%", "overflow": "visible", "overflow-x": "visible" },
+                          "item-style": "height: 100%"
+                        }, {
+                          default: withCtx(() => [
+                            createVNode(unref(NMenu), {
+                              collapsed: false,
+                              "collapsed-width": 64,
+                              "collapsed-icon-size": 22,
+                              options: menuOptionsMain,
+                              style: { "height": "100%", "display": "flex", "flex-direction": "column" }
+                            })
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    })
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            })
+          ]),
+          _: 1
+        }, 8, ["show"]))
+      ]);
+    };
+  }
+});
+const CollapsibleNavbar_vue_vue_type_style_index_0_lang = "";
 var Backends = /* @__PURE__ */ ((Backends2) => {
   Backends2[Backends2["PyTorch"] = 0] = "PyTorch";
-  Backends2[Backends2["AITemplate"] = 1] = "AITemplate";
-  Backends2[Backends2["ONNX"] = 2] = "ONNX";
-  Backends2[Backends2["unknown"] = 3] = "unknown";
-  Backends2[Backends2["LoRA"] = 4] = "LoRA";
-  Backends2[Backends2["LyCORIS"] = 5] = "LyCORIS";
-  Backends2[Backends2["VAE"] = 6] = "VAE";
-  Backends2[Backends2["Textual Inversion"] = 7] = "Textual Inversion";
-  Backends2[Backends2["Upscaler"] = 8] = "Upscaler";
+  Backends2[Backends2["SDXL"] = 1] = "SDXL";
+  Backends2[Backends2["AITemplate"] = 2] = "AITemplate";
+  Backends2[Backends2["ONNX"] = 3] = "ONNX";
+  Backends2[Backends2["unknown"] = 4] = "unknown";
+  Backends2[Backends2["LoRA"] = 5] = "LoRA";
+  Backends2[Backends2["LyCORIS"] = 6] = "LyCORIS";
+  Backends2[Backends2["VAE"] = 7] = "VAE";
+  Backends2[Backends2["Textual Inversion"] = 8] = "Textual Inversion";
+  Backends2[Backends2["Upscaler"] = 9] = "Upscaler";
   return Backends2;
 })(Backends || {});
 var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
@@ -40673,987 +41238,6 @@ var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   ControlNetType2["SEGMENTATION"] = "lllyasviel/sd-controlnet-seg";
   return ControlNetType2;
 })(ControlNetType || {});
-const defaultSettings = {
-  $schema: "./schema/ui_data/settings.json",
-  backend: "PyTorch",
-  model: null,
-  flags: {
-    highres: {
-      image_upscaler: "RealESRGAN_x4plus_anime_6B",
-      mode: "latent",
-      scale: 2,
-      latent_scale_mode: "bislerp-tortured",
-      strength: 0.7,
-      steps: 50,
-      antialiased: false
-    }
-  },
-  aitDim: {
-    width: void 0,
-    height: void 0,
-    batch_size: void 0
-  },
-  txt2img: {
-    width: 512,
-    height: 512,
-    seed: -1,
-    cfg_scale: 7,
-    sampler: 8,
-    prompt: "",
-    steps: 25,
-    batch_count: 1,
-    batch_size: 1,
-    negative_prompt: "",
-    self_attention_scale: 0,
-    sigmas: "automatic"
-  },
-  img2img: {
-    width: 512,
-    height: 512,
-    seed: -1,
-    cfg_scale: 7,
-    sampler: 8,
-    prompt: "",
-    steps: 25,
-    batch_count: 1,
-    batch_size: 1,
-    negative_prompt: "",
-    denoising_strength: 0.6,
-    image: "",
-    self_attention_scale: 0,
-    sigmas: "automatic"
-  },
-  inpainting: {
-    prompt: "",
-    negative_prompt: "",
-    image: "",
-    mask_image: "",
-    width: 512,
-    height: 512,
-    steps: 25,
-    cfg_scale: 7,
-    seed: -1,
-    batch_count: 1,
-    batch_size: 1,
-    sampler: 8,
-    self_attention_scale: 0,
-    sigmas: "automatic"
-  },
-  controlnet: {
-    prompt: "",
-    image: "",
-    sampler: 8,
-    controlnet: ControlNetType.CANNY,
-    negative_prompt: "",
-    width: 512,
-    height: 512,
-    steps: 25,
-    cfg_scale: 7,
-    seed: -1,
-    batch_size: 1,
-    batch_count: 1,
-    controlnet_conditioning_scale: 1,
-    detection_resolution: 512,
-    is_preprocessed: false,
-    save_preprocessed: false,
-    return_preprocessed: true,
-    sigmas: "automatic"
-  },
-  upscale: {
-    image: "",
-    upscale_factor: 4,
-    model: "RealESRGAN_x4plus_anime_6B",
-    tile_size: 128,
-    tile_padding: 10
-  },
-  tagger: {
-    image: "",
-    model: "deepdanbooru",
-    threshold: 0.5
-  },
-  api: {
-    websocket_sync_interval: 0.02,
-    websocket_perf_interval: 1,
-    enable_websocket_logging: true,
-    clip_skip: 1,
-    clip_quantization: "full",
-    autocast: true,
-    attention_processor: "xformers",
-    subquadratic_size: 512,
-    attention_slicing: "disabled",
-    channels_last: true,
-    vae_slicing: false,
-    vae_tiling: false,
-    trace_model: false,
-    cudnn_benchmark: false,
-    offload: "disabled",
-    dont_merge_latents: false,
-    device: "cuda:0",
-    data_type: "float16",
-    use_tomesd: true,
-    tomesd_ratio: 0.4,
-    tomesd_downsample_layers: 1,
-    deterministic_generation: false,
-    reduced_precision: false,
-    clear_memory_policy: "always",
-    huggingface_style_parsing: false,
-    autoloaded_textual_inversions: [],
-    autoloaded_models: [],
-    autoloaded_vae: {},
-    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
-    image_extension: "png",
-    image_quality: 95,
-    disable_grid: false,
-    torch_compile: false,
-    torch_compile_fullgraph: false,
-    torch_compile_dynamic: false,
-    torch_compile_backend: "inductor",
-    torch_compile_mode: "default",
-    sfast_compile: false,
-    sfast_xformers: true,
-    sfast_triton: true,
-    sfast_cuda_graph: false,
-    hypertile: false,
-    hypertile_unet_chunk: 256,
-    sgm_noise_multiplier: false,
-    kdiffusers_quantization: true,
-    generator: "device",
-    live_preview_method: "approximation",
-    live_preview_delay: 2,
-    prompt_to_prompt: false,
-    prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
-    prompt_to_prompt_device: "gpu",
-    free_u: false,
-    free_u_s1: 0.9,
-    free_u_s2: 0.2,
-    free_u_b1: 1.2,
-    free_u_b2: 1.4
-  },
-  aitemplate: {
-    num_threads: 8
-  },
-  onnx: {
-    quant_dict: {
-      text_encoder: null,
-      unet: null,
-      vae_decoder: null,
-      vae_encoder: null
-    },
-    convert_to_fp16: true,
-    simplify_unet: false
-  },
-  bot: {
-    default_scheduler: 8,
-    verbose: false,
-    use_default_negative_prompt: true
-  },
-  frontend: {
-    theme: "dark",
-    enable_theme_editor: false,
-    image_browser_columns: 5,
-    on_change_timer: 2e3,
-    nsfw_ok_threshold: 0,
-    background_image_override: "",
-    disable_analytics: true
-  },
-  sampler_config: {}
-};
-let rSettings = JSON.parse(JSON.stringify(defaultSettings));
-try {
-  const req = new XMLHttpRequest();
-  req.open("GET", `${serverUrl}/api/settings/`, false);
-  req.send();
-  rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
-} catch (e) {
-  console.error(e);
-}
-console.log("Settings:", rSettings);
-const recievedSettings = rSettings;
-class Settings {
-  constructor(settings_override) {
-    __publicField(this, "settings");
-    this.settings = { ...defaultSettings, ...settings_override };
-  }
-  to_json() {
-    return JSON.stringify(this.settings);
-  }
-}
-const diffusersSchedulerTuple = {
-  DDIM: 1,
-  DDPM: 2,
-  PNDM: 3,
-  LMSD: 4,
-  EulerDiscrete: 5,
-  HeunDiscrete: 6,
-  EulerAncestralDiscrete: 7,
-  DPMSolverMultistep: 8,
-  DPMSolverSinglestep: 9,
-  KDPM2Discrete: 10,
-  KDPM2AncestralDiscrete: 11,
-  DEISMultistep: 12,
-  UniPCMultistep: 13,
-  DPMSolverSDEScheduler: 14
-};
-const upscalerOptions = [
-  {
-    label: "RealESRGAN_x4plus",
-    value: "RealESRGAN_x4plus"
-  },
-  {
-    label: "RealESRNet_x4plus",
-    value: "RealESRNet_x4plus"
-  },
-  {
-    label: "RealESRGAN_x4plus_anime_6B",
-    value: "RealESRGAN_x4plus_anime_6B"
-  },
-  {
-    label: "RealESRGAN_x2plus",
-    value: "RealESRGAN_x2plus"
-  },
-  {
-    label: "RealESR-general-x4v3",
-    value: "RealESR-general-x4v3"
-  }
-];
-function getSchedulerOptions() {
-  const scheduler_options = [
-    {
-      type: "group",
-      label: "k-diffusion",
-      key: "K-Diffusion",
-      children: [
-        { label: "Euler a", value: "euler_a" },
-        { label: "Euler", value: "euler" },
-        { label: "LMS", value: "lms" },
-        { label: "Heun", value: "heun" },
-        { label: "DPM Fast", value: "dpm_fast" },
-        { label: "DPM Adaptive", value: "dpm_adaptive" },
-        { label: "DPM2", value: "dpm2" },
-        { label: "DPM2 a", value: "dpm2_a" },
-        { label: "DPM++ 2S a", value: "dpmpp_2s_a" },
-        { label: "DPM++ 2M", value: "dpmpp_2m" },
-        { label: "DPM++ 2M Sharp", value: "dpmpp_2m_sharp" },
-        { label: "DPM++ SDE", value: "dpmpp_sde" },
-        { label: "DPM++ 2M SDE", value: "dpmpp_2m_sde" },
-        { label: "DPM++ 3M SDE", value: "dpmpp_3m_sde" },
-        { label: "UniPC Multistep", value: "unipc_multistep" },
-        { label: "Restart", value: "restart" }
-      ]
-    },
-    {
-      type: "group",
-      label: "Diffusers",
-      key: "diffusers",
-      children: Object.keys(diffusersSchedulerTuple).map((key) => {
-        return {
-          label: key,
-          value: diffusersSchedulerTuple[key]
-        };
-      })
-    }
-  ];
-  return scheduler_options;
-}
-function getControlNetOptions() {
-  const controlnet_options = [
-    {
-      type: "group",
-      label: "ControlNet 1.1",
-      key: "ControlNet 1.1",
-      children: [
-        {
-          label: "lllyasviel/control_v11p_sd15_canny",
-          value: "lllyasviel/control_v11p_sd15_canny"
-        },
-        {
-          label: "lllyasviel/control_v11f1p_sd15_depth",
-          value: "lllyasviel/control_v11f1p_sd15_depth"
-        },
-        {
-          label: "lllyasviel/control_v11e_sd15_ip2p",
-          value: "lllyasviel/control_v11e_sd15_ip2p"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_softedge",
-          value: "lllyasviel/control_v11p_sd15_softedge"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_openpose",
-          value: "lllyasviel/control_v11p_sd15_openpose"
-        },
-        {
-          label: "lllyasviel/control_v11f1e_sd15_tile",
-          value: "lllyasviel/control_v11f1e_sd15_tile"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_mlsd",
-          value: "lllyasviel/control_v11p_sd15_mlsd"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_scribble",
-          value: "lllyasviel/control_v11p_sd15_scribble"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_seg",
-          value: "lllyasviel/control_v11p_sd15_seg"
-        }
-      ]
-    },
-    {
-      type: "group",
-      label: "Special",
-      key: "Special",
-      children: [
-        {
-          label: "DionTimmer/controlnet_qrcode",
-          value: "DionTimmer/controlnet_qrcode"
-        },
-        {
-          label: "CrucibleAI/ControlNetMediaPipeFace",
-          value: "CrucibleAI/ControlNetMediaPipeFace"
-        }
-      ]
-    },
-    {
-      type: "group",
-      label: "Original",
-      key: "Original",
-      children: [
-        {
-          label: "lllyasviel/sd-controlnet-canny",
-          value: "lllyasviel/sd-controlnet-canny"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-depth",
-          value: "lllyasviel/sd-controlnet-depth"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-hed",
-          value: "lllyasviel/sd-controlnet-hed"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-mlsd",
-          value: "lllyasviel/sd-controlnet-mlsd"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-normal",
-          value: "lllyasviel/sd-controlnet-normal"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-openpose",
-          value: "lllyasviel/sd-controlnet-openpose"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-scribble",
-          value: "lllyasviel/sd-controlnet-scribble"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-seg",
-          value: "lllyasviel/sd-controlnet-seg"
-        }
-      ]
-    }
-  ];
-  return controlnet_options;
-}
-const deepcopiedSettings = JSON.parse(JSON.stringify(recievedSettings));
-const useSettings = defineStore("settings", () => {
-  const data = reactive(new Settings(recievedSettings));
-  const scheduler_options = computed(() => {
-    return getSchedulerOptions();
-  });
-  const controlnet_options = computed(() => {
-    return getControlNetOptions();
-  });
-  function resetSettings() {
-    console.log("Resetting settings to default");
-    Object.assign(defaultSettings$1, defaultSettings);
-  }
-  const defaultSettings$1 = reactive(deepcopiedSettings);
-  return {
-    data,
-    scheduler_options,
-    controlnet_options,
-    defaultSettings: defaultSettings$1,
-    resetSettings
-  };
-});
-const ImageUpload_vue_vue_type_style_index_0_scoped_9ed1514f_lang = "";
-const _export_sfc = (sfc, props) => {
-  const target = sfc.__vccOpts || sfc;
-  for (const [key, val] of props) {
-    target[key] = val;
-  }
-  return target;
-};
-const _sfc_main$7 = /* @__PURE__ */ defineComponent({
-  __name: "InitHandler",
-  setup(__props) {
-    console.log(
-      `
-  ██╗   ██╗ █████╗ ██╗   ████████╗ █████╗ ███╗   ███╗██╗     
-  ██║   ██║██╔══██╗██║   ╚══██╔══╝██╔══██╗████╗ ████║██║     
-  ╚██╗ ██╔╝██║  ██║██║      ██║   ███████║██╔████╔██║██║     
-   ╚████╔╝ ██║  ██║██║      ██║   ██╔══██║██║╚██╔╝██║██║     
-    ╚██╔╝  ╚█████╔╝███████╗ ██║   ██║  ██║██║ ╚═╝ ██║███████╗
-     ╚═╝    ╚════╝ ╚══════╝ ╚═╝   ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
-  `
-    );
-    const global2 = useState2();
-    global2.fetchCapabilites().then(() => {
-      console.log("Capabilities successfully fetched from the server");
-    });
-    global2.fetchAutofill();
-    return (_ctx, _cache) => {
-      return null;
-    };
-  }
-});
-const _sfc_main$6 = /* @__PURE__ */ defineComponent({
-  __name: "LogDrawer",
-  setup(__props) {
-    const glob = useState2();
-    const log = computed(() => glob.state.log_drawer.logs.join("\n"));
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NDrawer), {
-        placement: "bottom",
-        show: unref(glob).state.log_drawer.enabled,
-        "onUpdate:show": _cache[0] || (_cache[0] = ($event) => unref(glob).state.log_drawer.enabled = $event),
-        "auto-focus": false,
-        "show-mask": true,
-        height: "70vh"
-      }, {
-        default: withCtx(() => [
-          createVNode(unref(NDrawerContent), {
-            closable: "",
-            title: "Log - 500 latest messages"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NLog), {
-                ref: "logRef",
-                log: log.value,
-                trim: "",
-                style: { "height": "100%" }
-              }, null, 8, ["log"])
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      }, 8, ["show"]);
-    };
-  }
-});
-const _hoisted_1$3 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
-const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
-const _hoisted_3$1 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
-const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
-const _hoisted_5$1 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
-const _sfc_main$5 = /* @__PURE__ */ defineComponent({
-  __name: "PerformanceDrawer",
-  setup(__props) {
-    const global2 = useState2();
-    const glob = useState2();
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NDrawer), {
-        placement: "bottom",
-        show: unref(glob).state.perf_drawer.enabled,
-        "onUpdate:show": _cache[0] || (_cache[0] = ($event) => unref(glob).state.perf_drawer.enabled = $event),
-        "auto-focus": false,
-        "show-mask": true,
-        height: "70vh"
-      }, {
-        default: withCtx(() => [
-          createVNode(unref(NDrawerContent), {
-            closable: "",
-            title: "Performance statistics"
-          }, {
-            default: withCtx(() => [
-              (openBlock(true), createElementBlock(Fragment, null, renderList(unref(global2).state.perf_drawer.gpus, (gpu) => {
-                return openBlock(), createBlock(unref(NCard), {
-                  key: gpu.uuid,
-                  style: { "margin-bottom": "12px" }
-                }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NSpace), {
-                      inline: "",
-                      justify: "space-between",
-                      style: { "width": "100%" }
-                    }, {
-                      default: withCtx(() => [
-                        createBaseVNode("h3", null, "[" + toDisplayString(gpu.index) + "] " + toDisplayString(gpu.name), 1),
-                        createBaseVNode("h4", null, toDisplayString(gpu.power_draw) + " / " + toDisplayString(gpu.power_limit) + "W ─ " + toDisplayString(gpu.temperature) + "°C ", 1)
-                      ]),
-                      _: 2
-                    }, 1024),
-                    createBaseVNode("div", _hoisted_1$3, [
-                      _hoisted_2$2,
-                      createVNode(unref(NProgress), {
-                        percentage: gpu.utilization,
-                        type: "line",
-                        "indicator-placement": "inside",
-                        style: { "flex-grow": "1", "width": "400px" }
-                      }, null, 8, ["percentage"])
-                    ]),
-                    createBaseVNode("div", _hoisted_3$1, [
-                      _hoisted_4$1,
-                      createVNode(unref(NProgress), {
-                        percentage: gpu.memory_usage,
-                        type: "line",
-                        style: { "flex-grow": "1", "width": "400px" },
-                        color: "#63e2b7",
-                        "indicator-placement": "inside"
-                      }, null, 8, ["percentage"]),
-                      createBaseVNode("p", _hoisted_5$1, toDisplayString(gpu.memory_used) + " / " + toDisplayString(gpu.memory_total) + " MB ", 1)
-                    ])
-                  ]),
-                  _: 2
-                }, 1024);
-              }), 128))
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      }, 8, ["show"]);
-    };
-  }
-});
-const _hoisted_1$2 = /* @__PURE__ */ createBaseVNode("a", {
-  target: "_blank",
-  href: "https://huggingface.co/settings/tokens"
-}, "this page", -1);
-const _hoisted_2$1 = { style: { "margin-top": "8px", "width": "100%", "display": "flex", "justify-content": "end" } };
-const _sfc_main$4 = /* @__PURE__ */ defineComponent({
-  __name: "SecretsHandler",
-  setup(__props) {
-    const message = useMessage();
-    const global2 = useState2();
-    const hf_loading = ref(false);
-    const hf_token = ref("");
-    function noSideSpace(value) {
-      return !/ /g.test(value);
-    }
-    function setHuggingfaceToken() {
-      hf_loading.value = true;
-      const url = new URL(`${serverUrl}/api/settings/inject-var-into-dotenv`);
-      url.searchParams.append("key", "HUGGINGFACE_TOKEN");
-      url.searchParams.append("value", hf_token.value);
-      fetch(url, { method: "POST" }).then((res) => {
-        if (res.status !== 200) {
-          message.create("Failed to set HuggingFace token", { type: "error" });
-          return;
-        }
-        global2.state.secrets.huggingface = "ok";
-        message.create("HuggingFace token set successfully", { type: "success" });
-      }).catch((e) => {
-        message.create(`Failed to set HuggingFace token: ${e.message}`, {
-          type: "error"
-        });
-      });
-      hf_loading.value = false;
-    }
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NModal), {
-        show: unref(global2).state.secrets.huggingface !== "ok",
-        preset: "card",
-        title: "Missing HuggingFace Token",
-        style: { "width": "80vw" },
-        closable: false
-      }, {
-        default: withCtx(() => [
-          createVNode(unref(NText), null, {
-            default: withCtx(() => [
-              createTextVNode(" API does not have a HuggingFace token. Please enter a valid token to continue. You can get a token from "),
-              _hoisted_1$2
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NInput), {
-            type: "password",
-            placeholder: "hf_123...",
-            style: { "margin-top": "8px" },
-            "allow-input": noSideSpace,
-            value: hf_token.value,
-            "onUpdate:value": _cache[0] || (_cache[0] = ($event) => hf_token.value = $event)
-          }, null, 8, ["value"]),
-          createBaseVNode("div", _hoisted_2$1, [
-            createVNode(unref(NButton), {
-              ghost: "",
-              type: "primary",
-              loading: hf_loading.value,
-              onClick: setHuggingfaceToken
-            }, {
-              default: withCtx(() => [
-                createTextVNode("Set Token")
-              ]),
-              _: 1
-            }, 8, ["loading"])
-          ])
-        ]),
-        _: 1
-      }, 8, ["show"]);
-    };
-  }
-});
-var _a;
-const isClient = typeof window !== "undefined";
-const isFunction = (val) => typeof val === "function";
-const isString = (val) => typeof val === "string";
-const noop = () => {
-};
-const isIOS = isClient && ((_a = window == null ? void 0 : window.navigator) == null ? void 0 : _a.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
-function resolveUnref(r) {
-  return typeof r === "function" ? r() : unref(r);
-}
-function identity(arg) {
-  return arg;
-}
-function tryOnScopeDispose(fn) {
-  if (getCurrentScope()) {
-    onScopeDispose(fn);
-    return true;
-  }
-  return false;
-}
-function resolveRef(r) {
-  return typeof r === "function" ? computed(r) : ref(r);
-}
-function useIntervalFn(cb, interval = 1e3, options = {}) {
-  const {
-    immediate = true,
-    immediateCallback = false
-  } = options;
-  let timer = null;
-  const isActive = ref(false);
-  function clean() {
-    if (timer) {
-      clearInterval(timer);
-      timer = null;
-    }
-  }
-  function pause() {
-    isActive.value = false;
-    clean();
-  }
-  function resume() {
-    const intervalValue = resolveUnref(interval);
-    if (intervalValue <= 0)
-      return;
-    isActive.value = true;
-    if (immediateCallback)
-      cb();
-    clean();
-    timer = setInterval(cb, intervalValue);
-  }
-  if (immediate && isClient)
-    resume();
-  if (isRef(interval) || isFunction(interval)) {
-    const stopWatch = watch(interval, () => {
-      if (isActive.value && isClient)
-        resume();
-    });
-    tryOnScopeDispose(stopWatch);
-  }
-  tryOnScopeDispose(pause);
-  return {
-    isActive,
-    pause,
-    resume
-  };
-}
-function unrefElement(elRef) {
-  var _a2;
-  const plain = resolveUnref(elRef);
-  return (_a2 = plain == null ? void 0 : plain.$el) != null ? _a2 : plain;
-}
-const defaultWindow = isClient ? window : void 0;
-function useEventListener(...args) {
-  let target;
-  let events2;
-  let listeners;
-  let options;
-  if (isString(args[0]) || Array.isArray(args[0])) {
-    [events2, listeners, options] = args;
-    target = defaultWindow;
-  } else {
-    [target, events2, listeners, options] = args;
-  }
-  if (!target)
-    return noop;
-  if (!Array.isArray(events2))
-    events2 = [events2];
-  if (!Array.isArray(listeners))
-    listeners = [listeners];
-  const cleanups = [];
-  const cleanup = () => {
-    cleanups.forEach((fn) => fn());
-    cleanups.length = 0;
-  };
-  const register = (el, event2, listener, options2) => {
-    el.addEventListener(event2, listener, options2);
-    return () => el.removeEventListener(event2, listener, options2);
-  };
-  const stopWatch = watch(() => [unrefElement(target), resolveUnref(options)], ([el, options2]) => {
-    cleanup();
-    if (!el)
-      return;
-    cleanups.push(...events2.flatMap((event2) => {
-      return listeners.map((listener) => register(el, event2, listener, options2));
-    }));
-  }, { immediate: true, flush: "post" });
-  const stop = () => {
-    stopWatch();
-    cleanup();
-  };
-  tryOnScopeDispose(stop);
-  return stop;
-}
-let _iOSWorkaround = false;
-function onClickOutside(target, handler, options = {}) {
-  const { window: window2 = defaultWindow, ignore = [], capture = true, detectIframe = false } = options;
-  if (!window2)
-    return;
-  if (isIOS && !_iOSWorkaround) {
-    _iOSWorkaround = true;
-    Array.from(window2.document.body.children).forEach((el) => el.addEventListener("click", noop));
-  }
-  let shouldListen = true;
-  const shouldIgnore = (event2) => {
-    return ignore.some((target2) => {
-      if (typeof target2 === "string") {
-        return Array.from(window2.document.querySelectorAll(target2)).some((el) => el === event2.target || event2.composedPath().includes(el));
-      } else {
-        const el = unrefElement(target2);
-        return el && (event2.target === el || event2.composedPath().includes(el));
-      }
-    });
-  };
-  const listener = (event2) => {
-    const el = unrefElement(target);
-    if (!el || el === event2.target || event2.composedPath().includes(el))
-      return;
-    if (event2.detail === 0)
-      shouldListen = !shouldIgnore(event2);
-    if (!shouldListen) {
-      shouldListen = true;
-      return;
-    }
-    handler(event2);
-  };
-  const cleanup = [
-    useEventListener(window2, "click", listener, { passive: true, capture }),
-    useEventListener(window2, "pointerdown", (e) => {
-      const el = unrefElement(target);
-      if (el)
-        shouldListen = !e.composedPath().includes(el) && !shouldIgnore(e);
-    }, { passive: true }),
-    detectIframe && useEventListener(window2, "blur", (event2) => {
-      var _a2;
-      const el = unrefElement(target);
-      if (((_a2 = window2.document.activeElement) == null ? void 0 : _a2.tagName) === "IFRAME" && !(el == null ? void 0 : el.contains(window2.document.activeElement)))
-        handler(event2);
-    })
-  ].filter(Boolean);
-  const stop = () => cleanup.forEach((fn) => fn());
-  return stop;
-}
-const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
-const globalKey = "__vueuse_ssr_handlers__";
-_global[globalKey] = _global[globalKey] || {};
-var SwipeDirection;
-(function(SwipeDirection2) {
-  SwipeDirection2["UP"] = "UP";
-  SwipeDirection2["RIGHT"] = "RIGHT";
-  SwipeDirection2["DOWN"] = "DOWN";
-  SwipeDirection2["LEFT"] = "LEFT";
-  SwipeDirection2["NONE"] = "NONE";
-})(SwipeDirection || (SwipeDirection = {}));
-var __defProp2 = Object.defineProperty;
-var __getOwnPropSymbols = Object.getOwnPropertySymbols;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __propIsEnum = Object.prototype.propertyIsEnumerable;
-var __defNormalProp2 = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __spreadValues = (a, b) => {
-  for (var prop in b || (b = {}))
-    if (__hasOwnProp.call(b, prop))
-      __defNormalProp2(a, prop, b[prop]);
-  if (__getOwnPropSymbols)
-    for (var prop of __getOwnPropSymbols(b)) {
-      if (__propIsEnum.call(b, prop))
-        __defNormalProp2(a, prop, b[prop]);
-    }
-  return a;
-};
-const _TransitionPresets = {
-  easeInSine: [0.12, 0, 0.39, 0],
-  easeOutSine: [0.61, 1, 0.88, 1],
-  easeInOutSine: [0.37, 0, 0.63, 1],
-  easeInQuad: [0.11, 0, 0.5, 0],
-  easeOutQuad: [0.5, 1, 0.89, 1],
-  easeInOutQuad: [0.45, 0, 0.55, 1],
-  easeInCubic: [0.32, 0, 0.67, 0],
-  easeOutCubic: [0.33, 1, 0.68, 1],
-  easeInOutCubic: [0.65, 0, 0.35, 1],
-  easeInQuart: [0.5, 0, 0.75, 0],
-  easeOutQuart: [0.25, 1, 0.5, 1],
-  easeInOutQuart: [0.76, 0, 0.24, 1],
-  easeInQuint: [0.64, 0, 0.78, 0],
-  easeOutQuint: [0.22, 1, 0.36, 1],
-  easeInOutQuint: [0.83, 0, 0.17, 1],
-  easeInExpo: [0.7, 0, 0.84, 0],
-  easeOutExpo: [0.16, 1, 0.3, 1],
-  easeInOutExpo: [0.87, 0, 0.13, 1],
-  easeInCirc: [0.55, 0, 1, 0.45],
-  easeOutCirc: [0, 0.55, 0.45, 1],
-  easeInOutCirc: [0.85, 0, 0.15, 1],
-  easeInBack: [0.36, 0, 0.66, -0.56],
-  easeOutBack: [0.34, 1.56, 0.64, 1],
-  easeInOutBack: [0.68, -0.6, 0.32, 1.6]
-};
-__spreadValues({
-  linear: identity
-}, _TransitionPresets);
-const DEFAULT_PING_MESSAGE = "ping";
-function resolveNestedOptions(options) {
-  if (options === true)
-    return {};
-  return options;
-}
-function useWebSocket(url, options = {}) {
-  const {
-    onConnected,
-    onDisconnected,
-    onError,
-    onMessage,
-    immediate = true,
-    autoClose = true,
-    protocols = []
-  } = options;
-  const data = ref(null);
-  const status = ref("CLOSED");
-  const wsRef = ref();
-  const urlRef = resolveRef(url);
-  let heartbeatPause;
-  let heartbeatResume;
-  let explicitlyClosed = false;
-  let retried = 0;
-  let bufferedData = [];
-  let pongTimeoutWait;
-  const close = (code = 1e3, reason) => {
-    if (!wsRef.value)
-      return;
-    explicitlyClosed = true;
-    heartbeatPause == null ? void 0 : heartbeatPause();
-    wsRef.value.close(code, reason);
-  };
-  const _sendBuffer = () => {
-    if (bufferedData.length && wsRef.value && status.value === "OPEN") {
-      for (const buffer of bufferedData)
-        wsRef.value.send(buffer);
-      bufferedData = [];
-    }
-  };
-  const resetHeartbeat = () => {
-    clearTimeout(pongTimeoutWait);
-    pongTimeoutWait = void 0;
-  };
-  const send = (data2, useBuffer = true) => {
-    if (!wsRef.value || status.value !== "OPEN") {
-      if (useBuffer)
-        bufferedData.push(data2);
-      return false;
-    }
-    _sendBuffer();
-    wsRef.value.send(data2);
-    return true;
-  };
-  const _init = () => {
-    if (explicitlyClosed || typeof urlRef.value === "undefined")
-      return;
-    const ws = new WebSocket(urlRef.value, protocols);
-    wsRef.value = ws;
-    status.value = "CONNECTING";
-    ws.onopen = () => {
-      status.value = "OPEN";
-      onConnected == null ? void 0 : onConnected(ws);
-      heartbeatResume == null ? void 0 : heartbeatResume();
-      _sendBuffer();
-    };
-    ws.onclose = (ev) => {
-      status.value = "CLOSED";
-      wsRef.value = void 0;
-      onDisconnected == null ? void 0 : onDisconnected(ws, ev);
-      if (!explicitlyClosed && options.autoReconnect) {
-        const {
-          retries = -1,
-          delay = 1e3,
-          onFailed
-        } = resolveNestedOptions(options.autoReconnect);
-        retried += 1;
-        if (typeof retries === "number" && (retries < 0 || retried < retries))
-          setTimeout(_init, delay);
-        else if (typeof retries === "function" && retries())
-          setTimeout(_init, delay);
-        else
-          onFailed == null ? void 0 : onFailed();
-      }
-    };
-    ws.onerror = (e) => {
-      onError == null ? void 0 : onError(ws, e);
-    };
-    ws.onmessage = (e) => {
-      if (options.heartbeat) {
-        resetHeartbeat();
-        const {
-          message = DEFAULT_PING_MESSAGE
-        } = resolveNestedOptions(options.heartbeat);
-        if (e.data === message)
-          return;
-      }
-      data.value = e.data;
-      onMessage == null ? void 0 : onMessage(ws, e);
-    };
-  };
-  if (options.heartbeat) {
-    const {
-      message = DEFAULT_PING_MESSAGE,
-      interval = 1e3,
-      pongTimeout = 1e3
-    } = resolveNestedOptions(options.heartbeat);
-    const { pause, resume } = useIntervalFn(() => {
-      send(message, false);
-      if (pongTimeoutWait != null)
-        return;
-      pongTimeoutWait = setTimeout(() => {
-        close();
-      }, pongTimeout);
-    }, interval, { immediate: false });
-    heartbeatPause = pause;
-    heartbeatResume = resume;
-  }
-  if (autoClose) {
-    useEventListener(window, "beforeunload", () => close());
-    tryOnScopeDispose(close);
-  }
-  const open = () => {
-    close();
-    explicitlyClosed = false;
-    retried = 0;
-    _init();
-  };
-  if (immediate)
-    watch(urlRef, open, { immediate: true });
-  return {
-    data,
-    status,
-    close,
-    send,
-    open,
-    ws: wsRef
-  };
-}
 function processWebSocket(message, global2, notificationProvider) {
   switch (message.type) {
     case "test": {
@@ -41692,8 +41276,10 @@ function processWebSocket(message, global2, notificationProvider) {
       break;
     }
     case "notification": {
-      message.data.timeout = message.data.timeout || 5e3;
       console.log(message.data.message);
+      if (message.data.timeout === 0) {
+        message.data.timeout = null;
+      }
       notificationProvider.create({
         type: message.data.severity,
         title: message.data.title,
@@ -41742,6 +41328,13 @@ function processWebSocket(message, global2, notificationProvider) {
           global2.state.log_drawer.logs.pop();
         }
       }
+      break;
+    }
+    case "incorrect_settings_value": {
+      global2.state.settings_diff.default_value = message.data.default_value;
+      global2.state.settings_diff.current_value = message.data.current_value;
+      global2.state.settings_diff.key = message.data.key;
+      global2.state.settings_diff.active = true;
       break;
     }
     default: {
@@ -41825,6 +41418,9 @@ let currentFocus = -1;
 function convertToTextString(str) {
   const upper = str.charAt(0).toUpperCase() + str.slice(1);
   return upper.replace(/_/g, " ");
+}
+function cloneObj(obj) {
+  return window.structuredClone(obj);
 }
 function addActive(x) {
   if (!x)
@@ -42057,29 +41653,773 @@ function urlFromPath(path) {
   const url = new URL(path, serverUrl);
   return url.href;
 }
-const _withScopeId = (n) => (pushScopeId("data-v-29f01b28"), n = n(), popScopeId(), n);
-const _hoisted_1$1 = { class: "top-bar" };
-const _hoisted_2 = { key: 0 };
-const _hoisted_3 = { key: 1 };
-const _hoisted_4 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
+const defaultADetailerSettings = {
+  enabled: false,
+  steps: 30,
+  cfg_scale: 7,
+  seed: -1,
+  sampler: "dpmpp_2m",
+  self_attention_scale: 0,
+  sigmas: "exponential",
+  strength: 0.4,
+  mask_dilation: 0,
+  mask_blur: 0,
+  mask_padding: 0,
+  iterations: 1,
+  upscale: 2
+};
+const deepShrinkFlagDefault = Object.freeze({
+  enabled: false,
+  depth_1: 3,
+  stop_at_1: 0.15,
+  depth_2: 4,
+  stop_at_2: 0.3,
+  scaler: "bislerp",
+  base_scale: 0.5,
+  early_out: false
+});
+const highresFixFlagDefault = Object.freeze({
+  enabled: false,
+  scale: 2,
+  mode: "image",
+  image_upscaler: "RealESRGAN_x4plus_anime_6B",
+  latent_scale_mode: "bislerp",
+  antialiased: false,
+  strength: 0.65,
+  steps: 50
+});
+const scaleCrafterFlagDefault = Object.freeze({
+  enabled: false,
+  base: "sd15",
+  unsafe_resolutions: true,
+  disperse: false
+});
+const upscaleFlagDefault = Object.freeze({
+  enabled: false,
+  upscale_factor: 4,
+  tile_size: 128,
+  tile_padding: 10,
+  model: "RealESRGAN_x4plus_anime_6B"
+});
+var Sampler = /* @__PURE__ */ ((Sampler2) => {
+  Sampler2[Sampler2["DDIM"] = 1] = "DDIM";
+  Sampler2[Sampler2["DDPM"] = 2] = "DDPM";
+  Sampler2[Sampler2["PNDM"] = 3] = "PNDM";
+  Sampler2[Sampler2["LMSD"] = 4] = "LMSD";
+  Sampler2[Sampler2["EulerDiscrete"] = 5] = "EulerDiscrete";
+  Sampler2[Sampler2["HeunDiscrete"] = 6] = "HeunDiscrete";
+  Sampler2[Sampler2["EulerAncestralDiscrete"] = 7] = "EulerAncestralDiscrete";
+  Sampler2[Sampler2["DPMSolverMultistep"] = 8] = "DPMSolverMultistep";
+  Sampler2[Sampler2["DPMSolverSinglestep"] = 9] = "DPMSolverSinglestep";
+  Sampler2[Sampler2["KDPM2Discrete"] = 10] = "KDPM2Discrete";
+  Sampler2[Sampler2["KDPM2AncestralDiscrete"] = 11] = "KDPM2AncestralDiscrete";
+  Sampler2[Sampler2["DEISMultistep"] = 12] = "DEISMultistep";
+  Sampler2[Sampler2["UniPCMultistep"] = 13] = "UniPCMultistep";
+  Sampler2[Sampler2["DPMSolverSDEScheduler"] = 14] = "DPMSolverSDEScheduler";
+  return Sampler2;
+})(Sampler || {});
+const defaultSettings = {
+  $schema: "./schema/ui_data/settings.json",
+  backend: "PyTorch",
+  model: null,
+  flags: {
+    sdxl: {
+      original_size: {
+        width: 1024,
+        height: 1024
+      }
+    },
+    refiner: {
+      model: void 0,
+      aesthetic_score: 6,
+      negative_aesthetic_score: 2.5,
+      steps: 50,
+      strength: 0.3
+    }
+  },
+  aitDim: {
+    width: void 0,
+    height: void 0,
+    batch_size: void 0
+  },
+  txt2img: {
+    width: 512,
+    height: 512,
+    seed: -1,
+    cfg_scale: 7,
+    sampler: Sampler.DPMSolverMultistep,
+    prompt: "",
+    steps: 25,
+    batch_count: 1,
+    batch_size: 1,
+    negative_prompt: "",
+    self_attention_scale: 0,
+    sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
+    adetailer: cloneObj(defaultADetailerSettings)
+  },
+  img2img: {
+    width: 512,
+    height: 512,
+    seed: -1,
+    cfg_scale: 7,
+    sampler: Sampler.DPMSolverMultistep,
+    prompt: "",
+    steps: 25,
+    batch_count: 1,
+    batch_size: 1,
+    negative_prompt: "",
+    denoising_strength: 0.6,
+    image: "",
+    self_attention_scale: 0,
+    sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
+    adetailer: cloneObj(defaultADetailerSettings)
+  },
+  inpainting: {
+    prompt: "",
+    negative_prompt: "",
+    image: "",
+    mask_image: "",
+    width: 512,
+    height: 512,
+    steps: 25,
+    cfg_scale: 7,
+    seed: -1,
+    batch_count: 1,
+    batch_size: 1,
+    strength: 0.65,
+    sampler: Sampler.DPMSolverMultistep,
+    self_attention_scale: 0,
+    sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
+    adetailer: cloneObj(defaultADetailerSettings)
+  },
+  controlnet: {
+    prompt: "",
+    image: "",
+    sampler: Sampler.DPMSolverMultistep,
+    controlnet: ControlNetType.CANNY,
+    negative_prompt: "",
+    width: 512,
+    height: 512,
+    steps: 25,
+    cfg_scale: 7,
+    seed: -1,
+    batch_size: 1,
+    batch_count: 1,
+    controlnet_conditioning_scale: 1,
+    detection_resolution: 512,
+    is_preprocessed: false,
+    save_preprocessed: false,
+    return_preprocessed: true,
+    self_attention_scale: 0,
+    sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault),
+    deepshrink: cloneObj(deepShrinkFlagDefault),
+    scalecrafter: cloneObj(scaleCrafterFlagDefault),
+    adetailer: cloneObj(defaultADetailerSettings)
+  },
+  upscale: {
+    image: "",
+    upscale_factor: 4,
+    model: "RealESRGAN_x4plus_anime_6B",
+    tile_size: 128,
+    tile_padding: 10
+  },
+  tagger: {
+    image: "",
+    model: "deepdanbooru",
+    threshold: 0.5
+  },
+  api: {
+    websocket_sync_interval: 0.02,
+    websocket_perf_interval: 1,
+    enable_websocket_logging: true,
+    clip_skip: 1,
+    clip_quantization: "full",
+    autocast: true,
+    attention_processor: "xformers",
+    subquadratic_size: 512,
+    attention_slicing: "disabled",
+    channels_last: true,
+    trace_model: false,
+    cudnn_benchmark: false,
+    offload: "disabled",
+    dont_merge_latents: false,
+    device: "cuda:0",
+    data_type: "float16",
+    use_tomesd: true,
+    tomesd_ratio: 0.4,
+    tomesd_downsample_layers: 1,
+    deterministic_generation: false,
+    reduced_precision: false,
+    clear_memory_policy: "always",
+    huggingface_style_parsing: false,
+    autoloaded_textual_inversions: [],
+    autoloaded_models: [],
+    autoloaded_vae: {},
+    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
+    image_extension: "png",
+    image_quality: 95,
+    disable_grid: false,
+    torch_compile: false,
+    torch_compile_fullgraph: false,
+    torch_compile_dynamic: false,
+    torch_compile_backend: "inductor",
+    torch_compile_mode: "default",
+    sfast_compile: false,
+    sfast_xformers: true,
+    sfast_triton: true,
+    sfast_cuda_graph: false,
+    hypertile: false,
+    hypertile_unet_chunk: 256,
+    sgm_noise_multiplier: false,
+    kdiffusers_quantization: true,
+    xl_refiner: "joint",
+    generator: "device",
+    live_preview_method: "approximation",
+    live_preview_delay: 2,
+    upcast_vae: false,
+    vae_slicing: false,
+    vae_tiling: false,
+    apply_unsharp_mask: false,
+    cfg_rescale_threshold: 10,
+    prompt_to_prompt: false,
+    prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
+    prompt_to_prompt_device: "gpu",
+    free_u: false,
+    free_u_s1: 0.9,
+    free_u_s2: 0.2,
+    free_u_b1: 1.2,
+    free_u_b2: 1.4
+  },
+  aitemplate: {
+    num_threads: 8
+  },
+  onnx: {
+    quant_dict: {
+      text_encoder: null,
+      unet: null,
+      vae_decoder: null,
+      vae_encoder: null
+    },
+    convert_to_fp16: true,
+    simplify_unet: false
+  },
+  bot: {
+    default_scheduler: Sampler.DPMSolverMultistep,
+    verbose: false,
+    use_default_negative_prompt: true
+  },
+  frontend: {
+    theme: "dark",
+    enable_theme_editor: false,
+    image_browser_columns: 5,
+    on_change_timer: 2e3,
+    nsfw_ok_threshold: 0,
+    background_image_override: "",
+    disable_analytics: true
+  },
+  sampler_config: {}
+};
+let rSettings = JSON.parse(JSON.stringify(defaultSettings));
+try {
+  const req = new XMLHttpRequest();
+  req.open("GET", `${serverUrl}/api/settings/`, false);
+  req.send();
+  rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
+} catch (e) {
+  console.error(e);
+}
+console.log("Settings:", rSettings);
+const recievedSettings = rSettings;
+class Settings {
+  constructor(settings_override) {
+    __publicField(this, "settings");
+    this.settings = { ...defaultSettings, ...settings_override };
+  }
+  to_json() {
+    return JSON.stringify(this.settings);
+  }
+}
+const diffusersSchedulerTuple = {
+  DDIM: 1,
+  DDPM: 2,
+  PNDM: 3,
+  LMSD: 4,
+  EulerDiscrete: 5,
+  HeunDiscrete: 6,
+  EulerAncestralDiscrete: 7,
+  DPMSolverMultistep: 8,
+  DPMSolverSinglestep: 9,
+  KDPM2Discrete: 10,
+  KDPM2AncestralDiscrete: 11,
+  DEISMultistep: 12,
+  UniPCMultistep: 13,
+  DPMSolverSDEScheduler: 14
+};
+const upscalerOptions = [
+  {
+    label: "RealESRGAN_x4plus",
+    value: "RealESRGAN_x4plus"
+  },
+  {
+    label: "RealESRNet_x4plus",
+    value: "RealESRNet_x4plus"
+  },
+  {
+    label: "RealESRGAN_x4plus_anime_6B",
+    value: "RealESRGAN_x4plus_anime_6B"
+  },
+  {
+    label: "RealESRGAN_x2plus",
+    value: "RealESRGAN_x2plus"
+  },
+  {
+    label: "RealESR-general-x4v3",
+    value: "RealESR-general-x4v3"
+  }
+];
+function getSamplerOptions() {
+  const scheduler_options = [
+    {
+      type: "group",
+      label: "k-diffusion",
+      key: "K-Diffusion",
+      children: [
+        { label: "Euler a", value: "euler_a" },
+        { label: "Euler", value: "euler" },
+        { label: "LMS", value: "lms" },
+        { label: "Heun", value: "heun" },
+        { label: "Heun++", value: "heunpp" },
+        { label: "DPM Fast", value: "dpm_fast" },
+        { label: "DPM Adaptive", value: "dpm_adaptive" },
+        { label: "DPM2", value: "dpm2" },
+        { label: "DPM2 a", value: "dpm2_a" },
+        { label: "DPM++ 2S a", value: "dpmpp_2s_a" },
+        { label: "DPM++ 2M", value: "dpmpp_2m" },
+        { label: "DPM++ 2M Sharp", value: "dpmpp_2m_sharp" },
+        { label: "DPM++ SDE", value: "dpmpp_sde" },
+        { label: "DPM++ 2M SDE", value: "dpmpp_2m_sde" },
+        { label: "DPM++ 3M SDE", value: "dpmpp_3m_sde" },
+        { label: "UniPC Multistep", value: "unipc_multistep" },
+        { label: "Restart", value: "restart" }
+      ]
+    },
+    {
+      type: "group",
+      label: "Diffusers",
+      key: "diffusers",
+      children: [
+        ...Object.keys(diffusersSchedulerTuple).map((key) => {
+          return {
+            label: key,
+            value: diffusersSchedulerTuple[key]
+          };
+        }),
+        { label: "SASolverMultistep", value: "sasolver" }
+      ]
+    }
+  ];
+  return scheduler_options;
+}
+function getControlNetOptions() {
+  const controlnet_options = [
+    {
+      type: "group",
+      label: "ControlNet 1.1",
+      key: "ControlNet 1.1",
+      children: [
+        {
+          label: "lllyasviel/control_v11p_sd15_canny",
+          value: "lllyasviel/control_v11p_sd15_canny"
+        },
+        {
+          label: "lllyasviel/control_v11f1p_sd15_depth",
+          value: "lllyasviel/control_v11f1p_sd15_depth"
+        },
+        {
+          label: "lllyasviel/control_v11e_sd15_ip2p",
+          value: "lllyasviel/control_v11e_sd15_ip2p"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_softedge",
+          value: "lllyasviel/control_v11p_sd15_softedge"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_openpose",
+          value: "lllyasviel/control_v11p_sd15_openpose"
+        },
+        {
+          label: "lllyasviel/control_v11f1e_sd15_tile",
+          value: "lllyasviel/control_v11f1e_sd15_tile"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_mlsd",
+          value: "lllyasviel/control_v11p_sd15_mlsd"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_scribble",
+          value: "lllyasviel/control_v11p_sd15_scribble"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_seg",
+          value: "lllyasviel/control_v11p_sd15_seg"
+        }
+      ]
+    },
+    {
+      type: "group",
+      label: "Special",
+      key: "Special",
+      children: [
+        {
+          label: "DionTimmer/controlnet_qrcode",
+          value: "DionTimmer/controlnet_qrcode"
+        },
+        {
+          label: "CrucibleAI/ControlNetMediaPipeFace",
+          value: "CrucibleAI/ControlNetMediaPipeFace"
+        }
+      ]
+    },
+    {
+      type: "group",
+      label: "Original",
+      key: "Original",
+      children: [
+        {
+          label: "lllyasviel/sd-controlnet-canny",
+          value: "lllyasviel/sd-controlnet-canny"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-depth",
+          value: "lllyasviel/sd-controlnet-depth"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-hed",
+          value: "lllyasviel/sd-controlnet-hed"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-mlsd",
+          value: "lllyasviel/sd-controlnet-mlsd"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-normal",
+          value: "lllyasviel/sd-controlnet-normal"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-openpose",
+          value: "lllyasviel/sd-controlnet-openpose"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-scribble",
+          value: "lllyasviel/sd-controlnet-scribble"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-seg",
+          value: "lllyasviel/sd-controlnet-seg"
+        }
+      ]
+    }
+  ];
+  return controlnet_options;
+}
+const deepcopiedSettings = JSON.parse(JSON.stringify(recievedSettings));
+const useSettings = defineStore("settings", () => {
+  const data = reactive(new Settings(recievedSettings));
+  const samplers = computed(() => {
+    return getSamplerOptions();
+  });
+  const controlnet_options = computed(() => {
+    return getControlNetOptions();
+  });
+  function resetSettings() {
+    console.log("Resetting settings to default");
+    Object.assign(defaultSettings$1, defaultSettings);
+  }
+  async function saveSettings() {
+    fetch(`${serverUrl}/api/settings/save`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(defaultSettings$1)
+    }).then((res) => {
+      if (res.status === 200) {
+        console.log("Settings saved successfully");
+      } else {
+        throw new Error("Failed to save settings");
+      }
+    });
+  }
+  const defaultSettings$1 = reactive(deepcopiedSettings);
+  return {
+    data,
+    scheduler_options: samplers,
+    controlnet_options,
+    defaultSettings: defaultSettings$1,
+    resetSettings,
+    saveSettings
+  };
+});
+const ImageUpload_vue_vue_type_style_index_0_scoped_9ed1514f_lang = "";
+const _export_sfc = (sfc, props) => {
+  const target = sfc.__vccOpts || sfc;
+  for (const [key, val] of props) {
+    target[key] = val;
+  }
+  return target;
+};
+const _sfc_main$8 = /* @__PURE__ */ defineComponent({
+  __name: "InitHandler",
+  setup(__props) {
+    console.log(
+      `
+  ██╗   ██╗ █████╗ ██╗   ████████╗ █████╗ ███╗   ███╗██╗     
+  ██║   ██║██╔══██╗██║   ╚══██╔══╝██╔══██╗████╗ ████║██║     
+  ╚██╗ ██╔╝██║  ██║██║      ██║   ███████║██╔████╔██║██║     
+   ╚████╔╝ ██║  ██║██║      ██║   ██╔══██║██║╚██╔╝██║██║     
+    ╚██╔╝  ╚█████╔╝███████╗ ██║   ██║  ██║██║ ╚═╝ ██║███████╗
+     ╚═╝    ╚════╝ ╚══════╝ ╚═╝   ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
+  `
+    );
+    const global2 = useState2();
+    global2.fetchCapabilites().then(() => {
+      console.log("Capabilities successfully fetched from the server");
+    });
+    global2.fetchAutofill();
+    return (_ctx, _cache) => {
+      return null;
+    };
+  }
+});
+const _sfc_main$7 = /* @__PURE__ */ defineComponent({
+  __name: "LogDrawer",
+  setup(__props) {
+    const glob = useState2();
+    const log = computed(() => glob.state.log_drawer.logs.join("\n"));
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NDrawer), {
+        placement: "bottom",
+        show: unref(glob).state.log_drawer.enabled,
+        "onUpdate:show": _cache[0] || (_cache[0] = ($event) => unref(glob).state.log_drawer.enabled = $event),
+        "auto-focus": false,
+        "show-mask": true,
+        height: "70vh"
+      }, {
+        default: withCtx(() => [
+          createVNode(unref(NDrawerContent), {
+            closable: "",
+            title: "Log - 500 latest messages"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NLog), {
+                ref: "logRef",
+                log: log.value,
+                trim: "",
+                style: { "height": "100%" }
+              }, null, 8, ["log"])
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      }, 8, ["show"]);
+    };
+  }
+});
+const _hoisted_1$4 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
+const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
+const _hoisted_3$2 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
+const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
+const _hoisted_5$2 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
+const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+  __name: "PerformanceDrawer",
+  setup(__props) {
+    const global2 = useState2();
+    const glob = useState2();
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NDrawer), {
+        placement: "bottom",
+        show: unref(glob).state.perf_drawer.enabled,
+        "onUpdate:show": _cache[0] || (_cache[0] = ($event) => unref(glob).state.perf_drawer.enabled = $event),
+        "auto-focus": false,
+        "show-mask": true,
+        height: "70vh"
+      }, {
+        default: withCtx(() => [
+          createVNode(unref(NDrawerContent), {
+            closable: "",
+            title: "Performance statistics"
+          }, {
+            default: withCtx(() => [
+              (openBlock(true), createElementBlock(Fragment, null, renderList(unref(global2).state.perf_drawer.gpus, (gpu) => {
+                return openBlock(), createBlock(unref(NCard), {
+                  key: gpu.uuid,
+                  style: { "margin-bottom": "12px" }
+                }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NSpace), {
+                      inline: "",
+                      justify: "space-between",
+                      style: { "width": "100%" }
+                    }, {
+                      default: withCtx(() => [
+                        createBaseVNode("h3", null, "[" + toDisplayString(gpu.index) + "] " + toDisplayString(gpu.name), 1),
+                        createBaseVNode("h4", null, toDisplayString(gpu.power_draw) + " / " + toDisplayString(gpu.power_limit) + "W ─ " + toDisplayString(gpu.temperature) + "°C ", 1)
+                      ]),
+                      _: 2
+                    }, 1024),
+                    createBaseVNode("div", _hoisted_1$4, [
+                      _hoisted_2$3,
+                      createVNode(unref(NProgress), {
+                        percentage: gpu.utilization,
+                        type: "line",
+                        "indicator-placement": "inside",
+                        style: { "flex-grow": "1", "width": "400px" }
+                      }, null, 8, ["percentage"])
+                    ]),
+                    createBaseVNode("div", _hoisted_3$2, [
+                      _hoisted_4$2,
+                      createVNode(unref(NProgress), {
+                        percentage: gpu.memory_usage,
+                        type: "line",
+                        style: { "flex-grow": "1", "width": "400px" },
+                        color: "#63e2b7",
+                        "indicator-placement": "inside"
+                      }, null, 8, ["percentage"]),
+                      createBaseVNode("p", _hoisted_5$2, toDisplayString(gpu.memory_used) + " / " + toDisplayString(gpu.memory_total) + " MB ", 1)
+                    ])
+                  ]),
+                  _: 2
+                }, 1024);
+              }), 128))
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      }, 8, ["show"]);
+    };
+  }
+});
+const _hoisted_1$3 = /* @__PURE__ */ createBaseVNode("a", {
+  target: "_blank",
+  href: "https://huggingface.co/settings/tokens"
+}, "this page", -1);
+const _hoisted_2$2 = { style: { "margin-top": "8px", "width": "100%", "display": "flex", "justify-content": "end" } };
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
+  __name: "SecretsHandler",
+  setup(__props) {
+    const message = useMessage();
+    const global2 = useState2();
+    const hf_loading = ref(false);
+    const hf_token = ref("");
+    function noSideSpace(value) {
+      return !/ /g.test(value);
+    }
+    function setHuggingfaceToken() {
+      hf_loading.value = true;
+      const url = new URL(`${serverUrl}/api/settings/inject-var-into-dotenv`);
+      url.searchParams.append("key", "HUGGINGFACE_TOKEN");
+      url.searchParams.append("value", hf_token.value);
+      fetch(url, { method: "POST" }).then((res) => {
+        if (res.status !== 200) {
+          message.create("Failed to set HuggingFace token", { type: "error" });
+          return;
+        }
+        global2.state.secrets.huggingface = "ok";
+        message.create("HuggingFace token set successfully", { type: "success" });
+      }).catch((e) => {
+        message.create(`Failed to set HuggingFace token: ${e.message}`, {
+          type: "error"
+        });
+      });
+      hf_loading.value = false;
+    }
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NModal), {
+        show: unref(global2).state.secrets.huggingface !== "ok",
+        preset: "card",
+        title: "Missing HuggingFace Token",
+        style: { "width": "80vw" },
+        closable: false
+      }, {
+        default: withCtx(() => [
+          createVNode(unref(NText), null, {
+            default: withCtx(() => [
+              createTextVNode(" API does not have a HuggingFace token. Please enter a valid token to continue. You can get a token from "),
+              _hoisted_1$3
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NInput), {
+            type: "password",
+            placeholder: "hf_123...",
+            style: { "margin-top": "8px" },
+            "allow-input": noSideSpace,
+            value: hf_token.value,
+            "onUpdate:value": _cache[0] || (_cache[0] = ($event) => hf_token.value = $event)
+          }, null, 8, ["value"]),
+          createBaseVNode("div", _hoisted_2$2, [
+            createVNode(unref(NButton), {
+              ghost: "",
+              type: "primary",
+              loading: hf_loading.value,
+              onClick: setHuggingfaceToken
+            }, {
+              default: withCtx(() => [
+                createTextVNode("Set Token")
+              ]),
+              _: 1
+            }, 8, ["loading"])
+          ])
+        ]),
+        _: 1
+      }, 8, ["show"]);
+    };
+  }
+});
+const _withScopeId = (n) => (pushScopeId("data-v-3a99505a"), n = n(), popScopeId(), n);
+const _hoisted_1$2 = { class: "top-bar" };
+const _hoisted_2$1 = { key: 0 };
+const _hoisted_3$1 = { key: 0 };
+const _hoisted_4$1 = { key: 1 };
+const _hoisted_5$1 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
   src: "https://i.imgflip.com/84840n.jpg",
   style: { "max-width": "30vw", "max-height": "30vh" }
 }, null, -1));
-const _hoisted_5 = { key: 2 };
-const _hoisted_6 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
-const _hoisted_7 = { style: { "display": "inline-flex" } };
-const _hoisted_8 = { key: 0 };
+const _hoisted_6$1 = { key: 2 };
+const _hoisted_7$1 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
+const _hoisted_8 = { style: { "display": "flex", "flex-direction": "row", "align-items": "center" } };
 const _hoisted_9 = { style: { "display": "inline-flex" } };
-const _hoisted_10 = { key: 1 };
-const _hoisted_11 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
-const _hoisted_12 = { key: 0 };
-const _hoisted_13 = { style: { "display": "inline-flex" } };
-const _hoisted_14 = { key: 1 };
-const _hoisted_15 = { class: "progress-container" };
-const _hoisted_16 = { style: { "display": "inline-flex", "align-items": "center" } };
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+const _hoisted_10 = { key: 0 };
+const _hoisted_11 = { style: { "display": "inline-flex" } };
+const _hoisted_12 = { key: 1 };
+const _hoisted_13 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
+const _hoisted_14 = { key: 0 };
+const _hoisted_15 = { style: { "display": "inline-flex" } };
+const _hoisted_16 = { key: 1 };
+const _hoisted_17 = { class: "progress-container" };
+const _hoisted_18 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
+    useCssVars((_ctx) => ({
+      "ca9a9586": topBarWidth.value
+    }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
     const global2 = useState2();
@@ -42130,35 +42470,74 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         }
       });
     });
+    const manualVAEModels = computed(() => {
+      const selectedModel = global2.state.selected_model;
+      if ((selectedModel == null ? void 0 : selectedModel.type) === "SDXL") {
+        return [
+          {
+            name: "Default VAE (fp32)",
+            path: "default",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "default",
+            textual_inversions: [],
+            type: "SDXL",
+            stage: "last_stage"
+          },
+          {
+            name: "FP16 VAE",
+            path: "madebyollin/sdxl-vae-fp16-fix",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "fp16",
+            textual_inversions: [],
+            type: "SDXL",
+            stage: "last_stage"
+          }
+        ];
+      } else {
+        return [
+          {
+            name: "Default VAE",
+            path: "default",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "default",
+            textual_inversions: [],
+            type: "SD1.x",
+            stage: "last_stage"
+          },
+          {
+            name: "Tiny VAE (fast)",
+            path: "madebyollin/taesd",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "madebyollin/taesd",
+            textual_inversions: [],
+            type: "SD1.x",
+            stage: "last_stage"
+          },
+          {
+            name: "Asymmetric VAE",
+            path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+            textual_inversions: [],
+            type: "SD1.x",
+            stage: "last_stage"
+          }
+        ];
+      }
+    });
     const vaeModels = computed(() => {
       return [
-        {
-          name: "Default VAE",
-          path: "default",
-          backend: "VAE",
-          valid: true,
-          state: "not loaded",
-          vae: "default",
-          textual_inversions: []
-        },
-        {
-          name: "Tiny VAE (fast)",
-          path: "madebyollin/taesd",
-          backend: "VAE",
-          valid: true,
-          state: "not loaded",
-          vae: "madebyollin/taesd",
-          textual_inversions: []
-        },
-        {
-          name: "Asymmetric VAE",
-          path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
-          backend: "VAE",
-          valid: true,
-          state: "not loaded",
-          vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
-          textual_inversions: []
-        },
+        ...manualVAEModels.value,
         ...filteredModels.value.filter((model) => {
           return model.backend === "VAE";
         }).sort((a, b) => {
@@ -42273,7 +42652,11 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       model.state = "loading";
       modelsLoading.value = true;
       const load_url = new URL(`${serverUrl}/api/models/load`);
-      const params = { model: model.path, backend: model.backend };
+      const params = {
+        model: model.path,
+        backend: model.backend,
+        type: model.type
+      };
       load_url.search = new URLSearchParams(params).toString();
       fetch(load_url, {
         method: "POST"
@@ -42314,7 +42697,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              model: global2.state.selected_model.name,
+              model: global2.state.selected_model.path,
               vae: vae.path
             })
           });
@@ -42335,7 +42718,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              model: global2.state.selected_model.name,
+              model: global2.state.selected_model.path,
               textual_inversion: textualInversion.path
             })
           });
@@ -42388,6 +42771,21 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     function resetModels() {
       global2.state.models.splice(0, global2.state.models.length);
       console.log("Reset models");
+    }
+    function getModelTag(type) {
+      switch (type) {
+        case "SD1.x":
+          return [type, "primary"];
+        case "SD2.x":
+          return [type, "info"];
+        case "SDXL":
+          return [type, "warning"];
+        case "Kandinsky 2.1":
+        case "Kandinsky 2.2":
+          return ["Kandinsky", "success"];
+        default:
+          return [type, "error"];
+      }
     }
     websocketState.onConnectedCallbacks.push(() => {
       refreshModels();
@@ -42544,12 +42942,31 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           break;
       }
     }
+    const topBarWidth = computed(() => {
+      return isLargeScreen.value ? "calc(100% - 64px)" : "100%";
+    });
     startWebsocket(message);
     return (_ctx, _cache) => {
       var _a2;
-      return openBlock(), createElementBlock("div", _hoisted_1$1, [
+      return openBlock(), createElementBlock("div", _hoisted_1$2, [
+        !unref(isLargeScreen) ? (openBlock(), createBlock(unref(NButton), {
+          key: 0,
+          bordered: false,
+          style: { "margin": "0 2px", "padding": "8px 8px" },
+          onClick: _cache[0] || (_cache[0] = ($event) => unref(global2).state.collapsibleBarActive = true)
+        }, {
+          default: withCtx(() => [
+            createVNode(unref(NIcon), { size: "24" }, {
+              default: withCtx(() => [
+                createVNode(unref(Menu))
+              ]),
+              _: 1
+            })
+          ]),
+          _: 1
+        })) : createCommentVNode("", true),
         createVNode(unref(NSelect), {
-          style: { "max-width": "250px", "padding-left": "12px", "padding-right": "12px" },
+          style: { "max-width": "250px", "padding-right": "4px" },
           options: generatedModelOptions.value,
           "onUpdate:value": onModelChange,
           loading: modelsLoading.value,
@@ -42559,18 +42976,26 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           filterable: ""
         }, null, 8, ["options", "loading", "value"]),
         createVNode(unref(NButton), {
-          onClick: _cache[0] || (_cache[0] = ($event) => showModal.value = true),
+          onClick: _cache[1] || (_cache[1] = ($event) => showModal.value = true),
           loading: modelsLoading.value,
           type: unref(settings).data.settings.model ? "default" : "success"
         }, {
           default: withCtx(() => [
-            createTextVNode(" Load Model")
+            unref(isLargeScreen) ? (openBlock(), createElementBlock("p", _hoisted_2$1, "Load Model")) : (openBlock(), createBlock(unref(NIcon), {
+              key: 1,
+              size: "18"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(Add))
+              ]),
+              _: 1
+            }))
           ]),
           _: 1
         }, 8, ["loading", "type"]),
         createVNode(unref(NModal), {
           show: showModal.value,
-          "onUpdate:show": _cache[4] || (_cache[4] = ($event) => showModal.value = $event),
+          "onUpdate:show": _cache[5] || (_cache[5] = ($event) => showModal.value = $event),
           closable: "",
           "mask-closable": "",
           preset: "card",
@@ -42579,7 +43004,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           "auto-focus": false
         }, {
           default: withCtx(() => [
-            unref(websocketState).readyState === "CLOSED" ? (openBlock(), createElementBlock("div", _hoisted_2, [
+            unref(websocketState).readyState === "CLOSED" ? (openBlock(), createElementBlock("div", _hoisted_3$1, [
               createVNode(unref(NResult), {
                 title: "You are not connected to the server",
                 description: "Click the button below to reconnect",
@@ -42589,7 +43014,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                 footer: withCtx(() => [
                   createVNode(unref(NButton), {
                     type: "success",
-                    onClick: _cache[1] || (_cache[1] = ($event) => unref(startWebsocket)(unref(message)))
+                    onClick: _cache[2] || (_cache[2] = ($event) => unref(startWebsocket)(unref(message)))
                   }, {
                     default: withCtx(() => [
                       createTextVNode("Reconnect")
@@ -42599,7 +43024,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                 ]),
                 _: 1
               })
-            ])) : unref(global2).state.models.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_3, [
+            ])) : unref(global2).state.models.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_4$1, [
               createVNode(unref(NResult), {
                 title: "No models found",
                 style: { "height": "70vh", "display": "flex", "align-items": "center", "justify-content": "center", "flex-direction": "column" },
@@ -42610,7 +43035,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                     trigger: withCtx(() => [
                       createVNode(unref(NButton), {
                         type: "success",
-                        onClick: _cache[2] || (_cache[2] = () => {
+                        onClick: _cache[3] || (_cache[3] = () => {
                           unref(global2).state.modelManager.tab = "civitai";
                           unref(router2).push("/models");
                           showModal.value = false;
@@ -42623,18 +43048,18 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                       })
                     ]),
                     default: withCtx(() => [
-                      _hoisted_4
+                      _hoisted_5$1
                     ]),
                     _: 1
                   })
                 ]),
                 _: 1
               })
-            ])) : (openBlock(), createElementBlock("div", _hoisted_5, [
-              createBaseVNode("div", _hoisted_6, [
+            ])) : (openBlock(), createElementBlock("div", _hoisted_6$1, [
+              createBaseVNode("div", _hoisted_7$1, [
                 createVNode(unref(NInput), {
                   value: filter.value,
-                  "onUpdate:value": _cache[3] || (_cache[3] = ($event) => filter.value = $event),
+                  "onUpdate:value": _cache[4] || (_cache[4] = ($event) => filter.value = $event),
                   clearable: "",
                   placeholder: "Filter Models"
                 }, null, 8, ["value"]),
@@ -42681,8 +43106,20 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                           style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
                                           key: model.path
                                         }, [
-                                          createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                          createBaseVNode("div", _hoisted_7, [
+                                          createBaseVNode("div", _hoisted_8, [
+                                            createVNode(unref(NTag), {
+                                              type: getModelTag(model.type)[1],
+                                              ghost: "",
+                                              style: { "margin-right": "8px" }
+                                            }, {
+                                              default: withCtx(() => [
+                                                createTextVNode(toDisplayString(getModelTag(model.type)[0]), 1)
+                                              ]),
+                                              _: 2
+                                            }, 1032, ["type"]),
+                                            createBaseVNode("p", null, toDisplayString(model.name), 1)
+                                          ]),
+                                          createBaseVNode("div", _hoisted_9, [
                                             model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
                                               key: 0,
                                               type: "error",
@@ -42730,7 +43167,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                 default: withCtx(() => [
                                   createVNode(unref(NCard), { title: vae_title.value }, {
                                     default: withCtx(() => [
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_8, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_10, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(vaeModels.value, (vae) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42738,7 +43175,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             key: vae.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(vae.name), 1),
-                                            createBaseVNode("div", _hoisted_9, [
+                                            createBaseVNode("div", _hoisted_11, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.vae) == vae.path ? (openBlock(), createBlock(unref(NButton), {
                                                 key: 0,
                                                 type: "error",
@@ -42765,7 +43202,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_10, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_12, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42794,12 +43231,12 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                         title: "Usage of textual inversion"
                                       }, {
                                         default: withCtx(() => [
-                                          _hoisted_11,
+                                          _hoisted_13,
                                           createTextVNode(". The name of the inversion that is displayed here will be the actual token (easynegative.pt -> easynegative) ")
                                         ]),
                                         _: 1
                                       }),
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_12, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_14, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (textualInversion) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42807,7 +43244,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             key: textualInversion.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
-                                            createBaseVNode("div", _hoisted_13, [
+                                            createBaseVNode("div", _hoisted_15, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.textual_inversions.includes(
                                                 textualInversion.path
                                               )) ? (openBlock(), createBlock(unref(NButton), {
@@ -42836,7 +43273,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_14, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_16, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42971,7 +43408,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_15, [
+        createBaseVNode("div", _hoisted_17, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -42991,7 +43428,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_16, [
+        createBaseVNode("div", _hoisted_18, [
           createVNode(unref(NDropdown), {
             options: dropdownOptions,
             onSelect: dropdownSelected
@@ -43003,7 +43440,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                 "icon-placement": "left",
                 "render-icon": renderIcon(unref(Wifi)),
                 loading: unref(websocketState).loading,
-                onClick: _cache[5] || (_cache[5] = ($event) => unref(startWebsocket)(unref(message)))
+                onClick: _cache[6] || (_cache[6] = ($event) => unref(startWebsocket)(unref(message)))
               }, null, 8, ["type", "render-icon", "loading"])
             ]),
             _: 1
@@ -43013,16 +43450,125 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_29f01b28_lang = "";
-const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-29f01b28"]]);
+const TopBar_vue_vue_type_style_index_0_scoped_3a99505a_lang = "";
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-3a99505a"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
-const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
-const ControlNet_vue_vue_type_style_index_0_scoped_efacc8fd_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_9c556ef8_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_7963dde9_lang = "";
-const CivitAIDownload_vue_vue_type_style_index_0_scoped_e10a07d2_lang = "";
+const ControlNet_vue_vue_type_style_index_0_scoped_4fd7fc47_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_16fd3fbe_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_a2153014_lang = "";
+const CivitAIDownload_vue_vue_type_style_index_0_scoped_89afc237_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
+const _hoisted_1$1 = { style: { "margin": "16px 0" } };
+const _hoisted_2 = /* @__PURE__ */ createBaseVNode("b", null, "Key in question:", -1);
+const _hoisted_3 = /* @__PURE__ */ createBaseVNode("br", null, null, -1);
+const _hoisted_4 = /* @__PURE__ */ createBaseVNode("b", null, "Current value", -1);
+const _hoisted_5 = /* @__PURE__ */ createBaseVNode("br", null, null, -1);
+const _hoisted_6 = /* @__PURE__ */ createBaseVNode("b", null, "Default value", -1);
+const _hoisted_7 = /* @__PURE__ */ createBaseVNode("br", null, null, -1);
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+  __name: "SettingsDiffResolver",
+  setup(__props) {
+    const global2 = useState2();
+    const settings = useSettings();
+    const message = useMessage();
+    function apply2() {
+      const key = global2.state.settings_diff.key;
+      const default_value = global2.state.settings_diff.default_value;
+      const indexable_keys = key.slice(0, key.length - 1);
+      const last_key = key[key.length - 1];
+      let current = settings.defaultSettings;
+      for (const indexable_key of indexable_keys) {
+        current = current[indexable_key];
+      }
+      current[last_key] = default_value;
+      settings.saveSettings().then(() => {
+        message.success("Settings saved");
+      }).catch((e) => {
+        message.error("Failed to save settings: " + e);
+      }).finally(() => {
+        global2.state.settings_diff.active = false;
+      });
+    }
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NModal), {
+        show: unref(global2).state.settings_diff.active
+      }, {
+        default: withCtx(() => [
+          createVNode(unref(NCard), {
+            title: "Settings Diff Resolver",
+            style: { "max-width": "90vw" }
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NAlert), {
+                "show-icon": "",
+                type: "warning"
+              }, {
+                default: withCtx(() => [
+                  createTextVNode("Failed to save config")
+                ]),
+                _: 1
+              }),
+              createBaseVNode("div", _hoisted_1$1, [
+                _hoisted_2,
+                createTextVNode(" " + toDisplayString(unref(global2).state.settings_diff.key.join("->")) + " ", 1),
+                _hoisted_3,
+                _hoisted_4,
+                createTextVNode(" " + toDisplayString(unref(global2).state.settings_diff.current_value) + " ", 1),
+                _hoisted_5,
+                _hoisted_6,
+                createTextVNode(" " + toDisplayString(unref(global2).state.settings_diff.default_value) + " ", 1),
+                _hoisted_7
+              ]),
+              createVNode(unref(NGrid), {
+                cols: "2",
+                "x-gap": "8"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NGi), null, {
+                    default: withCtx(() => [
+                      createVNode(unref(NButton), {
+                        type: "warning",
+                        block: "",
+                        ghost: "",
+                        style: { "width": "100%" },
+                        onClick: _cache[0] || (_cache[0] = ($event) => unref(global2).state.settings_diff.active = false)
+                      }, {
+                        default: withCtx(() => [
+                          createTextVNode(" I Will Fix It Myself ")
+                        ]),
+                        _: 1
+                      })
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(unref(NGi), null, {
+                    default: withCtx(() => [
+                      createVNode(unref(NButton), {
+                        type: "primary",
+                        style: { "width": "100%" },
+                        onClick: apply2
+                      }, {
+                        default: withCtx(() => [
+                          createTextVNode(" Apply Default Value and Save ")
+                        ]),
+                        _: 1
+                      })
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      }, 8, ["show"]);
+    };
+  }
+});
 const _sfc_main$2 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -43036,7 +43582,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NNotificationProvider), {
         placement: "bottom-right",
-        max: 3
+        max: 2
       }, {
         default: withCtx(() => [
           createVNode(unref(NLoadingBarProvider), null, {
@@ -43044,13 +43590,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NMessageProvider), null, {
                 default: withCtx(() => [
                   _hoisted_1,
-                  createVNode(unref(_sfc_main$4)),
-                  createVNode(unref(_sfc_main$8)),
-                  createVNode(unref(TopBar)),
-                  createVNode(unref(_sfc_main$7)),
-                  createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
                   createVNode(unref(_sfc_main$5)),
-                  createVNode(unref(_sfc_main$6))
+                  createVNode(unref(_sfc_main$9)),
+                  createVNode(unref(TopBar)),
+                  createVNode(unref(_sfc_main$8)),
+                  createVNode(routerContainerVue, { class: "router-container" }),
+                  createVNode(unref(_sfc_main$6)),
+                  createVNode(unref(_sfc_main$7)),
+                  createVNode(unref(_sfc_main$3))
                 ]),
                 _: 1
               })
@@ -43063,19 +43610,21 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
+const Content_vue_vue_type_style_index_0_lang = "";
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => {
       var _a2, _b, _c;
       return {
-        "4c7ba08e": theme.value.common.popoverColor,
-        "01ab46a4": theme.value.common.borderRadius,
-        "e4e78d9e": theme.value.common.pressedColor,
-        "d0777f2a": theme.value.common.primaryColorHover,
-        "98485856": blur.value,
-        "6a1d04dc": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
-        "344206c2": backgroundImage.value
+        "e68ef196": theme.value.common.popoverColor,
+        "3f674355": theme.value.common.borderRadius,
+        "646dc050": theme.value.common.pressedColor,
+        "96bf2bb8": theme.value.common.primaryColorHover,
+        "b08f9a64": blur.value,
+        "139458d6": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
+        "31f48ff4": backgroundImage.value,
+        "3ac72808": marginLeft.value
       };
     });
     const settings = useSettings();
@@ -43121,6 +43670,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         document.body.style.backgroundColor = ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.common) == null ? void 0 : _b.baseColor) ?? theme.value.common.baseColor;
       }
     );
+    const marginLeft = computed(() => {
+      return isLargeScreen.value ? "64px" : "0px";
+    });
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NConfigProvider), {
         theme: theme.value,
@@ -43198,27 +43750,27 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/txt2img",
       name: "txt2img",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/img2img",
       name: "img2img",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
     },
     {
       path: "/imageProcessing",
       name: "imageProcessing",
-      component: () => __vitePreload(() => import("./ImageProcessingView.js"), true ? ["assets/ImageProcessingView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/InputNumber.js"] : void 0)
+      component: () => __vitePreload(() => import("./ImageProcessingView.js"), true ? ["assets/ImageProcessingView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/Slider.js","assets/InputNumber.js"] : void 0)
     },
     {
       path: "/models",
       name: "models",
-      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Switch.js","assets/Settings.js","assets/TrashBin.js","assets/CloudUpload.js"] : void 0)
+      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/Settings.js","assets/Switch.js","assets/TrashBin.js","assets/CloudUpload.js"] : void 0)
     },
     {
       path: "/about",
@@ -43228,7 +43780,7 @@ const router = createRouter({
     {
       path: "/accelerate",
       name: "accelerate",
-      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Switch.js","assets/InputNumber.js"] : void 0)
+      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
     },
     {
       path: "/extra",
@@ -43243,17 +43795,17 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js","assets/Settings.js"] : void 0)
     },
     {
       path: "/imageBrowser",
       name: "imageBrowser",
-      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/GridOutline.js","assets/TrashBin.js","assets/DescriptionsItem.js","assets/ImageBrowserView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/Slider.js","assets/DescriptionsItem.js","assets/ImageBrowserView.css"] : void 0)
     },
     {
       path: "/tagger",
       name: "tagger",
-      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js","assets/Switch.js","assets/InputNumber.js","assets/TaggerView.css"] : void 0)
+      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/TaggerView.css"] : void 0)
     },
     {
       path: "/:pathMatch(.*)",
@@ -43276,20 +43828,20 @@ app.use(index, {
 app.mount("#app");
 export {
   createTmOptions as $,
-  NButton as A,
-  NIcon as B,
-  toDisplayString as C,
-  NTabPane as D,
-  NTabs as E,
+  NIcon as A,
+  toDisplayString as B,
+  NTabPane as C,
+  NTabs as D,
+  spaceRegex as E,
   Fragment as F,
-  spaceRegex as G,
-  promptHandleKeyUp as H,
-  promptHandleKeyDown as I,
-  NInput as J,
-  watch as K,
+  promptHandleKeyUp as G,
+  promptHandleKeyDown as H,
+  NInput as I,
+  watch as J,
+  upscalerOptions as K,
   renderList as L,
   NScrollbar as M,
-  NSpace as N,
+  NCard as N,
   replaceable as O,
   createInjectionKey as P,
   cB as Q,
@@ -43326,9 +43878,9 @@ export {
   NIconSwitchTransition as aI,
   NBaseLoading as aJ,
   ChevronRightIcon as aK,
-  VResizeObserver as aL,
-  warn$2 as aM,
-  cssrAnchorMetaName as aN,
+  cssrAnchorMetaName as aL,
+  VResizeObserver as aM,
+  warn$2 as aN,
   VVirtualList as aO,
   NEmpty as aP,
   repeat as aQ,
@@ -43368,97 +43920,100 @@ export {
   getSlot$1 as ax,
   depx as ay,
   formatLength as az,
-  upscalerOptions as b,
-  VFollower as b$,
+  createBaseVNode as b,
+  XButton as b$,
   NProgress as b0,
   NFadeInExpandTransition as b1,
   EyeIcon as b2,
   fadeInHeightExpandTransition as b3,
   Teleport as b4,
   uploadLight$1 as b5,
-  useCssVars as b6,
-  themeOverridesKey as b7,
-  reactive as b8,
-  onMounted as b9,
-  useNotification as bA,
-  defaultSettings as bB,
-  getCurrentInstance as bC,
-  formLight$1 as bD,
-  commonVariables$m as bE,
-  formItemInjectionKey as bF,
-  resolveDynamicComponent as bG,
-  checkboxLight$1 as bH,
-  urlFromPath as bI,
-  diffusersSchedulerTuple as bJ,
-  useRouter as bK,
-  isBrowser$3 as bL,
-  fadeInTransition as bM,
-  imageLight as bN,
-  isMounted as bO,
-  LazyTeleport as bP,
-  zindexable$1 as bQ,
-  kebabCase$1 as bR,
-  useCompitable as bS,
-  descriptionsLight$1 as bT,
-  withModifiers as bU,
-  NAlert as bV,
-  rgba as bW,
-  inputNumberLight$1 as bX,
-  XButton as bY,
-  VBinder as bZ,
-  VTarget as b_,
-  normalizeStyle as ba,
-  NText as bb,
-  huggingfaceModelsFile as bc,
-  NModal as bd,
-  NDivider as be,
-  Backends as bf,
-  stepsLight$1 as bg,
-  FinishedIcon as bh,
-  ErrorIcon$1 as bi,
-  upperFirst$1 as bj,
-  toString as bk,
-  createCompounder as bl,
-  cloneVNode as bm,
-  onBeforeUpdate as bn,
-  indexMap as bo,
-  onUpdated as bp,
-  resolveSlotWithProps as bq,
-  withDirectives as br,
-  vShow as bs,
-  getPreciseEventTarget as bt,
-  carouselLight$1 as bu,
-  color2Class as bv,
-  rateLight as bw,
-  NTag as bx,
-  convertToTextString as by,
-  themeKey as bz,
-  computed as c,
-  sliderLight$1 as c0,
-  isSlotEmpty as c1,
-  switchLight$1 as c2,
-  NResult as c3,
+  createStaticVNode as b6,
+  useCssVars as b7,
+  themeOverridesKey as b8,
+  reactive as b9,
+  NTag as bA,
+  convertToTextString as bB,
+  themeKey as bC,
+  useNotification as bD,
+  defaultSettings as bE,
+  getCurrentInstance as bF,
+  formLight$1 as bG,
+  commonVariables$m as bH,
+  formItemInjectionKey as bI,
+  isDev as bJ,
+  NAlert as bK,
+  resolveDynamicComponent as bL,
+  checkboxLight$1 as bM,
+  urlFromPath as bN,
+  diffusersSchedulerTuple as bO,
+  useRouter as bP,
+  isBrowser$3 as bQ,
+  fadeInTransition as bR,
+  imageLight as bS,
+  isMounted as bT,
+  LazyTeleport as bU,
+  zindexable$1 as bV,
+  kebabCase$1 as bW,
+  useCompitable as bX,
+  descriptionsLight$1 as bY,
+  rgba as bZ,
+  inputNumberLight$1 as b_,
+  onMounted as ba,
+  normalizeStyle as bb,
+  NText as bc,
+  withModifiers as bd,
+  huggingfaceModelsFile as be,
+  Menu as bf,
+  NModal as bg,
+  NDivider as bh,
+  Backends as bi,
+  stepsLight$1 as bj,
+  FinishedIcon as bk,
+  ErrorIcon$1 as bl,
+  upperFirst$1 as bm,
+  toString as bn,
+  createCompounder as bo,
+  cloneVNode as bp,
+  onBeforeUpdate as bq,
+  indexMap as br,
+  onUpdated as bs,
+  resolveSlotWithProps as bt,
+  withDirectives as bu,
+  vShow as bv,
+  getPreciseEventTarget as bw,
+  carouselLight$1 as bx,
+  color2Class as by,
+  rateLight as bz,
+  createBlock as c,
+  VBinder as c0,
+  VTarget as c1,
+  VFollower as c2,
+  sliderLight$1 as c3,
+  isSlotEmpty as c4,
+  switchLight$1 as c5,
+  NResult as c6,
   defineComponent as d,
-  createBlock as e,
-  createBaseVNode as f,
-  createVNode as g,
-  unref as h,
-  NSelect as i,
-  createElementBlock as j,
+  createVNode as e,
+  unref as f,
+  createElementBlock as g,
+  createCommentVNode as h,
+  computed as i,
+  NSpace as j,
   createTextVNode as k,
   NTooltip as l,
-  createCommentVNode as m,
-  NCard as n,
+  NSelect as m,
+  useMessage as n,
   openBlock as o,
-  useMessage as p,
-  onUnmounted as q,
-  NGi as r,
-  NGrid as s,
-  serverUrl as t,
+  onUnmounted as p,
+  NGi as q,
+  NGrid as r,
+  serverUrl as s,
+  pushScopeId as t,
   useSettings as u,
-  pushScopeId as v,
+  popScopeId as v,
   withCtx as w,
-  popScopeId as x,
-  h as y,
-  ref as z
+  h as x,
+  ref as y,
+  NButton as z
 };

@@ -20,10 +20,11 @@ from core.types import (
     DeleteModelRequest,
     InferenceBackend,
     ModelResponse,
+    PyTorchModelBase,
     TextualInversionLoadRequest,
     VaeLoadRequest,
 )
-from core.utils import download_file
+from core.utils import determine_model_type, download_file
 
 router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)
@@ -62,9 +63,11 @@ def list_loaded_models() -> List[ModelResponse]:
 
     loaded_models = []
     for model_id in gpu.loaded_models:
+        name, type_, stage = determine_model_type(get_full_model_path(model_id))
+
         loaded_models.append(
             ModelResponse(
-                name=Path(model_id).name
+                name=name
                 if (".ckpt" in model_id) or (".safetensors" in model_id)
                 else model_id,
                 backend=gpu.loaded_models[model_id].backend,
@@ -75,6 +78,8 @@ def list_loaded_models() -> List[ModelResponse]:
                     "textual_inversions", []
                 ),
                 valid=True,
+                stage=stage,
+                type=type_,
             )
         )
 
@@ -92,11 +97,12 @@ def list_available_models() -> List[ModelResponse]:
 def load_model(
     model: str,
     backend: InferenceBackend,
+    type: PyTorchModelBase,
 ):
     "Loads a model into memory"
 
     try:
-        gpu.load_model(model, backend)
+        gpu.load_model(model, backend, type)
 
         websocket_manager.broadcast_sync(data=Data(data_type="refresh_models", data={}))
     except torch.cuda.OutOfMemoryError:  # type: ignore
@@ -106,7 +112,7 @@ def load_model(
 
 
 @router.post("/unload")
-async def unload_model(model: str):
+def unload_model(model: str):
     "Unloads a model from memory"
 
     gpu.unload(model)
@@ -125,7 +131,7 @@ def unload_all_models():
 
 
 @router.post("/load-vae")
-async def load_vae(req: VaeLoadRequest):
+def load_vae(req: VaeLoadRequest):
     "Load a VAE into a model"
 
     gpu.load_vae(req)
@@ -134,7 +140,7 @@ async def load_vae(req: VaeLoadRequest):
 
 
 @router.post("/load-textual-inversion")
-async def load_textual_inversion(req: TextualInversionLoadRequest):
+def load_textual_inversion(req: TextualInversionLoadRequest):
     "Load a LoRA model into a model"
 
     gpu.load_textual_inversion(req)
@@ -143,7 +149,7 @@ async def load_textual_inversion(req: TextualInversionLoadRequest):
 
 
 @router.post("/memory-cleanup")
-async def cleanup():
+def cleanup():
     "Free up memory manually"
 
     gpu.memory_cleanup()
@@ -151,7 +157,7 @@ async def cleanup():
 
 
 @router.post("/download")
-async def download_model(model: str):
+def download_model(model: str):
     "Download a model to the cache"
 
     gpu.download_huggingface_model(model)
@@ -243,7 +249,7 @@ def delete_model(req: DeleteModelRequest):
 
 @router.post("/download-model")
 def download_checkpoint(
-    link: str, model_type: Literal["Checkpoint", "TextualInversion", "LORA"]
+    link: str, model_type: Literal["Checkpoint", "TextualInversion", "LORA", "VAE"]
 ) -> str:
     "Download a model from a link and return the path to the downloaded file."
 
@@ -254,7 +260,12 @@ def download_checkpoint(
         folder = "textual-inversion"
     elif mtype == "lora":
         folder = "lora"
+    elif mtype == "vae":
+        folder = "vae"
     else:
         raise ValueError(f"Unknown model type {mtype}")
 
-    return download_file(link, Path("data") / folder, True).as_posix()
+    saved_path = download_file(link, Path("data") / folder, True).as_posix()
+    websocket_manager.broadcast_sync(Data(data_type="refresh_models", data={}))
+
+    return saved_path

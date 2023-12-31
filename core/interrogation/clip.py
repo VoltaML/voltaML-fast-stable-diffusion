@@ -45,7 +45,7 @@ class CLIPInterrogator(InterrogationModel):
         self.caption_processor: AutoProcessor
         self.clip_model = None
         self.clip_preprocess = None
-        self.dtype: torch.dtype = config.api.dtype
+        self.dtype: torch.dtype = config.api.load_dtype
 
         if autoload:
             self.load()

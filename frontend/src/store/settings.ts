@@ -1,3 +1,4 @@
+import { serverUrl } from "@/env";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { defineStore } from "pinia";
 import { computed, reactive } from "vue";
@@ -48,7 +49,7 @@ export const upscalerOptions: SelectMixedOption[] = [
   },
 ];
 
-export function getSchedulerOptions() {
+export function getSamplerOptions() {
   const scheduler_options: SelectMixedOption[] = [
     {
       type: "group",
@@ -59,6 +60,7 @@ export function getSchedulerOptions() {
         { label: "Euler", value: "euler" },
         { label: "LMS", value: "lms" },
         { label: "Heun", value: "heun" },
+        { label: "Heun++", value: "heunpp" },
         { label: "DPM Fast", value: "dpm_fast" },
         { label: "DPM Adaptive", value: "dpm_adaptive" },
         { label: "DPM2", value: "dpm2" },
@@ -77,15 +79,18 @@ export function getSchedulerOptions() {
       type: "group",
       label: "Diffusers",
       key: "diffusers",
-      children: Object.keys(diffusersSchedulerTuple).map((key) => {
-        return {
-          label: key,
-          value:
-            diffusersSchedulerTuple[
-              key as keyof typeof diffusersSchedulerTuple
-            ],
-        };
-      }),
+      children: [
+        ...Object.keys(diffusersSchedulerTuple).map((key) => {
+          return {
+            label: key,
+            value:
+              diffusersSchedulerTuple[
+                key as keyof typeof diffusersSchedulerTuple
+              ],
+          };
+        }),
+        { label: "SASolverMultistep", value: "sasolver" },
+      ],
     },
   ];
   return scheduler_options;
@@ -200,8 +205,8 @@ const deepcopiedSettings = JSON.parse(JSON.stringify(recievedSettings));
 
 export const useSettings = defineStore("settings", () => {
   const data = reactive(new Settings(recievedSettings));
-  const scheduler_options = computed(() => {
-    return getSchedulerOptions();
+  const samplers = computed(() => {
+    return getSamplerOptions();
   });
   const controlnet_options = computed(() => {
     return getControlNetOptions();
@@ -212,14 +217,31 @@ export const useSettings = defineStore("settings", () => {
     Object.assign(defaultSettings, defaultSettingsTemplate);
   }
 
+  async function saveSettings() {
+    fetch(`${serverUrl}/api/settings/save`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(defaultSettings),
+    }).then((res) => {
+      if (res.status === 200) {
+        console.log("Settings saved successfully");
+      } else {
+        throw new Error("Failed to save settings");
+      }
+    });
+  }
+
   // Deep copy default settings
   const defaultSettings: ISettings = reactive(deepcopiedSettings);
 
   return {
     data,
-    scheduler_options,
+    scheduler_options: samplers,
     controlnet_options,
     defaultSettings,
     resetSettings,
+    saveSettings,
   };
 });

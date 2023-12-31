@@ -14,8 +14,9 @@ renamed_requirements = {
     "opencv-contrib-python-headless": "cv2",
     "fastapi-analytics": "api_analytics",
     "cuda-python": "cuda",
-    "open_clip_torch": "open_clip",
+    "open-clip-torch": "open_clip",
     "python-multipart": "multipart",
+    "invisible-watermark": "imwatermark",
     "discord.py": "discord",
     "HyperTile": "hyper-tile",
     "stable-fast": "sfast",
@@ -159,11 +160,26 @@ _pytorch_distributions = [
             "-m",
             "pip",
             "install",
-            "torch==1.13.0a0",
-            "torchvision==0.14.1a0",
-            "intel_extension_for_pytorch==1.13.120+xpu",
-            "-f",
-            "https://developer.intel.com/ipex-whl-stable-xpu",
+            "torch==2.0.0a0+gitc6a572f",
+            "torchvision==0.14.1a0+5e8e2f1",
+            "intel-extension-for-pytorch==2.0.110+gitba7f6c1",
+            "--extra-index-url",
+            "https://pytorch-extension.intel.com/release-whl/stable/xpu/us/",
+        ],
+    ),
+    PytorchDistribution(
+        windows_supported=True,
+        name="intel",
+        check_command=["test", "-f", '"/etc/OpenCL/vendors/intel.icd"'],
+        success_message="Intel check success, assuming user has an Intel (i)GPU",
+        install_command=[
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.0.110%2Bxpu-master%2Bdll-bundle/torch-2.0.0a0+gite9ebda2-cp310-cp310-win_amd64.whl",
+            "https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.0.110%2Bxpu-master%2Bdll-bundle/torchvision-0.15.2a0+fa99a53-cp310-cp310-win_amd64.whl",
+            "https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.0.110%2Bxpu-master%2Bdll-bundle/intel_extension_for_pytorch-2.0.110+gitc6ea20b-cp310-cp310-win_amd64.whl",
         ],
     ),
     PytorchDistribution(
@@ -218,7 +234,7 @@ _pytorch_distributions = [
 ]
 
 
-def install_deps(force_distribution: int = -1):
+def install_deps(force_distribution: Union[int, str] = -1):
     "Install necessary requirements for inference"
 
     # Install pytorch
@@ -234,17 +250,30 @@ def install_deps(force_distribution: int = -1):
                 x
                 for x in _pytorch_distributions
                 if x.name == force_distribution.lower()
+                and (x.windows_supported if platform.system() == "Windows" else True)
             ][0]
         logger.info("Installing PyTorch")
         if platform.system() == "Darwin":
             subprocess.check_call(
-                [sys.executable, "-m", "pip", "install", "torch==2.0.0", "torchvision"]
+                [sys.executable, "-m", "pip", "install", "torch==2.1.0", "torchvision"]
             )
         else:
-            for c in _pytorch_distributions:
-                if (
-                    (c.windows_supported if platform.system() == "Windows" else True)
-                    and (
+            if forced_distribution is not None:
+                # User forced a specific distribution
+
+                logger.info(forced_distribution.success_message)
+                if isinstance(forced_distribution.install_command[0], list):
+                    for cmd in forced_distribution.install_command:
+                        subprocess.check_call(cmd)
+                else:
+                    subprocess.check_call(forced_distribution.install_command)  # type: ignore
+            else:
+                # Automatically detect pytorch distribution
+
+                for c in _pytorch_distributions:
+                    if (
+                        c.windows_supported if platform.system() == "Windows" else True
+                    ) and (
                         (
                             subprocess.run(
                                 c.check_command,
@@ -254,15 +283,14 @@ def install_deps(force_distribution: int = -1):
                             ).returncode
                             == 0
                         )
-                    )
-                ) or c == forced_distribution:
-                    logger.info(c.success_message)
-                    if isinstance(c.install_command[0], list):
-                        for cmd in c.install_command:
-                            subprocess.check_call(cmd)
-                    else:
-                        subprocess.check_call(c.install_command)  # type: ignore
-                    break
+                    ):
+                        logger.info(c.success_message)
+                        if isinstance(c.install_command[0], list):
+                            for cmd in c.install_command:
+                                subprocess.check_call(cmd)
+                        else:
+                            subprocess.check_call(c.install_command)  # type: ignore
+                        break
 
     # Install other requirements
     install_requirements("requirements/pytorch.txt")
@@ -409,8 +437,13 @@ def check_valid_python_version():
         print("Please consider switching to an older release to use volta!")
         raise RuntimeError("Unsupported Python version")
     elif minor < 9:
-        print("The python release you are currently using is older than our")
-        print("official supported version! Please consider updating to Python 3.11!")
+        print("--------------------------------------------------------")
+        print("| The python release you are currently using is older  |")
+        print("| than our official supported version! Please consider |")
+        print("| updating to Python 3.11!                             |")
+        print("|                                                      |")
+        print("| Issues will most likely be IGNORED!                  |")
+        print("--------------------------------------------------------")
 
 
 def is_up_to_date():

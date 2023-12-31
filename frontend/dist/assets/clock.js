@@ -5,10 +5,11 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
-import { d as defineComponent, o as openBlock, j as createElementBlock, f as createBaseVNode, e as createBlock, w as withCtx, g as createVNode, h as unref, k as createTextVNode, C as toDisplayString, n as NCard, m as createCommentVNode, u as useSettings, l as NTooltip, F as Fragment, a as useState, c as computed, G as spaceRegex, B as NIcon, i as NSelect, H as promptHandleKeyUp, I as promptHandleKeyDown, J as NInput, _ as _export_sfc, K as watch, z as ref, t as serverUrl } from "./index.js";
-import { a as NSlider, N as NSwitch } from "./Switch.js";
+import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, c as createBlock, w as withCtx, e as createVNode, f as unref, k as createTextVNode, B as toDisplayString, N as NCard, h as createCommentVNode, u as useSettings, l as NTooltip, F as Fragment, a as useState, i as computed, E as spaceRegex, A as NIcon, m as NSelect, G as promptHandleKeyUp, H as promptHandleKeyDown, I as NInput, _ as _export_sfc, J as watch, y as ref, s as serverUrl } from "./index.js";
+import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import { N as NForm, a as NFormItem } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
+import { N as NForm, f as NFormItem } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
+import { N as NSwitch } from "./Switch.js";
 const _hoisted_1$2 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -187,8 +188,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[0] || (_cache[0] = ($event) => props.dimensionsObject.width = $event),
             min: unref(settings).data.settings.aitDim.width[0],
             max: unref(settings).data.settings.aitDim.width[1],
-            step: 64,
-            style: { "margin-right": "12px" }
+            step: 64
           }, null, 8, ["value", "min", "max"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.width,
@@ -206,8 +206,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[2] || (_cache[2] = ($event) => props.dimensionsObject.width = $event),
             min: 128,
             max: 2048,
-            step: 1,
-            style: { "margin-right": "12px" }
+            step: 1
           }, null, 8, ["value"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.width,
@@ -224,8 +223,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[4] || (_cache[4] = ($event) => props.dimensionsObject.height = $event),
             min: unref(settings).data.settings.aitDim.height[0],
             max: unref(settings).data.settings.aitDim.height[1],
-            step: 64,
-            style: { "margin-right": "12px" }
+            step: 64
           }, null, 8, ["value", "min", "max"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.height,
@@ -243,8 +241,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[6] || (_cache[6] = ($event) => props.dimensionsObject.height = $event),
             min: 128,
             max: 2048,
-            step: 1,
-            style: { "margin-right": "12px" }
+            step: 1
           }, null, 8, ["value"]),
           createVNode(unref(NInputNumber), {
             value: props.dimensionsObject.height,

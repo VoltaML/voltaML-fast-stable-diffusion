@@ -18,5 +18,8 @@
     },
     "Tabs": {
         "colorSegment": "rgba(24, 24, 28, 0.6)"
+    },
+    "Drawer": {
+        "color": "rgba(44, 44, 50, 0)"
     }
 }

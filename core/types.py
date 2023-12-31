@@ -17,7 +17,7 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_inpaint impo
 )
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
-InferenceBackend = Literal["PyTorch", "AITemplate", "ONNX"]
+InferenceBackend = Literal["PyTorch", "AITemplate", "SDXL", "ONNX"]
 SigmaScheduler = Literal["automatic", "karras", "exponential", "polyexponential", "vp"]
 Backend = Literal[
     "PyTorch",
@@ -31,6 +31,17 @@ Backend = Literal[
     "Upscaler",
     "GPT",  # for prompt-expansion
 ]
+PyTorchModelBase = Literal[
+    "SD1.x",
+    "SD2.x",
+    "SDXL",
+    "Kandinsky 2.1",
+    "Kandinsky 2.2",
+    "Wuerstchen",
+    "IF",
+    "Unknown",
+]
+PyTorchModelStage = Literal["text_encoding", "first_stage", "last_stage"]
 ImageFormats = Literal["png", "jpeg", "webp"]
 
 
@@ -101,7 +112,7 @@ class Img2imgData:
 
 @dataclass
 class InpaintData:
-    "Dataclass for the data of an img2img request"
+    "Dataclass for the data of an inpainting request"
 
     prompt: str
     image: Union[bytes, str]
@@ -118,6 +129,7 @@ class InpaintData:
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
+    strength: float = field(default=0.6)
     sampler_settings: Dict = field(default_factory=dict)
     prompt_to_prompt_settings: Dict = field(default_factory=dict)
 
@@ -136,6 +148,7 @@ class ControlNetData:
     height: int = field(default=512)
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
+    self_attention_scale: float = field(default=0.0)
     sigmas: SigmaScheduler = field(default="automatic")
     seed: int = field(default=0)
     batch_size: int = field(default=1)
@@ -210,6 +223,20 @@ class UpscaleQueueEntry(Job):
 
 
 @dataclass
+class ADetailerQueueEntry(Job):
+    "Dataclass for an ADetailer job"
+
+    data: Optional[InpaintData]
+
+    # Adetailer specific flags
+    mask_dilation: int = 4
+    mask_blur: int = 4
+    mask_padding: int = 32
+    iterations: int = 1
+    upscale: int = 2
+
+
+@dataclass
 class QuantizationDict:
     "Dataclass for quantization parameters"
 
@@ -280,6 +307,8 @@ class ModelResponse:
     vae: str
     state: Literal["loading", "loaded", "not loaded"] = field(default="not loaded")
     textual_inversions: List[str] = field(default_factory=list)
+    type: PyTorchModelBase = "SD1.x"
+    stage: PyTorchModelStage = "last_stage"
 
 
 @dataclass

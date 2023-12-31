@@ -19,7 +19,9 @@ from api.routes import static, ws
 from api.websockets.data import Data
 from api.websockets.notification import Notification
 from core import shared
+from core.files import get_full_model_path
 from core.types import InferenceBackend
+from core.utils import determine_model_type
 
 logger = logging.getLogger(__name__)
 
@@ -47,12 +49,33 @@ async def validation_exception_handler(_request: Request, exc: RequestValidation
 
     logger.debug(exc)
 
+    if exc._error_cache is not None and exc._error_cache[0]["loc"][0] == "body":
+        from core.config._config import Configuration
+
+        default_value = Configuration()
+        keys = [str(i) for i in exc._error_cache[0]["loc"][1:]]  # type: ignore
+        current_value = exc._error_cache[0]["ctx"]["given"]  # type: ignore
+
+        # Traverse the config object to find the correct value
+        for key in keys:
+            default_value = getattr(default_value, key)
+
+        websocket_manager.broadcast_sync(
+            data=Data(
+                data={
+                    "default_value": default_value,
+                    "key": keys,
+                    "current_value": current_value,
+                },
+                data_type="incorrect_settings_value",
+            )
+        )
+
     try:
-        why = str(exc).split(":")[1].strip()
-        await websocket_manager.broadcast(
+        websocket_manager.broadcast_sync(
             data=Notification(
                 severity="error",
-                message=f"Validation error: {why}",
+                message="Validation error",
                 title="Validation Error",
             )
         )
@@ -130,7 +153,9 @@ async def startup_event():
         for model in config.api.autoloaded_models:
             if model in [i.path for i in all_models]:
                 backend: InferenceBackend = [i.backend for i in all_models if i.path == model][0]  # type: ignore
-                gpu.load_model(model, backend)
+                model_type = determine_model_type(get_full_model_path(model))[1]
+
+                gpu.load_model(model, backend, type=model_type)
             else:
                 logger.warning(f"Autoloaded model {model} not found, skipping")
 

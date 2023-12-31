@@ -44,6 +44,7 @@ class UniPC:
 
         We support both data_prediction and noise_prediction.
         """
+
         self.model = lambda x, t: model_fn(x, t.expand((x.shape[0])))
         self.noise_schedule = noise_schedule
 

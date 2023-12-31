@@ -189,37 +189,133 @@
       <NSwitch v-model:value="settings.defaultSettings.api.free_u" />
     </NFormItem>
 
-    <div v-if="settings.defaultSettings.api.free_u">
-      <NFormItem label="Free U S1" label-placement="left">
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.free_u_s1"
-          :step="0.01"
-        />
-      </NFormItem>
-      <NFormItem label="Free U S2" label-placement="left">
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.free_u_s2"
-          :step="0.01"
-        />
-      </NFormItem>
-      <NFormItem label="Free U B1" label-placement="left">
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.free_u_b1"
-          :step="0.01"
-        />
-      </NFormItem>
-      <NFormItem label="Free U B2" label-placement="left">
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.free_u_b2"
-          :step="0.01"
-        />
-      </NFormItem>
-    </div>
+    <NCard :bordered="false" style="margin-bottom: 12px">
+      <div v-if="settings.defaultSettings.api.free_u">
+        <div
+          style="
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 8px 0;
+          "
+        >
+          <NButton
+            style="margin-left: 12px"
+            ghost
+            type="info"
+            @click="
+              () => {
+                settings.defaultSettings.api.free_u_b1 = 1.3;
+                settings.defaultSettings.api.free_u_b2 = 1.4;
+                settings.defaultSettings.api.free_u_s1 = 0.9;
+                settings.defaultSettings.api.free_u_s2 = 0.2;
+              }
+            "
+          >
+            Apply SD 1.4 Defaults
+          </NButton>
+          <NButton
+            style="margin-left: 12px"
+            ghost
+            type="warning"
+            @click="
+              () => {
+                settings.defaultSettings.api.free_u_b1 = 1.5;
+                settings.defaultSettings.api.free_u_b2 = 1.6;
+                settings.defaultSettings.api.free_u_s1 = 0.9;
+                settings.defaultSettings.api.free_u_s2 = 0.2;
+              }
+            "
+          >
+            Apply SD 1.5 Defaults
+          </NButton>
+          <NButton
+            style="margin-left: 12px"
+            ghost
+            type="success"
+            @click="
+              () => {
+                settings.defaultSettings.api.free_u_b1 = 1.4;
+                settings.defaultSettings.api.free_u_b2 = 1.6;
+                settings.defaultSettings.api.free_u_s1 = 0.9;
+                settings.defaultSettings.api.free_u_s2 = 0.2;
+              }
+            "
+          >
+            Apply SD 2.1 Defaults
+          </NButton>
+          <NButton
+            style="margin-left: 12px"
+            ghost
+            type="error"
+            @click="
+              () => {
+                settings.defaultSettings.api.free_u_b1 = 1.3;
+                settings.defaultSettings.api.free_u_b2 = 1.4;
+                settings.defaultSettings.api.free_u_s1 = 0.9;
+                settings.defaultSettings.api.free_u_s2 = 0.2;
+              }
+            "
+          >
+            Apply SDXL Defaults
+          </NButton>
+        </div>
+
+        <NFormItem label="Free U B1" label-placement="left">
+          <NInputNumber
+            v-model:value="settings.defaultSettings.api.free_u_b1"
+            :step="0.01"
+          />
+        </NFormItem>
+        <NFormItem label="Free U B2" label-placement="left">
+          <NInputNumber
+            v-model:value="settings.defaultSettings.api.free_u_b2"
+            :step="0.01"
+          />
+        </NFormItem>
+        <NFormItem label="Free U S1" label-placement="left">
+          <NInputNumber
+            v-model:value="settings.defaultSettings.api.free_u_s1"
+            :step="0.01"
+          />
+        </NFormItem>
+        <NFormItem label="Free U S2" label-placement="left">
+          <NInputNumber
+            v-model:value="settings.defaultSettings.api.free_u_s2"
+            :step="0.01"
+          />
+        </NFormItem>
+      </div>
+    </NCard>
+
+    <NFormItem label="Upcast VAE" label-placement="left">
+      <NSwitch v-model:value="settings.defaultSettings.api.upcast_vae" />
+    </NFormItem>
+
+    <NFormItem label="Apply unsharp mask" label-placement="left">
+      <NSwitch
+        v-model:value="settings.defaultSettings.api.apply_unsharp_mask"
+      />
+    </NFormItem>
+
+    <NFormItem label="CFG Rescale Threshold" label-placement="left">
+      <NSlider
+        v-model:value="cfgRescaleValue"
+        :disabled="!enabledCfg"
+        :min="2"
+        :max="30"
+        :step="0.5"
+      />
+      <NSwitch v-model:value="enabledCfg" />
+    </NFormItem>
   </NForm>
 </template>
 
 <script lang="ts" setup>
 import {
+  NButton,
+  NCard,
   NForm,
   NFormItem,
   NInputNumber,
@@ -235,6 +331,31 @@ import { useState } from "../../store/state";
 const settings = useSettings();
 const global = useState();
 
+const enabledCfg = computed({
+  get() {
+    return settings.defaultSettings.api.cfg_rescale_threshold != "off";
+  },
+  set(value) {
+    if (!value) {
+      settings.defaultSettings.api.cfg_rescale_threshold = "off";
+    } else {
+      settings.defaultSettings.api.cfg_rescale_threshold = 10.0;
+    }
+  },
+});
+
+const cfgRescaleValue = computed({
+  get() {
+    if (settings.defaultSettings.api.cfg_rescale_threshold == "off") {
+      return 1.0;
+    }
+    return settings.defaultSettings.api.cfg_rescale_threshold;
+  },
+  set(value) {
+    settings.defaultSettings.api.cfg_rescale_threshold = value;
+  },
+});
+
 const availableDtypes = computed(() => {
   if (settings.defaultSettings.api.device.includes("cpu")) {
     return global.state.capabilities.supported_precisions_cpu.map((value) => {
@@ -245,6 +366,12 @@ const availableDtypes = computed(() => {
           break;
         case "float16":
           description = "16-bit float";
+          break;
+        case "float8_e5m2":
+          description = "8-bit float (5-data)";
+          break;
+        case "float8_e4m3fn":
+          description = "8-bit float (4-data)";
           break;
         default:
           description = "16-bit bfloat";
@@ -260,6 +387,12 @@ const availableDtypes = computed(() => {
         break;
       case "float16":
         description = "16-bit float";
+        break;
+      case "float8_e5m2":
+        description = "8-bit float (5-data)";
+        break;
+      case "float8_e4m3fn":
+        description = "8-bit float (4-data)";
         break;
       default:
         description = "16-bit bfloat";

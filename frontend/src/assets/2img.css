@@ -2,14 +2,15 @@
   margin: 0 12px;
 }
 
-.split {
-  width: 50%;
-}
-
 .flex-container {
   width: 100%;
   display: inline-flex;
   align-items: center;
+  gap: 0 8px;
+}
+
+.flex-container.space-between {
+  justify-content: space-between;
 }
 
 .slider-label {
@@ -24,4 +25,12 @@
 
 .highlight {
   color: #63e2b7;
+}
+
+.generate-extra-card {
+  margin-top: 12px;
+}
+
+.generate-extra-card:last-child {
+  margin-bottom: 12px;
 }
