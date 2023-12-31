@@ -15,7 +15,7 @@
     }"
   >
     <!-- Sampler -->
-    <SamplerPicker type="inpainting" />
+    <SamplerPicker tab="inpainting" :target="adetailerTarget" />
 
     <!-- Steps -->
     <div class="flex-container">
@@ -41,8 +41,8 @@
       />
     </div>
 
-    <CFGScale tab="inpainting" target="adetailer" />
-    <SAGInput tab="inpainting" target="adetailer" />
+    <CFGScale tab="inpainting" :target="adetailerTarget" />
+    <SAGInput tab="inpainting" :target="adetailerTarget" />
 
     <!-- Seed -->
     <div class="flex-container">
@@ -213,4 +213,8 @@ const target = computed<ISettings>(() => {
 
   return settings.defaultSettings;
 });
+
+const adetailerTarget = computed(() =>
+  props.target === "settings" ? "adetailer" : "defaultSettingsAdetailer"
+);
 </script>

@@ -9,7 +9,7 @@
             <Prompt tab="txt2img" />
 
             <!-- Sampler -->
-            <SamplerPicker :type="'txt2img'" />
+            <SamplerPicker :tab="'txt2img'" />
 
             <!-- Dimensions -->
             <DimensionsInput
@@ -309,7 +309,7 @@ const generate = () => {
                   settings.data.settings.txt2img.adetailer.mask_padding,
                 iterations: settings.data.settings.txt2img.adetailer.iterations,
                 upscale: settings.data.settings.txt2img.adetailer.upscale,
-                scheduler: settings.data.settings.txt2img.adetailer.sampler,
+                sampler: settings.data.settings.txt2img.adetailer.sampler,
                 strength: settings.data.settings.txt2img.adetailer.strength,
                 seed: settings.data.settings.txt2img.adetailer.seed,
                 self_attention_scale:

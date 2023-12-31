@@ -14,14 +14,14 @@
     </NTooltip>
 
     <NSlider
-      v-model:value="target.self_attention_scale"
+      v-model:value="settingsTarget.self_attention_scale"
       :min="0"
       :max="1"
       :step="0.05"
       style="margin-right: 12px"
     />
     <NInputNumber
-      v-model:value="target.self_attention_scale"
+      v-model:value="settingsTarget.self_attention_scale"
       size="small"
       style="min-width: 96px; width: 96px"
       :step="0.05"
@@ -30,6 +30,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { ISettings } from "@/settings";
 import { useSettings } from "@/store/settings";
 import type { InferenceTabs } from "@/types";
 import { NInputNumber, NSlider, NTooltip } from "naive-ui";
@@ -51,15 +52,18 @@ const props = defineProps({
   },
 });
 
-const target = computed<any>(() => {
+const settingsTarget = computed<ISettings["txt2img"]>(() => {
+  let t;
   if (props.target === "settings") {
-    return settings.data.settings[props.tab];
+    t = settings.data.settings[props.tab];
   } else if (props.target === "adetailer") {
-    return settings.data.settings[props.tab].adetailer;
+    t = settings.data.settings[props.tab].adetailer;
   } else if (props.target === "defaultSettingsAdetailer") {
-    return settings.defaultSettings[props.tab].adetailer;
+    t = settings.defaultSettings[props.tab].adetailer;
   } else {
-    return settings.defaultSettings;
+    t = settings.defaultSettings[props.tab];
   }
+
+  return t as unknown as ISettings["txt2img"];
 });
 </script>

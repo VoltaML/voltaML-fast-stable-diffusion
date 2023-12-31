@@ -1,5 +1,5 @@
-import { d as defineComponent, u as useSettings, o as openBlock, g as createBlock, w as withCtx, e as createVNode, f as unref, J as NInput, q as NSelect, m as NCard, ba as reactive, c as computed, bC as convertToTextString, B as ref, x as serverUrl, K as watch, l as useState, b as createBaseVNode, a as createElementBlock, M as renderList, bd as NText, h as createTextVNode, E as toDisplayString, F as Fragment, k as createCommentVNode, n as NTabPane, p as NTabs, S as inject, bD as themeKey, C as NButton, N as NTooltip, r as useMessage, bE as useNotification, s as onUnmounted, bF as defaultSettings } from "./index.js";
-import { c as NFormItem, _ as _sfc_main$g, b as _sfc_main$h, a as _sfc_main$i, N as NForm } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
+import { d as defineComponent, u as useSettings, o as openBlock, c as createBlock, w as withCtx, e as createVNode, f as unref, I as NInput, m as NSelect, N as NCard, b9 as reactive, i as computed, bB as convertToTextString, y as ref, s as serverUrl, J as watch, a as useState, b as createBaseVNode, g as createElementBlock, L as renderList, bc as NText, k as createTextVNode, B as toDisplayString, F as Fragment, h as createCommentVNode, C as NTabPane, D as NTabs, R as inject, bC as themeKey, z as NButton, l as NTooltip, n as useMessage, bD as useNotification, p as onUnmounted, bE as defaultSettings } from "./index.js";
+import { f as NFormItem, _ as _sfc_main$g, d as _sfc_main$h, c as _sfc_main$i, e as _sfc_main$j, N as NForm } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSlider } from "./Slider.js";
@@ -179,7 +179,7 @@ const _sfc_main$f = /* @__PURE__ */ defineComponent({
                 _: 1
               }),
               createVNode(unref(_sfc_main$g), {
-                type: "controlnet",
+                tab: "controlnet",
                 target: "defaultSettings"
               }),
               createVNode(unref(_sfc_main$h), {
@@ -187,6 +187,10 @@ const _sfc_main$f = /* @__PURE__ */ defineComponent({
                 target: "defaultSettings"
               }),
               createVNode(unref(_sfc_main$i), {
+                tab: "controlnet",
+                target: "defaultSettings"
+              }),
+              createVNode(unref(_sfc_main$j), {
                 tab: "controlnet",
                 target: "defaultSettings"
               })
@@ -364,7 +368,7 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
                 _: 1
               }),
               createVNode(unref(_sfc_main$g), {
-                type: "img2img",
+                tab: "img2img",
                 target: "defaultSettings"
               }),
               createVNode(unref(_sfc_main$h), {
@@ -372,6 +376,10 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
                 target: "defaultSettings"
               }),
               createVNode(unref(_sfc_main$i), {
+                tab: "img2img",
+                target: "defaultSettings"
+              }),
+              createVNode(unref(_sfc_main$j), {
                 tab: "img2img",
                 target: "defaultSettings"
               })
@@ -506,7 +514,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 _: 1
               }),
               createVNode(unref(_sfc_main$g), {
-                type: "inpainting",
+                tab: "inpainting",
                 target: "defaultSettings"
               }),
               createVNode(unref(_sfc_main$h), {
@@ -514,6 +522,10 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 target: "defaultSettings"
               }),
               createVNode(unref(_sfc_main$i), {
+                tab: "inpainting",
+                target: "defaultSettings"
+              }),
+              createVNode(unref(_sfc_main$j), {
                 tab: "inpainting",
                 target: "defaultSettings"
               })
@@ -648,7 +660,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
                 _: 1
               }),
               createVNode(unref(_sfc_main$g), {
-                type: "txt2img",
+                tab: "txt2img",
                 target: "defaultSettings"
               }),
               createVNode(unref(_sfc_main$h), {
@@ -656,6 +668,10 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
                 target: "defaultSettings"
               }),
               createVNode(unref(_sfc_main$i), {
+                tab: "txt2img",
+                target: "defaultSettings"
+              }),
+              createVNode(unref(_sfc_main$j), {
                 tab: "txt2img",
                 target: "defaultSettings"
               })

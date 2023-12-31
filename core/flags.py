@@ -116,10 +116,10 @@ class ADetailerFlag(Flag, DataClassJsonMixin):
     # Inpainting
     image: Union[bytes, str, None] = field(default=None)
     mask_image: Union[bytes, str, None] = field(default=None)
-    scheduler: Union[int, str] = "dpmpp_2m"
+    sampler: Union[int, str] = "dpmpp_2m"
     steps: int = field(default=40)
     cfg_scale: float = field(default=7)
-    self_attention_scale: float = field(default=1.0)
+    self_attention_scale: float = field(default=0)
     sigmas: SigmaScheduler = field(default="exponential")
     seed: int = field(default=0)
     strength: float = field(default=0.45)

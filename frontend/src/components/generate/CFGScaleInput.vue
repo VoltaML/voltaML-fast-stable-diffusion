@@ -13,14 +13,14 @@
       <b class="highlight">We recommend using 3-15 for most images.</b>
     </NTooltip>
     <NSlider
-      v-model:value="target.cfg_scale"
+      v-model:value="settingsTarget.cfg_scale"
       :min="1"
       :max="cfgMax"
       :step="0.5"
       style="margin-right: 12px"
     />
     <NInputNumber
-      v-model:value="target.cfg_scale"
+      v-model:value="settingsTarget.cfg_scale"
       size="small"
       style="min-width: 96px; width: 96px"
       :min="1"
@@ -34,6 +34,7 @@
 import type { InferenceTabs } from "@/types";
 import { NInputNumber, NSlider, NTooltip } from "naive-ui";
 import { computed, type PropType } from "vue";
+import type { ISettings } from "../../settings";
 import { useSettings } from "../../store/settings";
 
 const settings = useSettings();
@@ -63,15 +64,18 @@ const props = defineProps({
   },
 });
 
-const target = computed<any>(() => {
+const settingsTarget = computed<ISettings["txt2img"]>(() => {
+  let t;
   if (props.target === "settings") {
-    return settings.data.settings[props.tab];
+    t = settings.data.settings[props.tab];
   } else if (props.target === "adetailer") {
-    return settings.data.settings[props.tab].adetailer;
+    t = settings.data.settings[props.tab].adetailer;
   } else if (props.target === "defaultSettingsAdetailer") {
-    return settings.defaultSettings[props.tab].adetailer;
+    t = settings.defaultSettings[props.tab].adetailer;
   } else {
-    return settings.defaultSettings;
+    t = settings.defaultSettings[props.tab];
   }
+
+  return t as unknown as ISettings["txt2img"];
 });
 </script>

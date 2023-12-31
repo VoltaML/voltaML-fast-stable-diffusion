@@ -296,6 +296,7 @@ class GPU:
 
         data["prompt"] = job.data.prompt
         data["negative_prompt"] = job.data.negative_prompt
+        data["scheduler"] = data.pop("sampler")
 
         data = InpaintData(**data)
 

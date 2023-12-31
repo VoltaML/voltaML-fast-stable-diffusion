@@ -28,7 +28,7 @@
           <component
             :is="
               resolveComponent(
-                target.sampler_config['ui_settings'][param],
+                sigmasTarget.sampler_config['ui_settings'][param],
                 param
               )
             "
@@ -53,7 +53,7 @@
     <NSelect
       :options="settings.scheduler_options"
       filterable
-      v-model:value="target[props.type].sampler"
+      v-model:value="settingsTarget.sampler"
       style="flex-grow: 1"
     />
 
@@ -80,7 +80,7 @@
 
     <NSelect
       :options="sigmaOptions"
-      v-model:value="target[props.type].sigmas"
+      v-model:value="settingsTarget.sigmas"
       :status="sigmaValidationStatus"
     />
   </div>
@@ -146,12 +146,13 @@ type SamplerSetting =
 
 function getValue(param: string) {
   const val =
-    target.value.sampler_config[target.value[props.type].sampler][param];
+    sigmasTarget.value.sampler_config[settingsTarget.value.sampler][param];
   return val;
 }
 
 function setValue(param: string, value: any) {
-  target.value.sampler_config[target.value[props.type].sampler][param] = value;
+  sigmasTarget.value.sampler_config[settingsTarget.value.sampler][param] =
+    value;
 }
 
 function resolveComponent(settings: SamplerSetting, param: string) {
@@ -188,7 +189,22 @@ function resolveComponent(settings: SamplerSetting, param: string) {
   }
 }
 
-const target = computed<ISettings>(() => {
+const settingsTarget = computed<ISettings["txt2img"]>(() => {
+  let t;
+  if (props.target === "settings") {
+    t = settings.data.settings[props.tab];
+  } else if (props.target === "adetailer") {
+    t = settings.data.settings[props.tab].adetailer;
+  } else if (props.target === "defaultSettingsAdetailer") {
+    t = settings.defaultSettings[props.tab].adetailer;
+  } else {
+    t = settings.defaultSettings[props.tab];
+  }
+
+  return t as unknown as ISettings["txt2img"];
+});
+
+const sigmasTarget = computed(() => {
   if (props.target === "settings") {
     return settings.data.settings;
   }
@@ -197,23 +213,25 @@ const target = computed<ISettings>(() => {
 });
 
 const props = defineProps({
-  type: {
+  tab: {
     type: String as PropType<InferenceTabs>,
     required: true,
   },
   target: {
-    type: String as PropType<"settings" | "defaultSettings">,
+    type: String as PropType<
+      "settings" | "defaultSettings" | "adetailer" | "defaultSettingsAdetailer"
+    >,
     required: false,
     default: "settings",
   },
 });
 
 const computedSettings = computed(() => {
-  return target.value.sampler_config[target.value[props.type].sampler] ?? {};
+  return sigmasTarget.value.sampler_config[settingsTarget.value.sampler] ?? {};
 });
 
 const sigmaOptions = computed<SelectMixedOption[]>(() => {
-  const karras = typeof target.value[props.type].sampler === "string";
+  const karras = typeof settingsTarget.value.sampler === "string";
   return [
     {
       label: "Automatic",
@@ -242,8 +260,8 @@ const sigmaOptions = computed<SelectMixedOption[]>(() => {
 });
 
 const sigmaValidationStatus = computed<FormValidationStatus | undefined>(() => {
-  if (typeof target.value[props.type].sampler !== "string") {
-    if (!["automatic", "karras"].includes(target.value[props.type].sigmas)) {
+  if (typeof settingsTarget.value.sampler !== "string") {
+    if (!["automatic", "karras"].includes(settingsTarget.value.sigmas)) {
       return "error";
     } else {
       return undefined;

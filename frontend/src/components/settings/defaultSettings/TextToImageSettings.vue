@@ -47,15 +47,21 @@
         <NInputNumber v-model:value="settings.defaultSettings.txt2img.steps" />
       </NFormItem>
 
-      <SamplerPicker type="txt2img" target="defaultSettings" />
+      <SamplerPicker tab="txt2img" target="defaultSettings" />
       <Upscale tab="txt2img" target="defaultSettings" />
       <HighResFixTabs tab="txt2img" target="defaultSettings" />
+      <Restoration tab="txt2img" target="defaultSettings" />
     </NForm>
   </NCard>
 </template>
 
 <script lang="ts" setup>
-import { HighResFixTabs, SamplerPicker, Upscale } from "@/components";
+import {
+  HighResFixTabs,
+  Restoration,
+  SamplerPicker,
+  Upscale,
+} from "@/components";
 import { NCard, NForm, NFormItem, NInput, NInputNumber } from "naive-ui";
 import { useSettings } from "../../../store/settings";
 

@@ -16,7 +16,7 @@
             <Prompt tab="img2img" />
 
             <!-- Sampler -->
-            <SamplerPicker type="img2img" />
+            <SamplerPicker tab="img2img" />
 
             <DimensionsInput
               :dimensions-object="settings.data.settings.img2img"
@@ -136,6 +136,7 @@
 
         <HighResFixTabs tab="img2img" />
         <Upscale tab="img2img" />
+        <Restoration tab="img2img" />
       </NGi>
 
       <!-- Split -->
@@ -173,6 +174,7 @@ import {
   ImageUpload,
   OutputStats,
   Prompt,
+  Restoration,
   SAGInput,
   SamplerPicker,
   Upscale,
@@ -296,6 +298,27 @@ const generate = () => {
                 tile_padding:
                   settings.data.settings.img2img.upscale.tile_padding,
                 model: settings.data.settings.img2img.upscale.model,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.img2img.adetailer.enabled
+          ? {
+              adetailer: {
+                cfg_scale: settings.data.settings.img2img.adetailer.cfg_scale,
+                mask_blur: settings.data.settings.img2img.adetailer.mask_blur,
+                mask_dilation:
+                  settings.data.settings.img2img.adetailer.mask_dilation,
+                mask_padding:
+                  settings.data.settings.img2img.adetailer.mask_padding,
+                iterations: settings.data.settings.img2img.adetailer.iterations,
+                upscale: settings.data.settings.img2img.adetailer.upscale,
+                sampler: settings.data.settings.img2img.adetailer.sampler,
+                strength: settings.data.settings.img2img.adetailer.strength,
+                seed: settings.data.settings.img2img.adetailer.seed,
+                self_attention_scale:
+                  settings.data.settings.img2img.adetailer.self_attention_scale,
+                sigmas: settings.data.settings.img2img.adetailer.sigmas,
+                steps: settings.data.settings.img2img.adetailer.steps,
               },
             }
           : {}),

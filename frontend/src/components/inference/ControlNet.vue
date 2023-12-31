@@ -16,7 +16,7 @@
             <Prompt tab="controlnet" />
 
             <!-- Sampler -->
-            <SamplerPicker type="controlnet" />
+            <SamplerPicker tab="controlnet" />
 
             <!-- ControlNet mode -->
             <div class="flex-container">
@@ -224,6 +224,7 @@
 
         <HighResFixTabs tab="controlnet" />
         <Upscale tab="controlnet" />
+        <Restoration tab="controlnet" />
       </NGi>
 
       <!-- Split -->
@@ -261,6 +262,7 @@ import {
   ImageUpload,
   OutputStats,
   Prompt,
+  Restoration,
   SAGInput,
   SamplerPicker,
   Upscale,
@@ -382,6 +384,31 @@ const generate = () => {
                 tile_padding:
                   settings.data.settings.controlnet.upscale.tile_padding,
                 model: settings.data.settings.controlnet.upscale.model,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.controlnet.adetailer.enabled
+          ? {
+              adetailer: {
+                cfg_scale:
+                  settings.data.settings.controlnet.adetailer.cfg_scale,
+                mask_blur:
+                  settings.data.settings.controlnet.adetailer.mask_blur,
+                mask_dilation:
+                  settings.data.settings.controlnet.adetailer.mask_dilation,
+                mask_padding:
+                  settings.data.settings.controlnet.adetailer.mask_padding,
+                iterations:
+                  settings.data.settings.controlnet.adetailer.iterations,
+                upscale: settings.data.settings.controlnet.adetailer.upscale,
+                sampler: settings.data.settings.controlnet.adetailer.sampler,
+                strength: settings.data.settings.controlnet.adetailer.strength,
+                seed: settings.data.settings.controlnet.adetailer.seed,
+                self_attention_scale:
+                  settings.data.settings.controlnet.adetailer
+                    .self_attention_scale,
+                sigmas: settings.data.settings.controlnet.adetailer.sigmas,
+                steps: settings.data.settings.controlnet.adetailer.steps,
               },
             }
           : {}),

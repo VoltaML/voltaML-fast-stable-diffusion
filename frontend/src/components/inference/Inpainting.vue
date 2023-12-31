@@ -101,7 +101,7 @@
             <Prompt tab="inpainting" />
 
             <!-- Sampler -->
-            <SamplerPicker type="inpainting" />
+            <SamplerPicker tab="inpainting" />
 
             <!-- Dimensions -->
             <div class="flex-container">
@@ -267,6 +267,7 @@
 
         <HighResFixTabs tab="inpainting" />
         <Upscale tab="inpainting" />
+        <Restoration tab="inpainting" />
       </NGi>
 
       <!-- Split -->
@@ -301,6 +302,7 @@ import {
   ImageOutput,
   OutputStats,
   Prompt,
+  Restoration,
   SAGInput,
   SamplerPicker,
   Upscale,
@@ -436,6 +438,31 @@ const generate = () => {
                 tile_padding:
                   settings.data.settings.inpainting.upscale.tile_padding,
                 model: settings.data.settings.inpainting.upscale.model,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.inpainting.adetailer.enabled
+          ? {
+              adetailer: {
+                cfg_scale:
+                  settings.data.settings.inpainting.adetailer.cfg_scale,
+                mask_blur:
+                  settings.data.settings.inpainting.adetailer.mask_blur,
+                mask_dilation:
+                  settings.data.settings.inpainting.adetailer.mask_dilation,
+                mask_padding:
+                  settings.data.settings.inpainting.adetailer.mask_padding,
+                iterations:
+                  settings.data.settings.inpainting.adetailer.iterations,
+                upscale: settings.data.settings.inpainting.adetailer.upscale,
+                sampler: settings.data.settings.inpainting.adetailer.sampler,
+                strength: settings.data.settings.inpainting.adetailer.strength,
+                seed: settings.data.settings.inpainting.adetailer.seed,
+                self_attention_scale:
+                  settings.data.settings.inpainting.adetailer
+                    .self_attention_scale,
+                sigmas: settings.data.settings.inpainting.adetailer.sigmas,
+                steps: settings.data.settings.inpainting.adetailer.steps,
               },
             }
           : {}),

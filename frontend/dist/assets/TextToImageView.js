@@ -1,8 +1,8 @@
-import { d as defineComponent, u as useSettings, c as computed, o as openBlock, a as createElementBlock, b as createBaseVNode, e as createVNode, f as unref, g as createBlock, w as withCtx, h as createTextVNode, N as NTooltip, i as isDev, j as NSpace, k as createCommentVNode, F as Fragment, l as useState, m as NCard, n as NTabPane, p as NTabs, q as NSelect, r as useMessage, s as onUnmounted, t as NGi, v as NGrid, x as serverUrl } from "./index.js";
-import { _ as _sfc_main$d } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
-import { _ as _sfc_main$e } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
-import { _ as _sfc_main$7, a as _sfc_main$8, B as BurnerClock, P as Prompt, b as _sfc_main$9, c as _sfc_main$a, d as _sfc_main$f } from "./clock.js";
-import { _ as _sfc_main$6, a as _sfc_main$b, b as _sfc_main$c } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
+import { d as defineComponent, u as useSettings, a as useState, o as openBlock, c as createBlock, w as withCtx, b as createBaseVNode, e as createVNode, f as unref, g as createElementBlock, h as createCommentVNode, N as NCard, i as computed, j as NSpace, k as createTextVNode, l as NTooltip, m as NSelect, n as useMessage, p as onUnmounted, q as NGi, r as NGrid, s as serverUrl } from "./index.js";
+import { _ as _sfc_main$c } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$d } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
+import { B as BurnerClock, P as Prompt, _ as _sfc_main$5, a as _sfc_main$8, b as _sfc_main$e } from "./clock.js";
+import { _ as _sfc_main$4, a as _sfc_main$6, b as _sfc_main$7, c as _sfc_main$9, d as _sfc_main$a, e as _sfc_main$b } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
@@ -11,258 +11,6 @@ import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";
 import "./DescriptionsItem.js";
 import "./Settings.js";
-const _hoisted_1$3 = { class: "flex-container" };
-const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("div", { class: "slider-label" }, [
-  /* @__PURE__ */ createBaseVNode("p", null, "Enabled")
-], -1);
-const _hoisted_3$3 = { class: "flex-container" };
-const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1);
-const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1);
-const _hoisted_6$3 = { class: "flex-container" };
-const _hoisted_7$3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Seed", -1);
-const _hoisted_8$2 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "For random seed use -1.", -1);
-const _hoisted_9$2 = { class: "flex-container" };
-const _hoisted_10$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Strength", -1);
-const _hoisted_11$1 = { class: "flex-container" };
-const _hoisted_12$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Mask Dilation", -1);
-const _hoisted_13$1 = { class: "flex-container" };
-const _hoisted_14$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Mask Blur", -1);
-const _hoisted_15$1 = { class: "flex-container" };
-const _hoisted_16$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Mask Padding", -1);
-const _hoisted_17 = { class: "flex-container" };
-const _hoisted_18 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Iterations", -1);
-const _hoisted_19 = { class: "flex-container" };
-const _hoisted_20 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Upscale", -1);
-const _sfc_main$5 = /* @__PURE__ */ defineComponent({
-  __name: "ADetailer",
-  props: {
-    tab: {
-      type: String,
-      required: true
-    },
-    target: {
-      type: String,
-      required: false,
-      default: "settings"
-    }
-  },
-  setup(__props) {
-    const props = __props;
-    const settings = useSettings();
-    const target = computed(() => {
-      if (props.target === "settings") {
-        return settings.data.settings;
-      }
-      return settings.defaultSettings;
-    });
-    return (_ctx, _cache) => {
-      return openBlock(), createElementBlock(Fragment, null, [
-        createBaseVNode("div", _hoisted_1$3, [
-          _hoisted_2$3,
-          createVNode(unref(NSwitch), {
-            value: target.value[props.tab].adetailer.enabled,
-            "onUpdate:value": _cache[0] || (_cache[0] = ($event) => target.value[props.tab].adetailer.enabled = $event)
-          }, null, 8, ["value"])
-        ]),
-        target.value[props.tab].adetailer.enabled ? (openBlock(), createBlock(unref(NSpace), {
-          key: 0,
-          vertical: "",
-          class: "left-container",
-          "builtin-theme-overrides": {
-            gapMedium: "0 12px"
-          }
-        }, {
-          default: withCtx(() => [
-            createVNode(unref(_sfc_main$6), { type: "inpainting" }),
-            createBaseVNode("div", _hoisted_3$3, [
-              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                trigger: withCtx(() => [
-                  _hoisted_4$3
-                ]),
-                default: withCtx(() => [
-                  createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
-                  _hoisted_5$3
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NSlider), {
-                value: target.value[props.tab].adetailer.steps,
-                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => target.value[props.tab].adetailer.steps = $event),
-                min: 5,
-                max: 300,
-                style: { "margin-right": "12px" }
-              }, null, 8, ["value"]),
-              createVNode(unref(NInputNumber), {
-                value: target.value[props.tab].adetailer.steps,
-                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => target.value[props.tab].adetailer.steps = $event),
-                size: "small",
-                style: { "min-width": "96px", "width": "96px" }
-              }, null, 8, ["value"])
-            ]),
-            createVNode(unref(_sfc_main$7), {
-              tab: "inpainting",
-              target: "adetailer"
-            }),
-            createVNode(unref(_sfc_main$8), {
-              tab: "inpainting",
-              target: "adetailer"
-            }),
-            createBaseVNode("div", _hoisted_6$3, [
-              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                trigger: withCtx(() => [
-                  _hoisted_7$3
-                ]),
-                default: withCtx(() => [
-                  createTextVNode(" Seed is a number that represents the starting canvas of your image. If you want to create the same image as your friend, you can use the same settings and seed to do so. "),
-                  _hoisted_8$2
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NInputNumber), {
-                value: target.value[props.tab].adetailer.seed,
-                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => target.value[props.tab].adetailer.seed = $event),
-                size: "small",
-                min: -1,
-                max: 999999999999,
-                style: { "flex-grow": "1" }
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_9$2, [
-              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                trigger: withCtx(() => [
-                  _hoisted_10$1
-                ]),
-                default: withCtx(() => [
-                  createTextVNode(" How much should the masked are be changed from the original ")
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NSlider), {
-                value: target.value[props.tab].adetailer.strength,
-                "onUpdate:value": _cache[4] || (_cache[4] = ($event) => target.value[props.tab].adetailer.strength = $event),
-                min: 0,
-                max: 1,
-                step: 0.01,
-                style: { "margin-right": "12px" }
-              }, null, 8, ["value"]),
-              createVNode(unref(NInputNumber), {
-                value: target.value[props.tab].adetailer.strength,
-                "onUpdate:value": _cache[5] || (_cache[5] = ($event) => target.value[props.tab].adetailer.strength = $event),
-                size: "small",
-                style: { "min-width": "96px", "width": "96px" },
-                min: 0,
-                max: 1,
-                step: 0.01
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_11$1, [
-              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                trigger: withCtx(() => [
-                  _hoisted_12$1
-                ]),
-                default: withCtx(() => [
-                  createTextVNode(" Expands bright pixels in the mask to cover more of the image. ")
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NInputNumber), {
-                value: target.value[props.tab].adetailer.mask_dilation,
-                "onUpdate:value": _cache[6] || (_cache[6] = ($event) => target.value[props.tab].adetailer.mask_dilation = $event),
-                size: "small",
-                min: 0,
-                style: { "flex-grow": "1" }
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_13$1, [
-              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                trigger: withCtx(() => [
-                  _hoisted_14$1
-                ]),
-                default: withCtx(() => [
-                  createTextVNode(" Makes for a smooth transition between masked and unmasked areas. ")
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NInputNumber), {
-                value: target.value[props.tab].adetailer.mask_blur,
-                "onUpdate:value": _cache[7] || (_cache[7] = ($event) => target.value[props.tab].adetailer.mask_blur = $event),
-                size: "small",
-                min: 0,
-                style: { "flex-grow": "1" }
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_15$1, [
-              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                trigger: withCtx(() => [
-                  _hoisted_16$1
-                ]),
-                default: withCtx(() => [
-                  createTextVNode(" Image will be cropped to the mask size plus padding. More padding might mean smoother transitions but slower generation. ")
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NInputNumber), {
-                value: target.value[props.tab].adetailer.mask_padding,
-                "onUpdate:value": _cache[8] || (_cache[8] = ($event) => target.value[props.tab].adetailer.mask_padding = $event),
-                size: "small",
-                min: 0,
-                style: { "flex-grow": "1" }
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_17, [
-              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                trigger: withCtx(() => [
-                  _hoisted_18
-                ]),
-                default: withCtx(() => [
-                  createTextVNode(" Iterations should increase the quality of the image at the cost of time. ")
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NInputNumber), {
-                value: target.value[props.tab].adetailer.iterations,
-                "onUpdate:value": _cache[9] || (_cache[9] = ($event) => target.value[props.tab].adetailer.iterations = $event),
-                disabled: !unref(isDev),
-                size: "small",
-                min: 1,
-                style: { "flex-grow": "1" }
-              }, null, 8, ["value", "disabled"])
-            ]),
-            createBaseVNode("div", _hoisted_19, [
-              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                trigger: withCtx(() => [
-                  _hoisted_20
-                ]),
-                default: withCtx(() => [
-                  createTextVNode(" Hom much should the image be upscaled before processing. This increases the quality of the image at the cost of time as bigger canvas can usually hold more detail. ")
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NSlider), {
-                value: target.value[props.tab].adetailer.upscale,
-                "onUpdate:value": _cache[10] || (_cache[10] = ($event) => target.value[props.tab].adetailer.upscale = $event),
-                min: 1,
-                max: 4,
-                step: 0.1,
-                style: { "margin-right": "12px" }
-              }, null, 8, ["value"]),
-              createVNode(unref(NInputNumber), {
-                value: target.value[props.tab].adetailer.upscale,
-                "onUpdate:value": _cache[11] || (_cache[11] = ($event) => target.value[props.tab].adetailer.upscale = $event),
-                size: "small",
-                style: { "min-width": "96px", "width": "96px" },
-                min: 1,
-                max: 4,
-                step: 0.1
-              }, null, 8, ["value"])
-            ])
-          ]),
-          _: 1
-        })) : createCommentVNode("", true)
-      ], 64);
-    };
-  }
-});
 const _hoisted_1$2 = { class: "flex-container" };
 const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Enabled", -1);
 const _hoisted_3$2 = { key: 0 };
@@ -270,7 +18,7 @@ const _hoisted_4$2 = { class: "flex-container" };
 const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Width", -1);
 const _hoisted_6$2 = { class: "flex-container" };
 const _hoisted_7$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
-const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "ResizeFromDimensionsInput",
   setup(__props) {
     const settings = useSettings();
@@ -326,53 +74,6 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               }, null, 8, ["value"])
             ])
           ])) : createCommentVNode("", true)
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
-  __name: "Restoration",
-  props: {
-    tab: {
-      type: String,
-      required: true
-    },
-    target: {
-      type: String,
-      required: false,
-      default: "settings"
-    }
-  },
-  setup(__props) {
-    const props = __props;
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), {
-        title: "Restoration",
-        class: "generate-extra-card"
-      }, {
-        default: withCtx(() => [
-          createVNode(unref(NTabs), {
-            animated: "",
-            type: "segment"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NTabPane), {
-                tab: "ADetailer",
-                name: "adetailer"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(_sfc_main$5), {
-                    tab: props.tab,
-                    target: props.target
-                  }, null, 8, ["tab", "target"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
         ]),
         _: 1
       });
@@ -687,7 +388,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 mask_padding: settings.data.settings.txt2img.adetailer.mask_padding,
                 iterations: settings.data.settings.txt2img.adetailer.iterations,
                 upscale: settings.data.settings.txt2img.adetailer.upscale,
-                scheduler: settings.data.settings.txt2img.adetailer.sampler,
+                sampler: settings.data.settings.txt2img.adetailer.sampler,
                 strength: settings.data.settings.txt2img.adetailer.strength,
                 seed: settings.data.settings.txt2img.adetailer.seed,
                 self_attention_scale: settings.data.settings.txt2img.adetailer.self_attention_scale,
@@ -744,8 +445,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     }, {
                       default: withCtx(() => [
                         createVNode(unref(Prompt), { tab: "txt2img" }),
-                        createVNode(unref(_sfc_main$6), { type: "txt2img" }),
-                        createVNode(unref(_sfc_main$9), {
+                        createVNode(unref(_sfc_main$4), { tab: "txt2img" }),
+                        createVNode(unref(_sfc_main$5), {
                           "dimensions-object": unref(settings).data.settings.txt2img
                         }, null, 8, ["dimensions-object"]),
                         createBaseVNode("div", _hoisted_2, [
@@ -773,8 +474,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             style: { "min-width": "96px", "width": "96px" }
                           }, null, 8, ["value"])
                         ]),
+                        createVNode(unref(_sfc_main$6), { tab: "txt2img" }),
                         createVNode(unref(_sfc_main$7), { tab: "txt2img" }),
-                        createVNode(unref(_sfc_main$8), { tab: "txt2img" }),
                         createBaseVNode("div", _hoisted_5, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
@@ -799,7 +500,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             style: { "min-width": "96px", "width": "96px" }
                           }, null, 8, ["value"])
                         ]),
-                        createVNode(unref(_sfc_main$a), {
+                        createVNode(unref(_sfc_main$8), {
                           "batch-size-object": unref(settings).data.settings.txt2img
                         }, null, 8, ["batch-size-object"]),
                         createBaseVNode("div", _hoisted_7, [
@@ -826,27 +527,27 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                   ]),
                   _: 1
                 }),
-                isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$4), {
+                isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$3), {
                   key: 0,
                   "dimensions-object": unref(settings).data.settings.txt2img
                 }, null, 8, ["dimensions-object"])) : createCommentVNode("", true),
                 isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$2), { key: 1 })) : createCommentVNode("", true),
-                createVNode(unref(_sfc_main$b), { tab: "txt2img" }),
-                createVNode(unref(_sfc_main$c), { tab: "txt2img" }),
-                createVNode(unref(_sfc_main$3), { tab: "txt2img" })
+                createVNode(unref(_sfc_main$9), { tab: "txt2img" }),
+                createVNode(unref(_sfc_main$a), { tab: "txt2img" }),
+                createVNode(unref(_sfc_main$b), { tab: "txt2img" })
               ]),
               _: 1
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(unref(_sfc_main$d), { generate }),
-                createVNode(unref(_sfc_main$e), {
+                createVNode(unref(_sfc_main$c), { generate }),
+                createVNode(unref(_sfc_main$d), {
                   "current-image": unref(global).state.txt2img.currentImage,
                   images: unref(global).state.txt2img.images,
                   data: unref(settings).data.settings.txt2img,
                   onImageClicked: _cache[5] || (_cache[5] = ($event) => unref(global).state.txt2img.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
-                createVNode(unref(_sfc_main$f), {
+                createVNode(unref(_sfc_main$e), {
                   style: { "margin-top": "12px" },
                   "gen-data": unref(global).state.txt2img.genData
                 }, null, 8, ["gen-data"])
