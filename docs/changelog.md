@@ -1,5 +1,30 @@
 # Changelog
 
+## v.0.6.0
+
+### All changes
+
+- SDXL support
+- Removed original bislerp
+- FlashAttention
+- Better clip skip
+- Automatic model version detection
+- SAG rework
+- Updated default settings for lower VRAM usage
+- Settings difference resolver (migration to newer versions should be smoother)
+- Partial support for float8 (only for storing models in VRAM, but drastically reduces VRAM usage)
+- Heun++ sampler
+- Kohya deepshrink
+- Scalecrafter
+- Added CODEOWNERS
+- Updated CivitAI browser UI
+- SASolver
+- General postprocessors (hi-res, upscales, etc.)
+- UI improvements for mobile users (WIP)
+- FreeU v2 support, default FreeU v2 settings picker
+- ADetailer
+- More predictable model loading
+
 ## v0.5.0
 
 - Highres fix can now use image upscalers (ESRGAN, RealSR, etc.) for the intermediate step
