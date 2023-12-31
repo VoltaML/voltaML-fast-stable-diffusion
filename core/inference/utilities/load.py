@@ -27,7 +27,6 @@ def load_checkpoint(path: str, from_safetensors: bool) -> Dict[str, torch.Tensor
             }
         else:
             checkpoint = load_file(path, device=dev)  # type: ignore
-
     else:
         if config.api.stream_load:
             with open(path, "rb") as f:

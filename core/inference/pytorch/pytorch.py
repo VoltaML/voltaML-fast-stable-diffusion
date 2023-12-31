@@ -5,7 +5,7 @@ from typing import Any, List, Optional, Tuple, Union
 
 import requests
 import torch
-from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
 from diffusers.models.controlnet import ControlNetModel
 from diffusers.models.modeling_utils import ModelMixin
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
@@ -316,7 +316,7 @@ class PyTorchStableDiffusion(InferenceModel):
             scalecrafter = ScalecrafterFlag.from_dict(job.flags["scalecrafter"])
 
         animatediff = AnimateDiffFlag(
-            motion_model="data/motion-models/mm_sd_v15_v2.ckpt",
+            motion_model="data/motion-models/v3_sd15_mm.ckpt",
         )
         if "animatediff" in job.flags:
             animatediff = AnimateDiffFlag.from_dict(job.flags["animatediff"])

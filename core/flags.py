@@ -118,16 +118,14 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
 
     # TODO: steal code from here:
     # - https://github.com/guoyww/AnimateDiff/pull/132/files
-    # - https://github.com/guoyww/AnimateDiff/pull/25/files
-    # - https://github.com/guoyww/AnimateDiff/pull/8/files
 
-    # only active when frames > 16 --> sliding context window.
+    # only active when (frames > context_size) --> sliding context window.
     context_size: int = 16
     frame_stride: int = 2
     frame_overlap: int = 4
     context_scheduler: Literal["uniform", "uniform_constant", "uniform_v2"] = "uniform"
 
-    closed_loop: bool = True
+    closed_loop: bool = False
 
     # increase processing time for decreased memory usage
     chunk_feed_forward: int = -1  # -1 for disable, 0 for batch, 1 for sequence
@@ -138,11 +136,15 @@ class AnimateDiffFlag(Flag, DataClassJsonMixin):
     video_controlnets: List[str] = field(default_factory=list)  # not working
 
     # PIA is a new technique using a 9-channel unet3d instead of the traditional 4-channel unet3d.
+    # Very basic rundown of what it does -- same principle as 9-channel inpaint, however the masks
+    # "opacity" or rather, "weight" changes based on how far along are we in the animation. Starts out with
+    # relatively strong control and loosens it up, giving animation over to the motion module.
+    #
     # In theory it improves animation quality by a large margin.
     use_pia: bool = True
-    pia_checkpont: str = "pia.ckpt"  # /data/pia/{ckpt}
+    pia_checkpont: str = "data/pia/pia.ckpt"
     pia_cond_frame: int = 0
-    pia_motion: int = 1  # 0 - 2 - motion settings, 0 is lowest, 2 is highest
+    pia_motion: int = 2  # 0 - 2 - motion settings, 0 is lowest, 3 is highest
     pia_motion_type: Literal["normal", "closed_loop", "style_transfer"] = "normal"
 
 

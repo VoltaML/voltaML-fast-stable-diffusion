@@ -2,14 +2,15 @@ import logging
 
 import torch
 from diffusers.models.attention_processor import AttnProcessor2_0, XFormersAttnProcessor
-from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
 
 from core.config import config
 
 logger = logging.getLogger(__name__)
 
 
-def upcast_vae(vae: AutoencoderKL):
+def upcast_vae(vae: AutoencoderKL, silent: bool = False):
+    logger.disabled = silent
     if (
         vae.config["force_upcast"] or config.api.upcast_vae
     ) and vae.dtype == torch.float16:

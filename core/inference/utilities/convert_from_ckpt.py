@@ -33,8 +33,6 @@ from transformers import (
 )
 from diffusers import (
     StableDiffusionPipeline,  # type: ignore
-    StableDiffusionUpscalePipeline,  # type: ignore
-    StableDiffusionXLImg2ImgPipeline,  # type: ignore
     StableDiffusionXLPipeline,  # type: ignore
 )
 from diffusers.models import (
@@ -43,16 +41,12 @@ from diffusers.models import (
 )
 from diffusers.schedulers import (
     DDIMScheduler,  # type: ignore
-    DPMSolverMultistepScheduler,  # type: ignore
-    EulerAncestralDiscreteScheduler,  # type: ignore
     EulerDiscreteScheduler,  # type: ignore
-    HeunDiscreteScheduler,  # type: ignore
-    LMSDiscreteScheduler,  # type: ignore
-    PNDMScheduler,  # type: ignore
 )
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline
 
 from core.config import config as volta_config
+from core.optimizations.sdxl_unet import UNet2DConditionModel as SDXLUNet2D
 from .load import load_checkpoint
 
 logger = logging.getLogger(__name__)
@@ -863,14 +857,9 @@ def convert_ldm_vae_checkpoint(checkpoint, config):
 def convert_ldm_clip_checkpoint(checkpoint, local_files_only=False, text_encoder=None):
     if text_encoder is None:
         config_name = "openai/clip-vit-large-patch14"
-        try:
-            config = CLIPTextConfig.from_pretrained(
-                config_name, local_files_only=local_files_only
-            )
-        except Exception:
-            raise ValueError(
-                f"With local_files_only set to {local_files_only}, you must first locally save the configuration in the following path: 'openai/clip-vit-large-patch14'."
-            )
+        config = CLIPTextConfig.from_pretrained(
+            config_name, local_files_only=local_files_only
+        )
 
         with init_empty_weights():
             text_model = CLIPTextModel(config)  # type: ignore
@@ -895,8 +884,8 @@ def convert_ldm_clip_checkpoint(checkpoint, local_files_only=False, text_encoder
         set_module_tensor_to_device(
             text_model,
             param_name,
-            volta_config.api.load_device,
-            dtype=volta_config.api.load_dtype,
+            volta_config.api.load_device,  # never set dtype here, it screws things up
+            # dtype=volta_config.api.load_dtype,
             value=param,
         )
 
@@ -942,14 +931,9 @@ def convert_open_clip_checkpoint(
     local_files_only=False,
     **config_kwargs,
 ):
-    try:
-        config = CLIPTextConfig.from_pretrained(
-            config_name, **config_kwargs, local_files_only=local_files_only
-        )
-    except Exception:
-        raise ValueError(
-            f"With local_files_only set to {local_files_only}, you must first locally save the configuration in the following path: '{config_name}'."
-        )
+    config = CLIPTextConfig.from_pretrained(
+        config_name, **config_kwargs, local_files_only=local_files_only
+    )
 
     with init_empty_weights():
         text_model = (
@@ -1034,8 +1018,8 @@ def convert_open_clip_checkpoint(
         set_module_tensor_to_device(
             text_model,
             param_name,
-            volta_config.api.load_device,
-            dtype=volta_config.api.load_dtype,
+            volta_config.api.load_device,  # don't set dtype here
+            # dtype=volta_config.api.load_dtype,
             value=param,
         )
 
@@ -1127,8 +1111,6 @@ def download_from_original_stable_diffusion_ckpt(
             "conditioner.embedders.0.model.transformer.resblocks.9.mlp.c_proj.bias"
         )
 
-        config_url = None
-
         # model_type = "v1"
         config_url = "https://raw.githubusercontent.com/CompVis/stable-diffusion/main/configs/stable-diffusion/v1-inference.yaml"
 
@@ -1145,8 +1127,7 @@ def download_from_original_stable_diffusion_ckpt(
             # only refiner xl has embedder and one text embedders
             config_url = "https://raw.githubusercontent.com/Stability-AI/generative-models/main/configs/inference/sd_xl_refiner.yaml"
 
-        if config_url is not None:
-            original_config_file = BytesIO(requests.get(config_url).content)  # type: ignore
+        original_config_file = BytesIO(requests.get(config_url).content)  # type: ignore
 
     original_config = OmegaConf.load(original_config_file)
 
@@ -1167,11 +1148,11 @@ def download_from_original_stable_diffusion_ckpt(
             model_type = "SDXL-Refiner"
         if image_size is None:
             image_size = 1024
+    print(model_type)
 
     # Check if we have a SDXL or SD model and initialize default pipeline
-    if model_type not in ["SDXL", "SDXL-Refiner"]:
-        pipeline_class = StableDiffusionPipeline  # type: ignore
-    else:
+    pipeline_class = StableDiffusionPipeline  # type: ignore
+    if model_type in ["SDXL", "SDXL-Refiner"]:
         pipeline_class = StableDiffusionXLPipeline  # type: ignore
 
     conv_in_weight = checkpoint.get(  # type: ignore
@@ -1241,27 +1222,10 @@ def download_from_original_stable_diffusion_ckpt(
     # make sure scheduler works correctly with DDIM
     scheduler.register_to_config(clip_sample=False)  # type: ignore
 
-    if scheduler_type == "pndm":
-        config = dict(scheduler.config)  # type: ignore
-        config["skip_prk_steps"] = True
-        scheduler = PNDMScheduler.from_config(config)
-    elif scheduler_type == "lms":
-        scheduler = LMSDiscreteScheduler.from_config(scheduler.config)  # type: ignore
-    elif scheduler_type == "heun":
-        scheduler = HeunDiscreteScheduler.from_config(scheduler.config)  # type: ignore
-    elif scheduler_type == "euler":
+    if scheduler_type == "euler":
         scheduler = EulerDiscreteScheduler.from_config(scheduler.config)  # type: ignore
-    elif scheduler_type == "euler-ancestral":
-        scheduler = EulerAncestralDiscreteScheduler.from_config(scheduler.config)  # type: ignore
-    elif scheduler_type == "dpm":
-        scheduler = DPMSolverMultistepScheduler.from_config(scheduler.config)  # type: ignore
     elif scheduler_type == "ddim":
         scheduler = scheduler
-    else:
-        raise ValueError(f"Scheduler of type {scheduler_type} doesn't exist!")
-
-    if pipeline_class == StableDiffusionUpscalePipeline:
-        image_size = original_config.model.params.unet_config.params.image_size
 
     # Convert the UNet2DConditionModel model.
     unet_config = create_unet_diffusers_config(original_config, image_size=image_size)  # type: ignore
@@ -1273,7 +1237,10 @@ def download_from_original_stable_diffusion_ckpt(
     )
 
     with init_empty_weights():
-        unet = UNet2DConditionModel(**unet_config)
+        if model_type in ["SDXL", "SDXL-Refiner"] and volta_config.api.use_minimal_sdxl_pipeline:
+            unet = SDXLUNet2D()
+        else:
+            unet = UNet2DConditionModel(**unet_config)
 
     if model_type not in ["SDXL", "SDXL-Refiner"]:  # SBM Delay this.
         for param_name, param in converted_unet_checkpoint.items():
@@ -1323,71 +1290,56 @@ def download_from_original_stable_diffusion_ckpt(
             **config_kwargs,  # type: ignore
         )
 
-        try:
-            tokenizer = CLIPTokenizer.from_pretrained(
-                "stabilityai/stable-diffusion-2",
-                subfolder="tokenizer",
-                local_files_only=local_files_only,
-            )
-        except Exception:
-            raise ValueError(
-                f"With local_files_only set to {local_files_only}, you must first locally save the tokenizer in the following path: 'stabilityai/stable-diffusion-2'."
-            )
+        tokenizer = CLIPTokenizer.from_pretrained(
+            "stabilityai/stable-diffusion-2",
+            subfolder="tokenizer",
+            local_files_only=local_files_only,
+        )
+
+        pipe = pipeline_class(  # type: ignore
+            vae=vae,
+            text_encoder=text_model,  # type: ignore
+            tokenizer=tokenizer,
+            unet=unet,  # type: ignore
+            scheduler=scheduler,  # type: ignore
+            safety_checker=None,  # type: ignore
+            feature_extractor=None,  # type: ignore
+        )
     elif model_type == "FrozenCLIPEmbedder":
         text_model = convert_ldm_clip_checkpoint(
             checkpoint, local_files_only=local_files_only, text_encoder=None
         )
-        try:
-            tokenizer = CLIPTokenizer.from_pretrained(
-                "openai/clip-vit-large-patch14", local_files_only=local_files_only
-            )
-        except Exception:
-            raise ValueError(
-                f"With local_files_only set to {local_files_only}, you must first locally save the tokenizer in the following path: 'openai/clip-vit-large-patch14'."
-            )
-
-        safety_checker = None
-        feature_extractor = None
+        tokenizer = CLIPTokenizer.from_pretrained(
+            "openai/clip-vit-large-patch14", local_files_only=local_files_only
+        )
 
         pipe = pipeline_class(  # type: ignore
             vae=vae,
             text_encoder=text_model,
             tokenizer=tokenizer,
-            unet=unet,
+            unet=unet,  # type: ignore
             scheduler=scheduler,  # type: ignore
-            safety_checker=safety_checker,  # type: ignore
-            feature_extractor=feature_extractor,  # type: ignore
+            safety_checker=None,  # type: ignore
+            feature_extractor=None,  # type: ignore
         )
     else:
         is_refiner = model_type == "SDXL-Refiner"
 
         tokenizer = None
-        if is_refiner is False:
-            try:
-                tokenizer = CLIPTokenizer.from_pretrained(
-                    "openai/clip-vit-large-patch14", local_files_only=local_files_only
-                )
-            except Exception:
-                raise ValueError(
-                    f"With local_files_only set to {local_files_only}, you must first locally save the tokenizer in the following path: 'openai/clip-vit-large-patch14'."
-                )
-
         text_encoder = None
-        if is_refiner is False:
+        if not is_refiner:
+            tokenizer = CLIPTokenizer.from_pretrained(
+                "openai/clip-vit-large-patch14", local_files_only=local_files_only
+            )
             text_encoder = convert_ldm_clip_checkpoint(
                 checkpoint, local_files_only=local_files_only
             )
 
-        try:
-            tokenizer_2 = CLIPTokenizer.from_pretrained(
-                "laion/CLIP-ViT-bigG-14-laion2B-39B-b160k",
-                pad_token="!",
-                local_files_only=local_files_only,
-            )
-        except Exception:
-            raise ValueError(
-                f"With local_files_only set to {local_files_only}, you must first locally save the tokenizer in the following path: 'laion/CLIP-ViT-bigG-14-laion2B-39B-b160k' with `pad_token` set to '!'."
-            )
+        tokenizer_2 = CLIPTokenizer.from_pretrained(
+            "laion/CLIP-ViT-bigG-14-laion2B-39B-b160k",
+            pad_token="!",
+            local_files_only=local_files_only,
+        )
 
         config_name = "laion/CLIP-ViT-bigG-14-laion2B-39B-b160k"
         config_kwargs = {"projection_dim": 1280}
@@ -1427,10 +1379,9 @@ def download_from_original_stable_diffusion_ckpt(
             "scheduler": scheduler,
         }
 
-        if pipeline_class == StableDiffusionXLImg2ImgPipeline:
-            pipeline_kwargs.update({"requires_aesthetics_score": is_refiner})
-
         if is_refiner:
+            pipeline_kwargs.update({"requires_aesthetics_score": is_refiner})
+        else:
             pipeline_kwargs.update({"force_zeros_for_empty_prompt": False})
 
         pipe = pipeline_class(**pipeline_kwargs)  # type: ignore

@@ -24,10 +24,12 @@ def cast(
     device: str,
     dtype: torch.dtype,
     offload: bool,
+    silent: bool = False,
 ):
+    logger.disabled = silent
+
     # Change the order of the channels to be more efficient for the GPU
     # DirectML only supports contiguous memory format
-    # Disable for IPEX as well, they don't like torch's way of setting memory format
     memory_format = torch.preserve_format
     if config.api.channels_last:
         if "privateuseone" in device:

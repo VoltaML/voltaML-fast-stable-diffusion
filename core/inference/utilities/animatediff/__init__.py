@@ -2,30 +2,11 @@
 
 from typing import Optional
 
-import torch
-import einops
 import numpy as np
 
-from core.config import config
-from core.optimizations import InferenceContext
-from core.flags import AnimateDiffFlag
-
 from .freeinit import freq_mix_3d as freeinit_mix, get_freq_filter as freeinit_filter
-
-
-def memory_required(input_shape: tuple):
-    area = input_shape[1] * input_shape[2] * input_shape[3]
-    if any([config.api.attention_processor == x for x in ["xformers", "sdpa"]]):
-        dtype_size = (
-            2
-            if any(
-                [config.api.load_dtype == x for x in [torch.float16, torch.bfloat16]]
-            )
-            else 4
-        )
-        return (area * dtype_size / 50) * (1024 * 1024)
-    else:
-        return (((area * 0.6) / 0.9) + 1024) * (1024 * 1024)
+from .models.unet import UNet3DConditionModel
+from .pia.masking import prepare_mask_coef_by_statistics
 
 
 def ordered_halving(val):
@@ -153,27 +134,9 @@ def uniform_constant(
             yield to_yield
 
 
-UNIFORM_CONTEXT_MAPPING = {
-    "uniform": uniform,
-    "uniform_constant": uniform_constant,
-    "uniform_v2": uniform_v2,
-}
-
-
 def get_context_scheduler(name: str):
-    return UNIFORM_CONTEXT_MAPPING.get(name, nil_scheduler)
+    return globals().get(name, nil_scheduler)
 
 
 def nil_scheduler(*args, **kwargs):
     yield 0
-
-
-def patch(context: InferenceContext) -> InferenceContext:
-    global n
-
-    n = None
-
-    flag: AnimateDiffFlag | None = context.get_flag(AnimateDiffFlag)  # type: ignore
-    assert flag is not None
-
-    return context

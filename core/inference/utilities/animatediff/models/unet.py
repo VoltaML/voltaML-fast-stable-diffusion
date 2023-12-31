@@ -4,6 +4,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
+import logging
 
 import torch
 import torch.nn as nn
@@ -11,7 +12,7 @@ import torch.utils.checkpoint
 
 from diffusers.configuration_utils import ConfigMixin, register_to_config
 from diffusers import ModelMixin  # type: ignore
-from diffusers.utils import BaseOutput, logging  # type: ignore
+from diffusers.utils import BaseOutput  # type: ignore
 from diffusers.models.embeddings import TimestepEmbedding, Timesteps
 
 from core.config import config
@@ -30,7 +31,7 @@ from .resnet import InflatedConv3d, InflatedGroupNorm
 from . import MMV2_DIM_KEY
 
 
-logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -482,7 +483,7 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         upsample_size = None
 
         if any(s % default_overall_up_factor != 0 for s in sample.shape[-2:]):
-            logger.info("Forward upsample size to force interpolation output size.")
+            logger.debug("Forward upsample size to force interpolation output size.")
             forward_upsample_size = True
 
         # prepare attention_mask
@@ -753,7 +754,7 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         return UNet3DConditionOutput(sample=sample)
 
     def convert_to_pia(self, checkpoint_name: str):
-        return patch_conv3d(self, (Path("data/pia/") / checkpoint_name).as_posix())
+        return patch_conv3d(self, checkpoint_name)
 
     @classmethod
     def from_pretrained_2d(
@@ -799,7 +800,7 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
             },
         }
         if motion_up_dim[1] != 24:
-            logger.info("Detected V2 motion module")
+            logger.debug("Detected V2 motion module")
             if unet_additional_kwargs:
                 motion_module_kwargs = unet_additional_kwargs.pop(
                     "motion_module_kwargs", {}
@@ -845,11 +846,11 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
 
         if unet_additional_kwargs is None:
             unet_additional_kwargs = {}
-        model: nn.Module = cls.from_config(unet_config, **unet_additional_kwargs)  # type: ignore
+        model: torch.nn.Module = cls.from_config(unet_config, **unet_additional_kwargs)  # type: ignore
 
         # load the weights into the model
         m, u = model.load_state_dict(motion_state_dict, strict=False)
-        logger.debug(f"### missing keys: {len(m)}; \n### unexpected keys: {len(u)};")
+        logger.debug(f"### missing keys: {len(m)}; ### unexpected keys: {len(u)};")
 
         params = [
             p.numel() if "temporal" in n.lower() else 0

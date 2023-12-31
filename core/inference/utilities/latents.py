@@ -6,7 +6,7 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 import torch
 import torch.nn.functional as F
-from diffusers.models import vae as diffusers_vae
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL as diffusers_vae
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
 )

@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import requests
 import torch
-from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
@@ -17,12 +17,14 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
 from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
 from diffusers.utils.constants import (
     CONFIG_NAME,
-    DIFFUSERS_CACHE,
     HUGGINGFACE_CO_RESOLVE_ENDPOINT,
     ONNX_WEIGHTS_NAME,
     WEIGHTS_NAME,
 )
-from diffusers.utils.hub_utils import HF_HUB_OFFLINE
+from huggingface_hub.constants import (
+    HUGGINGFACE_HUB_CACHE as DIFFUSERS_CACHE,
+    HF_HUB_OFFLINE,
+)
 from huggingface_hub import model_info  # type: ignore
 from huggingface_hub._snapshot_download import snapshot_download
 from huggingface_hub.file_download import hf_hub_download

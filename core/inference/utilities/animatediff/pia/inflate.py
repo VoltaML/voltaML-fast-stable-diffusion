@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def patch_conv3d(unet: "UNet3DConditionModel", pia_path: str) -> "UNet3DConditionModel":
     old_weight, old_bias = unet.conv_in.weight, unet.conv_in.bias
     new_conv = InflatedConv3d(
-        9,
+        9,  # 9 channels
         old_weight.shape[0],
         kernel_size=unet.conv_in.kernel_size,  # type: ignore
         stride=unet.conv_in.stride,  # type: ignore

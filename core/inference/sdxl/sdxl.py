@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, List, Optional, Tuple, Union
 
 import torch
-from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import (
     StableDiffusionXLPipeline,
@@ -356,7 +356,7 @@ class SDXLStableDiffusion(InferenceModel):
                         "current_step": 0,
                         "total_steps": 0,
                         "image": convert_images_to_base64_grid(
-                            total_images, quality=90, image_format="webp"
+                            total_images, quality=90, image_format="webp"  # type: ignore
                         ),
                     },
                 )
@@ -437,7 +437,7 @@ class SDXLStableDiffusion(InferenceModel):
                         "current_step": 0,
                         "total_steps": 0,
                         "image": convert_images_to_base64_grid(
-                            total_images, quality=90, image_format="webp"
+                            total_images, quality=90, image_format="webp"  # type: ignore
                         ),
                     },
                 )
@@ -519,7 +519,7 @@ class SDXLStableDiffusion(InferenceModel):
                         "current_step": 0,
                         "total_steps": 0,
                         "image": convert_images_to_base64_grid(
-                            total_images, quality=90, image_format="webp"
+                            total_images, quality=90, image_format="webp"  # type: ignore
                         ),
                     },
                 )

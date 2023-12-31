@@ -6,7 +6,7 @@ import inspect
 import PIL
 import torch
 from diffusers.models.adapter import MultiAdapter
-from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion.pipeline_output import (
     StableDiffusionPipelineOutput,
@@ -573,7 +573,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 ensure_correct_device(un)  # type: ignore
 
                 _kwargs = {
-                    "cond": prompt_embeds,
                     "added_cond_kwargs": {
                         "text_embeds": add_text_embeds,
                         "time_ids": add_time_ids,
@@ -607,30 +606,30 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                         {
                             "added_cond_kwargs": added_cond_kwargs,
                             "down_intrablock_additional_residuals": cond_intra,
-                            "cond": cond,
                         }
                     )
                     for kw, _ in _kwargs.copy().items():
                         if kw not in kwargs:
                             del _kwargs[kw]
-                    noise_pred_text = call(latent_model_input, t, **_kwargs)
+                    noise_pred_text = call(latent_model_input, t, cond=cond, **_kwargs)
 
                     _kwargs.update(
                         {
                             "added_cond_kwargs": added_uncond_kwargs,
                             "down_intrablock_additional_residuals": uncond_intra,
-                            "cond": uncond,
                         }
                     )
                     for kw, _ in _kwargs.copy().items():
                         if kw not in kwargs:
                             del _kwargs[kw]
-                    noise_pred_uncond = call(latent_model_input, t, **_kwargs)
+                    noise_pred_uncond = call(
+                        latent_model_input, t, cond=uncond, **_kwargs
+                    )
                 else:
                     for kw, _ in _kwargs.copy().items():
                         if kw not in kwargs:
                             del _kwargs[kw]
-                    noise_pred = call(latent_model_input, t, **_kwargs)  # type: ignore
+                    noise_pred = call(latent_model_input, t, cond=prompt_embeds, **_kwargs)  # type: ignore
 
                 un, noise_pred_vanilla = post_scalecrafter(
                     self.unet,
@@ -647,6 +646,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 # perform guidance
                 if do_classifier_free_guidance:
                     if not split_latents_into_two:
+                        if isinstance(noise_pred, list):
+                            noise_pred = noise_pred[0]
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
                     noise_pred = calculate_cfg(
                         j, noise_pred_text, noise_pred_uncond, guidance_scale, t, additional_pred=noise_pred_vanilla  # type: ignore

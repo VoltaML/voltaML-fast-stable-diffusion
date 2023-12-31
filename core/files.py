@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import List, Union
 
-from diffusers.utils.constants import DIFFUSERS_CACHE
+from huggingface_hub.constants import HUGGINGFACE_HUB_CACHE as DIFFUSERS_CACHE
 from huggingface_hub.file_download import repo_folder_name
 
 from core.types import ModelResponse

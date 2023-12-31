@@ -1,7 +1,11 @@
 import logging
 
 import torch
-from diffusers.models.attention_processor import AttnProcessor, AttnProcessor2_0
+from diffusers.models.attention_processor import (
+    Attention,
+    AttnProcessor,
+    AttnProcessor2_0,
+)
 from diffusers.utils.import_utils import is_xformers_available
 from packaging import version
 
@@ -47,8 +51,10 @@ ATTENTION_PROCESSORS = {
 }
 
 
-def set_attention_processor(pipe):
+def set_attention_processor(pipe, fused: bool = True, silent: bool = False):
     "Set attention processor to the first one available/the one set in the config"
+
+    logger.disabled = silent
 
     res = False
     try:
@@ -64,6 +70,21 @@ def set_attention_processor(pipe):
             logger.info(
                 f"Optimization: Enabled {attention_processors_list[curr_processor][0]} attention"
             )
+            if fused:
+                b = True
+                for attn_processor in pipe.unet.attn_processors.values():
+                    if "Added" in attn_processor.__class__.__name__:
+                        b = False
+                if b:
+                    n = 0
+                    for module in pipe.unet.modules():
+                        if isinstance(module, Attention):
+                            if hasattr(module, "fuse_projections"):
+                                n += 1
+                                module.fuse_projections(fuse=True)
+                    if n != 0:
+                        logger.info(f"Optimization: Fused {n} attention modules")
+
         curr_processor = (curr_processor + 1) % len(attention_processors_list)
 
 

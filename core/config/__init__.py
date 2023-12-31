@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from diffusers.utils.constants import DIFFUSERS_CACHE
+from huggingface_hub.constants import HUGGINGFACE_HUB_CACHE as DIFFUSERS_CACHE
 
 from ._config import (
     Configuration,

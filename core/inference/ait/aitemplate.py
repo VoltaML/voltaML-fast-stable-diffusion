@@ -3,7 +3,7 @@ import os
 from typing import Any, List, Literal, Optional, Tuple, Union
 
 import torch
-from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
 from diffusers.models.controlnet import ControlNetModel
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from PIL import Image
@@ -326,7 +326,7 @@ class AITemplateStableDiffusion(InferenceModel):
                         "current_step": 0,
                         "total_steps": 0,
                         "image": convert_images_to_base64_grid(
-                            total_images,
+                            total_images,  # type: ignore
                             quality=config.api.image_quality,
                             image_format=config.api.image_extension,
                         ),
@@ -390,7 +390,7 @@ class AITemplateStableDiffusion(InferenceModel):
                         "current_step": 0,
                         "total_steps": 0,
                         "image": convert_images_to_base64_grid(
-                            total_images,
+                            total_images,  # type: ignore
                             quality=config.api.image_quality,
                             image_format=config.api.image_extension,
                         ),
@@ -457,7 +457,7 @@ class AITemplateStableDiffusion(InferenceModel):
                         "current_step": 0,
                         "total_steps": 0,
                         "image": convert_images_to_base64_grid(
-                            total_images
+                            total_images  # type: ignore
                             if job.data.return_preprocessed
                             else total_images[1:],
                             quality=config.api.image_quality,

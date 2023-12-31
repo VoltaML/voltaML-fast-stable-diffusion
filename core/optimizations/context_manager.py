@@ -1,15 +1,18 @@
 from contextlib import ExitStack
 from types import TracebackType
-from typing import List, Optional, Type
+from typing import List, Optional, TypeVar
 
 import torch
-from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 
 from core.config import config
 from core.flags import AnimateDiffFlag, Flag
 from .autocast_utils import autocast
 from .hypertile import is_hypertile_available, hypertile
+
+
+T = TypeVar("T", bound=type[Flag])
 
 
 class InferenceContext(ExitStack):
@@ -20,7 +23,6 @@ class InferenceContext(ExitStack):
     old_unet: torch.nn.Module | None = None
     unet: torch.nn.Module
     vae: torch.nn.Module
-    profiler: Optional[torch.profiler.profile] = None
     flags: List[Optional[Flag]] = []
     components: dict = {}
 
@@ -32,9 +34,9 @@ class InferenceContext(ExitStack):
         if hasattr(self.unet, "enable_freeu"):
             self.unet.enable_freeu(s1=s1, s2=s2, b1=b1, b2=b2)
 
-    def get_flag(self, _type: Type) -> Optional[Flag]:
+    def get_flag(self, _type: T) -> Optional[T]:
         try:
-            return [x for x in self.flags if isinstance(x, _type)].pop()
+            return [x for x in self.flags if isinstance(x, _type)].pop()  # type: ignore
         except IndexError:
             return None
 
@@ -51,9 +53,6 @@ class InferenceContext(ExitStack):
 
     def enable_xformers_memory_efficient_attention(self):
         self.unet.enable_xformers_memory_efficient_attention()
-
-
-PROFILE = False
 
 
 def inference_context(
@@ -74,28 +73,16 @@ def inference_context(
             disable=config.api.autocast and not unet.force_autocast,
         )
     )
-    if PROFILE:
-        s.profiler = s.enter_context(
-            torch.profiler.profile(
-                activities=[
-                    torch.profiler.ProfilerActivity.CUDA,
-                ],
-                profile_memory=True,
-                record_shapes=True,
-                with_stack=True,
-            )
-        )
     s.flags = flags
 
     s.old_device = s.unet.device
     s.old_dtype = s.unet.dtype
 
-    animatediff: Optional[AnimateDiffFlag] = s.get_flag(AnimateDiffFlag)  # type: ignore
+    animatediff = s.get_flag(AnimateDiffFlag)
     if animatediff is not None:
-        from core.inference.utilities.animatediff.models.unet import (
-            UNet3DConditionModel,
-        )
-        from core.inference.utilities.animatediff import patch as patch_animatediff
+        from core.inference.utilities.animatediff import UNet3DConditionModel
+        from .pytorch_optimizations import optimize_model
+        from core.shared_dependent import gpu
 
         s.unet.to("cpu")
         s.old_unet = s.unet
@@ -107,17 +94,11 @@ def inference_context(
             s.unet = s.unet.convert_to_pia(animatediff.pia_checkpont)
 
         if config.api.clear_memory_policy == "always":
-            from core.shared_dependent import gpu
-
             gpu.memory_cleanup()
-
-        from .pytorch_optimizations import optimize_model
 
         optimize_model(s, config.api.device, silent=True)  # type: ignore
 
         if animatediff.chunk_feed_forward != -1:
-            # from core.inference.utilities.animatediff import memory_required
-
             # TODO: do auto batch calculation
             # for now, "auto" is 1.
             batch_size = (
@@ -128,9 +109,7 @@ def inference_context(
             s.unet.enable_forward_chunking(
                 chunk_size=batch_size, dim=animatediff.chunk_feed_forward
             )
-        # set_offload(s.unet, config.api.device, "model")  # type: ignore
 
-        patch_animatediff(s)
         s.components.update({"unet": s.unet})
     if is_hypertile_available() and config.api.hypertile:
         s.enter_context(hypertile(unet, height, width))
