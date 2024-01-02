@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, Literal, Union
+from typing import Dict, Literal, List, Union
 
 from dataclasses_json.api import DataClassJsonMixin
 
@@ -96,6 +96,61 @@ class SDXLRefinerFlag(Flag, DataClassJsonMixin):
 
 
 @dataclass
+class AnimateDiffFlag(Flag, DataClassJsonMixin):
+    "Flag for AnimateDiff"
+
+    motion_model: str = ""
+    frames: int = 16
+    fps: int = 10  # not working
+
+    # Depends on seed whether or not it works??? Weird... investigate later...
+    # Probably self-explanatory, but increases generation time to {freeinit_iterations}x.
+    freeinit_iterations: int = -1  # -1 to disable, 5 recommended
+    freeinit_fast_sampling: bool = (
+        False  # decreases quality, but reduces generation time by ~60%
+    )
+    freeinit_method: Literal["butterworth", "gaussian", "ideal", "box"] = "butterworth"
+    freeinit_n: int = 4
+    freeinit_ds: float = 0.25
+    freeinit_dt: float = 0.25
+
+    # Big maybes:
+    # - https://github.com/omerbt/TokenFlow
+    # - https://github.com/Kosinkadink/ComfyUI-AnimateDiff-Evolved/commit/5bbcae4d226e8f298a8b204e9cc9b2dd41fbe417
+
+    # TODO: steal code from here:
+    # - https://github.com/guoyww/AnimateDiff/pull/132/files
+
+    # only active when (frames > context_size) --> sliding context window.
+    context_size: int = 16
+    frame_stride: int = 2
+    frame_overlap: int = 4
+    context_scheduler: Literal["uniform", "uniform_constant", "uniform_v2"] = "uniform"
+
+    closed_loop: bool = False
+
+    # increase processing time for decreased memory usage
+    chunk_feed_forward: int = -1  # -1 for disable, 0 for batch, 1 for sequence
+    chunk_feed_size: Union[Literal["auto"], int] = -1
+
+    input_video: str = ""  # not working
+    init_image: str = ""  # not working
+    video_controlnets: List[str] = field(default_factory=list)  # not working
+
+    # PIA is a new technique using a 9-channel unet3d instead of the traditional 4-channel unet3d.
+    # Very basic rundown of what it does -- same principle as 9-channel inpaint, however the masks
+    # "opacity" or rather, "weight" changes based on how far along are we in the animation. Starts out with
+    # relatively strong control and loosens it up, giving animation over to the motion module.
+    #
+    # In theory it improves animation quality by a large margin.
+    use_pia: bool = True
+    pia_checkpont: str = "data/pia/pia.ckpt"
+    pia_cond_frame: int = 0
+    pia_motion: int = 2  # 0 - 2 - motion settings, 0 is lowest, 3 is highest
+    pia_motion_type: Literal["normal", "closed_loop", "style_transfer"] = "normal"
+
+
+@dataclass
 class UpscaleFlag(Flag, DataClassJsonMixin):
     "Flag for upscaling"
 
@@ -111,6 +166,10 @@ class UpscaleFlag(Flag, DataClassJsonMixin):
 class ADetailerFlag(Flag, DataClassJsonMixin):
     "Flag for ADetailer settings"
 
+    # I hate pydantic
+    sampler_settings: Dict = field(default_factory=dict)
+    prompt_to_prompt_settings: Dict = field(default_factory=dict)
+
     enabled: bool = field(default=False)  # For storing in json
 
     # Inpainting
@@ -123,8 +182,6 @@ class ADetailerFlag(Flag, DataClassJsonMixin):
     sigmas: SigmaScheduler = field(default="exponential")
     seed: int = field(default=0)
     strength: float = field(default=0.45)
-    sampler_settings: Dict = field(default_factory=dict)
-    prompt_to_prompt_settings: Dict = field(default_factory=dict)
 
     # ADetailer specific
     mask_dilation: int = field(default=4)

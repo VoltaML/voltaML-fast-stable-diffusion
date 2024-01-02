@@ -24,7 +24,11 @@ class KdiffusionSchedulerAdapter:
     denoiser: Denoiser
 
     # diffusers compat
-    config: dict = {"steps_offset": 0, "prediction_type": "epsilon"}
+    config: dict = {
+        "steps_offset": 0,
+        "prediction_type": "epsilon",
+        "num_train_timesteps": 1000,
+    }
 
     # should really be "sigmas," but for compatibility with diffusers
     # it's named timesteps.
@@ -147,6 +151,7 @@ class KdiffusionSchedulerAdapter:
         generator: Union[PhiloxGenerator, torch.Generator],
         callback,
         callback_steps,
+        device: torch.device = None,  # type: ignore
     ) -> torch.Tensor:
         "Run inference function provided with denoiser."
 
@@ -180,7 +185,7 @@ class KdiffusionSchedulerAdapter:
             "model": apply_model,
             "x": x,
             "callback": callback_func,
-            "sigmas": self.timesteps,
+            "sigmas": self.timesteps.to(device=x.device),
             "sigma_min": self.denoiser.sigmas[0].item(),  # type: ignore
             "sigma_max": self.denoiser.sigmas[-1].item(),  # type: ignore
             "noise_sampler": create_noise_sampler(),

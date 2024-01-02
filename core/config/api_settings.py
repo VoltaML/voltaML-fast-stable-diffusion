@@ -30,6 +30,7 @@ class APIConfig:
     attention_processor: Literal[
         "xformers", "sdpa", "cross-attention", "subquadratic", "multihead"
     ] = "sdpa"
+    fuse_attention: bool = True
     subquadratic_size: int = 512
     attention_slicing: Union[int, Literal["auto", "disabled"]] = "auto"
     channels_last: bool = True
@@ -39,10 +40,53 @@ class APIConfig:
     data_type: Literal[
         "float32", "float16", "bfloat16", "float8_e4m3fn", "float8_e5m2"
     ] = "float16"
-    dont_merge_latents: bool = (
-        False  # Will drop performance, but could help with some VRAM issues
-    )
+    use_minimal_sdxl_pipeline: bool = False  # slower, but works better
+
+    # VRAM optimizations
+    # whether to run both parts of CFG>1 generations in one call. Increases VRAM usage during inference,
+    # halves inference speed for most -- newer than 10xx -- cards.
+    batch_cond_uncond: bool = True
+    # Whether to cache the weight of tensors for LoRA loading during float8 inference.
+    # Improves how LoRAs work when data-type is a subset of FP8, but increases system RAM usage to 2x.
+    # ONLY WORKS WHEN DATA_TYPE=FLOAT8
     cache_fp16_weight: bool = False  # only works on float8. Used for LoRAs.
+
+    # Approximation-type optimizations ("ruin" quality for big boosts in performance)
+    # According to the following paper: https://arxiv.org/pdf/2312.09608.pdf (Faster-Diffusion)
+    #   ControlNet infers can be "effectively skipped" after a certain point, because their control
+    #   on the images loosens up after a while.
+    #
+    #   value: from which "percentage" of the diffusion process should we skip controlnet inferring.
+    #   default: 1.0, don't skip at all.
+    #   IMPORTANT: the first min(5, n-3) steps WILL always have controlnet inferring on to avoid completely
+    #              disabling controlnet
+    approximate_controlnet: float = 1.0
+
+    # According to the following paper: https://browse.arxiv.org/html/2312.12487v1 (Adaptive Guidance)
+    #   even stopping it naively (without implementing AG, which I (Gabe) might implement later)
+    #   doesn't murder image quality. I'd compare it to how TensorRT "mutates" images.
+    #   Probably shouldn't be set to anything below 0.75
+    #
+    #   value: from which "percentage" of the diffusion process should we stop inferring uncond.
+    #   default: 1.0, don't stop inferring at all.
+    cfg_uncond_tau: float = 1.0
+
+    # Won't implement timestep pararellization since it has a tendency to "explode" VRAM usage, and I
+    # don't know if I'm ready for issues that could bring down the line...
+    # source: https://arxiv.org/pdf/2312.09608.pdf (Faster-Diffusion)
+
+    # According to the following paper: https://arxiv.org/pdf/2312.09608.pdf (Faster-Diffusion)
+    #   Dropping encode/decode -- effectively caching it -- and creating new values every nth step
+    #   produces negligible quality loss whilst boosting performance by 1/drop_encode_decode%.
+    #
+    #   value: "off" disables this. "on" infers the first 5 steps ALWAYS as full-quality ones, and then every 5th.
+    #   default: "off," due to quality loss, same reason as to why HyperTile is off by default.
+    drop_encode_decode: Union[
+        int,  # if int, drop every x-th step excluding the first 5
+        Literal["off", "on"],  # on = first 5 + every 5th
+    ] = "off"  # "on" results in a ~30% increase in performance, without ruining quality too much -- highly depends on seed
+
+    deepcache_cache_interval: int = 1  # cache every x-th layer, 1 = disabled
 
     # CUDA specific optimizations
     reduced_precision: bool = False
@@ -51,6 +95,15 @@ class APIConfig:
 
     # Device settings
     device: str = "cuda:0"
+    # Where to load the models onto first. By default, diffusers has a kind of stupid way of
+    # first loading models to cpu and then onto the device.
+    load_location: Union[str, Literal["on-device", "cpu"]] = "on-device"
+    # Load models using streaming instead of mmaping. Mmaping is faster 99% of the time,
+    # however WSL2s drvfs fucks these things up and just streaming the loading is usually faster.
+    # Only case where users may run into these issues is when loading from the host NTFS drive from WSL2, or when having some cloud
+    # service set as their drive.
+    # Evem then, highly recommend leaving this on False.
+    stream_load: bool = False
 
     # Critical
     enable_shutdown: bool = True
@@ -157,6 +210,15 @@ class APIConfig:
     def dtype(self) -> torch.dtype:
         "Return selected data type"
         return getattr(torch, self.data_type)
+
+    @property
+    def load_device(self) -> torch.device:
+        "Device to use for loading models onto."
+        return (
+            torch.device(self.device)
+            if self.load_location == "on-device"
+            else torch.device(self.load_location)
+        )
 
     @property
     def load_dtype(self) -> torch.dtype:

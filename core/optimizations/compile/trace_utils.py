@@ -1,6 +1,7 @@
 import logging
 import warnings
 from typing import Tuple
+from functools import partial
 
 import torch
 from diffusers.models.unet_2d_condition import UNet2DConditionOutput
@@ -42,13 +43,17 @@ class TracedUNet(torch.nn.Module):
 
 
 def warmup(
-    model: torch.nn.Module, amount: int, dtype: torch.dtype, device: torch.device
+    model: torch.nn.Module,
+    amount: int,
+    dtype: torch.dtype,
+    device: torch.device,
+    silent: bool = False,
 ) -> None:
     "Warms up model with amount generated sample inputs."
 
     model.eval()
     with torch.inference_mode():
-        for _ in tqdm(range(amount), desc="Warming up"):
+        for _ in tqdm(range(amount), disable=silent, desc="Warming up"):
             model(*generate_inputs(dtype, device))
 
 
@@ -57,8 +62,11 @@ def trace_ipex(
     dtype: torch.dtype,
     device: torch.device,
     cpu: dict,
+    silent: bool = False,
 ) -> Tuple[torch.nn.Module, bool]:
     from core.inference.functions import is_ipex_available
+
+    logger.disabled = silent
 
     if is_ipex_available():
         import intel_extension_for_pytorch as ipex
@@ -93,15 +101,17 @@ def trace_model(
     dtype: torch.dtype,
     device: torch.device,
     iterations: int = 25,
+    silent: bool = False,
 ) -> torch.nn.Module:
     "Traces the model for inference"
 
+    logger.disabled = silent
+
     og = model
-    from functools import partial
 
     if model.forward.__code__.co_argcount > 3:
         model.forward = partial(model.forward, return_dict=False)
-    warmup(model, iterations, dtype, device)
+    warmup(model, iterations, dtype, device, silent=silent)
     if config.api.channels_last:
         model.to(memory_format=torch.channels_last)  # type: ignore
     logger.debug("Starting trace")
@@ -112,7 +122,7 @@ def trace_model(
         model = torch.jit.trace(model, generate_inputs(dtype, device), check_trace=False)  # type: ignore
         model = torch.jit.freeze(model)  # type: ignore
     logger.debug("Tracing done")
-    warmup(model, iterations // 5, dtype, device)
+    warmup(model, iterations // 5, dtype, device, silent=silent)
 
     model.in_channels = og.in_channels
     model.dtype = og.dtype

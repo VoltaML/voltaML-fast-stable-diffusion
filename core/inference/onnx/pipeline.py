@@ -16,7 +16,7 @@ import torch
 from accelerate import init_empty_weights, load_checkpoint_and_dispatch
 from accelerate.utils import set_module_tensor_to_device
 from diffusers.models.attention_processor import AttnProcessor
-from diffusers.models.autoencoder_kl import AutoencoderKL, AutoencoderKLOutput
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.models.vae import DecoderOutput
 from diffusers.pipelines.onnx_utils import ORT_TO_NP_TYPE
@@ -105,8 +105,8 @@ class AutoencoderKLWrapper(AutoencoderKL):
 
     def encode(self, x) -> Tuple:  # pylint: disable=arguments-differ
         x = x.to(self.device, dtype=self.dtype)
-        outputs: AutoencoderKLOutput = AutoencoderKL.encode(self, x, True)  # type: ignore
-        return (outputs.latent_dist.sample().to(self.device, dtype=self.dtype),)
+        outputs = AutoencoderKL.encode(self, x, True)  # type: ignore
+        return (outputs.latent_dist.sample().to(self.device, dtype=self.dtype),)  # type: ignore
 
     def decode(self, z) -> Tuple:  # pylint: disable=arguments-differ
         z = z.to(self.device, dtype=self.dtype)

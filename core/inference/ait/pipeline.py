@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any, Callable, List, Optional, Union
 
 import torch
-from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
 from diffusers.models.controlnet import ControlNetModel
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion.pipeline_output import (
@@ -34,6 +34,7 @@ from PIL import Image
 from tqdm import tqdm
 from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
+from core.config import config
 from core.inference.functions import is_aitemplate_available
 from core.inference.utilities import (
     get_timesteps,
@@ -324,11 +325,15 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             prompt_embeds.dtype,
             self.device,
             generator,
+            None,
             latents,
             align_to=64,
         )
         extra_step_kwargs = prepare_extra_step_kwargs(
-            self.scheduler, eta, generator=generator
+            self.scheduler,
+            eta,
+            generator=generator,
+            device=torch.device(config.api.device),
         )
         # Necessary for controlnet to function
         text_embeddings = text_embeddings.half()

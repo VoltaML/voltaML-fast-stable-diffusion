@@ -283,6 +283,10 @@ def checks():
             ),
         ],
     )
+    if args_with_extras.log_level != "DEBUG":
+        from diffusers.utils.logging import set_verbosity_error
+
+        set_verbosity_error()
     logger = logging.getLogger()
 
     if args_with_extras.bot and not args_with_extras.install_only:
@@ -310,7 +314,7 @@ def checks():
         )
 
     # Create the diffusers cache folder
-    from diffusers.utils.constants import DIFFUSERS_CACHE
+    from huggingface_hub.constants import HUGGINGFACE_HUB_CACHE as DIFFUSERS_CACHE
 
     Path(DIFFUSERS_CACHE).mkdir(exist_ok=True, parents=True)
 

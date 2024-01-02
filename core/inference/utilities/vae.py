@@ -1,5 +1,6 @@
 from contextlib import ExitStack
-from typing import Callable, Optional
+from typing import Callable, Optional, Union, List
+from io import BytesIO
 
 import numpy as np
 import torch
@@ -37,12 +38,11 @@ def taesd(
     )
 
 
-def cheap_approximation(sample: torch.Tensor) -> Image.Image:
+def cheap_approximation(sample: torch.Tensor) -> Union[BytesIO, Image.Image]:
     "Convert a tensor of latents to RGB"
 
     # Credit to Automatic111 stable-diffusion-webui
     # https://discuss.huggingface.co/t/decoding-latents-to-rgb-without-upscaling/23204/2
-
     coeffs = [
         [0.298, 0.207, 0.208],
         [0.187, 0.286, 0.173],
@@ -57,7 +57,27 @@ def cheap_approximation(sample: torch.Tensor) -> Image.Image:
             [-0.3730, -0.2499, -0.2088],
         ]
     coeffs = torch.tensor(coeffs, dtype=torch.float32, device="cpu")
+    if sample.dim() == 4:
+        decoded_rgb = torch.einsum(
+            "lfxy,lr -> frxy", sample.to(torch.float32).to("cpu"), coeffs
+        )
+        decoded_rgb = torch.clamp((decoded_rgb + 1.0) / 2.0, min=0.0, max=1.0)
 
+        decoded_rgb = 255.0 * np.moveaxis(decoded_rgb.cpu().numpy(), 1, -1)
+        decoded_rgb = decoded_rgb.astype(np.uint8)
+
+        buffer = BytesIO()
+        images = [Image.fromarray(frame) for frame in decoded_rgb]
+        images[0].save(
+            buffer,
+            "gif",
+            save_all=True,
+            append_images=images[1:],
+            loop=0,
+            optimize=True,
+            subrectangles=True,
+        )
+        return buffer
     decoded_rgb = torch.einsum(
         "lxy,lr -> rxy", sample.to(torch.float32).to("cpu"), coeffs
     )
@@ -74,7 +94,7 @@ def full_vae(
     height: Optional[int] = None,
     width: Optional[int] = None,
 ) -> np.ndarray:
-    ensure_correct_device(vae)
+    ensure_correct_device(vae)  # type: ignore
 
     def decode(sample):
         with ExitStack() as gs:
@@ -82,12 +102,27 @@ def full_vae(
                 gs.enter_context(autocast(dtype=torch.float32))
             return vae.decode(sample, return_dict=False)[0]
 
-    return decode_latents(
-        decode,  # type: ignore
-        samples,
-        height or samples[0].shape[1] * 8,
-        width or samples[0].shape[2] * 8,
-    )
+    if samples.dim() == 5:
+        return torch.tensor(
+            np.array(  # this is here since torch thinks itll be faster like this
+                [
+                    decode_latents(
+                        decode,  # type: ignore
+                        samples[x].permute(1, 0, 2, 3),
+                        height or samples[0].shape[1] * 8,
+                        width or samples[0].shape[2] * 8,
+                    )
+                    for x in range(samples.shape[0])
+                ]
+            )
+        ).numpy()
+    else:
+        return decode_latents(
+            decode,  # type: ignore
+            samples,
+            height or samples[0].shape[1] * 8,
+            width or samples[0].shape[2] * 8,
+        )
 
 
 def decode_latents(
@@ -107,13 +142,34 @@ def decode_latents(
     return img
 
 
-def numpy_to_pil(images: np.ndarray):
+def numpy_to_pil(images: np.ndarray) -> List[Union[BytesIO, Image.Image]]:
     """
     Convert a numpy image or a batch of images to a PIL image.
     """
-    if images.ndim == 3:
-        images = images[None, ...]
-    images = (images * 255).round().astype(np.uint8)
-    pil_images = [Image.fromarray(image) for image in images]
+    pil_images: List[Union[BytesIO, Image.Image]] = []
+    if images.ndim == 5:
+        for image in images:
+            frames_done: List[Image.Image] = []
+            for frame in image:
+                frame: np.ndarray = (frame * 255).round().astype(np.uint8)
+                frames_done.append(Image.fromarray(frame))
+
+            buffer = BytesIO()
+            frames_done[0].save(
+                buffer,
+                "gif",
+                save_all=True,
+                append_images=frames_done[1:],
+                loop=0,
+                optimize=True,
+                subrectangles=True,
+            )
+
+            pil_images.append(buffer)
+    else:
+        if images.ndim == 3:
+            images = images[None, ...]
+        images = (images * 255).round().astype(np.uint8)
+        pil_images = [Image.fromarray(image) for image in images]
 
     return pil_images

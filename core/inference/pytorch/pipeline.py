@@ -2,11 +2,13 @@
 
 from contextlib import ExitStack
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
+import inspect
+import math
 
 import PIL
 import torch
 from diffusers.models.adapter import MultiAdapter
-from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
 from diffusers.models.controlnet import ControlNetModel
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion.pipeline_output import (
@@ -16,6 +18,7 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
 )
 from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
+from diffusers.schedulers.scheduling_ddim import DDIMScheduler
 from diffusers.schedulers.scheduling_utils import SchedulerMixin
 from diffusers.utils import logging
 from PIL import Image
@@ -46,7 +49,15 @@ from core.inference.utilities import (
     setup_scalecrafter,
     step_scalecrafter,
 )
+from core.inference.utilities.animatediff import (
+    get_context_scheduler,
+    nil_scheduler,
+    freeinit_filter,
+    freeinit_mix,
+    prepare_mask_coef_by_statistics,
+)
 from core.inference.utilities.philox import PhiloxGenerator
+from core.flags import AnimateDiffFlag
 from core.optimizations import ensure_correct_device, inference_context, unload_all
 from core.scheduling import KdiffusionSchedulerAdapter
 
@@ -296,6 +307,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         prompt_expansion_settings: Optional[Dict] = None,
         adapter_conditioning_scale: Union[float, List[float]] = 1.0,
         adapter_conditioning_factor: float = 1.0,
+        animatediff: Optional[AnimateDiffFlag] = None,
         deepshrink: Optional[DeepshrinkFlag] = None,
         scalecrafter: Optional[ScalecrafterFlag] = None,  # type: ignore
     ):
@@ -373,7 +385,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        with inference_context(self.unet, self.vae, height, width) as inf:
+        with inference_context(
+            self.unet, self.vae, height, width, [animatediff]
+        ) as inf:
             # 0. Modify unet and vae to the (optionally) modified versions from inf
             self.unet = inf.unet  # type: ignore
             self.vae = inf.vae  # type: ignore
@@ -398,17 +412,18 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 global_pool_conditions = self.controlnet.config.global_pool_conditions  # type: ignore
                 guess_mode = guess_mode or global_pool_conditions
 
-            num_channels_unet = self.unet.config.in_channels  # type: ignore
+            num_channels_unet = self.unet.config["in_channels"]
 
             # 2. Define call parameters
             batch_size = 1 if isinstance(prompt, str) else len(prompt)
             device = self._execution_device
+            latents_device = torch.device("cpu") if animatediff is not None else device
             # here `guidance_scale` is defined analog to the guidance weight `w` of equation (2)
             # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
             # corresponds to doing no classifier free guidance.
             do_classifier_free_guidance = guidance_scale > 1.0
             split_latents_into_two = (
-                config.api.dont_merge_latents and do_classifier_free_guidance
+                not config.api.batch_cond_uncond and do_classifier_free_guidance
             )
             do_self_attention_guidance = self_attention_scale > 0.0
 
@@ -447,44 +462,28 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             # 4. Preprocess image and mask
             if isinstance(image, PIL.Image.Image):  # type: ignore
-                width, height = image.size  # type: ignore
-                if not hasattr(self, "controlnet"):
-                    image = preprocess_image(image)
+                if animatediff is not None and animatediff.use_pia:
+                    mask_image = image
+                    image = None
                 else:
-                    image = prepare_image(
-                        image,
-                        width,
-                        height,
-                        batch_size,
-                        num_images_per_prompt,
-                        device,
-                        dtype,
-                    )
+                    width, height = image.size  # type: ignore
+                    if not hasattr(self, "controlnet"):
+                        image = preprocess_image(image)
+                    else:
+                        image = prepare_image(
+                            image,
+                            width,
+                            height,
+                            batch_size,
+                            num_images_per_prompt,
+                            device,
+                            dtype,
+                        )
             if image is not None:
                 image = image.to(device=self.device, dtype=dtype)
-            if mask_image is not None:
-                mask, masked_image, _ = prepare_mask_and_masked_image(
-                    image, mask_image, height, width
-                )
-                mask, masked_image_latents = prepare_mask_latents(
-                    mask,
-                    masked_image,
-                    batch_size * num_images_per_prompt,  # type: ignore
-                    height,
-                    width,
-                    dtype,
-                    device,
-                    do_classifier_free_guidance,
-                    self.vae,
-                    self.vae_scale_factor,
-                    self.vae.config.scaling_factor,  # type: ignore
-                    generator=generator,
-                )
-            else:
-                mask = None
 
             # 5. set timesteps
-            self.scheduler.set_timesteps(num_inference_steps, device=device)  # type: ignore
+            self.scheduler.set_timesteps(num_inference_steps, device=latents_device)  # type: ignore
             timesteps, num_inference_steps = get_timesteps(
                 self.scheduler,
                 num_inference_steps,
@@ -506,14 +505,66 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 height,
                 width,
                 dtype,
-                device,
+                latents_device,
                 generator,
-                latents,
-                latent_channels=None if mask is None else self.vae.config.latent_channels,  # type: ignore
+                latents=latents,
+                latent_channels=None,
+                frames=None if animatediff is None else animatediff.frames,
             )
 
-            # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
-            extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta, generator)  # type: ignore
+            if mask_image is not None:
+                if animatediff is not None and animatediff.use_pia:
+                    assert latents is not None
+                    # fmt: off
+                    mask_image = preprocess_image(mask_image)
+                    mask_image = mask_image.to(device=self.vae.device, dtype=self.vae.dtype)
+                    image_latent = self.vae.encode(mask_image).latent_dist.sample(generator)
+                    image_latent = image_latent.to(device="cpu", dtype=torch.float32)
+                    image_latent = torch.nn.functional.interpolate(image_latent, size=(latents.shape[-2], latents.shape[-1]))
+                    image_latent = image_latent * 0.18215
+                    image_latent = image_latent.to(device=latents_device, dtype=latents.dtype)
+                    mask = torch.zeros(latents.shape[0], 1, latents.shape[2], latents.shape[3], latents.shape[4]) \
+                            .to(device=latents_device, dtype=latents.dtype)
+                    
+                    sim_range = animatediff.pia_motion
+                    if animatediff.pia_motion_type == "closed_loop" or animatediff.closed_loop:
+                        sim_range += 3
+                    elif animatediff.pia_motion_type == "style_transfer":
+                        sim_range = -1 * sim_range - 1
+
+                    mask_coef = prepare_mask_coef_by_statistics(animatediff.frames, animatediff.pia_cond_frame, sim_range)
+                    
+                    masked_image = torch.zeros(latents.shape[0], 4, latents.shape[2], latents.shape[3], latents.shape[4]) \
+                            .to(device=latents_device, dtype=latents.dtype)
+                    for f in range(animatediff.frames):
+                        mask[:, :, f, :, :] = mask_coef[f]
+                        masked_image[:, :, f, :, :] = image_latent.clone()
+                    # fmt: on
+                else:
+                    mask, masked_image, _ = prepare_mask_and_masked_image(
+                        image, mask_image, height, width
+                    )
+                    mask, masked_image_latents = prepare_mask_latents(
+                        mask,
+                        masked_image,
+                        batch_size * num_images_per_prompt,  # type: ignore
+                        height,
+                        width,
+                        dtype,
+                        device,
+                        do_classifier_free_guidance,
+                        self.vae,
+                        self.vae_scale_factor,
+                        self.vae.config.scaling_factor,  # type: ignore
+                        generator=generator,
+                    )
+            else:
+                mask = None
+
+            assert latents is not None
+
+            # 7. Prepare extra step kwargs.
+            extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta, generator, latents_device)  # type: ignore
 
             setup_scalecrafter(self.unet, scalecrafter)  # type: ignore
 
@@ -558,117 +609,290 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 ]  # output.sample.shape[-2:] in older diffusers
 
             cutoff = num_inference_steps * adapter_conditioning_factor
-            # 8. Denoising loop
-            j = 0
 
+            j = 0
+            idx = False
+
+            context_scheduler = (
+                get_context_scheduler(animatediff.context_scheduler)
+                if animatediff is not None
+                else nil_scheduler
+            )
+            context_args = []
+            iteration_count = 1
+            freq_filter = None
+            f_scheduler: DDIMScheduler = None  # type: ignore
+            f_fast_sampling = False
+            if animatediff is not None:
+                context_args = [
+                    animatediff.frames,
+                    animatediff.context_size,
+                    animatediff.frame_stride,
+                    animatediff.frame_overlap,
+                    animatediff.closed_loop,
+                ]
+                if animatediff.freeinit_iterations != -1:
+                    iteration_count = animatediff.freeinit_iterations
+                    f_fast_sampling = animatediff.freeinit_fast_sampling
+                    # FreeInit only works with DDIM, so... just use DDIM :)
+                    f_scheduler = DDIMScheduler.from_config(  # type: ignore
+                        {
+                            "beta_start": 0.00085,
+                            "beta_end": 0.012,
+                            "beta_scheduler": "linear",
+                        }
+                    )
+                    freq_filter = freeinit_filter(
+                        latents.shape,
+                        device=self.unet.device,
+                        params={
+                            "method": animatediff.freeinit_method,
+                            "n": animatediff.freeinit_n,
+                            "d_t": animatediff.freeinit_dt,
+                            "d_s": animatediff.freeinit_ds,
+                        },
+                    )
+
+            classify = do_classifier_free_guidance
+            prv_feature = None
+
+            # 8. Denoising loop
             def do_denoise(
                 x: torch.Tensor,
                 t: torch.IntTensor,
                 call: Callable[..., torch.Tensor],
                 change_source: Callable[[Callable], None],
             ):
-                nonlocal j
-                nonlocal timesteps
+                nonlocal j, idx, do_classifier_free_guidance, prv_feature
+                # expand the latents if we are doing classifier free guidance
+                assert context_scheduler is not None
 
                 self.unet = modify_kohya(self.unet, j, num_inference_steps, deepshrink)
 
-                # expand the latents if we are doing classifier free guidance
-                latent_model_input = (
-                    torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
-                )
-                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
+                tau = min(j / num_inference_steps, 1.0)
 
-                if num_channels_unet == 9:
-                    latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
+                can_controlnet = (
+                    tau <= config.api.approximate_controlnet
+                    or math.floor(tau * 100) % 5 == 0
+                )
+                do_classifier_free_guidance = classify and (
+                    tau <= config.api.cfg_uncond_tau
+                    or config.api.cfg_uncond_tau == 1.0
+                    or animatediff is not None
+                )
+
+                noise_pred, counter = None, None
+                if animatediff is not None:
+                    assert latents is not None
+                    noise_pred = torch.zeros(
+                        (
+                            x.shape[0] * (2 if do_classifier_free_guidance else 1),
+                            *x.shape[1:],
+                        ),
+                        device=latents.device,
+                        dtype=latents.dtype,
+                    )
+                    counter = torch.zeros(
+                        (1, 1, animatediff.frames, 1, 1),
+                        device=latents.device,
+                        dtype=latents.dtype,
+                    )
 
                 self.unet = step_scalecrafter(
                     self.unet, scalecrafter, j, num_inference_steps
                 )
 
-                # predict the noise residual
-                down_intrablock_additional_residuals = None
-                if hasattr(self, "adapter") and self.adapter is not None:
-                    if j < cutoff:
-                        assert adapter_state is not None
-                        down_intrablock_additional_residuals = [
-                            state.clone() for state in adapter_state
-                        ]
-
-                down_block_res_samples, mid_block_res_sample = None, None
-                if hasattr(self, "controlnet") and self.controlnet is not None:
-                    if guess_mode and do_classifier_free_guidance:
-                        # Infer ControlNet only for the conditional batch.
-                        control_model_input = x
-                        control_model_input = self.scheduler.scale_model_input(control_model_input, t).half()  # type: ignore
-                        controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
+                for context in context_scheduler(j, *context_args):
+                    if animatediff is not None:
+                        latent_model_input = x[:, :, context].repeat(
+                            2 if do_classifier_free_guidance else 1, 1, 1, 1, 1
+                        )
+                        if mask is not None:
+                            assert masked_image is not None
+                            # fmt: off
+                            latent_mask = torch.cat([mask[:, :, context]] * 2) if do_classifier_free_guidance else mask[:, :, context]
+                            latent_masked_image = torch.cat([masked_image[:, :, context]] * 2) if do_classifier_free_guidance else masked_image[:, :, context]
+                            # fmt: on
                     else:
-                        control_model_input = latent_model_input
-                        controlnet_prompt_embeds = text_embeddings
+                        latent_model_input = (
+                            torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
+                        )
+                        if mask is not None:
+                            latent_mask = mask
+                            latent_masked_image = masked_image_latents  # type: ignore
+                    latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
-                    cond_scale = controlnet_conditioning_scale * controlnet_keep[j]
+                    if num_channels_unet == 9:
+                        latent_model_input = torch.cat([latent_model_input, latent_mask, latent_masked_image], dim=1)  # type: ignore
+                    latent_model_input = latent_model_input.to(device=latents_device)
 
-                    change_source(self.controlnet)
-                    down_block_res_samples, mid_block_res_sample = call(
-                        control_model_input,
-                        t,
-                        cond=controlnet_prompt_embeds,
-                        controlnet_cond=image,
-                        conditioning_scale=cond_scale,
-                        guess_mode=guess_mode,
-                    )
-
-                    if guess_mode and do_classifier_free_guidance:
-                        # Infered ControlNet only for the conditional batch.
-                        # To apply the output of ControlNet to both the unconditional and conditional batches,
-                        # add 0 to the unconditional batch to keep it unchanged.
-                        down_block_res_samples = [
-                            torch.cat([torch.zeros_like(d), d])
-                            for d in down_block_res_samples
-                        ]
-                        mid_block_res_sample = torch.cat(
-                            [
-                                torch.zeros_like(mid_block_res_sample),
-                                mid_block_res_sample,
+                    # predict the noise residual
+                    down_intrablock_additional_residuals = None
+                    if hasattr(self, "adapter") and self.adapter is not None:
+                        if j < cutoff:
+                            assert adapter_state is not None
+                            down_intrablock_additional_residuals = [
+                                state.clone() for state in adapter_state
                             ]
+
+                    down_block_res_samples, mid_block_res_sample = None, None
+                    if (
+                        hasattr(self, "controlnet") and self.controlnet is not None
+                    ) and can_controlnet:
+                        if guess_mode and do_classifier_free_guidance:
+                            # Infer ControlNet only for the conditional batch.
+                            control_model_input = x
+                            control_model_input = self.scheduler.scale_model_input(control_model_input, t).half()  # type: ignore
+                            controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
+                        else:
+                            control_model_input = latent_model_input
+                            controlnet_prompt_embeds = text_embeddings
+
+                        cond_scale = controlnet_conditioning_scale * controlnet_keep[j]
+
+                        change_source(self.controlnet)
+                        down_block_res_samples, mid_block_res_sample = call(
+                            control_model_input,
+                            t,
+                            cond=controlnet_prompt_embeds,
+                            controlnet_cond=image,
+                            conditioning_scale=cond_scale,
+                            guess_mode=guess_mode,
                         )
 
-                change_source(self.unet)
-                if split_latents_into_two and do_classifier_free_guidance:
-                    uncond, cond = text_embeddings.chunk(2)
-                    uncond_down, cond_down = down_block_res_samples.chunk(2)  # type: ignore
-                    uncond_mid, cond_mid = mid_block_res_sample.chunk(2)  # type: ignore
-                    uncond_intra, cond_intra = None, None
-                    if down_intrablock_additional_residuals is not None:
-                        uncond_intra, cond_intra = [], []
-                        for s in down_intrablock_additional_residuals:
-                            unc, cnd = s.chunk(2)
-                            uncond_intra.append(unc)
-                            cond_intra.append(cnd)
-                    noise_pred_text = call(
-                        latent_model_input,
-                        t,
-                        cond=cond,
-                        down_block_additional_residuals=cond_down,
-                        mid_block_additional_residual=cond_mid,
-                        down_intrablock_additional_residuals=cond_intra,
+                        if guess_mode and do_classifier_free_guidance:
+                            # Infered ControlNet only for the conditional batch.
+                            # To apply the output of ControlNet to both the unconditional and conditional batches,
+                            # add 0 to the unconditional batch to keep it unchanged.
+                            down_block_res_samples = [
+                                torch.cat([torch.zeros_like(d), d])
+                                for d in down_block_res_samples
+                            ]
+                            mid_block_res_sample = torch.cat(
+                                [
+                                    torch.zeros_like(mid_block_res_sample),
+                                    mid_block_res_sample,
+                                ]
+                            )
+
+                    change_source(self.unet)
+                    kwargs = set(
+                        inspect.signature(self.unet.forward).parameters.keys()  # type: ignore
                     )
-                    noise_pred_uncond = call(
-                        latent_model_input,
-                        t,
-                        cond=uncond,
-                        down_block_additional_residuals=uncond_down,
-                        mid_block_additional_residual=uncond_mid,
-                        down_intrablock_additional_residuals=uncond_intra,
-                    )
-                else:
-                    noise_pred = call(  # type: ignore
-                        latent_model_input,
-                        t,
-                        cond=text_embeddings,
-                        down_block_additional_residuals=down_block_res_samples,
-                        mid_block_additional_residual=mid_block_res_sample,
-                        down_intrablock_additional_residuals=down_intrablock_additional_residuals,
-                    )
+
+                    _kwargs = {
+                        "down_block_additional_residuals": down_block_res_samples,
+                        "mid_block_additional_residual": mid_block_res_sample,
+                        "down_intrablock_additional_residuals": down_intrablock_additional_residuals,
+                        "order": j,
+                        "drop_encode_decode": config.api.drop_encode_decode != "off",
+                        "quick_replicate": config.api.deepcache_cache_interval > 1,
+                        "replicate_prv_feature": prv_feature,
+                    }
+                    if split_latents_into_two and do_classifier_free_guidance:
+                        uncond, cond = text_embeddings.chunk(2)
+                        uncond_down, uncond_mid = None, None
+                        cond_down, cond_mid = None, None
+                        uncond_intra, cond_intra = None, None
+
+                        if down_block_res_samples is not None:
+                            uncond_down, cond_down = down_block_res_samples.chunk(2)  # type: ignore
+                            uncond_mid, cond_mid = mid_block_res_sample.chunk(2)  # type: ignore
+
+                        if down_intrablock_additional_residuals is not None:
+                            uncond_intra, cond_intra = [], []
+                            for s in down_intrablock_additional_residuals:
+                                unc, cnd = s.chunk(2)
+                                uncond_intra.append(unc)
+                                cond_intra.append(cnd)
+
+                        _kwargs.update(
+                            {
+                                "down_block_additional_residuals": cond_down,
+                                "mid_block_additional_residual": cond_mid,
+                                "down_intrablock_additional_residuals": cond_intra,
+                            }
+                        )
+                        for kw, _ in _kwargs.copy().items():
+                            if kw not in kwargs:
+                                del _kwargs[kw]
+
+                        if animatediff is not None:
+                            assert noise_pred is not None
+                            assert counter is not None
+                            # fmt: off
+                            # This is an abomination with formatting enabled
+                            lmi = latent_model_input.to(dtype=dtype, device=device)
+                            noise_pred[1, :, context] = noise_pred[1, :, context] \
+                                + call(
+                                    lmi,
+                                    t,
+                                    cond=cond,
+                                    **_kwargs,
+                                )[0].to(dtype=noise_pred.dtype, device=noise_pred.device)
+                            counter[1, :, context] = counter[1, :, context] + 1
+                            # fmt: on
+                        else:
+                            noise_pred_text = call(
+                                latent_model_input, t, cond=cond, **_kwargs
+                            )
+
+                        _kwargs.update(
+                            {
+                                "down_block_additional_residuals": uncond_down,
+                                "mid_block_additional_residual": uncond_mid,
+                                "down_intrablock_additional_residuals": uncond_intra,
+                            }
+                        )
+                        for kw, _ in _kwargs.copy().items():
+                            if kw not in kwargs:
+                                del _kwargs[kw]
+                        if animatediff is not None:
+                            assert noise_pred is not None
+                            assert counter is not None
+                            # fmt: off
+                            # This is an abomination with formatting enabled
+                            lmi = latent_model_input.to(dtype=dtype, device=device)
+                            noise_pred[0, :, context] = noise_pred[0, :, context] \
+                                + call(
+                                    lmi,
+                                    t,
+                                    cond=uncond,
+                                    **_kwargs,
+                                )[0].to(dtype=noise_pred.dtype, device=noise_pred.device)
+                            counter[0, :, context] = counter[0, :, context] + 1
+                            # fmt: on
+                        else:
+                            noise_pred_uncond = call(
+                                latent_model_input, t, cond=uncond, **_kwargs
+                            )
+                    else:
+                        for kw, _ in _kwargs.copy().items():
+                            if kw not in kwargs:
+                                del _kwargs[kw]
+
+                        if animatediff is not None:
+                            assert noise_pred is not None
+                            assert counter is not None
+                            # fmt: off
+                            # This is an abomination with formatting enabled
+                            lmi = latent_model_input.to(dtype=dtype, device=device)
+                            noise_pred[:, :, context] = noise_pred[:, :, context] \
+                                + call(
+                                    lmi,
+                                    t,
+                                    cond=text_embeddings,
+                                    **_kwargs,
+                                )[0].to(dtype=noise_pred.dtype, device=noise_pred.device)
+                            counter[:, :, context] = counter[:, :, context] + 1
+                            # fmt: on
+                        else:
+                            noise_pred = call(  # type: ignore
+                                latent_model_input,
+                                t,
+                                cond=text_embeddings,
+                                **_kwargs,
+                            )
 
                 self.unet, noise_pred_vanilla = post_scalecrafter(
                     self.unet,
@@ -676,20 +900,30 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     j,
                     num_inference_steps,
                     call,
-                    latent_model_input,
+                    latent_model_input,  # type: ignore
                     t,
                     cond=text_embeddings,
-                    down_block_additional_residuals=down_block_res_samples,
-                    mid_block_additional_residual=mid_block_res_sample,
-                    down_intrablock_additional_residuals=down_intrablock_additional_residuals,
+                    down_block_additional_residuals=down_block_res_samples,  # type: ignore
+                    mid_block_additional_residual=mid_block_res_sample,  # type: ignore
+                    down_intrablock_additional_residuals=down_intrablock_additional_residuals,  # type: ignore
                 )
 
                 # perform guidance
                 if do_classifier_free_guidance:
                     if not split_latents_into_two:
-                        noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
+                        if animatediff is not None:
+                            assert noise_pred is not None
+                            assert counter is not None
+                            noise_pred_uncond, noise_pred_text = (noise_pred / counter).chunk(2)  # type: ignore
+                        else:
+                            noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
                     noise_pred = calculate_cfg(
-                        j, noise_pred_text, noise_pred_uncond, guidance_scale, t, noise_pred_vanilla  # type: ignore
+                        j,
+                        noise_pred_text,  # type: ignore
+                        noise_pred_uncond,  # type: ignore
+                        guidance_scale,
+                        t,
+                        additional_pred=noise_pred_vanilla,
                     )
 
                 if do_self_attention_guidance:
@@ -706,11 +940,14 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         text_embeddings,
                         self_attention_scale,
                         guidance_scale,
-                        config.api.load_dtype,
+                        dtype,
+                        drop_encode_decode=config.api.drop_encode_decode != "off",
+                        order=j,
                     )
 
                 if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     # compute the previous noisy sample x_t -> x_t-1
+                    assert noise_pred is not None
                     x = self.scheduler.step(  # type: ignore
                         noise_pred, t.to(noise_pred.device), x.to(noise_pred.device), **extra_step_kwargs  # type: ignore
                     ).prev_sample  # type: ignore
@@ -724,7 +961,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     init_mask = pad_tensor(init_mask, 8, (x.shape[2], x.shape[3]))
 
                     x = (1 - init_mask) * init_latents_proper + init_mask * x  # type: ignore
+
                 j += 1
+                self.unet = postprocess_kohya(self.unet)  # type: ignore
                 return x
 
             # 8. Denoising loop
@@ -732,56 +971,92 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             latents = latents.to(dtype=dtype)  # type: ignore
             if image_latents is not None:
                 image_latents = image_latents.to(dtype=dtype)  # type: ignore
+
             with ExitStack() as gs:
                 if do_self_attention_guidance:
                     gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
 
-                if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
-                    latents = self.scheduler.do_inference(
-                        latents,  # type: ignore
-                        generator=generator,
-                        call=self.unet,  # type: ignore
-                        apply_model=do_denoise,
-                        callback=callback,
-                        callback_steps=callback_steps,
-                    )
-                else:
-                    s = self.unet
+                for iter in range(iteration_count):
+                    if hasattr(self.scheduler, "_step_index"):
+                        self.scheduler._step_index = None  # type: ignore
+                    if freq_filter is not None:
+                        if iter == 0:
+                            assert latents is not None
+                            initial_noise = latents.detach().clone()
+                        else:
+                            assert latents is not None and f_scheduler is not None
+                            diffuse_timestep = (
+                                f_scheduler.config["num_train_timesteps"] - 1
+                            )
+                            diffuse_timesteps = torch.full(
+                                (batch_size,), int(diffuse_timestep)
+                            )
+                            diffuse_timesteps = diffuse_timesteps.long()
+                            z_T = f_scheduler.add_noise(
+                                original_samples=latents.to(device),  # type: ignore
+                                noise=initial_noise.to(device),  # type: ignore
+                                timesteps=diffuse_timesteps.to(device),  # type: ignore
+                            )
+                            z_rand = torch.randn(latents.shape, device=device)
+                            lt = latents.dtype
+                            latents = freeinit_mix(
+                                z_T.to(dtype=torch.float32), z_rand, LPF=freq_filter
+                            )
+                            latents = latents.to(dtype=lt)  # type: ignore
+                        if f_fast_sampling:
+                            curr_inf = int(
+                                num_inference_steps / iteration_count * (iter + 1)
+                            )
+                            self.scheduler.set_timesteps(curr_inf, device=device)
+                            timesteps = self.scheduler.timesteps
 
-                    def change(src):
-                        nonlocal s
-                        s = src
-
-                    def _call(*args, **kwargs):
-                        if len(args) == 3:
-                            encoder_hidden_states = args[-1]
-                            args = args[:2]
-                        if kwargs.get("cond", None) is not None:
-                            encoder_hidden_states = kwargs.pop("cond")
-                        ret = s(
-                            *args,
-                            encoder_hidden_states=encoder_hidden_states,  # type: ignore
-                            return_dict=False,
-                            **kwargs,
+                    if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+                        latents = self.scheduler.do_inference(
+                            latents,  # type: ignore
+                            device=latents_device,
+                            generator=generator,
+                            call=self.unet,  # type: ignore
+                            apply_model=do_denoise,
+                            callback=callback,
+                            callback_steps=callback_steps,
                         )
-                        if isinstance(s, UNet2DConditionModel):
-                            return ret[0]
-                        return ret
+                    else:
+                        s = self.unet
 
-                    for i, t in enumerate(tqdm(timesteps, desc="PyTorch")):
-                        latents = do_denoise(latents, t, _call, change)  # type: ignore
+                        def change(src):
+                            nonlocal s
+                            s = src
 
-                        # call the callback, if provided
-                        if i % callback_steps == 0:
-                            if callback is not None:
-                                callback(i, t, latents)  # type: ignore
-                            if (
-                                is_cancelled_callback is not None
-                                and is_cancelled_callback()
-                            ):
-                                self.unet = postprocess_kohya(self.unet)  # type: ignore
-                                return None
-                self.unet = postprocess_kohya(self.unet)  # type: ignore
+                        def _call(*args, **kwargs):
+                            if len(args) == 3:
+                                encoder_hidden_states = args[-1]
+                                args = args[:2]
+                            if kwargs.get("cond", None) is not None:
+                                encoder_hidden_states = kwargs.pop("cond")
+                            ret = s(
+                                *args,
+                                encoder_hidden_states=encoder_hidden_states,  # type: ignore
+                                return_dict=False,
+                                **kwargs,
+                            )
+                            if isinstance(s, UNet2DConditionModel):
+                                return ret[0]
+                            return ret
+
+                        for i, t in enumerate(tqdm(timesteps, desc="PyTorch")):
+                            latents = do_denoise(latents, t, _call, change)  # type: ignore
+
+                            # call the callback, if provided
+                            if i % callback_steps == 0:
+                                if callback is not None:
+                                    callback(i, t, latents)  # type: ignore
+                                if (
+                                    is_cancelled_callback is not None
+                                    and is_cancelled_callback()
+                                ):
+                                    return None
+
+            latents = latents.to(device=device)  # type: ignore
 
             # 9. Post-processing
             if output_type == "latent":
@@ -794,11 +1069,11 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             if output_type == "pil":
                 converted_image = numpy_to_pil(converted_image)
 
-            unload_all()
+        unload_all()
 
-            if not return_dict:
-                return converted_image, False
+        if not return_dict:
+            return converted_image, False  # type: ignore
 
-            return StableDiffusionPipelineOutput(
-                images=converted_image, nsfw_content_detected=False  # type: ignore
-            )
+        return StableDiffusionPipelineOutput(
+            images=converted_image, nsfw_content_detected=False  # type: ignore
+        )

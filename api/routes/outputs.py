@@ -12,7 +12,7 @@ router = APIRouter(tags=["output"])
 thread_pool = ThreadPoolExecutor()
 logger = logging.getLogger(__name__)
 
-valid_extensions = ["png", "jpeg", "webp"]
+valid_extensions = ["png", "jpeg", "webp", "gif"]
 
 
 def sort_images(images: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

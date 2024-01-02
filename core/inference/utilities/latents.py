@@ -1,3 +1,4 @@
+from contextlib import ExitStack
 import logging
 import math
 from time import time
@@ -6,7 +7,7 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 import torch
 import torch.nn.functional as F
-from diffusers.models import vae as diffusers_vae
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL as diffusers_vae
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
 )
@@ -18,6 +19,7 @@ from core.flags import LatentScaleModel
 from core.inference.utilities.philox import PhiloxGenerator
 
 from .random import randn
+from core.optimizations.autocast_utils import autocast
 
 logger = logging.getLogger(__name__)
 
@@ -272,17 +274,27 @@ def prepare_latents(
     dtype: torch.dtype,
     device: torch.device,
     generator: Union[PhiloxGenerator, torch.Generator],
+    frames: Optional[int] = None,
     latents=None,
     latent_channels: Optional[int] = None,
     align_to: int = 1,
 ):
     if image is None:
-        shape = (
-            batch_size,
-            pipe.unet.config.in_channels,  # type: ignore
-            (math.ceil(height / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
-            (math.ceil(width / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
-        )
+        if frames is not None:
+            shape = (
+                batch_size,
+                pipe.unet.config.in_channels,
+                frames,
+                (math.ceil(height / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+                (math.ceil(width / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+            )
+        else:
+            shape = (
+                batch_size,
+                pipe.unet.config.in_channels,  # type: ignore
+                (math.ceil(height / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+                (math.ceil(width / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+            )
 
         if latents is None:
             # randn does not work reproducibly on mps
@@ -295,13 +307,24 @@ def prepare_latents(
             latents = latents.to(device)
 
         # scale the initial noise by the standard deviation required by the scheduler
-        latents = latents * pipe.scheduler.init_noise_sigma  # type: ignore
+        sigma = pipe.scheduler.init_noise_sigma
+        if isinstance(sigma, torch.Tensor):
+            sigma = sigma.to(dtype=latents.dtype, device=latents.device)
+        latents = latents * sigma  # type: ignore
+        if frames is not None:
+            latents = latents.to(memory_format=torch.channels_last_3d)  # type: ignore
         return latents, None, None
     else:
         if image.shape[1] != 4:
             image = pad_tensor(image, pipe.vae_scale_factor)
-            init_latent_dist = pipe.vae.encode(image.to(config.api.device, dtype=pipe.vae.dtype)).latent_dist  # type: ignore
-            init_latents = init_latent_dist.sample(generator=generator)
+            with ExitStack() as gs:
+                if pipe.vae.config["force_upcast"] or config.api.upcast_vae:
+                    gs.enter_context(autocast(dtype=torch.float32))
+                init_latent_dist = pipe.vae.encode(image.to(config.api.device, dtype=pipe.vae.dtype)).latent_dist  # type: ignore
+
+                if pipe.vae.config["force_upcast"] or config.api.upcast_vae:
+                    gs.enter_context(autocast(dtype=config.api.load_dtype))
+            init_latents = init_latent_dist.sample(generator=generator)  # type: ignore
             init_latents = 0.18215 * init_latents
             init_latents = torch.cat([init_latents] * batch_size, dim=0)  # type: ignore
         else:

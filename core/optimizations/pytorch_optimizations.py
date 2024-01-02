@@ -28,8 +28,11 @@ def optimize_model(
     pipe: Union[StableDiffusionPipeline, StableDiffusionXLPipeline],
     device,
     is_for_aitemplate: bool = False,
+    silent: bool = False,
 ) -> None:
     "Optimize the model for inference."
+
+    logger.disabled = silent
 
     # Tuple[Supported, Enabled by default, Enabled]
     hardware_scheduling = experimental_check_hardware_scheduling()
@@ -59,7 +62,7 @@ def optimize_model(
         and offload
     )
 
-    pipe = cast(pipe, device, config.api.dtype, can_offload)
+    pipe = cast(pipe, device, config.api.dtype, can_offload, silent=silent)
 
     if "cuda" in config.api.device and not is_for_aitemplate:
         supports_tf = supports_tf32(device)
@@ -89,7 +92,7 @@ def optimize_model(
         torch.backends.cudnn.benchmark = config.api.cudnn_benchmark  # type: ignore
 
     if is_pytorch_pipe(pipe):
-        pipe.vae = optimize_vae(pipe.vae)
+        pipe.vae = optimize_vae(pipe.vae, silent=silent)
 
     # Attention slicing that should save VRAM (but is slower)
     slicing = config.api.attention_slicing
@@ -103,7 +106,7 @@ def optimize_model(
 
     # xFormers and SPDA
     if not is_for_aitemplate:
-        set_attention_processor(pipe)
+        set_attention_processor(pipe, silent=silent)
 
         if config.api.autocast:
             logger.info("Optimization: Enabled autocast")
@@ -154,12 +157,14 @@ def optimize_model(
             f"Running on an {cpu['VendorId']} device. Used threads: {torch.get_num_threads()}-{torch.get_num_interop_threads()} / {cpu['num_virtual_cores']}"
         )
 
-        pipe.unet, ipexed = trace_ipex(pipe.unet, config.api.load_dtype, device, cpu)
+        pipe.unet, ipexed = trace_ipex(
+            pipe.unet, config.api.load_dtype, device, cpu, silent=silent
+        )
 
     if config.api.trace_model and not ipexed and not is_for_aitemplate:
         logger.info("Optimization: Tracing model.")
         logger.warning("This will break controlnet and loras!")
-        pipe.unet = trace_model(pipe.unet, config.api.load_dtype, device)  # type: ignore
+        pipe.unet = trace_model(pipe.unet, config.api.load_dtype, device, silent=silent)  # type: ignore
 
     if config.api.torch_compile and not is_for_aitemplate:
         if config.api.attention_processor == "xformers":
@@ -205,12 +210,14 @@ def experimental_check_hardware_scheduling() -> Tuple[int, int, int]:
 def is_pytorch_pipe(pipe):
     "Checks if the pipe is a pytorch pipe"
 
-    return issubclass(pipe.__class__, (DiffusionPipeline))
+    from .context_manager import InferenceContext
+
+    return issubclass(pipe.__class__, (DiffusionPipeline, InferenceContext))
 
 
-def optimize_vae(vae):
+def optimize_vae(vae, silent: bool = False):
     "Optimize a VAE according to config defined in data/settings.json"
-    vae = upcast_vae(vae)
+    vae = upcast_vae(vae, silent=silent)
 
     if hasattr(vae, "enable_slicing") and config.api.vae_slicing:
         vae.enable_slicing()

@@ -48,9 +48,14 @@ def get_grid_dimension(length: int) -> Tuple[int, int]:
 
 
 def convert_image_to_stream(
-    image: Image.Image, quality: int = 95, _format: ImageFormats = "webp"
+    image: Union[BytesIO, Image.Image],
+    quality: int = 95,
+    _format: ImageFormats = "webp",
 ) -> BytesIO:
     "Convert an image to a stream of bytes"
+    if isinstance(image, BytesIO):
+        image.seek(0)
+        return image
 
     stream = BytesIO()
     image.save(stream, format=_format, quality=quality)
@@ -165,7 +170,7 @@ def determine_model_type(
 
 
 def convert_image_to_base64(
-    image: Image.Image,
+    image: Union[BytesIO, Image.Image],
     quality: int = 95,
     image_format: ImageFormats = "webp",
     prefix_js: bool = True,
@@ -212,6 +217,9 @@ async def run_in_thread_async(
 def image_grid(imgs: List[Image.Image]):
     "Make a grid of images"
 
+    if isinstance(imgs[0], BytesIO):
+        return imgs[0]
+
     landscape: bool = imgs[0].size[1] >= imgs[0].size[0]
     dim = get_grid_dimension(len(imgs))
     if landscape:
@@ -228,15 +236,19 @@ def image_grid(imgs: List[Image.Image]):
 
 
 def convert_images_to_base64_grid(
-    images: List[Image.Image],
+    images: List[Union[BytesIO, Image.Image]],
     quality: int = 95,
     image_format: ImageFormats = "png",
 ) -> str:
     "Convert a list of images to a list of base64 strings"
 
-    return convert_image_to_base64(
-        image_grid(images), quality=quality, image_format=image_format
-    )
+    if isinstance(images[0], BytesIO):
+        quality = max(quality - 20, 20)
+        return convert_image_to_base64(images[0], quality=quality, image_format="gif")
+    else:
+        return convert_image_to_base64(
+            image_grid(images), quality=quality, image_format=image_format  # type: ignore
+        )
 
 
 def resize(image: Image.Image, w: int, h: int):

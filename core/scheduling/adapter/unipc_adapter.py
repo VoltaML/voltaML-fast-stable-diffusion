@@ -115,6 +115,7 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
         callback_steps,
         optional_device: Optional[torch.device] = None,
         optional_dtype: Optional[torch.dtype] = None,
+        device: torch.device = None,  # type: ignore
     ) -> torch.Tensor:
         device = optional_device or call.device
         dtype = optional_dtype or call.dtype

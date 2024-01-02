@@ -34,6 +34,7 @@ def create_metadata(
         UpscaleQueueEntry,
     ],
     index: int,
+    extension: str,
 ):
     "Return image with metadata burned into it"
 
@@ -51,7 +52,7 @@ def create_metadata(
     def write_metadata_exif(key: str):
         exif_meta_dict[key] = str(unwrap_enum_name(data.__dict__.get(key, "")))
 
-    if config.api.image_extension == "png":
+    if extension == "png":
         for key in fields(data):
             if key.name not in ("image", "mask_image"):
                 write_metadata_text(key.name)
@@ -73,7 +74,7 @@ def create_metadata(
     else:
         procedure = "unknown"
 
-    if config.api.image_extension == "png":
+    if extension == "png":
         text_metadata.add_text("procedure", procedure)
         text_metadata.add_text("model", job.model)
         user_comment: bytes = b""  # for type checking
@@ -85,7 +86,7 @@ def create_metadata(
             json.dumps(exif_meta_dict, ensure_ascii=False), encoding="unicode"
         )
 
-    return text_metadata if config.api.image_extension == "png" else user_comment
+    return text_metadata if extension == "png" else user_comment
 
 
 def save_images(
@@ -138,7 +139,8 @@ def save_images(
         else:
             folder = "img2img"
 
-        metadata = create_metadata(job, i)
+        extension = "gif" if isinstance(image, BytesIO) else config.api.image_extension
+        metadata = create_metadata(job, i, extension=extension)
 
         if job.save_image == "r2":
             # Save into Cloudflare R2 bucket
@@ -148,7 +150,7 @@ def save_images(
 
             filename = f"{job.data.id}-{i}.png"
             image_bytes = BytesIO()
-            image.save(image_bytes, pnginfo=metadata, format=config.api.image_extension)
+            image.save(image_bytes, pnginfo=metadata, format=extension)
             image_bytes.seek(0)
 
             url = r2.upload_file(file=image_bytes, filename=filename)
@@ -168,7 +170,7 @@ def save_images(
                     if not isinstance(job, UpscaleQueueEntry)
                     else "0",
                     "index": i,
-                    "extension": config.api.image_extension,
+                    "extension": extension,
                 }
             )
 
@@ -179,24 +181,30 @@ def save_images(
             with path.open("wb") as f:
                 logger.debug(f"Saving image to {path.as_posix()}")
 
-                if config.api.image_extension == "png":
+                if extension == "png":
                     image.save(f, pnginfo=metadata)
                 else:
-                    # ! This is using 2 filesystem calls, find a way to save directly to disk with metadata properly inserted
-
                     # Save the image
-                    image.save(f, quality=config.api.image_quality)
+                    buffer = BytesIO()
+                    if extension == "gif":
+                        buffer: BytesIO = image  # type: ignore
+                    else:
+                        image.save(buffer, quality=config.api.image_quality)
 
-                    # Insert metadata
-                    exif_metadata = {
-                        "0th": {},
-                        "Exif": Image.Exif(),
-                        "GPS": {},
-                        "Interop": {},
-                        "1st": {},
-                    }
-                    exif_metadata["Exif"][piexif.ExifIFD.UserComment] = metadata
-                    exif_bytes = piexif.dump(exif_metadata)
-                    piexif.insert(exif_bytes, path.as_posix())
+                    if extension == "gif":
+                        buffer.seek(0)
+                        f.write(buffer.getbuffer())
+                    else:
+                        # Insert metadata
+                        exif_metadata = {
+                            "0th": {},
+                            "Exif": Image.Exif(),
+                            "GPS": {},
+                            "Interop": {},
+                            "1st": {},
+                        }
+                        exif_metadata["Exif"][piexif.ExifIFD.UserComment] = metadata
+                        exif_bytes = piexif.dump(exif_metadata)
+                        piexif.insert(exif_bytes, buffer, f)
 
     return urls
