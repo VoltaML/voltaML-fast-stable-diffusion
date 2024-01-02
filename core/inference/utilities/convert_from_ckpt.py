@@ -1148,7 +1148,6 @@ def download_from_original_stable_diffusion_ckpt(
             model_type = "SDXL-Refiner"
         if image_size is None:
             image_size = 1024
-    print(model_type)
 
     # Check if we have a SDXL or SD model and initialize default pipeline
     pipeline_class = StableDiffusionPipeline  # type: ignore
@@ -1237,7 +1236,10 @@ def download_from_original_stable_diffusion_ckpt(
     )
 
     with init_empty_weights():
-        if model_type in ["SDXL", "SDXL-Refiner"] and volta_config.api.use_minimal_sdxl_pipeline:
+        if (
+            model_type in ["SDXL", "SDXL-Refiner"]
+            and volta_config.api.use_minimal_sdxl_pipeline
+        ):
             unet = SDXLUNet2D()
         else:
             unet = UNet2DConditionModel(**unet_config)

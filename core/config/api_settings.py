@@ -40,7 +40,7 @@ class APIConfig:
     data_type: Literal[
         "float32", "float16", "bfloat16", "float8_e4m3fn", "float8_e5m2"
     ] = "float16"
-    use_minimal_sdxl_pipeline: bool = True  # slower, but works better
+    use_minimal_sdxl_pipeline: bool = False  # slower, but works better
 
     # VRAM optimizations
     # whether to run both parts of CFG>1 generations in one call. Increases VRAM usage during inference,

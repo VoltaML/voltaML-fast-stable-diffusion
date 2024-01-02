@@ -646,8 +646,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 # perform guidance
                 if do_classifier_free_guidance:
                     if not split_latents_into_two:
-                        if isinstance(noise_pred, list):
-                            noise_pred = noise_pred[0]
+                        # if isinstance(noise_pred, list):  # type: ignore
+                        #     noise_pred = noise_pred[0]
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
                     noise_pred = calculate_cfg(
                         j, noise_pred_text, noise_pred_uncond, guidance_scale, t, additional_pred=noise_pred_vanilla  # type: ignore
