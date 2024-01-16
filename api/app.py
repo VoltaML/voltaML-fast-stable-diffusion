@@ -36,7 +36,20 @@ async def log_request(request: Request):
 
 
 app = FastAPI(
-    docs_url="/api/docs", redoc_url="/api/redoc", dependencies=[Depends(log_request)]
+    # Docs
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    swagger_ui_parameters={
+        "filter": True,
+    },
+    # Middleware
+    dependencies=[Depends(log_request)],
+    # Metadata
+    title="VoltaML",
+    license_info={
+        "name": "General Public License v3.0",
+        "url": "https://www.gnu.org/licenses/gpl-3.0.en.html",
+    },
 )
 
 mimetypes.init()

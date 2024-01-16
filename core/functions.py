@@ -5,7 +5,7 @@ import re
 import threading
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 import piexif
 import piexif.helper
@@ -93,7 +93,9 @@ def img_to_bytes(img: Image.Image) -> bytes:
         return output.getvalue()
 
 
-def images_to_response(images: Union[List[Image.Image], List[str]], time: float):
+def images_to_response(
+    images: Union[List[Image.Image], List[str]], time: float
+) -> Union[dict[str, Any], Response]:
     "Generate a valid response for the API"
 
     if len(images) == 0:
