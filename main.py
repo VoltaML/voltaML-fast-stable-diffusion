@@ -22,8 +22,8 @@ from core.install_requirements import (
 
 # Handle missing .env file
 if not Path(".env").exists():
-    with open(".env", "w") as f_out:
-        with open("example.env", "r") as f_in:
+    with open(".env", "w", encoding="utf-8") as f_out:
+        with open("example.env", "r", encoding="utf-8") as f_in:
             f_out.write(f_in.read())
 
 # Handle arguments passed to the script
@@ -82,7 +82,7 @@ parser.add_argument(
 )
 args = parser.parse_args(args=app_args)
 
-logger: logging.Logger = logging.getLogger()
+root_logger: logging.Logger = logging.getLogger()
 
 # Suppress some annoying logs
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
@@ -143,7 +143,7 @@ def main(exit_after_init: bool = False):
         from pyngrok import ngrok
 
         ngrok_tunnel = ngrok.connect(args.port)
-        logger.info(f"Public URL: {ngrok_tunnel.public_url}")
+        root_logger.info(f"Public URL: {ngrok_tunnel.public_url}")
         nest_asyncio.apply()
 
     # Start the bot if requested
@@ -187,13 +187,13 @@ def main(exit_after_init: bool = False):
         try:
             asyncio.run(uvi_server.serve())
         except RuntimeError:
-            logger.info("Server stopped")
+            root_logger.info("Server stopped")
             sys.exit(0)
     else:
-        logger.warning("Exit after initialization requested, exiting now")
+        root_logger.warning("Exit after initialization requested, exiting now")
 
 
-def checks():
+def checks(logger: logging.Logger):
     "Check if the script is run from a virtual environment, if yes, check requirements"
 
     if not (is_root() or args.in_container):
@@ -337,11 +337,11 @@ def checks():
 if __name__ == "__main__":
     print("Starting the API...")
 
-    args = checks()
+    args = checks(logger=root_logger)
 
     try:
         main(exit_after_init=args.install_only)
     except KeyboardInterrupt:
-        logger.info("Received keyboard interrupt, exiting...")
+        root_logger.info("Received keyboard interrupt, exiting...")
 
         sys.exit(0)

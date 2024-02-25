@@ -12,6 +12,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "fabric": "^5.3.0",
     "pinia": "^2.0.28",
     "semver": "^5.7.2",
     "uuid": "^9.0.0",

@@ -80,7 +80,9 @@
                 :step="1"
                 style="width: 100px; margin: 0 8px"
               />
-              <p>{{ width }}x{{ height }}</p>
+              <p v-if="widthImage || heightImage">
+                {{ widthImage }}x{{ heightImage }}
+              </p>
             </div>
             <label for="file-upload">
               <span class="file-upload">Select image</span>
@@ -306,6 +308,7 @@ import {
   SAGInput,
   SamplerPicker,
   Upscale,
+  VueDrawingCanvas,
 } from "@/components";
 import { serverUrl } from "@/env";
 import {
@@ -328,7 +331,6 @@ import {
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
 import { onUnmounted, ref } from "vue";
-import VueDrawingCanvas from "vue-drawing-canvas";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
@@ -498,6 +500,8 @@ const maskCanvas = ref<InstanceType<typeof VueDrawingCanvas>>();
 
 const width = ref(512);
 const height = ref(512);
+const widthImage = ref(0);
+const heightImage = ref(0);
 
 const strokeWidth = ref(10);
 const eraser = ref(false);
@@ -530,6 +534,9 @@ function handleImageUpdate(img: HTMLImageElement) {
     width.value = screenHeightScaledWidth;
     height.value = screenHeightScaledHeight;
   }
+
+  widthImage.value = img.width;
+  heightImage.value = img.height;
 
   canvas.value?.redraw(false);
 }

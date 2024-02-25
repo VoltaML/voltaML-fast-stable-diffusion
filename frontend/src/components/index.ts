@@ -10,6 +10,7 @@ export { default as PerformanceDrawer } from "./PerformanceDrawer.vue";
 export { default as SecretsHandler } from "./SecretsHandler.vue";
 export { default as SendOutputTo } from "./SendOutputTo.vue";
 export { default as TopBar } from "./TopBar.vue";
+export { default as VueDrawingCanvas } from "./VueDrawingCanvas";
 export { default as WIP } from "./WIP.vue";
 
 export * from "./accelerate";
