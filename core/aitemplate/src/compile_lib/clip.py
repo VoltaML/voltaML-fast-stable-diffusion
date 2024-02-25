@@ -60,10 +60,16 @@ def compile_clip(
         batch_size = IntVar(values=list(batch_size), name="batch_size")
 
     input_ids_ait = Tensor(
-        [batch_size, seqlen], name="input0", dtype="int64", is_input=True  # type: ignore
+        [batch_size, seqlen],
+        name="input0",
+        dtype="int64",
+        is_input=True,  # type: ignore
     )
     position_ids_ait = Tensor(
-        [batch_size, seqlen], name="input1", dtype="int64", is_input=True  # type: ignore
+        [batch_size, seqlen],
+        name="input1",
+        dtype="int64",
+        is_input=True,  # type: ignore
     )
     Y = ait_mod(input_ids=input_ids_ait, position_ids=position_ids_ait)
     mark_output(Y)

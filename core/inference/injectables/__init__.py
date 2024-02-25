@@ -171,7 +171,9 @@ class HookManager(object):
 
     # Temporary, TODO: replace this with something sensible
     def apply_lycoris(
-        self, file: Union[Path, str], alpha: Optional[float] = None  # type: ignore
+        self,
+        file: Union[Path, str],
+        alpha: Optional[float] = None,  # type: ignore
     ):
         """Load LyCORIS weights and apply it to the pipe."""
         if not isinstance(file, Path):
@@ -192,7 +194,9 @@ class HookManager(object):
         del self.managers[1].containers[file.name]
 
     def apply_lora(
-        self, file: Union[Path, str], alpha: Optional[Union[torch.Tensor, float]] = None  # type: ignore
+        self,
+        file: Union[Path, str],
+        alpha: Optional[Union[torch.Tensor, float]] = None,  # type: ignore
     ):
         """Load LoRA weights and apply LoRA to the pipe."""
         if not isinstance(file, Path):

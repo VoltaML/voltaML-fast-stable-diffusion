@@ -70,8 +70,7 @@ def prepare_extra_step_kwargs(
 
     # check if the scheduler accepts generator
     accepts_generator = (
-        "generator"
-        in set(inspect.signature(scheduler.step).parameters.keys())  # type: ignore
+        "generator" in set(inspect.signature(scheduler.step).parameters.keys())  # type: ignore
         and config.api.generator != "philox"
     )
     if accepts_generator:
@@ -105,11 +104,15 @@ def change_scheduler(
             logger.debug(
                 f"Loading scheduler {new_scheduler.__class__.__name__} with config sigmas={sigma_type}"
             )
-            new_scheduler = new_scheduler.from_config(config=configuration, use_karras_sigmas=sigma_type == "")  # type: ignore
+            new_scheduler = new_scheduler.from_config(
+                config=configuration, use_karras_sigmas=sigma_type == ""
+            )  # type: ignore
         else:
             new_scheduler = new_scheduler.from_config(config=configuration)  # type: ignore
     else:
-        sched = DDIMScheduler.from_pretrained("runwayml/stable-diffusion-v1-5", subfolder="scheduler")  # type: ignore
+        sched = DDIMScheduler.from_pretrained(
+            "runwayml/stable-diffusion-v1-5", subfolder="scheduler"
+        )  # type: ignore
 
         if scheduler == "sasolver":
             new_scheduler = SASolverScheduler.from_config(config=configuration)  # type: ignore

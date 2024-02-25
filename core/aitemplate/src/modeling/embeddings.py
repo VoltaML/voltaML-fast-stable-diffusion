@@ -33,7 +33,9 @@ def get_timestep_embedding(
     half_dim = embedding_dim // 2
 
     exponent = (-math.log(max_period)) * Tensor(
-        shape=[half_dim], dtype=dtype, name=arange_name  # type: ignore
+        shape=[half_dim],
+        dtype=dtype,
+        name=arange_name,  # type: ignore
     )
 
     exponent = exponent * (1.0 / (half_dim - downscale_freq_shift))

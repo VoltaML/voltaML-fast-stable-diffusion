@@ -458,10 +458,14 @@ def load_pytorch_pipeline(
                 setattr(pipe, name, nt)
                 del state_dict, dont_convert
 
-            text_encoder.text_model.encoder.old_forward = text_encoder.text_model.encoder.forward  # type: ignore
+            text_encoder.text_model.encoder.old_forward = (
+                text_encoder.text_model.encoder.forward
+            )  # type: ignore
             # fuck you python
             # enjoy bober
-            text_encoder.text_model.encoder.forward = partial(new_forward, bober=text_encoder.text_model.encoder)  # type: ignore
+            text_encoder.text_model.encoder.forward = partial(
+                new_forward, bober=text_encoder.text_model.encoder
+            )  # type: ignore
             logger.debug(f"Overwritten {name}s final_layer_norm.")
 
     if optimize:

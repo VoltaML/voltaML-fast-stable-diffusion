@@ -28,7 +28,7 @@ def callback(step: int, _timestep: int, tensor: torch.Tensor):
     if step > shared.current_steps:
         shared.current_steps = shared.current_done_steps
     send_image = config.api.live_preview_method != "disabled" and (
-        (time.time() - last_image_time > config.api.live_preview_delay)
+        time.time() - last_image_time > config.api.live_preview_delay
     )
 
     images: List[Image.Image] = []

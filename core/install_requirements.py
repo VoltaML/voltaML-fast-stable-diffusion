@@ -15,11 +15,11 @@ renamed_requirements = {
     "fastapi-analytics": "api_analytics",
     "cuda-python": "cuda",
     "open-clip-torch": "open_clip",
-    "python-multipart": "multipart",
     "invisible-watermark": "imwatermark",
     "discord.py": "discord",
     "HyperTile": "hyper-tile",
     "stable-fast": "sfast",
+    "sentry-sdk[fastapi]": "sentry_sdk",
 }
 logger = logging.getLogger(__name__)
 
@@ -109,6 +109,7 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
 @dataclass
 class PytorchDistribution:
     "Dataclass that holds information about a pytorch distribution"
+
     windows_supported: bool
     name: str
     check_command: Union[str, List[str]]
@@ -274,15 +275,13 @@ def install_deps(force_distribution: Union[int, str] = -1):
                     if (
                         c.windows_supported if platform.system() == "Windows" else True
                     ) and (
-                        (
-                            subprocess.run(
-                                c.check_command,
-                                stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL,
-                                shell=True,
-                            ).returncode
-                            == 0
-                        )
+                        subprocess.run(
+                            c.check_command,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                            shell=True,
+                        ).returncode
+                        == 0
                     ):
                         logger.info(c.success_message)
                         if isinstance(c.install_command[0], list):

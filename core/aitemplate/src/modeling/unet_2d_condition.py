@@ -110,7 +110,9 @@ class UNet2DConditionModel(nn.Module):
 
         if addition_embed_type == "text_time":
             self.add_embedding = TimestepEmbedding(
-                projection_class_embeddings_input_dim, time_embed_dim, dtype=dtype  # type: ignore
+                projection_class_embeddings_input_dim,
+                time_embed_dim,
+                dtype=dtype,  # type: ignore
             )
 
         self.down_blocks = nn.ModuleList([])
@@ -257,7 +259,8 @@ class UNet2DConditionModel(nn.Module):
                 class_labels = self.time_proj(class_labels)
 
             class_emb = ops.batch_gather()(
-                self.class_embedding.weight.tensor(), class_labels  # type: ignore
+                self.class_embedding.weight.tensor(),
+                class_labels,  # type: ignore
             )
             emb = emb + class_emb
 
@@ -314,7 +317,9 @@ class UNet2DConditionModel(nn.Module):
         for upsample_block in self.up_blocks:
             res_samples = down_block_res_samples[-len(upsample_block.resnets) :]  # type: ignore
             down_block_res_samples = down_block_res_samples[
-                : -len(upsample_block.resnets)  # type: ignore
+                : -len(
+                    upsample_block.resnets
+                )  # type: ignore
             ]
 
             if (

@@ -46,7 +46,8 @@ class UploadFileTarget(FileTarget):
     def __init__(self, dir_: Path, *args, **kwargs):
         super().__init__(None, *args, **kwargs)  # type: ignore
         self.file = UploadFile(
-            filename=None, file=NamedTemporaryFile(delete=False, dir=dir_)  # type: ignore
+            filename=None,
+            file=NamedTemporaryFile(delete=False, dir=dir_),  # type: ignore
         )
         self._fd = self.file.file
         self.dir = dir_

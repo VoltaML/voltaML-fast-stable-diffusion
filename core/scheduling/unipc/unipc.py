@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class UniPC:
     "https://github.com/wl-zhao/UniPC/blob/main/uni_pc.py#L236"
+
     model: Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
     noise_schedule: NoiseScheduleVP
 
@@ -91,9 +92,10 @@ class UniPC:
         Return the data prediction model (with corrector).
         """
         noise = self.noise_prediction_fn(x, t)
-        alpha_t, sigma_t = self.noise_schedule.marginal_alpha(
-            t
-        ), self.noise_schedule.marginal_std(t)
+        alpha_t, sigma_t = (
+            self.noise_schedule.marginal_alpha(t),
+            self.noise_schedule.marginal_std(t),
+        )
         x0 = (x - sigma_t * noise) / alpha_t
         if self.correcting_x0_fn is not None:
             x0 = self.correcting_x0_fn(x0, None)
@@ -158,21 +160,15 @@ class UniPC:
             if steps % 3 == 0:
                 orders = [
                     3,
-                ] * (
-                    K - 2
-                ) + [2, 1]
+                ] * (K - 2) + [2, 1]
             elif steps % 3 == 1:
                 orders = [
                     3,
-                ] * (
-                    K - 1
-                ) + [1]
+                ] * (K - 1) + [1]
             else:
                 orders = [
                     3,
-                ] * (
-                    K - 1
-                ) + [2]
+                ] * (K - 1) + [2]
         elif order == 2:
             if steps % 2 == 0:
                 K = steps // 2
@@ -183,9 +179,7 @@ class UniPC:
                 K = steps // 2 + 1
                 orders = [
                     2,
-                ] * (
-                    K - 1
-                ) + [1]
+                ] * (K - 1) + [1]
         elif order == 1:
             K = steps
             orders = [
@@ -315,7 +309,9 @@ class UniPC:
                 # compute the residuals for predictor
                 for k in range(K - 1):
                     x_t = x_t - alpha_t * h_phi_ks[k + 1] * torch.einsum(
-                        "bkchw,k->bchw", D1s, A_p[k]  # type: ignore
+                        "bkchw,k->bchw",
+                        D1s,
+                        A_p[k],  # type: ignore
                     )
             # now corrector
             if use_corrector:
@@ -325,13 +321,16 @@ class UniPC:
                 k = 0
                 for k in range(K - 1):
                     x_t = x_t - alpha_t * h_phi_ks[k + 1] * torch.einsum(
-                        "bkchw,k->bchw", D1s, A_c[k][:-1]  # type: ignore
+                        "bkchw,k->bchw",
+                        D1s,
+                        A_c[k][:-1],  # type: ignore
                     )
                 x_t = x_t - alpha_t * h_phi_ks[K] * (D1_t * A_c[k][-1])  # type: ignore
         else:
-            log_alpha_prev_0, log_alpha_t = ns.marginal_log_mean_coeff(
-                t_prev_0
-            ), ns.marginal_log_mean_coeff(t)
+            log_alpha_prev_0, log_alpha_t = (
+                ns.marginal_log_mean_coeff(t_prev_0),
+                ns.marginal_log_mean_coeff(t),
+            )
             x_t_ = (torch.exp(log_alpha_t - log_alpha_prev_0)) * x - (
                 sigma_t * h_phi_1
             ) * model_prev_0
@@ -341,7 +340,9 @@ class UniPC:
                 # compute the residuals for predictor
                 for k in range(K - 1):
                     x_t = x_t - sigma_t * h_phi_ks[k + 1] * torch.einsum(
-                        "bkchw,k->bchw", D1s, A_p[k]  # type: ignore
+                        "bkchw,k->bchw",
+                        D1s,
+                        A_p[k],  # type: ignore
                     )
             # now corrector
             if use_corrector:
@@ -351,7 +352,9 @@ class UniPC:
                 k = 0
                 for k in range(K - 1):
                     x_t = x_t - sigma_t * h_phi_ks[k + 1] * torch.einsum(
-                        "bkchw,k->bchw", D1s, A_c[k][:-1]  # type: ignore
+                        "bkchw,k->bchw",
+                        D1s,
+                        A_c[k][:-1],  # type: ignore
                     )
                 x_t = x_t - sigma_t * h_phi_ks[K] * (D1_t * A_c[k][-1])  # type: ignore
         return x_t, model_t  # type: ignore
@@ -378,9 +381,10 @@ class UniPC:
         lambda_t = ns.marginal_lambda(t)
         model_prev_0 = model_prev_list[-1]
         sigma_prev_0, sigma_t = ns.marginal_std(t_prev_0), ns.marginal_std(t)
-        log_alpha_prev_0, log_alpha_t = ns.marginal_log_mean_coeff(
-            t_prev_0
-        ), ns.marginal_log_mean_coeff(t)
+        log_alpha_prev_0, log_alpha_t = (
+            ns.marginal_log_mean_coeff(t_prev_0),
+            ns.marginal_log_mean_coeff(t),
+        )
         alpha_t = torch.exp(log_alpha_t)
 
         h = lambda_t - lambda_prev_0
@@ -543,7 +547,12 @@ class UniPC:
                 for step in range(1, order):
                     t = timesteps[step]
                     x, model_x = self.multistep_uni_pc_update(
-                        x, model_prev_list, t_prev_list, t, step, use_corrector=True  # type: ignore
+                        x,
+                        model_prev_list,
+                        t_prev_list,
+                        t,
+                        step,
+                        use_corrector=True,  # type: ignore
                     )
                     if model_x is None:
                         model_x = self.model_fn(x, t)

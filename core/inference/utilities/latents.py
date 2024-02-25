@@ -300,7 +300,9 @@ def prepare_latents(
     else:
         if image.shape[1] != 4:
             image = pad_tensor(image, pipe.vae_scale_factor)
-            init_latent_dist = pipe.vae.encode(image.to(config.api.device, dtype=pipe.vae.dtype)).latent_dist  # type: ignore
+            init_latent_dist = pipe.vae.encode(
+                image.to(config.api.device, dtype=pipe.vae.dtype)
+            ).latent_dist  # type: ignore
             init_latents = init_latent_dist.sample(generator=generator)
             init_latents = 0.18215 * init_latents
             init_latents = torch.cat([init_latents] * batch_size, dim=0)  # type: ignore
@@ -323,7 +325,9 @@ def prepare_latents(
 
         # add noise to latents using the timesteps
         noise = randn(shape, generator, device=device, dtype=dtype)
-        latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep.to(device))  # type: ignore
+        latents = pipe.scheduler.add_noise(
+            init_latents.to(device), noise.to(device), timestep.to(device)
+        )  # type: ignore
         return latents, init_latents_orig, noise
 
 

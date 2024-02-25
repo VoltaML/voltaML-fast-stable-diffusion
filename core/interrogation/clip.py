@@ -73,7 +73,9 @@ class CLIPInterrogator(InterrogationModel):
         self.memory_cleanup()
 
     def _image_to_features(self, image: Image.Image) -> torch.Tensor:
-        images = self.clip_preprocess(image).unsqueeze(0).to(self.device, dtype=self.dtype)  # type: ignore
+        images = (
+            self.clip_preprocess(image).unsqueeze(0).to(self.device, dtype=self.dtype)
+        )  # type: ignore
         with torch.no_grad(), autocast(dtype=self.dtype):  # type: ignore
             image_features = self.clip_model.encode_image(images)  # type: ignore
             image_features /= image_features.norm(dim=-1, keepdim=True)
@@ -83,11 +85,15 @@ class CLIPInterrogator(InterrogationModel):
         self, image: Image.Image, max_flavors: int = 32, caption: Optional[str] = None
     ) -> str:
         if caption is None:
-            inputs = self.caption_processor(images=image, return_tensors="pt").to(self.device, dtype=self.dtype)  # type: ignore
+            inputs = self.caption_processor(images=image, return_tensors="pt").to(
+                self.device, dtype=self.dtype
+            )  # type: ignore
             tokens = self.caption_model.generate(
                 **inputs, max_new_tokens=config.interrogator.caption_max_length
             )
-            caption = self.caption_processor.batch_decode(tokens, skip_special_tokens=True)[0].strip()  # type: ignore
+            caption = self.caption_processor.batch_decode(
+                tokens, skip_special_tokens=True
+            )[0].strip()  # type: ignore
         image_features = self._image_to_features(image)
         merged = _merge_tables(self.labels, self)
         tops = merged.rank(image_features, max_flavors)
@@ -191,10 +197,22 @@ class CLIPInterrogator(InterrogationModel):
                 load_in_8bit=is_bitsandbytes_available(),
             )
         elif t == "blip2":
-            self.caption_model = Blip2ForConditionalGeneration.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype, load_in_8bit=is_bitsandbytes_available())  # type: ignore
+            self.caption_model = Blip2ForConditionalGeneration.from_pretrained(
+                config.interrogator.caption_model,
+                torch_dtype=self.dtype,
+                load_in_8bit=is_bitsandbytes_available(),
+            )  # type: ignore
         else:
-            self.caption_model = BlipForConditionalGeneration.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype, load_in_8bit=is_bitsandbytes_available())  # type: ignore
-        self.caption_processor = AutoProcessor.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype, load_in_8bit=is_bitsandbytes_available())  # type: ignore
+            self.caption_model = BlipForConditionalGeneration.from_pretrained(
+                config.interrogator.caption_model,
+                torch_dtype=self.dtype,
+                load_in_8bit=is_bitsandbytes_available(),
+            )  # type: ignore
+        self.caption_processor = AutoProcessor.from_pretrained(
+            config.interrogator.caption_model,
+            torch_dtype=self.dtype,
+            load_in_8bit=is_bitsandbytes_available(),
+        )  # type: ignore
 
         if config.interrogator.offload_captioner:
             if is_accelerate_available() and self.device != "cpu":
@@ -282,7 +300,9 @@ class LabelTable:
 
         if len(self.labels) != len(self.embeds):
             self.embeds = []
-            chunks = np.array_split(self.labels, max(1, len(self.labels) / self.chunk_size))  # type: ignore
+            chunks = np.array_split(
+                self.labels, max(1, len(self.labels) / self.chunk_size)
+            )  # type: ignore
             for chunk in tqdm(chunks, desc="CLIP"):
                 text_tokens = self.tokenize(chunk).to(self.device)
                 with torch.no_grad(), autocast(dtype=self.dtype):  # type: ignore
@@ -348,7 +368,9 @@ class LabelTable:
     ) -> List[str]:
         "internal"
         if len(self.labels) <= self.chunk_size:
-            tops = self._rank(image_features, self.embeds, top_count=top_count, reverse=reverse)  # type: ignore
+            tops = self._rank(
+                image_features, self.embeds, top_count=top_count, reverse=reverse
+            )  # type: ignore
             return [self.labels[i] for i in tops]  # type: ignore
 
         num_chunks = int(math.ceil(len(self.labels) / self.chunk_size))
@@ -358,7 +380,12 @@ class LabelTable:
         for chunk_idx in tqdm(range(num_chunks), desc="CLIP"):
             start = chunk_idx * self.chunk_size
             stop = min(start + self.chunk_size, len(self.embeds))
-            tops = self._rank(image_features, self.embeds[start:stop], top_count=keep_per_chunk, reverse=reverse)  # type: ignore
+            tops = self._rank(
+                image_features,
+                self.embeds[start:stop],
+                top_count=keep_per_chunk,
+                reverse=reverse,
+            )  # type: ignore
             top_labels.extend([self.labels[start + i] for i in tops])  # type: ignore
             top_embeds.extend([self.embeds[start + i] for i in tops])  # type: ignore
 

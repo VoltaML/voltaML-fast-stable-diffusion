@@ -67,7 +67,9 @@ def load(
     state_dicts = load_textual_inversion_state_dicts(model)
 
     token, embeddings = TextualInversionLoaderMixin._retrieve_tokens_and_embeddings(
-        [token], state_dicts, tokenizer  # type: ignore
+        [token],
+        state_dicts,
+        tokenizer,  # type: ignore
     )
     tokens, embeddings = TextualInversionLoaderMixin._retrieve_tokens_and_embeddings(
         token, embeddings, tokenizer

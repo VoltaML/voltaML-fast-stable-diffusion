@@ -12,6 +12,7 @@ from core.types import Backend, Job
 @dataclass
 class InterrogationResult:
     "Contains results from the interrogation"
+
     positive: List[Tuple[str, float]]
     negative: List[Tuple[str, float]]
 

@@ -187,7 +187,9 @@ def get_prompts_with_weights(tokenizer, prompt: List[str], max_length: int):
         text_weight = []
         for word, weight in texts_and_weights:
             # tokenize and discard the starting and the ending token
-            token = tokenizer(word, max_length=max_length, truncation=True).input_ids[1:-1]  # type: ignore
+            token = tokenizer(word, max_length=max_length, truncation=True).input_ids[
+                1:-1
+            ]  # type: ignore
             text_token += token
             # copy the weight by length of token
             text_weight += [weight] * len(token)
@@ -231,8 +233,7 @@ def pad_tokens_and_weights(
                 for j in range(max_embeddings_multiples):
                     w.append(1.0)  # weight for starting token in this chunk
                     w += weights[i][
-                        j
-                        * (chunk_length - 2) : min(
+                        j * (chunk_length - 2) : min(
                             len(weights[i]), (j + 1) * (chunk_length - 2)
                         )
                     ]
@@ -324,7 +325,9 @@ def get_unweighted_text_embeddings(
                             -2
                         ][:, 1:-1]
                 text_embeddings.append(text_embedding)
-            text_embeddings = torch.concat([x.hidden_states[-2] for x in text_embeddings], axis=1)  # type: ignore
+            text_embeddings = torch.concat(
+                [x.hidden_states[-2] for x in text_embeddings], axis=1
+            )  # type: ignore
             # Temporary, but hey, at least it works :)
             # TODO: try and fix this monstrosity :/
             hidden_states = text_embeddings[-1][0].unsqueeze(0)  # type: ignore
@@ -534,7 +537,9 @@ def get_weighted_text_embeddings(
         chunk_length=tokenizer.model_max_length,  # type: ignore
     )
     prompt_tokens = torch.tensor(
-        prompt_tokens, dtype=torch.long, device=pipe.device if hasattr(pipe, "clip_inference") else text_encoder.device  # type: ignore
+        prompt_tokens,
+        dtype=torch.long,
+        device=pipe.device if hasattr(pipe, "clip_inference") else text_encoder.device,  # type: ignore
     )
     if uncond_prompt is not None:
         uncond_tokens, uncond_weights = pad_tokens_and_weights(
@@ -547,7 +552,11 @@ def get_weighted_text_embeddings(
             chunk_length=tokenizer.model_max_length,  # type: ignore
         )
         uncond_tokens = torch.tensor(
-            uncond_tokens, dtype=torch.long, device=pipe.device if hasattr(pipe, "clip_inference") else text_encoder.device  # type: ignore
+            uncond_tokens,
+            dtype=torch.long,
+            device=pipe.device
+            if hasattr(pipe, "clip_inference")
+            else text_encoder.device,  # type: ignore
         )
 
     # get the embeddings
@@ -559,7 +568,9 @@ def get_weighted_text_embeddings(
         text_encoder=text_encoder,
     )
     prompt_weights = torch.tensor(
-        prompt_weights, dtype=text_embeddings.dtype, device=pipe.device if hasattr(pipe, "clip_inference") else text_encoder.device  # type: ignore
+        prompt_weights,
+        dtype=text_embeddings.dtype,
+        device=pipe.device if hasattr(pipe, "clip_inference") else text_encoder.device,  # type: ignore
     )
     if uncond_prompt is not None:
         uncond_embeddings, uncond_hidden_states = get_unweighted_text_embeddings(
@@ -570,7 +581,11 @@ def get_weighted_text_embeddings(
             text_encoder=text_encoder,
         )
         uncond_weights = torch.tensor(
-            uncond_weights, dtype=uncond_embeddings.dtype, device=pipe.device if hasattr(pipe, "clip_inference") else text_encoder.device  # type: ignore
+            uncond_weights,
+            dtype=uncond_embeddings.dtype,
+            device=pipe.device
+            if hasattr(pipe, "clip_inference")
+            else text_encoder.device,  # type: ignore
         )
 
     # assign weights to the prompts and normalize in the sense of mean

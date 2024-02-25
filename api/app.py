@@ -4,8 +4,7 @@ import mimetypes
 import os
 from pathlib import Path
 
-from api_analytics.fastapi import Analytics
-from fastapi import Depends, FastAPI, Request, status
+from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -25,16 +24,6 @@ from core.utils import determine_model_type
 
 logger = logging.getLogger(__name__)
 
-
-async def log_request(request: Request):
-    "Log all requests"
-
-    logger.debug(
-        f"url: {request.url}"
-        # f"url: {request.url}, params: {request.query_params}, body: {await request.body()}"
-    )
-
-
 app = FastAPI(
     # Docs
     docs_url="/api/docs",
@@ -42,8 +31,6 @@ app = FastAPI(
     swagger_ui_parameters={
         "filter": True,
     },
-    # Middleware
-    dependencies=[Depends(log_request)],
     # Metadata
     title="VoltaML",
     license_info={
@@ -62,27 +49,35 @@ async def validation_exception_handler(_request: Request, exc: RequestValidation
 
     logger.debug(exc)
 
-    if exc._error_cache is not None and exc._error_cache[0]["loc"][0] == "body":
+    errors = exc.errors()
+
+    if errors is not None and errors[0]["loc"][0] == "body":
         from core.config._config import Configuration
 
         default_value = Configuration()
-        keys = [str(i) for i in exc._error_cache[0]["loc"][1:]]  # type: ignore
-        current_value = exc._error_cache[0]["ctx"]["given"]  # type: ignore
+        keys = [str(i) for i in errors[0]["loc"][1:]]  # type: ignore
 
-        # Traverse the config object to find the correct value
-        for key in keys:
-            default_value = getattr(default_value, key)
+        try:
+            current_value = errors[0]["ctx"]["given"]  # type: ignore
 
-        websocket_manager.broadcast_sync(
-            data=Data(
-                data={
-                    "default_value": default_value,
-                    "key": keys,
-                    "current_value": current_value,
-                },
-                data_type="incorrect_settings_value",
+            # Traverse the config object to find the correct value
+            for key in keys:
+                default_value = getattr(default_value, key)
+
+            websocket_manager.broadcast_sync(
+                data=Data(
+                    data={
+                        "default_value": default_value,
+                        "key": keys,
+                        "current_value": current_value,
+                    },
+                    data_type="incorrect_settings_value",
+                )
             )
-        )
+        except KeyError:
+            logger.info(
+                "Unable to parse incorrect settings value, skipping validation correction"
+            )
 
     try:
         websocket_manager.broadcast_sync(
@@ -165,7 +160,9 @@ async def startup_event():
 
         for model in config.api.autoloaded_models:
             if model in [i.path for i in all_models]:
-                backend: InferenceBackend = [i.backend for i in all_models if i.path == model][0]  # type: ignore
+                backend: InferenceBackend = [
+                    i.backend for i in all_models if i.path == model
+                ][0]  # type: ignore
                 model_type = determine_model_type(get_full_model_path(model))[1]
 
                 gpu.load_model(model, backend, type=model_type)
@@ -185,12 +182,17 @@ async def shutdown_event():
 
 
 # Enable FastAPI Analytics if key is provided
-key = os.getenv("FASTAPI_ANALYTICS_KEY")
-if key:
-    app.add_middleware(Analytics, api_key=key)
-    logger.info("Enabled FastAPI Analytics")
+sentry_dsn = os.getenv("SENTRY_DSN")
+if sentry_dsn:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        enable_tracing=True,
+    )
+    logger.info("Enabled Sentry")
 else:
-    logger.debug("No FastAPI Analytics key provided, skipping")
+    logger.debug("No Sentry DSN provided, skipping")
 
 # Mount routers
 ## HTTP
@@ -226,19 +228,21 @@ app.mount("/static", StaticFiles(directory="static"), name="extra_static_files")
 app.mount("/themes", StaticFiles(directory="data/themes"), name="themes")
 
 origins = ["*"]
+methods = ["*"]
+headers = ["*"]
 
 # Allow CORS for specified origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=methods,
+    allow_headers=headers,
 )
 static_app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=methods,
+    allow_headers=headers,
 )

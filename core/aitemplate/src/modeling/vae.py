@@ -295,7 +295,13 @@ class AutoencoderKL(nn.Module):
         dec = self.decoder(z)
         return dec
 
-    def encode(self, x: Tensor, sample: Tensor = None, return_dict: bool = True, deterministic: bool = False) -> Tensor:  # type: ignore
+    def encode(
+        self,
+        x: Tensor,
+        sample: Tensor = None,
+        return_dict: bool = True,
+        deterministic: bool = False,
+    ) -> Tensor:  # type: ignore
         h = self.encoder(x)
         moments = self.quant_conv(h)
         if sample is None:

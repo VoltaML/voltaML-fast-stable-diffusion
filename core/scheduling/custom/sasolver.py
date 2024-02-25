@@ -510,7 +510,7 @@ class SASolverScheduler(SchedulerMixin, ConfigMixin):
             return (
                 torch.exp(interval_end_cov)
                 * (1 - torch.exp(-(interval_end_cov - interval_start_cov)))
-                / ((1 + tau**2))
+                / (1 + tau**2)
             )
         elif order == 1:
             return (

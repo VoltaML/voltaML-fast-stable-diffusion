@@ -42,7 +42,9 @@ def cast(
 
     pipe.unet.force_autocast = dtype in force_autocast
     if pipe.unet.force_autocast:
-        for m in [x.modules() for x in pipe.components.values() if hasattr(x, "modules")]:  # type: ignore
+        for m in [
+            x.modules() for x in pipe.components.values() if hasattr(x, "modules")
+        ]:  # type: ignore
             if "CLIP" in m.__class__.__name__:
                 m.to(device=None if offload else device, dtype=config.api.load_dtype)
             else:

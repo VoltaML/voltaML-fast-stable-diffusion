@@ -228,7 +228,10 @@ class LyCORISManager(HookObject):
                             )
                         else:
                             module = torch.nn.Conv2d(
-                                v.shape[1], v.shape[0], (1, 1), bias=False  # type: ignore
+                                v.shape[1],
+                                v.shape[0],
+                                (1, 1),
+                                bias=False,  # type: ignore
                             )
                     elif lyco_key == "lora_mid.weight":
                         module = torch.nn.Conv2d(
@@ -241,7 +244,10 @@ class LyCORISManager(HookObject):
                         )
                     elif lyco_key == "lora_up.weight" or lyco_key == "dyn_down":
                         module = torch.nn.Conv2d(
-                            v.shape[1], v.shape[0], (1, 1), bias=False  # type: ignore
+                            v.shape[1],
+                            v.shape[0],
+                            (1, 1),
+                            bias=False,  # type: ignore
                         )
 
                 if hasattr(sd_module, "weight"):
@@ -298,7 +304,9 @@ class LyCORISManager(HookObject):
                     lyco.modules[key] = lyco_module
 
                 if lyco_key == "weight":
-                    lyco_module.w = v.to(torch.device("cpu"), dtype=config.api.load_dtype)  # type: ignore
+                    lyco_module.w = v.to(
+                        torch.device("cpu"), dtype=config.api.load_dtype
+                    )  # type: ignore
                 elif lyco_key == "on_input":
                     lyco_module.on_input = v  # type: ignore
             elif lyco_key in KRON_KEY:
@@ -451,7 +459,9 @@ def _rebuild_cp_decomposition(up, down, mid):
     return torch.einsum("n m k l, i n, m j -> i j k l", mid, up, down)
 
 
-def _rebuild_weight(module, orig_weight: torch.Tensor, dyn_dim: int = None) -> torch.Tensor:  # type: ignore
+def _rebuild_weight(
+    module, orig_weight: torch.Tensor, dyn_dim: int = None
+) -> torch.Tensor:  # type: ignore
     output_shape: Sized
     if module.__class__.__name__ == "LycoUpDownModule":
         up = module.up_module.weight.to(orig_weight.device, dtype=orig_weight.dtype)

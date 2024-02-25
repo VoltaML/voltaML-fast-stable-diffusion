@@ -167,11 +167,17 @@ def compile_unet(
         embedding_size = IntVar(values=list(clip_chunks), name="embedding_size")
 
     latent_model_input_ait = Tensor(
-        [batch_size, height_d, width_d, in_channels], name="input0", is_input=True, dtype=dtype  # type: ignore
+        [batch_size, height_d, width_d, in_channels],
+        name="input0",
+        is_input=True,
+        dtype=dtype,  # type: ignore
     )
     timesteps_ait = Tensor([batch_size], name="input1", is_input=True, dtype=dtype)
     text_embeddings_pt_ait = Tensor(
-        [batch_size, embedding_size, hidden_dim], name="input2", is_input=True, dtype=dtype  # type: ignore
+        [batch_size, embedding_size, hidden_dim],
+        name="input2",
+        is_input=True,
+        dtype=dtype,  # type: ignore
     )
 
     class_labels = None
@@ -181,7 +187,10 @@ def compile_unet(
     add_embeds = None
     if xl:
         add_embeds = Tensor(
-            [batch_size, projection_class_embeddings_input_dim], name="add_embeds", is_input=True, dtype=dtype  # type: ignore
+            [batch_size, projection_class_embeddings_input_dim],
+            name="add_embeds",
+            is_input=True,
+            dtype=dtype,  # type: ignore
         )
 
     down_block_residual_0 = None

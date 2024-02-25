@@ -33,6 +33,7 @@ def apply_subquadratic_attention(
 
 class SubQuadraticCrossAttnProcessor:
     "Taken from @Birch-sans fantastic diffusers-play repository."
+
     query_chunk_size: int
     kv_chunk_size: Optional[int]
     kv_chunk_size_min: Optional[int]
@@ -200,7 +201,8 @@ def _query_chunk_attention(
         return summarize_chunk(query, key_chunk, value_chunk)
 
     chunks: List[AttnChunk] = [
-        chunk_scanner(chunk) for chunk in torch.arange(0, k_tokens, kv_chunk_size)  # type: ignore
+        chunk_scanner(chunk)
+        for chunk in torch.arange(0, k_tokens, kv_chunk_size)  # type: ignore
     ]
     acc_chunk = AttnChunk(*map(torch.stack, zip(*chunks)))
     chunk_values, chunk_weights, chunk_max = acc_chunk
@@ -284,8 +286,8 @@ def efficient_dot_product_attention(
     compute_query_chunk_attn: ComputeQueryChunkAttn = (
         partial(_get_attention_scores_no_kv_chunking, scale=scale)
         if k_tokens <= kv_chunk_size
+        # fast-path for when there's just 1 key-value chunk per query chunk (this is just sliced attention btw)
         else (
-            # fast-path for when there's just 1 key-value chunk per query chunk (this is just sliced attention btw)
             partial(
                 _query_chunk_attention,
                 kv_chunk_size=kv_chunk_size,

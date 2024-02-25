@@ -25,9 +25,7 @@ def pred_x0(pipe, sample, model_output, timestep):
             beta_prod_t**0.5
         ) * model_output
         # predict V
-        model_output = (alpha_prod_t**0.5) * model_output + (
-            beta_prod_t**0.5
-        ) * sample
+        model_output = (alpha_prod_t**0.5) * model_output + (beta_prod_t**0.5) * sample
     else:
         raise ValueError(
             f"prediction_type given as {pipe.scheduler.config['prediction_type']} must be one of `epsilon`, `sample`,"
@@ -80,9 +78,7 @@ def pred_epsilon(pipe, sample, model_output, timestep):
     if pipe.scheduler.config["prediction_type"] == "epsilon":
         pred_eps = model_output
     elif pipe.scheduler.config["prediction_type"] == "sample":
-        pred_eps = (sample - (alpha_prod_t**0.5) * model_output) / (
-            beta_prod_t**0.5
-        )
+        pred_eps = (sample - (alpha_prod_t**0.5) * model_output) / (beta_prod_t**0.5)
     elif pipe.scheduler.config["prediction_type"] == "v_prediction":
         pred_eps = (beta_prod_t**0.5) * sample + (alpha_prod_t**0.5) * model_output
     else:

@@ -52,7 +52,8 @@ class CrossAttention(nn.Module):
         self.to_k = nn.Linear(context_dim, inner_dim, bias=False, dtype=dtype)
         self.to_v = nn.Linear(context_dim, inner_dim, bias=False, dtype=dtype)
         self.to_out = nn.Sequential(
-            nn.Linear(inner_dim, query_dim, dtype=dtype), nn.Dropout(dropout, dtype=dtype)  # type: ignore
+            nn.Linear(inner_dim, query_dim, dtype=dtype),
+            nn.Dropout(dropout, dtype=dtype),  # type: ignore
         )
 
     def forward(

@@ -257,7 +257,11 @@ class OnnxStableDiffusion(InferenceModel):
 
             for module in ["vae_encoder", "vae_decoder", "unet", "text_encoder"]:
                 s = time()
-                setattr(self, module, _load(folder / (module + ".onnx"), providers=providers[module]))  # type: ignore
+                setattr(
+                    self,
+                    module,
+                    _load(folder / (module + ".onnx"), providers=providers[module]),
+                )  # type: ignore
                 logger.info(f"Loaded {module} in {(time() - s):.2f}s.")
             for module in ["tokenizer", "scheduler"]:
                 s = time()
@@ -1023,7 +1027,8 @@ class OnnxStableDiffusion(InferenceModel):
                 else latents
             )
             latent_model_input = self.scheduler.scale_model_input(
-                torch.from_numpy(latent_model_input_numpy), t  # type: ignore
+                torch.from_numpy(latent_model_input_numpy),
+                t,  # type: ignore
             )
             latent_model_input = latent_model_input.cpu().numpy()
             return latent_model_input
@@ -1217,7 +1222,8 @@ class OnnxStableDiffusion(InferenceModel):
                 else latents
             )
             latent_model_input = self.scheduler.scale_model_input(
-                torch.from_numpy(latent_model_input), t  # type: ignore
+                torch.from_numpy(latent_model_input),
+                t,  # type: ignore
             )
             latent_model_input = latent_model_input.cpu().numpy()
             latent_model_input = np.concatenate(

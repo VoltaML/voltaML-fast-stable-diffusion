@@ -86,7 +86,7 @@ samplers_kdiffusion = [
 
 
 def _get_sampler(
-    sampler: Union[str, KarrasDiffusionSchedulers]
+    sampler: Union[str, KarrasDiffusionSchedulers],
 ) -> Union[None, Tuple[str, Union[Callable, str], dict]]:
     if isinstance(sampler, KarrasDiffusionSchedulers):
         sampler = samplers_diffusers.get(sampler, "Euler a")  # type: ignore

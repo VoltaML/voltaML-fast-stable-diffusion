@@ -17,7 +17,10 @@ def _get_download_list() -> List[str]:
             "https://raw.githubusercontent.com/lllyasviel/Fooocus/main/models/prompt_expansion/fooocus_expansion/tokenizer.json",
             "https://raw.githubusercontent.com/lllyasviel/Fooocus/main/models/prompt_expansion/fooocus_expansion/tokenizer_config.json",
             "https://raw.githubusercontent.com/lllyasviel/Fooocus/main/models/prompt_expansion/fooocus_expansion/vocab.json",
-            ("https://huggingface.co/lllyasviel/misc/resolve/main/fooocus_expansion.bin", True),  # type: ignore
+            (
+                "https://huggingface.co/lllyasviel/misc/resolve/main/fooocus_expansion.bin",
+                True,
+            ),  # type: ignore
         ]
     else:
         return [

@@ -57,7 +57,9 @@ class FlashAttentionBaseAttention:
         )
 
         attention_mask = attn.prepare_attention_mask(  # type: ignore
-            attention_mask, key_tokens, batch_size  # type: ignore
+            attention_mask,
+            key_tokens,
+            batch_size,  # type: ignore
         )
         if attention_mask is not None:
             # expand our mask's singleton query_tokens dimension:
@@ -92,7 +94,10 @@ class FlashAttentionBaseAttention:
 
         if input_ndim == 4:
             hidden_states = hidden_states.transpose(-1, -2).reshape(  # type: ignore
-                batch_size, channel, height, width  # type: ignore - unbound, might be a problem later
+                batch_size,
+                channel,
+                height,
+                width,  # type: ignore - unbound, might be a problem later
             )
 
         if attn.residual_connection:
@@ -138,7 +143,11 @@ class FlashAttentionStandardAttention(FlashAttentionBaseAttention):
         from flash_attn import flash_attn_func
 
         hidden_states = flash_attn_func(
-            query, key, value, dropout_p=0.0, causal=False  # type: ignore
+            query,
+            key,
+            value,
+            dropout_p=0.0,
+            causal=False,  # type: ignore
         )
         return hidden_states.to(query.dtype)  # type: ignore
 

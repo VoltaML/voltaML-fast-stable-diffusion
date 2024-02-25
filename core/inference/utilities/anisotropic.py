@@ -229,7 +229,10 @@ def _bilateral_blur(
     ).exp()  # (B, 1, H, W, Ky x Kx)
 
     space_kernel = get_gaussian_kernel2d(
-        kernel_size, sigma_space, device=input.device, dtype=input.dtype  # type: ignore
+        kernel_size,
+        sigma_space,
+        device=input.device,
+        dtype=input.dtype,  # type: ignore
     )
     space_kernel = space_kernel.view(-1, 1, 1, 1, kx * ky)
 

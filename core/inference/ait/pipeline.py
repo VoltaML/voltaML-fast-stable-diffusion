@@ -355,7 +355,8 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     # Infer ControlNet only for the conditional batch.
                     control_model_input = x
                     control_model_input = self.scheduler.scale_model_input(
-                        control_model_input, t  # type: ignore
+                        control_model_input,
+                        t,  # type: ignore
                     ).half()
                     controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
                 else:
@@ -414,7 +415,11 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
 
             if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                 x = self.scheduler.step(
-                    noise_pred, t, x, **extra_step_kwargs, return_dict=False  # type: ignore
+                    noise_pred,
+                    t,
+                    x,
+                    **extra_step_kwargs,
+                    return_dict=False,  # type: ignore
                 )[0]
             else:
                 x = noise_pred
@@ -494,5 +499,6 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             return (image, has_nsfw_concept)
 
         return StableDiffusionPipelineOutput(
-            images=image, nsfw_content_detected=has_nsfw_concept  # type: ignore
+            images=image,
+            nsfw_content_detected=has_nsfw_concept,  # type: ignore
         )

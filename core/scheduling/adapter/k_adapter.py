@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 class KdiffusionSchedulerAdapter:
     "Somewhat diffusers compatible scheduler-like K-diffusion adapter."
+
     sampler_tuple: Sampler
     denoiser: Denoiser
 
@@ -153,7 +154,9 @@ class KdiffusionSchedulerAdapter:
         def change_source(src):
             self.denoiser.inner_model.callable = src
 
-        apply_model = functools.partial(apply_model, call=self.denoiser, change_source=change_source)  # type: ignore
+        apply_model = functools.partial(
+            apply_model, call=self.denoiser, change_source=change_source
+        )  # type: ignore
         change_source(call)
 
         def callback_func(data):

@@ -74,10 +74,16 @@ def optimize_model(
                 logger.info(
                     "Optimization: Reduced precision operations enabled (fp16 only)"
                 )
-        torch.backends.cuda.matmul.allow_tf32 = config.api.reduced_precision and supports_tf  # type: ignore
+        torch.backends.cuda.matmul.allow_tf32 = (
+            config.api.reduced_precision and supports_tf
+        )  # type: ignore
         torch.backends.cudnn.allow_tf32 = config.api.reduced_precision and supports_tf  # type: ignore
-        torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = config.api.reduced_precision  # type: ignore
-        torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = config.api.reduced_precision and supports_tf  # type: ignore
+        torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = (
+            config.api.reduced_precision
+        )  # type: ignore
+        torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = (
+            config.api.reduced_precision and supports_tf
+        )  # type: ignore
 
         logger.info(
             f"Optimization: CUDNN {'' if config.api.deterministic_generation else 'not '}using deterministic functions"
@@ -135,7 +141,11 @@ def optimize_model(
         try:
             import tomesd
 
-            tomesd.apply_patch(pipe.unet, ratio=config.api.tomesd_ratio, max_downsample=config.api.tomesd_downsample_layers)  # type: ignore
+            tomesd.apply_patch(
+                pipe.unet,
+                ratio=config.api.tomesd_ratio,
+                max_downsample=config.api.tomesd_downsample_layers,
+            )  # type: ignore
             logger.info("Optimization: Patched UNet for ToMeSD")
         except ImportError:
             logger.info(

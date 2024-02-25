@@ -192,7 +192,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             ) = get_weighted_text_embeddings(
                 pipe=self.parent,  # type: ignore
                 prompt=prompt,
-                uncond_prompt="" if negative_prompt is None and not self.force_zeros else negative_prompt,  # type: ignore
+                uncond_prompt=""
+                if negative_prompt is None and not self.force_zeros
+                else negative_prompt,  # type: ignore
                 max_embeddings_multiples=max_embeddings_multiples,
                 seed=seed,
                 prompt_expansion_settings=prompt_expansion_settings,
@@ -225,13 +227,20 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         pooled_embeddings = pooled_embeddings.view(bs_embed * num_images_per_prompt, -1)
 
         bs_embed = uncond_pooled_embeddings.shape[0]  # type: ignore
-        uncond_pooled_embeddings = uncond_pooled_embeddings.repeat(1, num_images_per_prompt)  # type: ignore
+        uncond_pooled_embeddings = uncond_pooled_embeddings.repeat(
+            1, num_images_per_prompt
+        )  # type: ignore
         uncond_pooled_embeddings = uncond_pooled_embeddings.view(
             bs_embed * num_images_per_prompt, -1
         )
 
         # Only the last one is necessary
-        return prompt_embeds.to(device), uncond_embeds.to(device), pooled_embeddings.to(device), uncond_pooled_embeddings.to(device)  # type: ignore
+        return (
+            prompt_embeds.to(device),
+            uncond_embeds.to(device),
+            pooled_embeddings.to(device),
+            uncond_pooled_embeddings.to(device),
+        )  # type: ignore
 
     def _get_add_time_ids(
         self,
@@ -254,20 +263,23 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             add_neg_time_ids = list(original_size + crops_coords_top_left + target_size)
 
         passed_add_embed_dim = (
-            self.unet.config.addition_time_embed_dim * len(add_time_ids) + self.text_encoder_2.config.projection_dim  # type: ignore
+            self.unet.config.addition_time_embed_dim * len(add_time_ids)
+            + self.text_encoder_2.config.projection_dim  # type: ignore
         )
         expected_add_embed_dim = self.unet.add_embedding.linear_1.in_features  # type: ignore
 
         if (
             expected_add_embed_dim > passed_add_embed_dim
-            and (expected_add_embed_dim - passed_add_embed_dim) == self.unet.config.addition_time_embed_dim  # type: ignore
+            and (expected_add_embed_dim - passed_add_embed_dim)
+            == self.unet.config.addition_time_embed_dim  # type: ignore
         ):
             raise ValueError(
                 f"Model expects an added time embedding vector of length {expected_add_embed_dim}, but a vector of {passed_add_embed_dim} was created. Please make sure to enable `requires_aesthetics_score` with `pipe.register_to_config(requires_aesthetics_score=True)` to make sure `aesthetic_score` {aesthetic_score} and `negative_aesthetic_score` {negative_aesthetic_score} is correctly used by the model."
             )
         elif (
             expected_add_embed_dim < passed_add_embed_dim
-            and (passed_add_embed_dim - expected_add_embed_dim) == self.unet.config.addition_time_embed_dim  # type: ignore
+            and (passed_add_embed_dim - expected_add_embed_dim)
+            == self.unet.config.addition_time_embed_dim  # type: ignore
         ):
             raise ValueError(
                 f"Model expects an added time embedding vector of length {expected_add_embed_dim}, but a vector of {passed_add_embed_dim} was created. Please make sure to disable `requires_aesthetics_score` with `pipe.register_to_config(requires_aesthetics_score=False)` to make sure `target_size` {target_size} is correctly used by the model."
@@ -335,7 +347,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
 
             if scalecrafter is not None:
                 unsafe = scalecrafter.unsafe_resolutions  # type: ignore
-                scalecrafter: ScalecrafterSettings = get_scalecrafter_config("sd15", height, width, scalecrafter.disperse)  # type: ignore
+                scalecrafter: ScalecrafterSettings = get_scalecrafter_config(
+                    "sd15", height, width, scalecrafter.disperse
+                )  # type: ignore
                 logger.info(
                     f'Applying ScaleCrafter with (base="{scalecrafter.base}", res="{scalecrafter.height * 8}x{scalecrafter.width * 8}", dis="{scalecrafter.disperse is not None}")'
                 )
@@ -508,7 +522,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 add_time_ids = torch.cat([add_neg_time_ids, add_time_ids], dim=0)
             prompt_embeds = prompt_embeds.to(device)
             add_text_embeds = add_text_embeds.to(device)
-            add_time_ids = add_time_ids.to(device).repeat(batch_size * num_images_per_prompt, 1)  # type: ignore
+            add_time_ids = add_time_ids.to(device).repeat(
+                batch_size * num_images_per_prompt, 1
+            )  # type: ignore
 
             cutoff = num_inference_steps * adapter_conditioning_factor
             # 8. Denoising loop
@@ -517,7 +533,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
 
             if do_self_attention_guidance:
                 store_processor = sag.CrossAttnStoreProcessor()
-                self.unet.mid_block.attentions[0].transformer_blocks[0].attn1.processor = store_processor  # type: ignore
+                self.unet.mid_block.attentions[0].transformer_blocks[
+                    0
+                ].attn1.processor = store_processor  # type: ignore
 
             map_size = None
 
@@ -540,9 +558,13 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
 
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
-                    torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
+                    torch.cat([x] * 2)
+                    if do_classifier_free_guidance and not split_latents_into_two
+                    else x  # type: ignore
                 )
-                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
+                latent_model_input = self.scheduler.scale_model_input(
+                    latent_model_input, t
+                )  # type: ignore
 
                 if j >= refiner_steps:
                     assert refiner_model is not None
@@ -624,7 +646,12 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                     if not split_latents_into_two:
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
                     noise_pred = calculate_cfg(
-                        j, noise_pred_text, noise_pred_uncond, guidance_scale, t, noise_pred_vanilla  # type: ignore
+                        j,
+                        noise_pred_text,
+                        noise_pred_uncond,
+                        guidance_scale,
+                        t,
+                        noise_pred_vanilla,  # type: ignore
                     )
 
                 if do_self_attention_guidance:
@@ -647,7 +674,10 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     # compute the previous noisy sample x_t -> x_t-1
                     x = self.scheduler.step(  # type: ignore
-                        noise_pred, t.to(noise_pred.device), x.to(noise_pred.device), **extra_step_kwargs  # type: ignore
+                        noise_pred,
+                        t.to(noise_pred.device),
+                        x.to(noise_pred.device),
+                        **extra_step_kwargs,  # type: ignore
                     ).prev_sample  # type: ignore
                 else:
                     x = noise_pred  # type: ignore
@@ -655,7 +685,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 if mask is not None:
                     # masking
                     init_latents_proper = self.scheduler.add_noise(  # type: ignore
-                        init_latents_orig, noise, torch.tensor([t])  # type: ignore
+                        init_latents_orig,
+                        noise,
+                        torch.tensor([t]),  # type: ignore
                     )
                     x = (init_latents_proper * mask) + (x * (1 - mask))  # type: ignore
                 j += 1
@@ -670,7 +702,11 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 init_latents_orig = init_latents_orig.to(dtype=dtype)
             with ExitStack() as gs:
                 if do_self_attention_guidance:
-                    gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
+                    gs.enter_context(
+                        self.unet.mid_block.attentions[0].register_forward_hook(
+                            get_map_size
+                        )
+                    )  # type: ignore
 
                 if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     latents = self.scheduler.do_inference(
@@ -735,5 +771,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 return converted_image, False
 
             return StableDiffusionPipelineOutput(
-                images=converted_image, nsfw_content_detected=False  # type: ignore
+                images=converted_image,
+                nsfw_content_detected=False,  # type: ignore
             )

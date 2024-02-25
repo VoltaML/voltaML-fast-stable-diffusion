@@ -380,7 +380,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             if scalecrafter is not None:
                 unsafe = scalecrafter.unsafe_resolutions  # type: ignore
-                scalecrafter: ScalecrafterSettings = get_scalecrafter_config("sd15", height, width, scalecrafter.disperse)  # type: ignore
+                scalecrafter: ScalecrafterSettings = get_scalecrafter_config(
+                    "sd15", height, width, scalecrafter.disperse
+                )  # type: ignore
                 logger.info(
                     f'Applying ScaleCrafter with (base="{scalecrafter.base}", res="{scalecrafter.height * 8}x{scalecrafter.width * 8}", dis="{scalecrafter.disperse is not None}")'
                 )
@@ -509,11 +511,15 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 device,
                 generator,
                 latents,
-                latent_channels=None if mask is None else self.vae.config.latent_channels,  # type: ignore
+                latent_channels=None
+                if mask is None
+                else self.vae.config.latent_channels,  # type: ignore
             )
 
             # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
-            extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta, generator)  # type: ignore
+            extra_step_kwargs = prepare_extra_step_kwargs(
+                self.scheduler, eta, generator
+            )  # type: ignore
 
             setup_scalecrafter(self.unet, scalecrafter)  # type: ignore
 
@@ -547,7 +553,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             if do_self_attention_guidance:
                 store_processor = CrossAttnStoreProcessor()
-                self.unet.mid_block.attentions[0].transformer_blocks[0].attn1.processor = store_processor  # type: ignore
+                self.unet.mid_block.attentions[0].transformer_blocks[
+                    0
+                ].attn1.processor = store_processor  # type: ignore
 
             map_size = None
 
@@ -574,12 +582,18 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
-                    torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
+                    torch.cat([x] * 2)
+                    if do_classifier_free_guidance and not split_latents_into_two
+                    else x  # type: ignore
                 )
-                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
+                latent_model_input = self.scheduler.scale_model_input(
+                    latent_model_input, t
+                )  # type: ignore
 
                 if num_channels_unet == 9:
-                    latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
+                    latent_model_input = torch.cat(
+                        [latent_model_input, mask, masked_image_latents], dim=1
+                    )  # type: ignore
 
                 self.unet = step_scalecrafter(
                     self.unet, scalecrafter, j, num_inference_steps
@@ -599,7 +613,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     if guess_mode and do_classifier_free_guidance:
                         # Infer ControlNet only for the conditional batch.
                         control_model_input = x
-                        control_model_input = self.scheduler.scale_model_input(control_model_input, t).half()  # type: ignore
+                        control_model_input = self.scheduler.scale_model_input(
+                            control_model_input, t
+                        ).half()  # type: ignore
                         controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
                     else:
                         control_model_input = latent_model_input
@@ -689,7 +705,12 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     if not split_latents_into_two:
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
                     noise_pred = calculate_cfg(
-                        j, noise_pred_text, noise_pred_uncond, guidance_scale, t, noise_pred_vanilla  # type: ignore
+                        j,
+                        noise_pred_text,
+                        noise_pred_uncond,
+                        guidance_scale,
+                        t,
+                        noise_pred_vanilla,  # type: ignore
                     )
 
                 if do_self_attention_guidance:
@@ -712,7 +733,10 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     # compute the previous noisy sample x_t -> x_t-1
                     x = self.scheduler.step(  # type: ignore
-                        noise_pred, t.to(noise_pred.device), x.to(noise_pred.device), **extra_step_kwargs  # type: ignore
+                        noise_pred,
+                        t.to(noise_pred.device),
+                        x.to(noise_pred.device),
+                        **extra_step_kwargs,  # type: ignore
                     ).prev_sample  # type: ignore
                 else:
                     x = noise_pred  # type: ignore
@@ -734,7 +758,11 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 image_latents = image_latents.to(dtype=dtype)  # type: ignore
             with ExitStack() as gs:
                 if do_self_attention_guidance:
-                    gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
+                    gs.enter_context(
+                        self.unet.mid_block.attentions[0].register_forward_hook(
+                            get_map_size
+                        )
+                    )  # type: ignore
 
                 if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     latents = self.scheduler.do_inference(
@@ -800,5 +828,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 return converted_image, False
 
             return StableDiffusionPipelineOutput(
-                images=converted_image, nsfw_content_detected=False  # type: ignore
+                images=converted_image,
+                nsfw_content_detected=False,  # type: ignore
             )

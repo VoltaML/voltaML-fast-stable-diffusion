@@ -109,7 +109,9 @@ def trace_model(
         warnings.simplefilter("ignore")
         if "cpu" in config.api.device:
             torch.jit.enable_onednn_fusion(True)
-        model = torch.jit.trace(model, generate_inputs(dtype, device), check_trace=False)  # type: ignore
+        model = torch.jit.trace(
+            model, generate_inputs(dtype, device), check_trace=False
+        )  # type: ignore
         model = torch.jit.freeze(model)  # type: ignore
     logger.debug("Tracing done")
     warmup(model, iterations // 5, dtype, device)

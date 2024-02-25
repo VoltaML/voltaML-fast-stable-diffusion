@@ -91,9 +91,12 @@ class ReDilateConvProcessor:
         if self.activate:
             ori_dilation, ori_padding = self.module.dilation, self.module.padding
             inflation_kernel_size = (self.module.weight.shape[-1] - 3) // 2
-            self.module.dilation, self.module.padding = self.dilation, (  # type: ignore
-                self.dilation * (1 + inflation_kernel_size),
-                self.dilation * (1 + inflation_kernel_size),
+            self.module.dilation, self.module.padding = (
+                self.dilation,
+                (  # type: ignore
+                    self.dilation * (1 + inflation_kernel_size),
+                    self.dilation * (1 + inflation_kernel_size),
+                ),
             )
             ori_size, new_size = (
                 (
@@ -233,7 +236,10 @@ def scale(
                 if tau < settings.inflate_tau and name in settings.disperse_list:
                     dilate = dilate / 2
                 module.forward = ReDilateConvProcessor(  # type: ignore
-                    module, dilate, mode="bilinear", activate=tau < settings.dilate_tau  # type: ignore
+                    module,
+                    dilate,
+                    mode="bilinear",
+                    activate=tau < settings.dilate_tau,  # type: ignore
                 )
 
     return unet
@@ -279,7 +285,10 @@ def post_scale(
                 if tau < settings.inflate_tau and name in settings.disperse_list:
                     dilate = dilate / 2
                 module.forward = ReDilateConvProcessor(  # type: ignore
-                    module, dilate, mode="bilinear", activate=tau < settings.ndcfg_tau  # type: ignore
+                    module,
+                    dilate,
+                    mode="bilinear",
+                    activate=tau < settings.ndcfg_tau,  # type: ignore
                 )
         noise_pred_vanilla = call(*args, **kwargs)
 
