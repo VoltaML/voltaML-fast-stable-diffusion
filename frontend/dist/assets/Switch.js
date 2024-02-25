@@ -1,4 +1,4 @@
-import { a1 as cB, a2 as cE, b7 as iconSwitchTransition, a3 as c, a4 as cM, aA as cNotM, d as defineComponent, X as useConfig, ab as useTheme, aN as useFormItem, y as ref, a7 as toRef, a6 as useMergedState, i as computed, aD as createKey, aX as pxfy, aS as depx, ac as useThemeClass, c4 as isSlotEmpty, t as h, aQ as resolveWrappedSlot, c5 as switchLight, aZ as NIconSwitchTransition, a_ as NBaseLoading, at as call } from "./index.js";
+import { a1 as cB, a2 as cE, b7 as iconSwitchTransition, a3 as c, a4 as cM, aA as cNotM, d as defineComponent, X as useConfig, ab as useTheme, aN as useFormItem, y as ref, a7 as toRef, a6 as useMergedState, i as computed, aD as createKey, aX as pxfy, aS as depx, ac as useThemeClass, c5 as isSlotEmpty, t as h, aQ as resolveWrappedSlot, c6 as switchLight, aZ as NIconSwitchTransition, a_ as NBaseLoading, at as call } from "./index.js";
 const style = cB("switch", `
  height: var(--n-height);
  min-width: var(--n-width);
@@ -161,10 +161,16 @@ const NSwitch = defineComponent({
         supportCssMax = true;
       }
     }
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Switch", "-switch", style, switchLight, props, mergedClsPrefixRef);
     const formItem = useFormItem(props);
-    const { mergedSizeRef, mergedDisabledRef } = formItem;
+    const {
+      mergedSizeRef,
+      mergedDisabledRef
+    } = formItem;
     const uncontrolledValueRef = ref(props.defaultValue);
     const controlledValueRef = toRef(props, "value");
     const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
@@ -174,14 +180,26 @@ const NSwitch = defineComponent({
     const pressedRef = ref(false);
     const focusedRef = ref(false);
     const mergedRailStyleRef = computed(() => {
-      const { railStyle } = props;
+      const {
+        railStyle
+      } = props;
       if (!railStyle)
         return void 0;
-      return railStyle({ focused: focusedRef.value, checked: checkedRef.value });
+      return railStyle({
+        focused: focusedRef.value,
+        checked: checkedRef.value
+      });
     });
     function doUpdateValue(value) {
-      const { "onUpdate:value": _onUpdateValue, onChange, onUpdateValue } = props;
-      const { nTriggerFormInput, nTriggerFormChange } = formItem;
+      const {
+        "onUpdate:value": _onUpdateValue,
+        onChange,
+        onUpdateValue
+      } = props;
+      const {
+        nTriggerFormInput,
+        nTriggerFormChange
+      } = formItem;
       if (_onUpdateValue)
         call(_onUpdateValue, value);
       if (onUpdateValue)
@@ -193,11 +211,15 @@ const NSwitch = defineComponent({
       nTriggerFormChange();
     }
     function doFocus() {
-      const { nTriggerFormFocus } = formItem;
+      const {
+        nTriggerFormFocus
+      } = formItem;
       nTriggerFormFocus();
     }
     function doBlur() {
-      const { nTriggerFormBlur } = formItem;
+      const {
+        nTriggerFormBlur
+      } = formItem;
       nTriggerFormBlur();
     }
     function handleClick() {
@@ -239,8 +261,32 @@ const NSwitch = defineComponent({
       }
     }
     const cssVarsRef = computed(() => {
-      const { value: size } = mergedSizeRef;
-      const { self: { opacityDisabled, railColor, railColorActive, buttonBoxShadow, buttonColor, boxShadowFocus, loadingColor, textColor, iconColor, [createKey("buttonHeight", size)]: buttonHeight, [createKey("buttonWidth", size)]: buttonWidth, [createKey("buttonWidthPressed", size)]: buttonWidthPressed, [createKey("railHeight", size)]: railHeight, [createKey("railWidth", size)]: railWidth, [createKey("railBorderRadius", size)]: railBorderRadius, [createKey("buttonBorderRadius", size)]: buttonBorderRadius }, common: { cubicBezierEaseInOut } } = themeRef.value;
+      const {
+        value: size
+      } = mergedSizeRef;
+      const {
+        self: {
+          opacityDisabled,
+          railColor,
+          railColorActive,
+          buttonBoxShadow,
+          buttonColor,
+          boxShadowFocus,
+          loadingColor,
+          textColor,
+          iconColor,
+          [createKey("buttonHeight", size)]: buttonHeight,
+          [createKey("buttonWidth", size)]: buttonWidth,
+          [createKey("buttonWidthPressed", size)]: buttonWidthPressed,
+          [createKey("railHeight", size)]: railHeight,
+          [createKey("railWidth", size)]: railWidth,
+          [createKey("railBorderRadius", size)]: railBorderRadius,
+          [createKey("buttonBorderRadius", size)]: buttonBorderRadius
+        },
+        common: {
+          cubicBezierEaseInOut
+        }
+      } = themeRef.value;
       let offset;
       let height;
       let width;
@@ -297,60 +343,77 @@ const NSwitch = defineComponent({
     };
   },
   render() {
-    const { mergedClsPrefix, mergedDisabled, checked, mergedRailStyle, onRender, $slots } = this;
+    const {
+      mergedClsPrefix,
+      mergedDisabled,
+      checked,
+      mergedRailStyle,
+      onRender,
+      $slots
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    const { checked: checkedSlot, unchecked: uncheckedSlot, icon: iconSlot, "checked-icon": checkedIconSlot, "unchecked-icon": uncheckedIconSlot } = $slots;
+    const {
+      checked: checkedSlot,
+      unchecked: uncheckedSlot,
+      icon: iconSlot,
+      "checked-icon": checkedIconSlot,
+      "unchecked-icon": uncheckedIconSlot
+    } = $slots;
     const hasIcon = !(isSlotEmpty(iconSlot) && isSlotEmpty(checkedIconSlot) && isSlotEmpty(uncheckedIconSlot));
-    return h(
-      "div",
-      { role: "switch", "aria-checked": checked, class: [
-        `${mergedClsPrefix}-switch`,
-        this.themeClass,
-        hasIcon && `${mergedClsPrefix}-switch--icon`,
-        checked && `${mergedClsPrefix}-switch--active`,
-        mergedDisabled && `${mergedClsPrefix}-switch--disabled`,
-        this.round && `${mergedClsPrefix}-switch--round`,
-        this.loading && `${mergedClsPrefix}-switch--loading`,
-        this.pressed && `${mergedClsPrefix}-switch--pressed`,
-        this.rubberBand && `${mergedClsPrefix}-switch--rubber-band`
-      ], tabindex: !this.mergedDisabled ? 0 : void 0, style: this.cssVars, onClick: this.handleClick, onFocus: this.handleFocus, onBlur: this.handleBlur, onKeyup: this.handleKeyup, onKeydown: this.handleKeydown },
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-switch__rail`, "aria-hidden": "true", style: mergedRailStyle },
-        resolveWrappedSlot(checkedSlot, (checkedSlotChildren) => resolveWrappedSlot(uncheckedSlot, (uncheckedSlotChildren) => {
-          if (checkedSlotChildren || uncheckedSlotChildren) {
-            return h(
-              "div",
-              { "aria-hidden": true, class: `${mergedClsPrefix}-switch__children-placeholder` },
-              h(
-                "div",
-                { class: `${mergedClsPrefix}-switch__rail-placeholder` },
-                h("div", { class: `${mergedClsPrefix}-switch__button-placeholder` }),
-                checkedSlotChildren
-              ),
-              h(
-                "div",
-                { class: `${mergedClsPrefix}-switch__rail-placeholder` },
-                h("div", { class: `${mergedClsPrefix}-switch__button-placeholder` }),
-                uncheckedSlotChildren
-              )
-            );
-          }
-          return null;
-        })),
-        h(
-          "div",
-          { class: `${mergedClsPrefix}-switch__button` },
-          resolveWrappedSlot(iconSlot, (icon) => resolveWrappedSlot(checkedIconSlot, (checkedIcon) => resolveWrappedSlot(uncheckedIconSlot, (uncheckedIcon) => {
-            return h(NIconSwitchTransition, null, {
-              default: () => this.loading ? h(NBaseLoading, { key: "loading", clsPrefix: mergedClsPrefix, strokeWidth: 20 }) : this.checked && (checkedIcon || icon) ? h("div", { class: `${mergedClsPrefix}-switch__button-icon`, key: checkedIcon ? "checked-icon" : "icon" }, checkedIcon || icon) : !this.checked && (uncheckedIcon || icon) ? h("div", { class: `${mergedClsPrefix}-switch__button-icon`, key: uncheckedIcon ? "unchecked-icon" : "icon" }, uncheckedIcon || icon) : null
-            });
-          }))),
-          resolveWrappedSlot(checkedSlot, (children) => children && h("div", { key: "checked", class: `${mergedClsPrefix}-switch__checked` }, children)),
-          resolveWrappedSlot(uncheckedSlot, (children) => children && h("div", { key: "unchecked", class: `${mergedClsPrefix}-switch__unchecked` }, children))
-        )
-      )
-    );
+    return h("div", {
+      role: "switch",
+      "aria-checked": checked,
+      class: [`${mergedClsPrefix}-switch`, this.themeClass, hasIcon && `${mergedClsPrefix}-switch--icon`, checked && `${mergedClsPrefix}-switch--active`, mergedDisabled && `${mergedClsPrefix}-switch--disabled`, this.round && `${mergedClsPrefix}-switch--round`, this.loading && `${mergedClsPrefix}-switch--loading`, this.pressed && `${mergedClsPrefix}-switch--pressed`, this.rubberBand && `${mergedClsPrefix}-switch--rubber-band`],
+      tabindex: !this.mergedDisabled ? 0 : void 0,
+      style: this.cssVars,
+      onClick: this.handleClick,
+      onFocus: this.handleFocus,
+      onBlur: this.handleBlur,
+      onKeyup: this.handleKeyup,
+      onKeydown: this.handleKeydown
+    }, h("div", {
+      class: `${mergedClsPrefix}-switch__rail`,
+      "aria-hidden": "true",
+      style: mergedRailStyle
+    }, resolveWrappedSlot(checkedSlot, (checkedSlotChildren) => resolveWrappedSlot(uncheckedSlot, (uncheckedSlotChildren) => {
+      if (checkedSlotChildren || uncheckedSlotChildren) {
+        return h("div", {
+          "aria-hidden": true,
+          class: `${mergedClsPrefix}-switch__children-placeholder`
+        }, h("div", {
+          class: `${mergedClsPrefix}-switch__rail-placeholder`
+        }, h("div", {
+          class: `${mergedClsPrefix}-switch__button-placeholder`
+        }), checkedSlotChildren), h("div", {
+          class: `${mergedClsPrefix}-switch__rail-placeholder`
+        }, h("div", {
+          class: `${mergedClsPrefix}-switch__button-placeholder`
+        }), uncheckedSlotChildren));
+      }
+      return null;
+    })), h("div", {
+      class: `${mergedClsPrefix}-switch__button`
+    }, resolveWrappedSlot(iconSlot, (icon) => resolveWrappedSlot(checkedIconSlot, (checkedIcon) => resolveWrappedSlot(uncheckedIconSlot, (uncheckedIcon) => {
+      return h(NIconSwitchTransition, null, {
+        default: () => this.loading ? h(NBaseLoading, {
+          key: "loading",
+          clsPrefix: mergedClsPrefix,
+          strokeWidth: 20
+        }) : this.checked && (checkedIcon || icon) ? h("div", {
+          class: `${mergedClsPrefix}-switch__button-icon`,
+          key: checkedIcon ? "checked-icon" : "icon"
+        }, checkedIcon || icon) : !this.checked && (uncheckedIcon || icon) ? h("div", {
+          class: `${mergedClsPrefix}-switch__button-icon`,
+          key: uncheckedIcon ? "unchecked-icon" : "icon"
+        }, uncheckedIcon || icon) : null
+      });
+    }))), resolveWrappedSlot(checkedSlot, (children) => children && h("div", {
+      key: "checked",
+      class: `${mergedClsPrefix}-switch__checked`
+    }, children)), resolveWrappedSlot(uncheckedSlot, (children) => children && h("div", {
+      key: "unchecked",
+      class: `${mergedClsPrefix}-switch__unchecked`
+    }, children)))));
   }
 });
 export {

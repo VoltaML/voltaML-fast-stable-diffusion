@@ -45,21 +45,22 @@ var __publicField = (obj, key, value) => {
     fetch(link.href, fetchOpts);
   }
 })();
+/**
+* @vue/shared v3.4.19
+* (c) 2018-present Yuxi (Evan) You and Vue contributors
+* @license MIT
+**/
 function makeMap(str, expectsLowerCase) {
-  const map2 = /* @__PURE__ */ Object.create(null);
-  const list = str.split(",");
-  for (let i = 0; i < list.length; i++) {
-    map2[list[i]] = true;
-  }
-  return expectsLowerCase ? (val) => !!map2[val.toLowerCase()] : (val) => !!map2[val];
+  const set2 = new Set(str.split(","));
+  return expectsLowerCase ? (val) => set2.has(val.toLowerCase()) : (val) => set2.has(val);
 }
 const EMPTY_OBJ = {};
 const EMPTY_ARR = [];
 const NOOP = () => {
 };
 const NO = () => false;
-const onRE = /^on[^a-z]/;
-const isOn = (key) => onRE.test(key);
+const isOn = (key) => key.charCodeAt(0) === 111 && key.charCodeAt(1) === 110 && // uppercase letter
+(key.charCodeAt(2) > 122 || key.charCodeAt(2) < 97);
 const isModelListener = (key) => key.startsWith("onUpdate:");
 const extend = Object.assign;
 const remove = (arr, el) => {
@@ -78,7 +79,7 @@ const isString$1 = (val) => typeof val === "string";
 const isSymbol$1 = (val) => typeof val === "symbol";
 const isObject$1 = (val) => val !== null && typeof val === "object";
 const isPromise = (val) => {
-  return isObject$1(val) && isFunction$2(val.then) && isFunction$2(val.catch);
+  return (isObject$1(val) || isFunction$2(val)) && isFunction$2(val.then) && isFunction$2(val.catch);
 };
 const objectToString$1 = Object.prototype.toString;
 const toTypeString = (value) => objectToString$1.call(value);
@@ -106,12 +107,13 @@ const hyphenateRE = /\B([A-Z])/g;
 const hyphenate = cacheStringFunction(
   (str) => str.replace(hyphenateRE, "-$1").toLowerCase()
 );
-const capitalize = cacheStringFunction(
-  (str) => str.charAt(0).toUpperCase() + str.slice(1)
-);
-const toHandlerKey = cacheStringFunction(
-  (str) => str ? `on${capitalize(str)}` : ``
-);
+const capitalize = cacheStringFunction((str) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+});
+const toHandlerKey = cacheStringFunction((str) => {
+  const s = str ? `on${capitalize(str)}` : ``;
+  return s;
+});
 const hasChanged = (value, oldValue) => !Object.is(value, oldValue);
 const invokeArrayFns = (fns, arg) => {
   for (let i = 0; i < fns.length; i++) {
@@ -150,9 +152,7 @@ function normalizeStyle(value) {
       }
     }
     return res;
-  } else if (isString$1(value)) {
-    return value;
-  } else if (isObject$1(value)) {
+  } else if (isString$1(value) || isObject$1(value)) {
     return value;
   }
 }
@@ -202,20 +202,34 @@ const replacer = (_key, val) => {
     return replacer(_key, val.value);
   } else if (isMap$2(val)) {
     return {
-      [`Map(${val.size})`]: [...val.entries()].reduce((entries, [key, val2]) => {
-        entries[`${key} =>`] = val2;
-        return entries;
-      }, {})
+      [`Map(${val.size})`]: [...val.entries()].reduce(
+        (entries, [key, val2], i) => {
+          entries[stringifySymbol(key, i) + " =>"] = val2;
+          return entries;
+        },
+        {}
+      )
     };
   } else if (isSet$2(val)) {
     return {
-      [`Set(${val.size})`]: [...val.values()]
+      [`Set(${val.size})`]: [...val.values()].map((v) => stringifySymbol(v))
     };
+  } else if (isSymbol$1(val)) {
+    return stringifySymbol(val);
   } else if (isObject$1(val) && !isArray$3(val) && !isPlainObject$2(val)) {
     return String(val);
   }
   return val;
 };
+const stringifySymbol = (v, i = "") => {
+  var _a2;
+  return isSymbol$1(v) ? `Symbol(${(_a2 = v.description) != null ? _a2 : i})` : v;
+};
+/**
+* @vue/reactivity v3.4.19
+* (c) 2018-present Yuxi (Evan) You and Vue contributors
+* @license MIT
+**/
 let activeEffectScope;
 class EffectScope {
   constructor(detached = false) {
@@ -300,112 +314,100 @@ function onScopeDispose(fn) {
     activeEffectScope.cleanups.push(fn);
   }
 }
-const createDep = (effects) => {
-  const dep = new Set(effects);
-  dep.w = 0;
-  dep.n = 0;
-  return dep;
-};
-const wasTracked = (dep) => (dep.w & trackOpBit) > 0;
-const newTracked = (dep) => (dep.n & trackOpBit) > 0;
-const initDepMarkers = ({ deps }) => {
-  if (deps.length) {
-    for (let i = 0; i < deps.length; i++) {
-      deps[i].w |= trackOpBit;
-    }
-  }
-};
-const finalizeDepMarkers = (effect) => {
-  const { deps } = effect;
-  if (deps.length) {
-    let ptr = 0;
-    for (let i = 0; i < deps.length; i++) {
-      const dep = deps[i];
-      if (wasTracked(dep) && !newTracked(dep)) {
-        dep.delete(effect);
-      } else {
-        deps[ptr++] = dep;
-      }
-      dep.w &= ~trackOpBit;
-      dep.n &= ~trackOpBit;
-    }
-    deps.length = ptr;
-  }
-};
-const targetMap = /* @__PURE__ */ new WeakMap();
-let effectTrackDepth = 0;
-let trackOpBit = 1;
-const maxMarkerBits = 30;
 let activeEffect;
-const ITERATE_KEY = Symbol("");
-const MAP_KEY_ITERATE_KEY = Symbol("");
 class ReactiveEffect {
-  constructor(fn, scheduler2 = null, scope) {
+  constructor(fn, trigger2, scheduler2, scope) {
     this.fn = fn;
+    this.trigger = trigger2;
     this.scheduler = scheduler2;
     this.active = true;
     this.deps = [];
-    this.parent = void 0;
+    this._dirtyLevel = 4;
+    this._trackId = 0;
+    this._runnings = 0;
+    this._shouldSchedule = false;
+    this._depsLength = 0;
     recordEffectScope(this, scope);
   }
+  get dirty() {
+    if (this._dirtyLevel === 2 || this._dirtyLevel === 3) {
+      this._dirtyLevel = 1;
+      pauseTracking();
+      for (let i = 0; i < this._depsLength; i++) {
+        const dep = this.deps[i];
+        if (dep.computed) {
+          triggerComputed(dep.computed);
+          if (this._dirtyLevel >= 4) {
+            break;
+          }
+        }
+      }
+      if (this._dirtyLevel === 1) {
+        this._dirtyLevel = 0;
+      }
+      resetTracking();
+    }
+    return this._dirtyLevel >= 4;
+  }
+  set dirty(v) {
+    this._dirtyLevel = v ? 4 : 0;
+  }
   run() {
+    this._dirtyLevel = 0;
     if (!this.active) {
       return this.fn();
     }
-    let parent = activeEffect;
     let lastShouldTrack = shouldTrack;
-    while (parent) {
-      if (parent === this) {
-        return;
-      }
-      parent = parent.parent;
-    }
+    let lastEffect = activeEffect;
     try {
-      this.parent = activeEffect;
-      activeEffect = this;
       shouldTrack = true;
-      trackOpBit = 1 << ++effectTrackDepth;
-      if (effectTrackDepth <= maxMarkerBits) {
-        initDepMarkers(this);
-      } else {
-        cleanupEffect(this);
-      }
+      activeEffect = this;
+      this._runnings++;
+      preCleanupEffect(this);
       return this.fn();
     } finally {
-      if (effectTrackDepth <= maxMarkerBits) {
-        finalizeDepMarkers(this);
-      }
-      trackOpBit = 1 << --effectTrackDepth;
-      activeEffect = this.parent;
+      postCleanupEffect(this);
+      this._runnings--;
+      activeEffect = lastEffect;
       shouldTrack = lastShouldTrack;
-      this.parent = void 0;
-      if (this.deferStop) {
-        this.stop();
-      }
     }
   }
   stop() {
-    if (activeEffect === this) {
-      this.deferStop = true;
-    } else if (this.active) {
-      cleanupEffect(this);
-      if (this.onStop) {
-        this.onStop();
-      }
+    var _a2;
+    if (this.active) {
+      preCleanupEffect(this);
+      postCleanupEffect(this);
+      (_a2 = this.onStop) == null ? void 0 : _a2.call(this);
       this.active = false;
     }
   }
 }
-function cleanupEffect(effect2) {
-  const { deps } = effect2;
-  if (deps.length) {
-    for (let i = 0; i < deps.length; i++) {
-      deps[i].delete(effect2);
+function triggerComputed(computed2) {
+  return computed2.value;
+}
+function preCleanupEffect(effect2) {
+  effect2._trackId++;
+  effect2._depsLength = 0;
+}
+function postCleanupEffect(effect2) {
+  if (effect2.deps.length > effect2._depsLength) {
+    for (let i = effect2._depsLength; i < effect2.deps.length; i++) {
+      cleanupDepEffect(effect2.deps[i], effect2);
     }
-    deps.length = 0;
+    effect2.deps.length = effect2._depsLength;
+  }
+}
+function cleanupDepEffect(dep, effect2) {
+  const trackId = dep.get(effect2);
+  if (trackId !== void 0 && effect2._trackId !== trackId) {
+    dep.delete(effect2);
+    if (dep.size === 0) {
+      dep.cleanup();
+    }
   }
 }
 let shouldTrack = true;
+let pauseScheduleStack = 0;
 const trackStack = [];
 function pauseTracking() {
   trackStack.push(shouldTrack);
@@ -415,6 +417,59 @@ function resetTracking() {
   const last = trackStack.pop();
   shouldTrack = last === void 0 ? true : last;
 }
+function pauseScheduling() {
+  pauseScheduleStack++;
+}
+function resetScheduling() {
+  pauseScheduleStack--;
+  while (!pauseScheduleStack && queueEffectSchedulers.length) {
+    queueEffectSchedulers.shift()();
+  }
+}
+function trackEffect(effect2, dep, debuggerEventExtraInfo) {
+  if (dep.get(effect2) !== effect2._trackId) {
+    dep.set(effect2, effect2._trackId);
+    const oldDep = effect2.deps[effect2._depsLength];
+    if (oldDep !== dep) {
+      if (oldDep) {
+        cleanupDepEffect(oldDep, effect2);
+      }
+      effect2.deps[effect2._depsLength++] = dep;
+    } else {
+      effect2._depsLength++;
+    }
+  }
+}
+const queueEffectSchedulers = [];
+function triggerEffects(dep, dirtyLevel, debuggerEventExtraInfo) {
+  pauseScheduling();
+  for (const effect2 of dep.keys()) {
+    let tracking;
+    if (effect2._dirtyLevel < dirtyLevel && (tracking != null ? tracking : tracking = dep.get(effect2) === effect2._trackId)) {
+      effect2._shouldSchedule || (effect2._shouldSchedule = effect2._dirtyLevel === 0);
+      effect2._dirtyLevel = dirtyLevel;
+    }
+    if (effect2._shouldSchedule && (tracking != null ? tracking : tracking = dep.get(effect2) === effect2._trackId)) {
+      effect2.trigger();
+      if ((!effect2._runnings || effect2.allowRecurse) && effect2._dirtyLevel !== 2) {
+        effect2._shouldSchedule = false;
+        if (effect2.scheduler) {
+          queueEffectSchedulers.push(effect2.scheduler);
+        }
+      }
+    }
+  }
+  resetScheduling();
+}
+const createDep = (cleanup, computed2) => {
+  const dep = /* @__PURE__ */ new Map();
+  dep.cleanup = cleanup;
+  dep.computed = computed2;
+  return dep;
+};
+const targetMap = /* @__PURE__ */ new WeakMap();
+const ITERATE_KEY = Symbol("");
+const MAP_KEY_ITERATE_KEY = Symbol("");
 function track(target, type, key) {
   if (shouldTrack && activeEffect) {
     let depsMap = targetMap.get(target);
@@ -423,24 +478,12 @@ function track(target, type, key) {
     }
     let dep = depsMap.get(key);
     if (!dep) {
-      depsMap.set(key, dep = createDep());
+      depsMap.set(key, dep = createDep(() => depsMap.delete(key)));
     }
-    trackEffects(dep);
-  }
-}
-function trackEffects(dep, debuggerEventExtraInfo) {
-  let shouldTrack2 = false;
-  if (effectTrackDepth <= maxMarkerBits) {
-    if (!newTracked(dep)) {
-      dep.n |= trackOpBit;
-      shouldTrack2 = !wasTracked(dep);
-    }
-  } else {
-    shouldTrack2 = !dep.has(activeEffect);
-  }
-  if (shouldTrack2) {
-    dep.add(activeEffect);
-    activeEffect.deps.push(dep);
+    trackEffect(
+      activeEffect,
+      dep
+    );
   }
 }
 function trigger$1(target, type, key, newValue, oldValue, oldTarget) {
@@ -454,7 +497,7 @@ function trigger$1(target, type, key, newValue, oldValue, oldTarget) {
   } else if (key === "length" && isArray$3(target)) {
     const newLength = Number(newValue);
     depsMap.forEach((dep, key2) => {
-      if (key2 === "length" || key2 >= newLength) {
+      if (key2 === "length" || !isSymbol$1(key2) && key2 >= newLength) {
         deps.push(dep);
       }
     });
@@ -488,45 +531,16 @@ function trigger$1(target, type, key, newValue, oldValue, oldTarget) {
         break;
     }
   }
-  if (deps.length === 1) {
-    if (deps[0]) {
-      {
-        triggerEffects(deps[0]);
-      }
-    }
-  } else {
-    const effects = [];
-    for (const dep of deps) {
-      if (dep) {
-        effects.push(...dep);
-      }
-    }
-    {
-      triggerEffects(createDep(effects));
+  pauseScheduling();
+  for (const dep of deps) {
+    if (dep) {
+      triggerEffects(
+        dep,
+        4
+      );
     }
   }
-}
-function triggerEffects(dep, debuggerEventExtraInfo) {
-  const effects = isArray$3(dep) ? dep : [...dep];
-  for (const effect2 of effects) {
-    if (effect2.computed) {
-      triggerEffect(effect2);
-    }
-  }
-  for (const effect2 of effects) {
-    if (!effect2.computed) {
-      triggerEffect(effect2);
-    }
-  }
-}
-function triggerEffect(effect2, debuggerEventExtraInfo) {
-  if (effect2 !== activeEffect || effect2.allowRecurse) {
-    if (effect2.scheduler) {
-      effect2.scheduler();
-    } else {
-      effect2.run();
-    }
-  }
+  resetScheduling();
 }
 function getDepFromReactive(object, key) {
   var _a2;
@@ -536,9 +550,6 @@ const isNonTrackableKeys = /* @__PURE__ */ makeMap(`__proto__,__v_isRef,__isVue`
 const builtInSymbols = new Set(
   /* @__PURE__ */ Object.getOwnPropertyNames(Symbol).filter((key) => key !== "arguments" && key !== "caller").map((key) => Symbol[key]).filter(isSymbol$1)
 );
-const get$1 = /* @__PURE__ */ createGetter();
-const shallowGet = /* @__PURE__ */ createGetter(false, true);
-const readonlyGet = /* @__PURE__ */ createGetter(true);
 const arrayInstrumentations = /* @__PURE__ */ createArrayInstrumentations();
 function createArrayInstrumentations() {
   const instrumentations = {};
@@ -559,7 +570,9 @@ function createArrayInstrumentations() {
   ["push", "pop", "shift", "unshift", "splice"].forEach((key) => {
     instrumentations[key] = function(...args) {
       pauseTracking();
+      pauseScheduling();
       const res = toRaw(this)[key].apply(this, args);
+      resetScheduling();
       resetTracking();
       return res;
     };
@@ -571,16 +584,26 @@ function hasOwnProperty$d(key) {
   track(obj, "has", key);
   return obj.hasOwnProperty(key);
 }
-function createGetter(isReadonly2 = false, shallow = false) {
-  return function get2(target, key, receiver) {
+class BaseReactiveHandler {
+  constructor(_isReadonly = false, _shallow = false) {
+    this._isReadonly = _isReadonly;
+    this._shallow = _shallow;
+  }
+  get(target, key, receiver) {
+    const isReadonly2 = this._isReadonly, shallow = this._shallow;
     if (key === "__v_isReactive") {
       return !isReadonly2;
     } else if (key === "__v_isReadonly") {
       return isReadonly2;
     } else if (key === "__v_isShallow") {
       return shallow;
-    } else if (key === "__v_raw" && receiver === (isReadonly2 ? shallow ? shallowReadonlyMap : readonlyMap : shallow ? shallowReactiveMap : reactiveMap).get(target)) {
-      return target;
+    } else if (key === "__v_raw") {
+      if (receiver === (isReadonly2 ? shallow ? shallowReadonlyMap : readonlyMap : shallow ? shallowReactiveMap : reactiveMap).get(target) || // receiver is not the reactive proxy, but has the same prototype
+      // this means the reciever is a user proxy of the reactive proxy
+      Object.getPrototypeOf(target) === Object.getPrototypeOf(receiver)) {
+        return target;
+      }
+      return;
     }
     const targetIsArray = isArray$3(target);
     if (!isReadonly2) {
@@ -608,24 +631,27 @@ function createGetter(isReadonly2 = false, shallow = false) {
       return isReadonly2 ? readonly(res) : reactive(res);
     }
     return res;
-  };
+  }
 }
-const set$1 = /* @__PURE__ */ createSetter();
-const shallowSet = /* @__PURE__ */ createSetter(true);
-function createSetter(shallow = false) {
-  return function set2(target, key, value, receiver) {
+class MutableReactiveHandler extends BaseReactiveHandler {
+  constructor(shallow = false) {
+    super(false, shallow);
+  }
+  set(target, key, value, receiver) {
     let oldValue = target[key];
-    if (isReadonly(oldValue) && isRef(oldValue) && !isRef(value)) {
-      return false;
-    }
-    if (!shallow) {
+    if (!this._shallow) {
+      const isOldValueReadonly = isReadonly(oldValue);
       if (!isShallow(value) && !isReadonly(value)) {
         oldValue = toRaw(oldValue);
         value = toRaw(value);
       }
       if (!isArray$3(target) && isRef(oldValue) && !isRef(value)) {
-        oldValue.value = value;
-        return true;
+        if (isOldValueReadonly) {
+          return false;
+        } else {
+          oldValue.value = value;
+          return true;
+        }
       }
     }
     const hadKey = isArray$3(target) && isIntegerKey(key) ? Number(key) < target.length : hasOwn(target, key);
@@ -638,60 +664,56 @@ function createSetter(shallow = false) {
       }
     }
     return result;
-  };
-}
-function deleteProperty(target, key) {
-  const hadKey = hasOwn(target, key);
-  target[key];
-  const result = Reflect.deleteProperty(target, key);
-  if (result && hadKey) {
-    trigger$1(target, "delete", key, void 0);
   }
-  return result;
-}
-function has$1(target, key) {
-  const result = Reflect.has(target, key);
-  if (!isSymbol$1(key) || !builtInSymbols.has(key)) {
-    track(target, "has", key);
+  deleteProperty(target, key) {
+    const hadKey = hasOwn(target, key);
+    target[key];
+    const result = Reflect.deleteProperty(target, key);
+    if (result && hadKey) {
+      trigger$1(target, "delete", key, void 0);
+    }
+    return result;
   }
-  return result;
+  has(target, key) {
+    const result = Reflect.has(target, key);
+    if (!isSymbol$1(key) || !builtInSymbols.has(key)) {
+      track(target, "has", key);
+    }
+    return result;
+  }
+  ownKeys(target) {
+    track(
+      target,
+      "iterate",
+      isArray$3(target) ? "length" : ITERATE_KEY
+    );
+    return Reflect.ownKeys(target);
+  }
 }
-function ownKeys(target) {
-  track(target, "iterate", isArray$3(target) ? "length" : ITERATE_KEY);
-  return Reflect.ownKeys(target);
-}
-const mutableHandlers = {
-  get: get$1,
-  set: set$1,
-  deleteProperty,
-  has: has$1,
-  ownKeys
-};
-const readonlyHandlers = {
-  get: readonlyGet,
+class ReadonlyReactiveHandler extends BaseReactiveHandler {
+  constructor(shallow = false) {
+    super(true, shallow);
+  }
   set(target, key) {
     return true;
-  },
+  }
   deleteProperty(target, key) {
     return true;
   }
-};
-const shallowReactiveHandlers = /* @__PURE__ */ extend(
-  {},
-  mutableHandlers,
-  {
-    get: shallowGet,
-    set: shallowSet
-  }
+}
+const mutableHandlers = /* @__PURE__ */ new MutableReactiveHandler();
+const readonlyHandlers = /* @__PURE__ */ new ReadonlyReactiveHandler();
+const shallowReactiveHandlers = /* @__PURE__ */ new MutableReactiveHandler(
+  true
 );
 const toShallow = (value) => value;
 const getProto = (v) => Reflect.getPrototypeOf(v);
-function get$2(target, key, isReadonly2 = false, isShallow2 = false) {
+function get$1(target, key, isReadonly2 = false, isShallow2 = false) {
   target = target["__v_raw"];
   const rawTarget = toRaw(target);
   const rawKey = toRaw(key);
   if (!isReadonly2) {
-    if (key !== rawKey) {
+    if (hasChanged(key, rawKey)) {
       track(rawTarget, "get", key);
     }
     track(rawTarget, "get", rawKey);
@@ -711,7 +733,7 @@ function has(key, isReadonly2 = false) {
   const rawTarget = toRaw(target);
   const rawKey = toRaw(key);
   if (!isReadonly2) {
-    if (key !== rawKey) {
+    if (hasChanged(key, rawKey)) {
       track(rawTarget, "has", key);
     }
     track(rawTarget, "has", rawKey);
@@ -734,7 +756,7 @@ function add(value) {
   }
   return this;
 }
-function set$2(key, value) {
+function set$1(key, value) {
   value = toRaw(value);
   const target = toRaw(this);
   const { has: has2, get: get2 } = getProto(target);
@@ -820,41 +842,41 @@ function createIterableMethod(method, isReadonly2, isShallow2) {
 }
 function createReadonlyMethod(type) {
   return function(...args) {
-    return type === "delete" ? false : this;
+    return type === "delete" ? false : type === "clear" ? void 0 : this;
   };
 }
 function createInstrumentations() {
   const mutableInstrumentations2 = {
     get(key) {
-      return get$2(this, key);
+      return get$1(this, key);
     },
     get size() {
       return size$1(this);
     },
     has,
     add,
-    set: set$2,
+    set: set$1,
     delete: deleteEntry,
     clear,
     forEach: createForEach(false, false)
   };
   const shallowInstrumentations2 = {
     get(key) {
-      return get$2(this, key, false, true);
+      return get$1(this, key, false, true);
     },
     get size() {
       return size$1(this);
     },
     has,
     add,
-    set: set$2,
+    set: set$1,
     delete: deleteEntry,
     clear,
     forEach: createForEach(false, true)
   };
   const readonlyInstrumentations2 = {
     get(key) {
-      return get$2(this, key, true);
+      return get$1(this, key, true);
     },
     get size() {
       return size$1(this, true);
@@ -870,7 +892,7 @@ function createInstrumentations() {
   };
   const shallowReadonlyInstrumentations2 = {
     get(key) {
-      return get$2(this, key, true, true);
+      return get$1(this, key, true, true);
     },
     get size() {
       return size$1(this, true);
@@ -1039,26 +1061,88 @@ function toRaw(observed) {
   return raw ? toRaw(raw) : observed;
 }
 function markRaw(value) {
-  def(value, "__v_skip", true);
+  if (Object.isExtensible(value)) {
+    def(value, "__v_skip", true);
+  }
   return value;
 }
 const toReactive = (value) => isObject$1(value) ? reactive(value) : value;
 const toReadonly = (value) => isObject$1(value) ? readonly(value) : value;
+class ComputedRefImpl {
+  constructor(getter, _setter, isReadonly2, isSSR) {
+    this._setter = _setter;
+    this.dep = void 0;
+    this.__v_isRef = true;
+    this["__v_isReadonly"] = false;
+    this.effect = new ReactiveEffect(
+      () => getter(this._value),
+      () => triggerRefValue(
+        this,
+        this.effect._dirtyLevel === 2 ? 2 : 3
+      )
+    );
+    this.effect.computed = this;
+    this.effect.active = this._cacheable = !isSSR;
+    this["__v_isReadonly"] = isReadonly2;
+  }
+  get value() {
+    const self2 = toRaw(this);
+    if ((!self2._cacheable || self2.effect.dirty) && hasChanged(self2._value, self2._value = self2.effect.run())) {
+      triggerRefValue(self2, 4);
+    }
+    trackRefValue(self2);
+    if (self2.effect._dirtyLevel >= 2) {
+      triggerRefValue(self2, 2);
+    }
+    return self2._value;
+  }
+  set value(newValue) {
+    this._setter(newValue);
+  }
+  // #region polyfill _dirty for backward compatibility third party code for Vue <= 3.3.x
+  get _dirty() {
+    return this.effect.dirty;
+  }
+  set _dirty(v) {
+    this.effect.dirty = v;
+  }
+  // #endregion
+}
+function computed$1(getterOrOptions, debugOptions, isSSR = false) {
+  let getter;
+  let setter;
+  const onlyGetter = isFunction$2(getterOrOptions);
+  if (onlyGetter) {
+    getter = getterOrOptions;
+    setter = NOOP;
+  } else {
+    getter = getterOrOptions.get;
+    setter = getterOrOptions.set;
+  }
+  const cRef = new ComputedRefImpl(getter, setter, onlyGetter || !setter, isSSR);
+  return cRef;
+}
 function trackRefValue(ref2) {
+  var _a2;
   if (shouldTrack && activeEffect) {
     ref2 = toRaw(ref2);
-    {
-      trackEffects(ref2.dep || (ref2.dep = createDep()));
-    }
+    trackEffect(
+      activeEffect,
+      (_a2 = ref2.dep) != null ? _a2 : ref2.dep = createDep(
+        () => ref2.dep = void 0,
+        ref2 instanceof ComputedRefImpl ? ref2 : void 0
+      )
+    );
   }
 }
-function triggerRefValue(ref2, newVal) {
+function triggerRefValue(ref2, dirtyLevel = 4, newVal) {
   ref2 = toRaw(ref2);
   const dep = ref2.dep;
   if (dep) {
-    {
-      triggerEffects(dep);
-    }
+    triggerEffects(
+      dep,
+      dirtyLevel
+    );
   }
 }
 function isRef(r) {
@@ -1094,7 +1178,7 @@ class RefImpl {
     if (hasChanged(newVal, this._rawValue)) {
       this._rawValue = newVal;
       this._value = useDirectValue ? newVal : toReactive(newVal);
-      triggerRefValue(this);
+      triggerRefValue(this, 4);
     }
   }
 }
@@ -1164,67 +1248,117 @@ function toRef(source, key, defaultValue) {
 }
 function propertyToRef(source, key, defaultValue) {
   const val = source[key];
-  return isRef(val) ? val : new ObjectRefImpl(
-    source,
-    key,
-    defaultValue
-  );
+  return isRef(val) ? val : new ObjectRefImpl(source, key, defaultValue);
 }
-class ComputedRefImpl {
-  constructor(getter, _setter, isReadonly2, isSSR) {
-    this._setter = _setter;
-    this.dep = void 0;
-    this.__v_isRef = true;
-    this["__v_isReadonly"] = false;
-    this._dirty = true;
-    this.effect = new ReactiveEffect(getter, () => {
-      if (!this._dirty) {
-        this._dirty = true;
-        triggerRefValue(this);
-      }
-    });
-    this.effect.computed = this;
-    this.effect.active = this._cacheable = !isSSR;
-    this["__v_isReadonly"] = isReadonly2;
-  }
-  get value() {
-    const self2 = toRaw(this);
-    trackRefValue(self2);
-    if (self2._dirty || !self2._cacheable) {
-      self2._dirty = false;
-      self2._value = self2.effect.run();
-    }
-    return self2._value;
-  }
-  set value(newValue) {
-    this._setter(newValue);
-  }
-}
-function computed$1(getterOrOptions, debugOptions, isSSR = false) {
-  let getter;
-  let setter;
-  const onlyGetter = isFunction$2(getterOrOptions);
-  if (onlyGetter) {
-    getter = getterOrOptions;
-    setter = NOOP;
+/**
+* @vue/runtime-core v3.4.19
+* (c) 2018-present Yuxi (Evan) You and Vue contributors
+* @license MIT
+**/
+const stack$1 = [];
+function warn$1$1(msg2, ...args) {
+  pauseTracking();
+  const instance = stack$1.length ? stack$1[stack$1.length - 1].component : null;
+  const appWarnHandler = instance && instance.appContext.config.warnHandler;
+  const trace = getComponentTrace();
+  if (appWarnHandler) {
+    callWithErrorHandling(
+      appWarnHandler,
+      instance,
+      11,
+      [
+        msg2 + args.join(""),
+        instance && instance.proxy,
+        trace.map(
+          ({ vnode }) => `at <${formatComponentName(instance, vnode.type)}>`
+        ).join("\n"),
+        trace
+      ]
+    );
   } else {
-    getter = getterOrOptions.get;
-    setter = getterOrOptions.set;
+    const warnArgs = [`[Vue warn]: ${msg2}`, ...args];
+    if (trace.length && // avoid spamming console during tests
+    true) {
+      warnArgs.push(`
+`, ...formatTrace(trace));
+    }
+    console.warn(...warnArgs);
   }
-  const cRef = new ComputedRefImpl(getter, setter, onlyGetter || !setter, isSSR);
-  return cRef;
+  resetTracking();
 }
-function warn$3(msg2, ...args) {
-  return;
+function getComponentTrace() {
+  let currentVNode = stack$1[stack$1.length - 1];
+  if (!currentVNode) {
+    return [];
+  }
+  const normalizedStack = [];
+  while (currentVNode) {
+    const last = normalizedStack[0];
+    if (last && last.vnode === currentVNode) {
+      last.recurseCount++;
+    } else {
+      normalizedStack.push({
+        vnode: currentVNode,
+        recurseCount: 0
+      });
+    }
+    const parentInstance = currentVNode.component && currentVNode.component.parent;
+    currentVNode = parentInstance && parentInstance.vnode;
+  }
+  return normalizedStack;
+}
+function formatTrace(trace) {
+  const logs = [];
+  trace.forEach((entry, i) => {
+    logs.push(...i === 0 ? [] : [`
+`], ...formatTraceEntry(entry));
+  });
+  return logs;
+}
+function formatTraceEntry({ vnode, recurseCount }) {
+  const postfix = recurseCount > 0 ? `... (${recurseCount} recursive calls)` : ``;
+  const isRoot = vnode.component ? vnode.component.parent == null : false;
+  const open = ` at <${formatComponentName(
+    vnode.component,
+    vnode.type,
+    isRoot
+  )}`;
+  const close = `>` + postfix;
+  return vnode.props ? [open, ...formatProps(vnode.props), close] : [open + close];
+}
+function formatProps(props) {
+  const res = [];
+  const keys2 = Object.keys(props);
+  keys2.slice(0, 3).forEach((key) => {
+    res.push(...formatProp(key, props[key]));
+  });
+  if (keys2.length > 3) {
+    res.push(` ...`);
+  }
+  return res;
+}
+function formatProp(key, value, raw) {
+  if (isString$1(value)) {
+    value = JSON.stringify(value);
+    return raw ? value : [`${key}=${value}`];
+  } else if (typeof value === "number" || typeof value === "boolean" || value == null) {
+    return raw ? value : [`${key}=${value}`];
+  } else if (isRef(value)) {
+    value = formatProp(key, toRaw(value.value), true);
+    return raw ? value : [`${key}=Ref<`, value, `>`];
+  } else if (isFunction$2(value)) {
+    return [`${key}=fn${value.name ? `<${value.name}>` : ``}`];
+  } else {
+    value = toRaw(value);
+    return raw ? value : [`${key}=`, value];
+  }
 }
 function callWithErrorHandling(fn, instance, type, args) {
-  let res;
   try {
-    res = args ? fn(...args) : fn();
+    return args ? fn(...args) : fn();
   } catch (err) {
     handleError(err, instance, type);
   }
-  return res;
 }
 function callWithAsyncErrorHandling(fn, instance, type, args) {
   if (isFunction$2(fn)) {
@@ -1247,7 +1381,7 @@ function handleError(err, instance, type, throwInDev = true) {
   if (instance) {
     let cur = instance.parent;
     const exposedInstance = instance.proxy;
-    const errorInfo = type;
+    const errorInfo = `https://vuejs.org/error-reference/#runtime-${type}`;
     while (cur) {
       const errorCapturedHooks = cur.ec;
       if (errorCapturedHooks) {
@@ -1295,8 +1429,13 @@ function findInsertionIndex(id) {
   let end = queue.length;
   while (start < end) {
     const middle = start + end >>> 1;
-    const middleJobId = getId(queue[middle]);
-    middleJobId < id ? start = middle + 1 : end = middle;
+    const middleJob = queue[middle];
+    const middleJobId = getId(middleJob);
+    if (middleJobId < id || middleJobId === id && middleJob.pre) {
+      start = middle + 1;
+    } else {
+      end = middle;
+    }
   }
   return start;
 }
@@ -1338,10 +1477,13 @@ function queuePostFlushCb(cb) {
   }
   queueFlush();
 }
-function flushPreFlushCbs(seen2, i = isFlushing ? flushIndex + 1 : 0) {
+function flushPreFlushCbs(instance, seen2, i = isFlushing ? flushIndex + 1 : 0) {
   for (; i < queue.length; i++) {
     const cb = queue[i];
     if (cb && cb.pre) {
+      if (instance && cb.id !== instance.uid) {
+        continue;
+      }
       queue.splice(i, 1);
       i--;
       cb();
@@ -1350,14 +1492,15 @@ function flushPreFlushCbs(seen2, i = isFlushing ? flushIndex + 1 : 0) {
 }
 function flushPostFlushCbs(seen2) {
   if (pendingPostFlushCbs.length) {
-    const deduped = [...new Set(pendingPostFlushCbs)];
+    const deduped = [...new Set(pendingPostFlushCbs)].sort(
+      (a, b) => getId(a) - getId(b)
+    );
     pendingPostFlushCbs.length = 0;
     if (activePostFlushCbs) {
       activePostFlushCbs.push(...deduped);
       return;
     }
     activePostFlushCbs = deduped;
-    activePostFlushCbs.sort((a, b) => getId(a) - getId(b));
     for (postFlushIndex = 0; postFlushIndex < activePostFlushCbs.length; postFlushIndex++) {
       activePostFlushCbs[postFlushIndex]();
     }
@@ -1565,9 +1708,19 @@ function renderComponentRoot(instance) {
   try {
     if (vnode.shapeFlag & 4) {
       const proxyToUse = withProxy || proxy;
+      const thisProxy = false ? new Proxy(proxyToUse, {
+        get(target, key, receiver) {
+          warn$1$1(
+            `Property '${String(
+              key
+            )}' was accessed via 'this'. Avoid using 'this' in templates.`
+          );
+          return Reflect.get(target, key, receiver);
+        }
+      }) : proxyToUse;
       result = normalizeVNode(
         render17.call(
-          proxyToUse,
+          thisProxy,
           proxyToUse,
           renderCache,
           props,
@@ -1710,10 +1863,58 @@ function hasPropsChanged(prevProps, nextProps, emitsOptions) {
   return false;
 }
 function updateHOCHostEl({ vnode, parent }, el) {
-  while (parent && parent.subTree === vnode) {
-    (vnode = parent.vnode).el = el;
-    parent = parent.parent;
+  while (parent) {
+    const root2 = parent.subTree;
+    if (root2.suspense && root2.suspense.activeBranch === vnode) {
+      root2.el = vnode.el;
+    }
+    if (root2 === vnode) {
+      (vnode = parent.vnode).el = el;
+      parent = parent.parent;
+    } else {
+      break;
+    }
   }
+}
+const COMPONENTS = "components";
+function resolveComponent(name, maybeSelfReference) {
+  return resolveAsset(COMPONENTS, name, true, maybeSelfReference) || name;
+}
+const NULL_DYNAMIC_COMPONENT = Symbol.for("v-ndc");
+function resolveDynamicComponent(component) {
+  if (isString$1(component)) {
+    return resolveAsset(COMPONENTS, component, false) || component;
+  } else {
+    return component || NULL_DYNAMIC_COMPONENT;
+  }
+}
+function resolveAsset(type, name, warnMissing = true, maybeSelfReference = false) {
+  const instance = currentRenderingInstance || currentInstance;
+  if (instance) {
+    const Component = instance.type;
+    if (type === COMPONENTS) {
+      const selfName = getComponentName(
+        Component,
+        false
+      );
+      if (selfName && (selfName === name || selfName === camelize(name) || selfName === capitalize(camelize(name)))) {
+        return Component;
+      }
+    }
+    const res = (
+      // local registration
+      // check instance[type] first which is resolved for options API
+      resolve(instance[type] || Component[type], name) || // global registration
+      resolve(instance.appContext[type], name)
+    );
+    if (!res && maybeSelfReference) {
+      return Component;
+    }
+    return res;
+  }
+}
+function resolve(registry, name) {
+  return registry && (registry[name] || registry[camelize(name)] || registry[capitalize(camelize(name))]);
 }
 const isSuspense = (type) => type.__isSuspense;
 function queueEffectWithSuspense(fn, suspense) {
@@ -1727,6 +1928,13 @@ function queueEffectWithSuspense(fn, suspense) {
     queuePostFlushCb(fn);
   }
 }
+const ssrContextKey$1 = Symbol.for("v-scx");
+const useSSRContext = () => {
+  {
+    const ctx2 = inject(ssrContextKey$1);
+    return ctx2;
+  }
+};
 function watchEffect(effect, options) {
   return doWatch(effect, null, options);
 }
@@ -1741,9 +1949,26 @@ const INITIAL_WATCHER_VALUE = {};
 function watch(source, cb, options) {
   return doWatch(source, cb, options);
 }
-function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EMPTY_OBJ) {
-  var _a2;
-  const instance = getCurrentScope() === ((_a2 = currentInstance) == null ? void 0 : _a2.scope) ? currentInstance : null;
+function doWatch(source, cb, {
+  immediate,
+  deep,
+  flush,
+  once,
+  onTrack,
+  onTrigger
+} = EMPTY_OBJ) {
+  if (cb && once) {
+    const _cb = cb;
+    cb = (...args) => {
+      _cb(...args);
+      unwatch();
+    };
+  }
+  const instance = currentInstance;
+  const reactiveGetter = (source2) => deep === true ? source2 : (
+    // for deep: false, only traverse root-level properties
+    traverse(source2, deep === false ? 1 : void 0)
+  );
   let getter;
   let forceTrigger = false;
   let isMultiSource = false;
@@ -1751,8 +1976,8 @@ function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EM
     getter = () => source.value;
     forceTrigger = isShallow(source);
   } else if (isReactive(source)) {
-    getter = () => source;
-    deep = true;
+    getter = () => reactiveGetter(source);
+    forceTrigger = true;
   } else if (isArray$3(source)) {
     isMultiSource = true;
     forceTrigger = source.some((s) => isReactive(s) || isShallow(s));
@@ -1760,7 +1985,7 @@ function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EM
       if (isRef(s)) {
         return s.value;
       } else if (isReactive(s)) {
-        return traverse(s);
+        return reactiveGetter(s);
       } else if (isFunction$2(s)) {
         return callWithErrorHandling(s, instance, 2);
       } else
@@ -1771,9 +1996,6 @@ function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EM
       getter = () => callWithErrorHandling(source, instance, 2);
     } else {
       getter = () => {
-        if (instance && instance.isUnmounted) {
-          return;
-        }
         if (cleanup) {
           cleanup();
         }
@@ -1796,6 +2018,7 @@ function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EM
   let onCleanup = (fn) => {
     cleanup = effect.onStop = () => {
       callWithErrorHandling(fn, instance, 4);
+      cleanup = effect.onStop = void 0;
     };
   };
   let ssrCleanup;
@@ -1819,14 +2042,12 @@ function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EM
   }
   let oldValue = isMultiSource ? new Array(source.length).fill(INITIAL_WATCHER_VALUE) : INITIAL_WATCHER_VALUE;
   const job = () => {
-    if (!effect.active) {
+    if (!effect.active || !effect.dirty) {
       return;
     }
     if (cb) {
       const newValue = effect.run();
-      if (deep || forceTrigger || (isMultiSource ? newValue.some(
-        (v, i) => hasChanged(v, oldValue[i])
-      ) : hasChanged(newValue, oldValue)) || false) {
+      if (deep || forceTrigger || (isMultiSource ? newValue.some((v, i) => hasChanged(v, oldValue[i])) : hasChanged(newValue, oldValue)) || false) {
         if (cleanup) {
           cleanup();
         }
@@ -1854,7 +2075,14 @@ function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EM
       job.id = instance.uid;
     scheduler2 = () => queueJob(job);
   }
-  const effect = new ReactiveEffect(getter, scheduler2);
+  const effect = new ReactiveEffect(getter, NOOP, scheduler2);
+  const scope = getCurrentScope();
+  const unwatch = () => {
+    effect.stop();
+    if (scope) {
+      remove(scope.effects, effect);
+    }
+  };
   if (cb) {
     if (immediate) {
       job();
@@ -1869,12 +2097,6 @@ function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EM
   } else {
     effect.run();
   }
-  const unwatch = () => {
-    effect.stop();
-    if (instance && instance.scope) {
-      remove(instance.scope.effects, effect);
-    }
-  };
   if (ssrCleanup)
     ssrCleanup.push(unwatch);
   return unwatch;
@@ -1889,14 +2111,9 @@ function instanceWatch(source, value, options) {
     cb = value.handler;
     options = value;
   }
-  const cur = currentInstance;
-  setCurrentInstance(this);
+  const reset = setCurrentInstance(this);
   const res = doWatch(getter, cb.bind(publicThis), options);
-  if (cur) {
-    setCurrentInstance(cur);
-  } else {
-    unsetCurrentInstance();
-  }
+  reset();
   return res;
 }
 function createPathGetter(ctx2, path) {
@@ -1909,9 +2126,15 @@ function createPathGetter(ctx2, path) {
     return cur;
   };
 }
-function traverse(value, seen2) {
+function traverse(value, depth, currentDepth = 0, seen2) {
   if (!isObject$1(value) || value["__v_skip"]) {
     return value;
+  }
+  if (depth && depth > 0) {
+    if (currentDepth >= depth) {
+      return value;
+    }
+    currentDepth++;
   }
   seen2 = seen2 || /* @__PURE__ */ new Set();
   if (seen2.has(value)) {
@@ -1919,28 +2142,27 @@ function traverse(value, seen2) {
   }
   seen2.add(value);
   if (isRef(value)) {
-    traverse(value.value, seen2);
+    traverse(value.value, depth, currentDepth, seen2);
   } else if (isArray$3(value)) {
     for (let i = 0; i < value.length; i++) {
-      traverse(value[i], seen2);
+      traverse(value[i], depth, currentDepth, seen2);
     }
   } else if (isSet$2(value) || isMap$2(value)) {
     value.forEach((v) => {
-      traverse(v, seen2);
+      traverse(v, depth, currentDepth, seen2);
     });
   } else if (isPlainObject$2(value)) {
     for (const key in value) {
-      traverse(value[key], seen2);
+      traverse(value[key], depth, currentDepth, seen2);
     }
   }
   return value;
 }
 function withDirectives(vnode, directives) {
-  const internalInstance = currentRenderingInstance;
-  if (internalInstance === null) {
+  if (currentRenderingInstance === null) {
     return vnode;
   }
-  const instance = getExposeProxy(internalInstance) || internalInstance.proxy;
+  const instance = getExposeProxy(currentRenderingInstance) || currentRenderingInstance.proxy;
   const bindings = vnode.dirs || (vnode.dirs = []);
   for (let i = 0; i < directives.length; i++) {
     let [dir, value, arg, modifiers = EMPTY_OBJ] = directives[i];
@@ -1987,6 +2209,8 @@ function invokeDirectiveHook(vnode, prevVNode, instance, name) {
     }
   }
 }
+const leaveCbKey = Symbol("_leaveCb");
+const enterCbKey$1 = Symbol("_enterCb");
 function useTransitionState() {
   const state2 = {
     isMounted: false,
@@ -2086,6 +2310,7 @@ const BaseTransitionImpl = {
           leavingHooks.afterLeave = () => {
             state2.isLeaving = false;
             if (instance.update.active !== false) {
+              instance.effect.dirty = true;
               instance.update();
             }
           };
@@ -2097,9 +2322,9 @@ const BaseTransitionImpl = {
               oldInnerChild
             );
             leavingVNodesCache[String(oldInnerChild.key)] = oldInnerChild;
-            el._leaveCb = () => {
+            el[leaveCbKey] = () => {
               earlyRemove();
-              el._leaveCb = void 0;
+              el[leaveCbKey] = void 0;
               delete enterHooks.delayedLeave;
             };
             enterHooks.delayedLeave = delayedLeave;
@@ -2170,15 +2395,15 @@ function resolveTransitionHooks(vnode, props, state2, instance) {
           return;
         }
       }
-      if (el._leaveCb) {
-        el._leaveCb(
+      if (el[leaveCbKey]) {
+        el[leaveCbKey](
           true
           /* cancelled */
         );
       }
       const leavingVNode = leavingVNodesCache[key];
-      if (leavingVNode && isSameVNodeType(vnode, leavingVNode) && leavingVNode.el._leaveCb) {
-        leavingVNode.el._leaveCb();
+      if (leavingVNode && isSameVNodeType(vnode, leavingVNode) && leavingVNode.el[leaveCbKey]) {
+        leavingVNode.el[leaveCbKey]();
       }
       callHook2(hook, [el]);
     },
@@ -2196,7 +2421,7 @@ function resolveTransitionHooks(vnode, props, state2, instance) {
         }
       }
       let called = false;
-      const done = el._enterCb = (cancelled) => {
+      const done = el[enterCbKey$1] = (cancelled) => {
         if (called)
           return;
         called = true;
@@ -2208,7 +2433,7 @@ function resolveTransitionHooks(vnode, props, state2, instance) {
         if (hooks.delayedLeave) {
           hooks.delayedLeave();
         }
-        el._enterCb = void 0;
+        el[enterCbKey$1] = void 0;
       };
       if (hook) {
         callAsyncHook(hook, [el, done]);
@@ -2218,8 +2443,8 @@ function resolveTransitionHooks(vnode, props, state2, instance) {
     },
     leave(el, remove2) {
       const key2 = String(vnode.key);
-      if (el._enterCb) {
-        el._enterCb(
+      if (el[enterCbKey$1]) {
+        el[enterCbKey$1](
           true
           /* cancelled */
         );
@@ -2229,7 +2454,7 @@ function resolveTransitionHooks(vnode, props, state2, instance) {
       }
       callHook2(onBeforeLeave, [el]);
       let called = false;
-      const done = el._leaveCb = (cancelled) => {
+      const done = el[leaveCbKey] = (cancelled) => {
         if (called)
           return;
         called = true;
@@ -2239,7 +2464,7 @@ function resolveTransitionHooks(vnode, props, state2, instance) {
         } else {
           callHook2(onAfterLeave, [el]);
         }
-        el._leaveCb = void 0;
+        el[leaveCbKey] = void 0;
         if (leavingVNodesCache[key2] === vnode) {
           delete leavingVNodesCache[key2];
         }
@@ -2265,7 +2490,11 @@ function emptyPlaceholder(vnode) {
   }
 }
 function getKeepAliveChild(vnode) {
-  return isKeepAlive(vnode) ? vnode.children ? vnode.children[0] : void 0 : vnode;
+  return isKeepAlive(vnode) ? (
+    // #7121 ensure get the child component subtree in case
+    // it's been replaced during HMR
+    vnode.children ? vnode.children[0] : void 0
+  ) : vnode;
 }
 function setTransitionHooks(vnode, hooks) {
   if (vnode.shapeFlag & 6 && vnode.component) {
@@ -2300,6 +2529,8 @@ function getTransitionRawChildren(children, keepComment = false, parentKey) {
   }
   return ret;
 }
+/*! #__NO_SIDE_EFFECTS__ */
+// @__NO_SIDE_EFFECTS__
 function defineComponent(options, extraOptions) {
   return isFunction$2(options) ? (
     // #8326: extend call and options.name access are considered side-effects
@@ -2357,9 +2588,9 @@ function injectHook(type, hook, target = currentInstance, prepend = false) {
         return;
       }
       pauseTracking();
-      setCurrentInstance(target);
+      const reset = setCurrentInstance(target);
       const res = callWithAsyncErrorHandling(hook, target, type, args);
-      unsetCurrentInstance();
+      reset();
       resetTracking();
       return res;
     });
@@ -2390,47 +2621,6 @@ const onRenderTracked = createHook(
 );
 function onErrorCaptured(hook, target = currentInstance) {
   injectHook("ec", hook, target);
-}
-const COMPONENTS = "components";
-function resolveComponent(name, maybeSelfReference) {
-  return resolveAsset(COMPONENTS, name, true, maybeSelfReference) || name;
-}
-const NULL_DYNAMIC_COMPONENT = Symbol.for("v-ndc");
-function resolveDynamicComponent(component) {
-  if (isString$1(component)) {
-    return resolveAsset(COMPONENTS, component, false) || component;
-  } else {
-    return component || NULL_DYNAMIC_COMPONENT;
-  }
-}
-function resolveAsset(type, name, warnMissing = true, maybeSelfReference = false) {
-  const instance = currentRenderingInstance || currentInstance;
-  if (instance) {
-    const Component = instance.type;
-    if (type === COMPONENTS) {
-      const selfName = getComponentName(
-        Component,
-        false
-        /* do not include inferred name to avoid breaking existing code */
-      );
-      if (selfName && (selfName === name || selfName === camelize(name) || selfName === capitalize(camelize(name)))) {
-        return Component;
-      }
-    }
-    const res = (
-      // local registration
-      // check instance[type] first which is resolved for options API
-      resolve(instance[type] || Component[type], name) || // global registration
-      resolve(instance.appContext[type], name)
-    );
-    if (!res && maybeSelfReference) {
-      return Component;
-    }
-    return res;
-  }
-}
-function resolve(registry, name) {
-  return registry && (registry[name] || registry[camelize(name)] || registry[capitalize(camelize(name))]);
 }
 function renderList(source, renderItem, cache2, index2) {
   let ret;
@@ -2530,7 +2720,10 @@ const publicPropertiesMap = (
     $root: (i) => getPublicInstance(i.root),
     $emit: (i) => i.emit,
     $options: (i) => resolveMergedOptions(i),
-    $forceUpdate: (i) => i.f || (i.f = () => queueJob(i.update)),
+    $forceUpdate: (i) => i.f || (i.f = () => {
+      i.effect.dirty = true;
+      queueJob(i.update);
+    }),
     $nextTick: (i) => i.n || (i.n = nextTick.bind(i.proxy)),
     $watch: (i) => instanceWatch.bind(i)
   })
@@ -2791,7 +2984,6 @@ function resolveInjections(injectOptions, ctx2, checkDuplicateProperties = NOOP)
           opt.from || key,
           opt.default,
           true
-          /* treat default function as factory */
         );
       } else {
         injected = inject(opt.from || key);
@@ -3009,7 +3201,7 @@ function createAppAPI(render17, hydrate) {
       rootProps = null;
     }
     const context = createAppContext();
-    const installedPlugins = /* @__PURE__ */ new Set();
+    const installedPlugins = /* @__PURE__ */ new WeakSet();
     let isMounted2 = false;
     const app2 = context.app = {
       _uid: uid$1++,
@@ -3059,17 +3251,19 @@ function createAppAPI(render17, hydrate) {
         context.directives[name] = directive;
         return app2;
       },
-      mount(rootContainer, isHydrate, isSVG2) {
+      mount(rootContainer, isHydrate, namespace2) {
         if (!isMounted2) {
-          const vnode = createVNode(
-            rootComponent,
-            rootProps
-          );
+          const vnode = createVNode(rootComponent, rootProps);
           vnode.appContext = context;
+          if (namespace2 === true) {
+            namespace2 = "svg";
+          } else if (namespace2 === false) {
+            namespace2 = void 0;
+          }
           if (isHydrate && hydrate) {
             hydrate(vnode, rootContainer);
           } else {
-            render17(vnode, rootContainer, isSVG2);
+            render17(vnode, rootContainer, namespace2);
           }
           isMounted2 = true;
           app2._container = rootContainer;
@@ -3088,11 +3282,12 @@ function createAppAPI(render17, hydrate) {
         return app2;
       },
       runWithContext(fn) {
+        const lastApp = currentApp;
         currentApp = app2;
         try {
           return fn();
         } finally {
-          currentApp = null;
+          currentApp = lastApp;
         }
       }
     };
@@ -3187,7 +3382,6 @@ function updateProps(instance, rawProps, rawPrevProps, optimized) {
               value,
               instance,
               false
-              /* isAbsent */
             );
           }
         } else {
@@ -3219,7 +3413,6 @@ function updateProps(instance, rawProps, rawPrevProps, optimized) {
               void 0,
               instance,
               true
-              /* isAbsent */
             );
           }
         } else {
@@ -3293,12 +3486,12 @@ function resolvePropValue(options, props, key, value, instance, isAbsent) {
         if (key in propsDefaults) {
           value = propsDefaults[key];
         } else {
-          setCurrentInstance(instance);
+          const reset = setCurrentInstance(instance);
           value = propsDefaults[key] = defaultValue.call(
             null,
             props
           );
-          unsetCurrentInstance();
+          reset();
         }
       } else {
         value = defaultValue;
@@ -3392,14 +3585,22 @@ function normalizePropsOptions(comp, appContext, asMixin = false) {
   return res;
 }
 function validatePropName(key) {
-  if (key[0] !== "$") {
+  if (key[0] !== "$" && !isReservedProp(key)) {
     return true;
   }
   return false;
 }
 function getType(ctor) {
-  const match2 = ctor && ctor.toString().match(/^\s*(function|class) (\w+)/);
-  return match2 ? match2[2] : ctor === null ? "null" : "";
+  if (ctor === null) {
+    return "null";
+  }
+  if (typeof ctor === "function") {
+    return ctor.name || "";
+  } else if (typeof ctor === "object") {
+    const name = ctor.constructor && ctor.constructor.name;
+    return name || "";
+  }
+  return "";
 }
 function isSameType(a, b) {
   return getType(a) === getType(b);
@@ -3490,7 +3691,7 @@ const updateSlots = (instance, children, optimized) => {
   }
   if (needDeletionCheck) {
     for (const key in slots) {
-      if (!isInternalKey(key) && !(key in deletionComparisonTarget)) {
+      if (!isInternalKey(key) && deletionComparisonTarget[key] == null) {
         delete slots[key];
       }
     }
@@ -3597,7 +3798,7 @@ function baseCreateRenderer(options, createHydrationFns) {
     setScopeId: hostSetScopeId = NOOP,
     insertStaticContent: hostInsertStaticContent
   } = options;
-  const patch = (n1, n2, container, anchor = null, parentComponent = null, parentSuspense = null, isSVG2 = false, slotScopeIds = null, optimized = !!n2.dynamicChildren) => {
+  const patch = (n1, n2, container, anchor = null, parentComponent = null, parentSuspense = null, namespace2 = void 0, slotScopeIds = null, optimized = !!n2.dynamicChildren) => {
     if (n1 === n2) {
       return;
     }
@@ -3620,7 +3821,7 @@ function baseCreateRenderer(options, createHydrationFns) {
         break;
       case Static:
         if (n1 == null) {
-          mountStaticNode(n2, container, anchor, isSVG2);
+          mountStaticNode(n2, container, anchor, namespace2);
         }
         break;
       case Fragment:
@@ -3631,7 +3832,7 @@ function baseCreateRenderer(options, createHydrationFns) {
           anchor,
           parentComponent,
           parentSuspense,
-          isSVG2,
+          namespace2,
           slotScopeIds,
           optimized
         );
@@ -3645,7 +3846,7 @@ function baseCreateRenderer(options, createHydrationFns) {
             anchor,
             parentComponent,
             parentSuspense,
-            isSVG2,
+            namespace2,
             slotScopeIds,
             optimized
           );
@@ -3657,7 +3858,7 @@ function baseCreateRenderer(options, createHydrationFns) {
             anchor,
             parentComponent,
             parentSuspense,
-            isSVG2,
+            namespace2,
             slotScopeIds,
             optimized
           );
@@ -3669,7 +3870,7 @@ function baseCreateRenderer(options, createHydrationFns) {
             anchor,
             parentComponent,
             parentSuspense,
-            isSVG2,
+            namespace2,
             slotScopeIds,
             optimized,
             internals
@@ -3682,7 +3883,7 @@ function baseCreateRenderer(options, createHydrationFns) {
             anchor,
             parentComponent,
             parentSuspense,
-            isSVG2,
+            namespace2,
             slotScopeIds,
             optimized,
             internals
@@ -3719,12 +3920,12 @@ function baseCreateRenderer(options, createHydrationFns) {
       n2.el = n1.el;
     }
   };
-  const mountStaticNode = (n2, container, anchor, isSVG2) => {
+  const mountStaticNode = (n2, container, anchor, namespace2) => {
     [n2.el, n2.anchor] = hostInsertStaticContent(
       n2.children,
       container,
       anchor,
-      isSVG2,
+      namespace2,
       n2.el,
       n2.anchor
     );
@@ -3747,8 +3948,12 @@ function baseCreateRenderer(options, createHydrationFns) {
     }
     hostRemove(anchor);
   };
-  const processElement = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized) => {
-    isSVG2 = isSVG2 || n2.type === "svg";
+  const processElement = (n1, n2, container, anchor, parentComponent, parentSuspense, namespace2, slotScopeIds, optimized) => {
+    if (n2.type === "svg") {
+      namespace2 = "svg";
+    } else if (n2.type === "math") {
+      namespace2 = "mathml";
+    }
     if (n1 == null) {
       mountElement(
         n2,
@@ -3756,7 +3961,7 @@ function baseCreateRenderer(options, createHydrationFns) {
         anchor,
         parentComponent,
         parentSuspense,
-        isSVG2,
+        namespace2,
         slotScopeIds,
         optimized
       );
@@ -3766,19 +3971,19 @@ function baseCreateRenderer(options, createHydrationFns) {
         n2,
         parentComponent,
         parentSuspense,
-        isSVG2,
+        namespace2,
         slotScopeIds,
         optimized
       );
     }
   };
-  const mountElement = (vnode, container, anchor, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized) => {
+  const mountElement = (vnode, container, anchor, parentComponent, parentSuspense, namespace2, slotScopeIds, optimized) => {
     let el;
     let vnodeHook;
-    const { type, props, shapeFlag, transition, dirs } = vnode;
+    const { props, shapeFlag, transition, dirs } = vnode;
     el = vnode.el = hostCreateElement(
       vnode.type,
-      isSVG2,
+      namespace2,
       props && props.is,
       props
     );
@@ -3791,7 +3996,7 @@ function baseCreateRenderer(options, createHydrationFns) {
         null,
         parentComponent,
         parentSuspense,
-        isSVG2 && type !== "foreignObject",
+        resolveChildrenNamespace(vnode, namespace2),
         slotScopeIds,
         optimized
       );
@@ -3808,7 +4013,7 @@ function baseCreateRenderer(options, createHydrationFns) {
             key,
             null,
             props[key],
-            isSVG2,
+            namespace2,
             vnode.children,
             parentComponent,
             parentSuspense,
@@ -3817,7 +4022,7 @@ function baseCreateRenderer(options, createHydrationFns) {
         }
       }
       if ("value" in props) {
-        hostPatchProp(el, "value", null, props.value);
+        hostPatchProp(el, "value", null, props.value, namespace2);
       }
       if (vnodeHook = props.onVnodeBeforeMount) {
         invokeVNodeHook(vnodeHook, parentComponent, vnode);
@@ -3826,7 +4031,7 @@ function baseCreateRenderer(options, createHydrationFns) {
     if (dirs) {
       invokeDirectiveHook(vnode, null, parentComponent, "beforeMount");
     }
-    const needCallTransitionHooks = (!parentSuspense || parentSuspense && !parentSuspense.pendingBranch) && transition && !transition.persisted;
+    const needCallTransitionHooks = needTransition(parentSuspense, transition);
     if (needCallTransitionHooks) {
       transition.beforeEnter(el);
     }
@@ -3862,7 +4067,7 @@ function baseCreateRenderer(options, createHydrationFns) {
       }
     }
   };
-  const mountChildren = (children, container, anchor, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized, start = 0) => {
+  const mountChildren = (children, container, anchor, parentComponent, parentSuspense, namespace2, slotScopeIds, optimized, start = 0) => {
     for (let i = start; i < children.length; i++) {
       const child = children[i] = optimized ? cloneIfMounted(children[i]) : normalizeVNode(children[i]);
       patch(
@@ -3872,13 +4077,13 @@ function baseCreateRenderer(options, createHydrationFns) {
         anchor,
         parentComponent,
         parentSuspense,
-        isSVG2,
+        namespace2,
         slotScopeIds,
         optimized
       );
     }
   };
-  const patchElement = (n1, n2, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized) => {
+  const patchElement = (n1, n2, parentComponent, parentSuspense, namespace2, slotScopeIds, optimized) => {
     const el = n2.el = n1.el;
     let { patchFlag, dynamicChildren, dirs } = n2;
     patchFlag |= n1.patchFlag & 16;
@@ -3893,7 +4098,6 @@ function baseCreateRenderer(options, createHydrationFns) {
       invokeDirectiveHook(n2, n1, parentComponent, "beforeUpdate");
     }
     parentComponent && toggleRecurse(parentComponent, true);
-    const areChildrenSVG = isSVG2 && n2.type !== "foreignObject";
     if (dynamicChildren) {
       patchBlockChildren(
         n1.dynamicChildren,
@@ -3901,7 +4105,7 @@ function baseCreateRenderer(options, createHydrationFns) {
         el,
         parentComponent,
         parentSuspense,
-        areChildrenSVG,
+        resolveChildrenNamespace(n2, namespace2),
         slotScopeIds
       );
     } else if (!optimized) {
@@ -3912,7 +4116,7 @@ function baseCreateRenderer(options, createHydrationFns) {
         null,
         parentComponent,
         parentSuspense,
-        areChildrenSVG,
+        resolveChildrenNamespace(n2, namespace2),
         slotScopeIds,
         false
       );
@@ -3926,16 +4130,16 @@ function baseCreateRenderer(options, createHydrationFns) {
           newProps,
           parentComponent,
           parentSuspense,
-          isSVG2
+          namespace2
         );
       } else {
         if (patchFlag & 2) {
           if (oldProps.class !== newProps.class) {
-            hostPatchProp(el, "class", null, newProps.class, isSVG2);
+            hostPatchProp(el, "class", null, newProps.class, namespace2);
           }
         }
         if (patchFlag & 4) {
-          hostPatchProp(el, "style", oldProps.style, newProps.style, isSVG2);
+          hostPatchProp(el, "style", oldProps.style, newProps.style, namespace2);
         }
         if (patchFlag & 8) {
           const propsToUpdate = n2.dynamicProps;
@@ -3949,7 +4153,7 @@ function baseCreateRenderer(options, createHydrationFns) {
                 key,
                 prev,
                 next,
-                isSVG2,
+                namespace2,
                 n1.children,
                 parentComponent,
                 parentSuspense,
@@ -3972,7 +4176,7 @@ function baseCreateRenderer(options, createHydrationFns) {
         newProps,
         parentComponent,
         parentSuspense,
-        isSVG2
+        namespace2
       );
     }
     if ((vnodeHook = newProps.onVnodeUpdated) || dirs) {
@@ -3982,7 +4186,7 @@ function baseCreateRenderer(options, createHydrationFns) {
       }, parentSuspense);
     }
   };
-  const patchBlockChildren = (oldChildren, newChildren, fallbackContainer, parentComponent, parentSuspense, isSVG2, slotScopeIds) => {
+  const patchBlockChildren = (oldChildren, newChildren, fallbackContainer, parentComponent, parentSuspense, namespace2, slotScopeIds) => {
     for (let i = 0; i < newChildren.length; i++) {
       const oldVNode = oldChildren[i];
       const newVNode = newChildren[i];
@@ -4007,13 +4211,13 @@ function baseCreateRenderer(options, createHydrationFns) {
         null,
         parentComponent,
         parentSuspense,
-        isSVG2,
+        namespace2,
         slotScopeIds,
         true
       );
     }
   };
-  const patchProps = (el, vnode, oldProps, newProps, parentComponent, parentSuspense, isSVG2) => {
+  const patchProps = (el, vnode, oldProps, newProps, parentComponent, parentSuspense, namespace2) => {
     if (oldProps !== newProps) {
       if (oldProps !== EMPTY_OBJ) {
         for (const key in oldProps) {
@@ -4023,7 +4227,7 @@ function baseCreateRenderer(options, createHydrationFns) {
               key,
               oldProps[key],
               null,
-              isSVG2,
+              namespace2,
               vnode.children,
               parentComponent,
               parentSuspense,
@@ -4043,7 +4247,7 @@ function baseCreateRenderer(options, createHydrationFns) {
             key,
             prev,
             next,
-            isSVG2,
+            namespace2,
             vnode.children,
             parentComponent,
             parentSuspense,
@@ -4052,11 +4256,11 @@ function baseCreateRenderer(options, createHydrationFns) {
         }
       }
       if ("value" in newProps) {
-        hostPatchProp(el, "value", oldProps.value, newProps.value);
+        hostPatchProp(el, "value", oldProps.value, newProps.value, namespace2);
       }
     }
   };
-  const processFragment = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized) => {
+  const processFragment = (n1, n2, container, anchor, parentComponent, parentSuspense, namespace2, slotScopeIds, optimized) => {
     const fragmentStartAnchor = n2.el = n1 ? n1.el : hostCreateText("");
     const fragmentEndAnchor = n2.anchor = n1 ? n1.anchor : hostCreateText("");
     let { patchFlag, dynamicChildren, slotScopeIds: fragmentSlotScopeIds } = n2;
@@ -4067,12 +4271,16 @@ function baseCreateRenderer(options, createHydrationFns) {
       hostInsert(fragmentStartAnchor, container, anchor);
       hostInsert(fragmentEndAnchor, container, anchor);
       mountChildren(
-        n2.children,
+        // #10007
+        // such fragment like `<></>` will be compiled into
+        // a fragment which doesn't have a children.
+        // In this case fallback to an empty array
+        n2.children || [],
         container,
         fragmentEndAnchor,
         parentComponent,
         parentSuspense,
-        isSVG2,
+        namespace2,
         slotScopeIds,
         optimized
       );
@@ -4086,7 +4294,7 @@ function baseCreateRenderer(options, createHydrationFns) {
           container,
           parentComponent,
           parentSuspense,
-          isSVG2,
+          namespace2,
           slotScopeIds
         );
         if (
@@ -4111,14 +4319,14 @@ function baseCreateRenderer(options, createHydrationFns) {
           fragmentEndAnchor,
           parentComponent,
           parentSuspense,
-          isSVG2,
+          namespace2,
           slotScopeIds,
           optimized
         );
       }
     }
   };
-  const processComponent = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized) => {
+  const processComponent = (n1, n2, container, anchor, parentComponent, parentSuspense, namespace2, slotScopeIds, optimized) => {
     n2.slotScopeIds = slotScopeIds;
     if (n1 == null) {
       if (n2.shapeFlag & 512) {
@@ -4126,7 +4334,7 @@ function baseCreateRenderer(options, createHydrationFns) {
           n2,
           container,
           anchor,
-          isSVG2,
+          namespace2,
           optimized
         );
       } else {
@@ -4136,7 +4344,7 @@ function baseCreateRenderer(options, createHydrationFns) {
           anchor,
           parentComponent,
           parentSuspense,
-          isSVG2,
+          namespace2,
           optimized
         );
       }
@@ -4144,7 +4352,7 @@ function baseCreateRenderer(options, createHydrationFns) {
       updateComponent(n1, n2, optimized);
     }
   };
-  const mountComponent = (initialVNode, container, anchor, parentComponent, parentSuspense, isSVG2, optimized) => {
+  const mountComponent = (initialVNode, container, anchor, parentComponent, parentSuspense, namespace2, optimized) => {
     const instance = initialVNode.component = createComponentInstance(
       initialVNode,
       parentComponent,
@@ -4162,17 +4370,17 @@ function baseCreateRenderer(options, createHydrationFns) {
         const placeholder = instance.subTree = createVNode(Comment);
         processCommentNode(null, placeholder, container, anchor);
       }
-      return;
+    } else {
+      setupRenderEffect(
+        instance,
+        initialVNode,
+        container,
+        anchor,
+        parentSuspense,
+        namespace2,
+        optimized
+      );
     }
-    setupRenderEffect(
-      instance,
-      initialVNode,
-      container,
-      anchor,
-      parentSuspense,
-      isSVG2,
-      optimized
-    );
   };
   const updateComponent = (n1, n2, optimized) => {
     const instance = n2.component = n1.component;
@@ -4183,6 +4391,7 @@ function baseCreateRenderer(options, createHydrationFns) {
       } else {
         instance.next = n2;
         invalidateJob(instance.update);
+        instance.effect.dirty = true;
         instance.update();
       }
     } else {
@@ -4190,7 +4399,7 @@ function baseCreateRenderer(options, createHydrationFns) {
       instance.vnode = n2;
     }
   };
-  const setupRenderEffect = (instance, initialVNode, container, anchor, parentSuspense, isSVG2, optimized) => {
+  const setupRenderEffect = (instance, initialVNode, container, anchor, parentSuspense, namespace2, optimized) => {
     const componentUpdateFn = () => {
       if (!instance.isMounted) {
         let vnodeHook;
@@ -4236,7 +4445,7 @@ function baseCreateRenderer(options, createHydrationFns) {
             anchor,
             instance,
             parentSuspense,
-            isSVG2
+            namespace2
           );
           initialVNode.el = subTree.el;
         }
@@ -4257,6 +4466,21 @@ function baseCreateRenderer(options, createHydrationFns) {
         initialVNode = container = anchor = null;
       } else {
         let { next, bu, u, parent, vnode } = instance;
+        {
+          const nonHydratedAsyncRoot = locateNonHydratedAsyncRoot(instance);
+          if (nonHydratedAsyncRoot) {
+            if (next) {
+              next.el = vnode.el;
+              updateComponentPreRender(instance, next, optimized);
+            }
+            nonHydratedAsyncRoot.asyncDep.then(() => {
+              if (!instance.isUnmounted) {
+                componentUpdateFn();
+              }
+            });
+            return;
+          }
+        }
         let originNext = next;
         let vnodeHook;
         toggleRecurse(instance, false);
@@ -4285,7 +4509,7 @@ function baseCreateRenderer(options, createHydrationFns) {
           getNextHostNode(prevTree),
           instance,
           parentSuspense,
-          isSVG2
+          namespace2
         );
         next.el = nextTree.el;
         if (originNext === null) {
@@ -4304,11 +4528,16 @@ function baseCreateRenderer(options, createHydrationFns) {
     };
     const effect = instance.effect = new ReactiveEffect(
       componentUpdateFn,
+      NOOP,
       () => queueJob(update),
       instance.scope
       // track it in component's effect scope
     );
-    const update = instance.update = () => effect.run();
+    const update = instance.update = () => {
+      if (effect.dirty) {
+        effect.run();
+      }
+    };
     update.id = instance.uid;
     toggleRecurse(instance, true);
     update();
@@ -4321,10 +4550,10 @@ function baseCreateRenderer(options, createHydrationFns) {
     updateProps(instance, nextVNode.props, prevProps, optimized);
     updateSlots(instance, nextVNode.children, optimized);
     pauseTracking();
-    flushPreFlushCbs();
+    flushPreFlushCbs(instance);
     resetTracking();
   };
-  const patchChildren = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized = false) => {
+  const patchChildren = (n1, n2, container, anchor, parentComponent, parentSuspense, namespace2, slotScopeIds, optimized = false) => {
     const c1 = n1 && n1.children;
     const prevShapeFlag = n1 ? n1.shapeFlag : 0;
     const c2 = n2.children;
@@ -4338,7 +4567,7 @@ function baseCreateRenderer(options, createHydrationFns) {
           anchor,
           parentComponent,
           parentSuspense,
-          isSVG2,
+          namespace2,
           slotScopeIds,
           optimized
         );
@@ -4351,7 +4580,7 @@ function baseCreateRenderer(options, createHydrationFns) {
           anchor,
           parentComponent,
           parentSuspense,
-          isSVG2,
+          namespace2,
           slotScopeIds,
           optimized
         );
@@ -4375,7 +4604,7 @@ function baseCreateRenderer(options, createHydrationFns) {
             anchor,
             parentComponent,
             parentSuspense,
-            isSVG2,
+            namespace2,
             slotScopeIds,
             optimized
           );
@@ -4393,7 +4622,7 @@ function baseCreateRenderer(options, createHydrationFns) {
             anchor,
             parentComponent,
             parentSuspense,
-            isSVG2,
+            namespace2,
             slotScopeIds,
             optimized
           );
@@ -4401,7 +4630,7 @@ function baseCreateRenderer(options, createHydrationFns) {
       }
     }
   };
-  const patchUnkeyedChildren = (c1, c2, container, anchor, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized) => {
+  const patchUnkeyedChildren = (c1, c2, container, anchor, parentComponent, parentSuspense, namespace2, slotScopeIds, optimized) => {
     c1 = c1 || EMPTY_ARR;
     c2 = c2 || EMPTY_ARR;
     const oldLength = c1.length;
@@ -4417,7 +4646,7 @@ function baseCreateRenderer(options, createHydrationFns) {
         null,
         parentComponent,
         parentSuspense,
-        isSVG2,
+        namespace2,
         slotScopeIds,
         optimized
       );
@@ -4438,14 +4667,14 @@ function baseCreateRenderer(options, createHydrationFns) {
         anchor,
         parentComponent,
         parentSuspense,
-        isSVG2,
+        namespace2,
         slotScopeIds,
         optimized,
         commonLength
       );
     }
   };
-  const patchKeyedChildren = (c1, c2, container, parentAnchor, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized) => {
+  const patchKeyedChildren = (c1, c2, container, parentAnchor, parentComponent, parentSuspense, namespace2, slotScopeIds, optimized) => {
     let i = 0;
     const l2 = c2.length;
     let e1 = c1.length - 1;
@@ -4461,7 +4690,7 @@ function baseCreateRenderer(options, createHydrationFns) {
           null,
           parentComponent,
           parentSuspense,
-          isSVG2,
+          namespace2,
           slotScopeIds,
           optimized
         );
@@ -4481,7 +4710,7 @@ function baseCreateRenderer(options, createHydrationFns) {
           null,
           parentComponent,
           parentSuspense,
-          isSVG2,
+          namespace2,
           slotScopeIds,
           optimized
         );
@@ -4503,7 +4732,7 @@ function baseCreateRenderer(options, createHydrationFns) {
             anchor,
             parentComponent,
             parentSuspense,
-            isSVG2,
+            namespace2,
             slotScopeIds,
             optimized
           );
@@ -4566,7 +4795,7 @@ function baseCreateRenderer(options, createHydrationFns) {
             null,
             parentComponent,
             parentSuspense,
-            isSVG2,
+            namespace2,
             slotScopeIds,
             optimized
           );
@@ -4587,7 +4816,7 @@ function baseCreateRenderer(options, createHydrationFns) {
             anchor,
             parentComponent,
             parentSuspense,
-            isSVG2,
+            namespace2,
             slotScopeIds,
             optimized
           );
@@ -4627,8 +4856,8 @@ function baseCreateRenderer(options, createHydrationFns) {
       moveStaticNode(vnode, container, anchor);
       return;
     }
-    const needTransition = moveType !== 2 && shapeFlag & 1 && transition;
-    if (needTransition) {
+    const needTransition2 = moveType !== 2 && shapeFlag & 1 && transition;
+    if (needTransition2) {
       if (moveType === 0) {
         transition.beforeEnter(el);
         hostInsert(el, container, anchor);
@@ -4794,16 +5023,29 @@ function baseCreateRenderer(options, createHydrationFns) {
     }
     return hostNextSibling(vnode.anchor || vnode.el);
   };
-  const render17 = (vnode, container, isSVG2) => {
+  let isFlushing2 = false;
+  const render17 = (vnode, container, namespace2) => {
     if (vnode == null) {
       if (container._vnode) {
         unmount2(container._vnode, null, null, true);
       }
     } else {
-      patch(container._vnode || null, vnode, container, null, null, null, isSVG2);
+      patch(
+        container._vnode || null,
+        vnode,
+        container,
+        null,
+        null,
+        null,
+        namespace2
+      );
     }
-    flushPreFlushCbs();
-    flushPostFlushCbs();
+    if (!isFlushing2) {
+      isFlushing2 = true;
+      flushPreFlushCbs();
+      flushPostFlushCbs();
+      isFlushing2 = false;
+    }
     container._vnode = vnode;
   };
   const internals = {
@@ -4831,8 +5073,14 @@ function baseCreateRenderer(options, createHydrationFns) {
     createApp: createAppAPI(render17, hydrate)
   };
 }
+function resolveChildrenNamespace({ type, props }, currentNamespace) {
+  return currentNamespace === "svg" && type === "foreignObject" || currentNamespace === "mathml" && type === "annotation-xml" && props && props.encoding && props.encoding.includes("html") ? void 0 : currentNamespace;
+}
 function toggleRecurse({ effect, update }, allowed) {
   effect.allowRecurse = update.allowRecurse = allowed;
+}
+function needTransition(parentSuspense, transition) {
+  return (!parentSuspense || parentSuspense && !parentSuspense.pendingBranch) && transition && !transition.persisted;
 }
 function traverseStaticChildren(n1, n2, shallow = false) {
   const ch1 = n1.children;
@@ -4895,9 +5143,20 @@ function getSequence(arr) {
   }
   return result;
 }
+function locateNonHydratedAsyncRoot(instance) {
+  const subComponent = instance.subTree.component;
+  if (subComponent) {
+    if (subComponent.asyncDep && !subComponent.asyncResolved) {
+      return subComponent;
+    } else {
+      return locateNonHydratedAsyncRoot(subComponent);
+    }
+  }
+}
 const isTeleport = (type) => type.__isTeleport;
 const isTeleportDisabled = (props) => props && (props.disabled || props.disabled === "");
 const isTargetSVG = (target) => typeof SVGElement !== "undefined" && target instanceof SVGElement;
+const isTargetMathML = (target) => typeof MathMLElement === "function" && target instanceof MathMLElement;
 const resolveTarget = (props, select) => {
   const targetSelector = props && props.to;
   if (isString$1(targetSelector)) {
@@ -4912,8 +5171,9 @@ const resolveTarget = (props, select) => {
   }
 };
 const TeleportImpl = {
+  name: "Teleport",
   __isTeleport: true,
-  process(n1, n2, container, anchor, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized, internals) {
+  process(n1, n2, container, anchor, parentComponent, parentSuspense, namespace2, slotScopeIds, optimized, internals) {
     const {
       mc: mountChildren,
       pc: patchChildren,
@@ -4931,7 +5191,11 @@ const TeleportImpl = {
       const targetAnchor = n2.targetAnchor = createText("");
       if (target) {
         insert(targetAnchor, target);
-        isSVG2 = isSVG2 || isTargetSVG(target);
+        if (namespace2 === "svg" || isTargetSVG(target)) {
+          namespace2 = "svg";
+        } else if (namespace2 === "mathml" || isTargetMathML(target)) {
+          namespace2 = "mathml";
+        }
       }
       const mount2 = (container2, anchor2) => {
         if (shapeFlag & 16) {
@@ -4941,7 +5205,7 @@ const TeleportImpl = {
             anchor2,
             parentComponent,
             parentSuspense,
-            isSVG2,
+            namespace2,
             slotScopeIds,
             optimized
           );
@@ -4960,7 +5224,11 @@ const TeleportImpl = {
       const wasDisabled = isTeleportDisabled(n1.props);
       const currentContainer = wasDisabled ? container : target;
       const currentAnchor = wasDisabled ? mainAnchor : targetAnchor;
-      isSVG2 = isSVG2 || isTargetSVG(target);
+      if (namespace2 === "svg" || isTargetSVG(target)) {
+        namespace2 = "svg";
+      } else if (namespace2 === "mathml" || isTargetMathML(target)) {
+        namespace2 = "mathml";
+      }
       if (dynamicChildren) {
         patchBlockChildren(
           n1.dynamicChildren,
@@ -4968,7 +5236,7 @@ const TeleportImpl = {
           currentContainer,
           parentComponent,
           parentSuspense,
-          isSVG2,
+          namespace2,
           slotScopeIds
         );
         traverseStaticChildren(n1, n2, true);
@@ -4980,7 +5248,7 @@ const TeleportImpl = {
           currentAnchor,
           parentComponent,
           parentSuspense,
-          isSVG2,
+          namespace2,
           slotScopeIds,
           false
         );
@@ -4994,6 +5262,10 @@ const TeleportImpl = {
             internals,
             1
           );
+        } else {
+          if (n2.props && n1.props && n2.props.to !== n1.props.to) {
+            n2.props.to = n1.props.to;
+          }
         }
       } else {
         if ((n2.props && n2.props.to) !== (n1.props && n1.props.to)) {
@@ -5028,19 +5300,18 @@ const TeleportImpl = {
     if (target) {
       hostRemove(targetAnchor);
     }
-    if (doRemove || !isTeleportDisabled(props)) {
-      hostRemove(anchor);
-      if (shapeFlag & 16) {
-        for (let i = 0; i < children.length; i++) {
-          const child = children[i];
-          unmount2(
-            child,
-            parentComponent,
-            parentSuspense,
-            true,
-            !!child.dynamicChildren
-          );
-        }
+    doRemove && hostRemove(anchor);
+    if (shapeFlag & 16) {
+      const shouldRemove = doRemove || !isTeleportDisabled(props);
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        unmount2(
+          child,
+          parentComponent,
+          parentSuspense,
+          shouldRemove,
+          !!child.dynamicChildren
+        );
       }
     }
   },
@@ -5124,7 +5395,7 @@ function updateCssVars(vnode) {
   const ctx2 = vnode.ctx;
   if (ctx2 && ctx2.ut) {
     let node = vnode.children[0].el;
-    while (node !== vnode.targetAnchor) {
+    while (node && node !== vnode.targetAnchor) {
       if (node.nodeType === 1)
         node.setAttribute("data-v-owner", ctx2.uid);
       node = node.nextSibling;
@@ -5167,7 +5438,6 @@ function createElementBlock(type, props, children, patchFlag, dynamicProps, shap
       dynamicProps,
       shapeFlag,
       true
-      /* isBlock */
     )
   );
 }
@@ -5180,7 +5450,6 @@ function createBlock(type, props, children, patchFlag, dynamicProps) {
       patchFlag,
       dynamicProps,
       true
-      /* isBlock: prevent a block from tracking itself */
     )
   );
 }
@@ -5556,24 +5825,38 @@ function createComponentInstance(vnode, parent, suspense) {
 let currentInstance = null;
 const getCurrentInstance = () => currentInstance || currentRenderingInstance;
 let internalSetCurrentInstance;
-let globalCurrentInstanceSetters;
-let settersKey = "__VUE_INSTANCE_SETTERS__";
+let setInSSRSetupState;
 {
-  if (!(globalCurrentInstanceSetters = getGlobalThis()[settersKey])) {
-    globalCurrentInstanceSetters = getGlobalThis()[settersKey] = [];
-  }
-  globalCurrentInstanceSetters.push((i) => currentInstance = i);
-  internalSetCurrentInstance = (instance) => {
-    if (globalCurrentInstanceSetters.length > 1) {
-      globalCurrentInstanceSetters.forEach((s) => s(instance));
-    } else {
-      globalCurrentInstanceSetters[0](instance);
-    }
+  const g = getGlobalThis();
+  const registerGlobalSetter = (key, setter) => {
+    let setters;
+    if (!(setters = g[key]))
+      setters = g[key] = [];
+    setters.push(setter);
+    return (v) => {
+      if (setters.length > 1)
+        setters.forEach((set2) => set2(v));
+      else
+        setters[0](v);
+    };
   };
+  internalSetCurrentInstance = registerGlobalSetter(
+    `__VUE_INSTANCE_SETTERS__`,
+    (v) => currentInstance = v
+  );
+  setInSSRSetupState = registerGlobalSetter(
+    `__VUE_SSR_SETTERS__`,
+    (v) => isInSSRComponentSetup = v
+  );
 }
 const setCurrentInstance = (instance) => {
+  const prev = currentInstance;
   internalSetCurrentInstance(instance);
   instance.scope.on();
+  return () => {
+    instance.scope.off();
+    internalSetCurrentInstance(prev);
+  };
 };
 const unsetCurrentInstance = () => {
   currentInstance && currentInstance.scope.off();
@@ -5584,13 +5867,13 @@ function isStatefulComponent(instance) {
 }
 let isInSSRComponentSetup = false;
 function setupComponent(instance, isSSR = false) {
-  isInSSRComponentSetup = isSSR;
+  isSSR && setInSSRSetupState(isSSR);
   const { props, children } = instance.vnode;
   const isStateful = isStatefulComponent(instance);
   initProps(instance, props, isStateful, isSSR);
   initSlots(instance, children);
   const setupResult = isStateful ? setupStatefulComponent(instance, isSSR) : void 0;
-  isInSSRComponentSetup = false;
+  isSSR && setInSSRSetupState(false);
   return setupResult;
 }
 function setupStatefulComponent(instance, isSSR) {
@@ -5600,16 +5883,19 @@ function setupStatefulComponent(instance, isSSR) {
   const { setup } = Component;
   if (setup) {
     const setupContext = instance.setupContext = setup.length > 1 ? createSetupContext(instance) : null;
-    setCurrentInstance(instance);
+    const reset = setCurrentInstance(instance);
     pauseTracking();
     const setupResult = callWithErrorHandling(
       setup,
       instance,
       0,
-      [instance.props, setupContext]
+      [
+        instance.props,
+        setupContext
+      ]
     );
     resetTracking();
-    unsetCurrentInstance();
+    reset();
     if (isPromise(setupResult)) {
       setupResult.then(unsetCurrentInstance, unsetCurrentInstance);
       if (isSSR) {
@@ -5666,11 +5952,14 @@ function finishComponentSetup(instance, isSSR, skipOptions) {
     instance.render = Component.render || NOOP;
   }
   {
-    setCurrentInstance(instance);
+    const reset = setCurrentInstance(instance);
     pauseTracking();
-    applyOptions(instance);
-    resetTracking();
-    unsetCurrentInstance();
+    try {
+      applyOptions(instance);
+    } finally {
+      resetTracking();
+      reset();
+    }
   }
 }
 function getAttrsProxy(instance) {
@@ -5715,8 +6004,32 @@ function getExposeProxy(instance) {
     }));
   }
 }
+const classifyRE = /(?:^|[-_])(\w)/g;
+const classify = (str) => str.replace(classifyRE, (c2) => c2.toUpperCase()).replace(/[-_]/g, "");
 function getComponentName(Component, includeInferred = true) {
   return isFunction$2(Component) ? Component.displayName || Component.name : Component.name || includeInferred && Component.__name;
+}
+function formatComponentName(instance, Component, isRoot = false) {
+  let name = getComponentName(Component);
+  if (!name && Component.__file) {
+    const match2 = Component.__file.match(/([^/\\]+)\.\w+$/);
+    if (match2) {
+      name = match2[1];
+    }
+  }
+  if (!name && instance && instance.parent) {
+    const inferFromRegistry = (registry) => {
+      for (const key in registry) {
+        if (registry[key] === Component) {
+          return key;
+        }
+      }
+    };
+    name = inferFromRegistry(
+      instance.components || instance.parent.type.components
+    ) || inferFromRegistry(instance.appContext.components);
+  }
+  return name ? classify(name) : isRoot ? `App` : `Anonymous`;
 }
 function isClassComponent(value) {
   return isFunction$2(value) && "__vccOpts" in value;
@@ -5744,15 +6057,14 @@ function h(type, propsOrChildren, children) {
     return createVNode(type, propsOrChildren, children);
   }
 }
-const ssrContextKey$1 = Symbol.for("v-scx");
-const useSSRContext = () => {
-  {
-    const ctx2 = inject(ssrContextKey$1);
-    return ctx2;
-  }
-};
-const version = "3.3.4";
+const version = "3.4.19";
+/**
+* @vue/runtime-dom v3.4.19
+* (c) 2018-present Yuxi (Evan) You and Vue contributors
+* @license MIT
+**/
 const svgNS = "http://www.w3.org/2000/svg";
+const mathmlNS = "http://www.w3.org/1998/Math/MathML";
 const doc = typeof document !== "undefined" ? document : null;
 const templateContainer = doc && /* @__PURE__ */ doc.createElement("template");
 const nodeOps = {
@@ -5765,8 +6077,8 @@ const nodeOps = {
       parent.removeChild(child);
     }
   },
-  createElement: (tag, isSVG2, is, props) => {
-    const el = isSVG2 ? doc.createElementNS(svgNS, tag) : doc.createElement(tag, is ? { is } : void 0);
+  createElement: (tag, namespace2, is, props) => {
+    const el = namespace2 === "svg" ? doc.createElementNS(svgNS, tag) : namespace2 === "mathml" ? doc.createElementNS(mathmlNS, tag) : doc.createElement(tag, is ? { is } : void 0);
     if (tag === "select" && props && props.multiple != null) {
       el.setAttribute("multiple", props.multiple);
     }
@@ -5790,7 +6102,7 @@ const nodeOps = {
   // Reason: innerHTML.
   // Static content here can only come from compiled templates.
   // As long as the user only uses trusted templates, this is safe.
-  insertStaticContent(content, parent, anchor, isSVG2, start, end) {
+  insertStaticContent(content, parent, anchor, namespace2, start, end) {
     const before = anchor ? anchor.previousSibling : parent.lastChild;
     if (start && (start === end || start.nextSibling)) {
       while (true) {
@@ -5799,9 +6111,9 @@ const nodeOps = {
           break;
       }
     } else {
-      templateContainer.innerHTML = isSVG2 ? `<svg>${content}</svg>` : content;
+      templateContainer.innerHTML = namespace2 === "svg" ? `<svg>${content}</svg>` : namespace2 === "mathml" ? `<math>${content}</math>` : content;
       const template = templateContainer.content;
-      if (isSVG2) {
+      if (namespace2 === "svg" || namespace2 === "mathml") {
         const wrapper = template.firstChild;
         while (wrapper.firstChild) {
           template.appendChild(wrapper.firstChild);
@@ -5818,8 +6130,273 @@ const nodeOps = {
     ];
   }
 };
+const TRANSITION = "transition";
+const ANIMATION = "animation";
+const vtcKey = Symbol("_vtc");
+const Transition = (props, { slots }) => h(BaseTransition, resolveTransitionProps(props), slots);
+Transition.displayName = "Transition";
+const DOMTransitionPropsValidators = {
+  name: String,
+  type: String,
+  css: {
+    type: Boolean,
+    default: true
+  },
+  duration: [String, Number, Object],
+  enterFromClass: String,
+  enterActiveClass: String,
+  enterToClass: String,
+  appearFromClass: String,
+  appearActiveClass: String,
+  appearToClass: String,
+  leaveFromClass: String,
+  leaveActiveClass: String,
+  leaveToClass: String
+};
+const TransitionPropsValidators = Transition.props = /* @__PURE__ */ extend(
+  {},
+  BaseTransitionPropsValidators,
+  DOMTransitionPropsValidators
+);
+const callHook = (hook, args = []) => {
+  if (isArray$3(hook)) {
+    hook.forEach((h2) => h2(...args));
+  } else if (hook) {
+    hook(...args);
+  }
+};
+const hasExplicitCallback = (hook) => {
+  return hook ? isArray$3(hook) ? hook.some((h2) => h2.length > 1) : hook.length > 1 : false;
+};
+function resolveTransitionProps(rawProps) {
+  const baseProps = {};
+  for (const key in rawProps) {
+    if (!(key in DOMTransitionPropsValidators)) {
+      baseProps[key] = rawProps[key];
+    }
+  }
+  if (rawProps.css === false) {
+    return baseProps;
+  }
+  const {
+    name = "v",
+    type,
+    duration: duration2,
+    enterFromClass = `${name}-enter-from`,
+    enterActiveClass = `${name}-enter-active`,
+    enterToClass = `${name}-enter-to`,
+    appearFromClass = enterFromClass,
+    appearActiveClass = enterActiveClass,
+    appearToClass = enterToClass,
+    leaveFromClass = `${name}-leave-from`,
+    leaveActiveClass = `${name}-leave-active`,
+    leaveToClass = `${name}-leave-to`
+  } = rawProps;
+  const durations = normalizeDuration(duration2);
+  const enterDuration = durations && durations[0];
+  const leaveDuration = durations && durations[1];
+  const {
+    onBeforeEnter,
+    onEnter,
+    onEnterCancelled,
+    onLeave,
+    onLeaveCancelled,
+    onBeforeAppear = onBeforeEnter,
+    onAppear = onEnter,
+    onAppearCancelled = onEnterCancelled
+  } = baseProps;
+  const finishEnter = (el, isAppear, done) => {
+    removeTransitionClass(el, isAppear ? appearToClass : enterToClass);
+    removeTransitionClass(el, isAppear ? appearActiveClass : enterActiveClass);
+    done && done();
+  };
+  const finishLeave = (el, done) => {
+    el._isLeaving = false;
+    removeTransitionClass(el, leaveFromClass);
+    removeTransitionClass(el, leaveToClass);
+    removeTransitionClass(el, leaveActiveClass);
+    done && done();
+  };
+  const makeEnterHook = (isAppear) => {
+    return (el, done) => {
+      const hook = isAppear ? onAppear : onEnter;
+      const resolve2 = () => finishEnter(el, isAppear, done);
+      callHook(hook, [el, resolve2]);
+      nextFrame(() => {
+        removeTransitionClass(el, isAppear ? appearFromClass : enterFromClass);
+        addTransitionClass(el, isAppear ? appearToClass : enterToClass);
+        if (!hasExplicitCallback(hook)) {
+          whenTransitionEnds(el, type, enterDuration, resolve2);
+        }
+      });
+    };
+  };
+  return extend(baseProps, {
+    onBeforeEnter(el) {
+      callHook(onBeforeEnter, [el]);
+      addTransitionClass(el, enterFromClass);
+      addTransitionClass(el, enterActiveClass);
+    },
+    onBeforeAppear(el) {
+      callHook(onBeforeAppear, [el]);
+      addTransitionClass(el, appearFromClass);
+      addTransitionClass(el, appearActiveClass);
+    },
+    onEnter: makeEnterHook(false),
+    onAppear: makeEnterHook(true),
+    onLeave(el, done) {
+      el._isLeaving = true;
+      const resolve2 = () => finishLeave(el, done);
+      addTransitionClass(el, leaveFromClass);
+      forceReflow();
+      addTransitionClass(el, leaveActiveClass);
+      nextFrame(() => {
+        if (!el._isLeaving) {
+          return;
+        }
+        removeTransitionClass(el, leaveFromClass);
+        addTransitionClass(el, leaveToClass);
+        if (!hasExplicitCallback(onLeave)) {
+          whenTransitionEnds(el, type, leaveDuration, resolve2);
+        }
+      });
+      callHook(onLeave, [el, resolve2]);
+    },
+    onEnterCancelled(el) {
+      finishEnter(el, false);
+      callHook(onEnterCancelled, [el]);
+    },
+    onAppearCancelled(el) {
+      finishEnter(el, true);
+      callHook(onAppearCancelled, [el]);
+    },
+    onLeaveCancelled(el) {
+      finishLeave(el);
+      callHook(onLeaveCancelled, [el]);
+    }
+  });
+}
+function normalizeDuration(duration2) {
+  if (duration2 == null) {
+    return null;
+  } else if (isObject$1(duration2)) {
+    return [NumberOf(duration2.enter), NumberOf(duration2.leave)];
+  } else {
+    const n = NumberOf(duration2);
+    return [n, n];
+  }
+}
+function NumberOf(val) {
+  const res = toNumber$1(val);
+  return res;
+}
+function addTransitionClass(el, cls) {
+  cls.split(/\s+/).forEach((c2) => c2 && el.classList.add(c2));
+  (el[vtcKey] || (el[vtcKey] = /* @__PURE__ */ new Set())).add(cls);
+}
+function removeTransitionClass(el, cls) {
+  cls.split(/\s+/).forEach((c2) => c2 && el.classList.remove(c2));
+  const _vtc = el[vtcKey];
+  if (_vtc) {
+    _vtc.delete(cls);
+    if (!_vtc.size) {
+      el[vtcKey] = void 0;
+    }
+  }
+}
+function nextFrame(cb) {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(cb);
+  });
+}
+let endId = 0;
+function whenTransitionEnds(el, expectedType, explicitTimeout, resolve2) {
+  const id = el._endId = ++endId;
+  const resolveIfNotStale = () => {
+    if (id === el._endId) {
+      resolve2();
+    }
+  };
+  if (explicitTimeout) {
+    return setTimeout(resolveIfNotStale, explicitTimeout);
+  }
+  const { type, timeout, propCount } = getTransitionInfo(el, expectedType);
+  if (!type) {
+    return resolve2();
+  }
+  const endEvent = type + "end";
+  let ended = 0;
+  const end = () => {
+    el.removeEventListener(endEvent, onEnd);
+    resolveIfNotStale();
+  };
+  const onEnd = (e) => {
+    if (e.target === el && ++ended >= propCount) {
+      end();
+    }
+  };
+  setTimeout(() => {
+    if (ended < propCount) {
+      end();
+    }
+  }, timeout + 1);
+  el.addEventListener(endEvent, onEnd);
+}
+function getTransitionInfo(el, expectedType) {
+  const styles2 = window.getComputedStyle(el);
+  const getStyleProperties = (key) => (styles2[key] || "").split(", ");
+  const transitionDelays = getStyleProperties(`${TRANSITION}Delay`);
+  const transitionDurations = getStyleProperties(`${TRANSITION}Duration`);
+  const transitionTimeout = getTimeout(transitionDelays, transitionDurations);
+  const animationDelays = getStyleProperties(`${ANIMATION}Delay`);
+  const animationDurations = getStyleProperties(`${ANIMATION}Duration`);
+  const animationTimeout = getTimeout(animationDelays, animationDurations);
+  let type = null;
+  let timeout = 0;
+  let propCount = 0;
+  if (expectedType === TRANSITION) {
+    if (transitionTimeout > 0) {
+      type = TRANSITION;
+      timeout = transitionTimeout;
+      propCount = transitionDurations.length;
+    }
+  } else if (expectedType === ANIMATION) {
+    if (animationTimeout > 0) {
+      type = ANIMATION;
+      timeout = animationTimeout;
+      propCount = animationDurations.length;
+    }
+  } else {
+    timeout = Math.max(transitionTimeout, animationTimeout);
+    type = timeout > 0 ? transitionTimeout > animationTimeout ? TRANSITION : ANIMATION : null;
+    propCount = type ? type === TRANSITION ? transitionDurations.length : animationDurations.length : 0;
+  }
+  const hasTransform = type === TRANSITION && /\b(transform|all)(,|$)/.test(
+    getStyleProperties(`${TRANSITION}Property`).toString()
+  );
+  return {
+    type,
+    timeout,
+    propCount,
+    hasTransform
+  };
+}
+function getTimeout(delays, durations) {
+  while (delays.length < durations.length) {
+    delays = delays.concat(delays);
+  }
+  return Math.max(...durations.map((d, i) => toMs(d) + toMs(delays[i])));
+}
+function toMs(s) {
+  if (s === "auto")
+    return 0;
+  return Number(s.slice(0, -1).replace(",", ".")) * 1e3;
+}
+function forceReflow() {
+  return document.body.offsetHeight;
+}
 function patchClass(el, value, isSVG2) {
-  const transitionClasses = el._vtc;
+  const transitionClasses = el[vtcKey];
   if (transitionClasses) {
     value = (value ? [value, ...transitionClasses] : [...transitionClasses]).join(" ");
   }
@@ -5831,9 +6408,112 @@ function patchClass(el, value, isSVG2) {
     el.className = value;
   }
 }
+const vShowOldKey = Symbol("_vod");
+const vShow = {
+  beforeMount(el, { value }, { transition }) {
+    el[vShowOldKey] = el.style.display === "none" ? "" : el.style.display;
+    if (transition && value) {
+      transition.beforeEnter(el);
+    } else {
+      setDisplay(el, value);
+    }
+  },
+  mounted(el, { value }, { transition }) {
+    if (transition && value) {
+      transition.enter(el);
+    }
+  },
+  updated(el, { value, oldValue }, { transition }) {
+    if (!value === !oldValue && (el.style.display === el[vShowOldKey] || !value))
+      return;
+    if (transition) {
+      if (value) {
+        transition.beforeEnter(el);
+        setDisplay(el, true);
+        transition.enter(el);
+      } else {
+        transition.leave(el, () => {
+          setDisplay(el, false);
+        });
+      }
+    } else {
+      setDisplay(el, value);
+    }
+  },
+  beforeUnmount(el, { value }) {
+    setDisplay(el, value);
+  }
+};
+function setDisplay(el, value) {
+  el.style.display = value ? el[vShowOldKey] : "none";
+}
+const CSS_VAR_TEXT = Symbol("");
+function useCssVars(getter) {
+  const instance = getCurrentInstance();
+  if (!instance) {
+    return;
+  }
+  const updateTeleports = instance.ut = (vars = getter(instance.proxy)) => {
+    Array.from(
+      document.querySelectorAll(`[data-v-owner="${instance.uid}"]`)
+    ).forEach((node) => setVarsOnNode(node, vars));
+  };
+  const setVars = () => {
+    const vars = getter(instance.proxy);
+    setVarsOnVNode(instance.subTree, vars);
+    updateTeleports(vars);
+  };
+  watchPostEffect(setVars);
+  onMounted(() => {
+    const ob = new MutationObserver(setVars);
+    ob.observe(instance.subTree.el.parentNode, { childList: true });
+    onUnmounted(() => ob.disconnect());
+  });
+}
+function setVarsOnVNode(vnode, vars) {
+  if (vnode.shapeFlag & 128) {
+    const suspense = vnode.suspense;
+    vnode = suspense.activeBranch;
+    if (suspense.pendingBranch && !suspense.isHydrating) {
+      suspense.effects.push(() => {
+        setVarsOnVNode(suspense.activeBranch, vars);
+      });
+    }
+  }
+  while (vnode.component) {
+    vnode = vnode.component.subTree;
+  }
+  if (vnode.shapeFlag & 1 && vnode.el) {
+    setVarsOnNode(vnode.el, vars);
+  } else if (vnode.type === Fragment) {
+    vnode.children.forEach((c2) => setVarsOnVNode(c2, vars));
+  } else if (vnode.type === Static) {
+    let { el, anchor } = vnode;
+    while (el) {
+      setVarsOnNode(el, vars);
+      if (el === anchor)
+        break;
+      el = el.nextSibling;
+    }
+  }
+}
+function setVarsOnNode(el, vars) {
+  if (el.nodeType === 1) {
+    const style2 = el.style;
+    let cssText = "";
+    for (const key in vars) {
+      style2.setProperty(`--${key}`, vars[key]);
+      cssText += `--${key}: ${vars[key]};`;
+    }
+    style2[CSS_VAR_TEXT] = cssText;
+  }
+}
+const displayRE = /(^|;)\s*display\s*:/;
 function patchStyle(el, prev, next) {
   const style2 = el.style;
   const isCssString = isString$1(next);
+  const currentDisplay = style2.display;
+  let hasControlledDisplay = false;
   if (next && !isCssString) {
     if (prev && !isString$1(prev)) {
       for (const key in prev) {
@@ -5843,20 +6523,28 @@ function patchStyle(el, prev, next) {
       }
     }
     for (const key in next) {
+      if (key === "display") {
+        hasControlledDisplay = true;
+      }
       setStyle(style2, key, next[key]);
     }
   } else {
-    const currentDisplay = style2.display;
     if (isCssString) {
       if (prev !== next) {
+        const cssVarText = style2[CSS_VAR_TEXT];
+        if (cssVarText) {
+          next += ";" + cssVarText;
+        }
         style2.cssText = next;
+        hasControlledDisplay = displayRE.test(next);
       }
     } else if (prev) {
       el.removeAttribute("style");
     }
-    if ("_vod" in el) {
-      style2.display = currentDisplay;
-    }
+  }
+  if (vShowOldKey in el) {
+    el[vShowOldKey] = hasControlledDisplay ? style2.display : "";
+    style2.display = currentDisplay;
   }
 }
 const importantRE = /\s*!important$/;
@@ -5966,8 +6654,9 @@ function addEventListener(el, event2, handler, options) {
 function removeEventListener(el, event2, handler, options) {
   el.removeEventListener(event2, handler, options);
 }
+const veiKey = Symbol("_vei");
 function patchEvent(el, rawName, prevValue, nextValue, instance = null) {
-  const invokers = el._vei || (el._vei = {});
+  const invokers = el[veiKey] || (el[veiKey] = {});
   const existingInvoker = invokers[rawName];
   if (nextValue && existingInvoker) {
     existingInvoker.value = nextValue;
@@ -6029,8 +6718,10 @@ function patchStopImmediatePropagation(e, value) {
     return value;
   }
 }
-const nativeOnRE = /^on[a-z]/;
-const patchProp = (el, key, prevValue, nextValue, isSVG2 = false, prevChildren, parentComponent, parentSuspense, unmountChildren) => {
+const isNativeOn = (key) => key.charCodeAt(0) === 111 && key.charCodeAt(1) === 110 && // lowercase letter
+key.charCodeAt(2) > 96 && key.charCodeAt(2) < 123;
+const patchProp = (el, key, prevValue, nextValue, namespace2, prevChildren, parentComponent, parentSuspense, unmountChildren) => {
+  const isSVG2 = namespace2 === "svg";
   if (key === "class") {
     patchClass(el, nextValue, isSVG2);
   } else if (key === "style") {
@@ -6063,7 +6754,7 @@ function shouldSetAsProp(el, key, value, isSVG2) {
     if (key === "innerHTML" || key === "textContent") {
       return true;
     }
-    if (key in el && nativeOnRE.test(key) && isFunction$2(value)) {
+    if (key in el && isNativeOn(key) && isFunction$2(value)) {
       return true;
     }
     return false;
@@ -6080,332 +6771,21 @@ function shouldSetAsProp(el, key, value, isSVG2) {
   if (key === "type" && el.tagName === "TEXTAREA") {
     return false;
   }
-  if (nativeOnRE.test(key) && isString$1(value)) {
+  if (key === "width" || key === "height") {
+    const tag = el.tagName;
+    if (tag === "IMG" || tag === "VIDEO" || tag === "CANVAS" || tag === "SOURCE") {
+      return false;
+    }
+  }
+  if (isNativeOn(key) && isString$1(value)) {
     return false;
   }
   return key in el;
 }
-function useCssVars(getter) {
-  const instance = getCurrentInstance();
-  if (!instance) {
-    return;
-  }
-  const updateTeleports = instance.ut = (vars = getter(instance.proxy)) => {
-    Array.from(
-      document.querySelectorAll(`[data-v-owner="${instance.uid}"]`)
-    ).forEach((node) => setVarsOnNode(node, vars));
-  };
-  const setVars = () => {
-    const vars = getter(instance.proxy);
-    setVarsOnVNode(instance.subTree, vars);
-    updateTeleports(vars);
-  };
-  watchPostEffect(setVars);
-  onMounted(() => {
-    const ob = new MutationObserver(setVars);
-    ob.observe(instance.subTree.el.parentNode, { childList: true });
-    onUnmounted(() => ob.disconnect());
-  });
-}
-function setVarsOnVNode(vnode, vars) {
-  if (vnode.shapeFlag & 128) {
-    const suspense = vnode.suspense;
-    vnode = suspense.activeBranch;
-    if (suspense.pendingBranch && !suspense.isHydrating) {
-      suspense.effects.push(() => {
-        setVarsOnVNode(suspense.activeBranch, vars);
-      });
-    }
-  }
-  while (vnode.component) {
-    vnode = vnode.component.subTree;
-  }
-  if (vnode.shapeFlag & 1 && vnode.el) {
-    setVarsOnNode(vnode.el, vars);
-  } else if (vnode.type === Fragment) {
-    vnode.children.forEach((c2) => setVarsOnVNode(c2, vars));
-  } else if (vnode.type === Static) {
-    let { el, anchor } = vnode;
-    while (el) {
-      setVarsOnNode(el, vars);
-      if (el === anchor)
-        break;
-      el = el.nextSibling;
-    }
-  }
-}
-function setVarsOnNode(el, vars) {
-  if (el.nodeType === 1) {
-    const style2 = el.style;
-    for (const key in vars) {
-      style2.setProperty(`--${key}`, vars[key]);
-    }
-  }
-}
-const TRANSITION = "transition";
-const ANIMATION = "animation";
-const Transition = (props, { slots }) => h(BaseTransition, resolveTransitionProps(props), slots);
-Transition.displayName = "Transition";
-const DOMTransitionPropsValidators = {
-  name: String,
-  type: String,
-  css: {
-    type: Boolean,
-    default: true
-  },
-  duration: [String, Number, Object],
-  enterFromClass: String,
-  enterActiveClass: String,
-  enterToClass: String,
-  appearFromClass: String,
-  appearActiveClass: String,
-  appearToClass: String,
-  leaveFromClass: String,
-  leaveActiveClass: String,
-  leaveToClass: String
-};
-const TransitionPropsValidators = Transition.props = /* @__PURE__ */ extend(
-  {},
-  BaseTransitionPropsValidators,
-  DOMTransitionPropsValidators
-);
-const callHook = (hook, args = []) => {
-  if (isArray$3(hook)) {
-    hook.forEach((h2) => h2(...args));
-  } else if (hook) {
-    hook(...args);
-  }
-};
-const hasExplicitCallback = (hook) => {
-  return hook ? isArray$3(hook) ? hook.some((h2) => h2.length > 1) : hook.length > 1 : false;
-};
-function resolveTransitionProps(rawProps) {
-  const baseProps = {};
-  for (const key in rawProps) {
-    if (!(key in DOMTransitionPropsValidators)) {
-      baseProps[key] = rawProps[key];
-    }
-  }
-  if (rawProps.css === false) {
-    return baseProps;
-  }
-  const {
-    name = "v",
-    type,
-    duration,
-    enterFromClass = `${name}-enter-from`,
-    enterActiveClass = `${name}-enter-active`,
-    enterToClass = `${name}-enter-to`,
-    appearFromClass = enterFromClass,
-    appearActiveClass = enterActiveClass,
-    appearToClass = enterToClass,
-    leaveFromClass = `${name}-leave-from`,
-    leaveActiveClass = `${name}-leave-active`,
-    leaveToClass = `${name}-leave-to`
-  } = rawProps;
-  const durations = normalizeDuration(duration);
-  const enterDuration = durations && durations[0];
-  const leaveDuration = durations && durations[1];
-  const {
-    onBeforeEnter,
-    onEnter,
-    onEnterCancelled,
-    onLeave,
-    onLeaveCancelled,
-    onBeforeAppear = onBeforeEnter,
-    onAppear = onEnter,
-    onAppearCancelled = onEnterCancelled
-  } = baseProps;
-  const finishEnter = (el, isAppear, done) => {
-    removeTransitionClass(el, isAppear ? appearToClass : enterToClass);
-    removeTransitionClass(el, isAppear ? appearActiveClass : enterActiveClass);
-    done && done();
-  };
-  const finishLeave = (el, done) => {
-    el._isLeaving = false;
-    removeTransitionClass(el, leaveFromClass);
-    removeTransitionClass(el, leaveToClass);
-    removeTransitionClass(el, leaveActiveClass);
-    done && done();
-  };
-  const makeEnterHook = (isAppear) => {
-    return (el, done) => {
-      const hook = isAppear ? onAppear : onEnter;
-      const resolve2 = () => finishEnter(el, isAppear, done);
-      callHook(hook, [el, resolve2]);
-      nextFrame(() => {
-        removeTransitionClass(el, isAppear ? appearFromClass : enterFromClass);
-        addTransitionClass(el, isAppear ? appearToClass : enterToClass);
-        if (!hasExplicitCallback(hook)) {
-          whenTransitionEnds(el, type, enterDuration, resolve2);
-        }
-      });
-    };
-  };
-  return extend(baseProps, {
-    onBeforeEnter(el) {
-      callHook(onBeforeEnter, [el]);
-      addTransitionClass(el, enterFromClass);
-      addTransitionClass(el, enterActiveClass);
-    },
-    onBeforeAppear(el) {
-      callHook(onBeforeAppear, [el]);
-      addTransitionClass(el, appearFromClass);
-      addTransitionClass(el, appearActiveClass);
-    },
-    onEnter: makeEnterHook(false),
-    onAppear: makeEnterHook(true),
-    onLeave(el, done) {
-      el._isLeaving = true;
-      const resolve2 = () => finishLeave(el, done);
-      addTransitionClass(el, leaveFromClass);
-      forceReflow();
-      addTransitionClass(el, leaveActiveClass);
-      nextFrame(() => {
-        if (!el._isLeaving) {
-          return;
-        }
-        removeTransitionClass(el, leaveFromClass);
-        addTransitionClass(el, leaveToClass);
-        if (!hasExplicitCallback(onLeave)) {
-          whenTransitionEnds(el, type, leaveDuration, resolve2);
-        }
-      });
-      callHook(onLeave, [el, resolve2]);
-    },
-    onEnterCancelled(el) {
-      finishEnter(el, false);
-      callHook(onEnterCancelled, [el]);
-    },
-    onAppearCancelled(el) {
-      finishEnter(el, true);
-      callHook(onAppearCancelled, [el]);
-    },
-    onLeaveCancelled(el) {
-      finishLeave(el);
-      callHook(onLeaveCancelled, [el]);
-    }
-  });
-}
-function normalizeDuration(duration) {
-  if (duration == null) {
-    return null;
-  } else if (isObject$1(duration)) {
-    return [NumberOf(duration.enter), NumberOf(duration.leave)];
-  } else {
-    const n = NumberOf(duration);
-    return [n, n];
-  }
-}
-function NumberOf(val) {
-  const res = toNumber$1(val);
-  return res;
-}
-function addTransitionClass(el, cls) {
-  cls.split(/\s+/).forEach((c2) => c2 && el.classList.add(c2));
-  (el._vtc || (el._vtc = /* @__PURE__ */ new Set())).add(cls);
-}
-function removeTransitionClass(el, cls) {
-  cls.split(/\s+/).forEach((c2) => c2 && el.classList.remove(c2));
-  const { _vtc } = el;
-  if (_vtc) {
-    _vtc.delete(cls);
-    if (!_vtc.size) {
-      el._vtc = void 0;
-    }
-  }
-}
-function nextFrame(cb) {
-  requestAnimationFrame(() => {
-    requestAnimationFrame(cb);
-  });
-}
-let endId = 0;
-function whenTransitionEnds(el, expectedType, explicitTimeout, resolve2) {
-  const id = el._endId = ++endId;
-  const resolveIfNotStale = () => {
-    if (id === el._endId) {
-      resolve2();
-    }
-  };
-  if (explicitTimeout) {
-    return setTimeout(resolveIfNotStale, explicitTimeout);
-  }
-  const { type, timeout, propCount } = getTransitionInfo(el, expectedType);
-  if (!type) {
-    return resolve2();
-  }
-  const endEvent = type + "end";
-  let ended = 0;
-  const end = () => {
-    el.removeEventListener(endEvent, onEnd);
-    resolveIfNotStale();
-  };
-  const onEnd = (e) => {
-    if (e.target === el && ++ended >= propCount) {
-      end();
-    }
-  };
-  setTimeout(() => {
-    if (ended < propCount) {
-      end();
-    }
-  }, timeout + 1);
-  el.addEventListener(endEvent, onEnd);
-}
-function getTransitionInfo(el, expectedType) {
-  const styles2 = window.getComputedStyle(el);
-  const getStyleProperties = (key) => (styles2[key] || "").split(", ");
-  const transitionDelays = getStyleProperties(`${TRANSITION}Delay`);
-  const transitionDurations = getStyleProperties(`${TRANSITION}Duration`);
-  const transitionTimeout = getTimeout(transitionDelays, transitionDurations);
-  const animationDelays = getStyleProperties(`${ANIMATION}Delay`);
-  const animationDurations = getStyleProperties(`${ANIMATION}Duration`);
-  const animationTimeout = getTimeout(animationDelays, animationDurations);
-  let type = null;
-  let timeout = 0;
-  let propCount = 0;
-  if (expectedType === TRANSITION) {
-    if (transitionTimeout > 0) {
-      type = TRANSITION;
-      timeout = transitionTimeout;
-      propCount = transitionDurations.length;
-    }
-  } else if (expectedType === ANIMATION) {
-    if (animationTimeout > 0) {
-      type = ANIMATION;
-      timeout = animationTimeout;
-      propCount = animationDurations.length;
-    }
-  } else {
-    timeout = Math.max(transitionTimeout, animationTimeout);
-    type = timeout > 0 ? transitionTimeout > animationTimeout ? TRANSITION : ANIMATION : null;
-    propCount = type ? type === TRANSITION ? transitionDurations.length : animationDurations.length : 0;
-  }
-  const hasTransform = type === TRANSITION && /\b(transform|all)(,|$)/.test(
-    getStyleProperties(`${TRANSITION}Property`).toString()
-  );
-  return {
-    type,
-    timeout,
-    propCount,
-    hasTransform
-  };
-}
-function getTimeout(delays, durations) {
-  while (delays.length < durations.length) {
-    delays = delays.concat(delays);
-  }
-  return Math.max(...durations.map((d, i) => toMs(d) + toMs(delays[i])));
-}
-function toMs(s) {
-  return Number(s.slice(0, -1).replace(",", ".")) * 1e3;
-}
-function forceReflow() {
-  return document.body.offsetHeight;
-}
 const positionMap = /* @__PURE__ */ new WeakMap();
 const newPositionMap = /* @__PURE__ */ new WeakMap();
+const moveCbKey = Symbol("_moveCb");
+const enterCbKey = Symbol("_enterCb");
 const TransitionGroupImpl = {
   name: "TransitionGroup",
   props: /* @__PURE__ */ extend({}, TransitionPropsValidators, {
@@ -6438,13 +6818,13 @@ const TransitionGroupImpl = {
         const style2 = el.style;
         addTransitionClass(el, moveClass);
         style2.transform = style2.webkitTransform = style2.transitionDuration = "";
-        const cb = el._moveCb = (e) => {
+        const cb = el[moveCbKey] = (e) => {
           if (e && e.target !== el) {
             return;
           }
           if (!e || /transform$/.test(e.propertyName)) {
             el.removeEventListener("transitionend", cb);
-            el._moveCb = null;
+            el[moveCbKey] = null;
             removeTransitionClass(el, moveClass);
           }
         };
@@ -6485,11 +6865,11 @@ const removeMode = (props) => delete props.mode;
 const TransitionGroup = TransitionGroupImpl;
 function callPendingCbs(c2) {
   const el = c2.el;
-  if (el._moveCb) {
-    el._moveCb();
+  if (el[moveCbKey]) {
+    el[moveCbKey]();
   }
-  if (el._enterCb) {
-    el._enterCb();
+  if (el[enterCbKey]) {
+    el[enterCbKey]();
   }
 }
 function recordPosition(c2) {
@@ -6509,8 +6889,9 @@ function applyTranslation(c2) {
 }
 function hasCSSTransform(el, root2, moveClass) {
   const clone = el.cloneNode();
-  if (el._vtc) {
-    el._vtc.forEach((cls) => {
+  const _vtc = el[vtcKey];
+  if (_vtc) {
+    _vtc.forEach((cls) => {
       cls.split(/\s+/).forEach((c2) => c2 && clone.classList.remove(c2));
     });
   }
@@ -6537,53 +6918,17 @@ const modifierGuards = {
   exact: (e, modifiers) => systemModifiers.some((m) => e[`${m}Key`] && !modifiers.includes(m))
 };
 const withModifiers = (fn, modifiers) => {
-  return (event2, ...args) => {
+  const cache2 = fn._withMods || (fn._withMods = {});
+  const cacheKey = modifiers.join(".");
+  return cache2[cacheKey] || (cache2[cacheKey] = (event2, ...args) => {
     for (let i = 0; i < modifiers.length; i++) {
       const guard = modifierGuards[modifiers[i]];
       if (guard && guard(event2, modifiers))
         return;
     }
     return fn(event2, ...args);
-  };
+  });
 };
-const vShow = {
-  beforeMount(el, { value }, { transition }) {
-    el._vod = el.style.display === "none" ? "" : el.style.display;
-    if (transition && value) {
-      transition.beforeEnter(el);
-    } else {
-      setDisplay(el, value);
-    }
-  },
-  mounted(el, { value }, { transition }) {
-    if (transition && value) {
-      transition.enter(el);
-    }
-  },
-  updated(el, { value, oldValue }, { transition }) {
-    if (!value === !oldValue)
-      return;
-    if (transition) {
-      if (value) {
-        transition.beforeEnter(el);
-        setDisplay(el, true);
-        transition.enter(el);
-      } else {
-        transition.leave(el, () => {
-          setDisplay(el, false);
-        });
-      }
-    } else {
-      setDisplay(el, value);
-    }
-  },
-  beforeUnmount(el, { value }) {
-    setDisplay(el, value);
-  }
-};
-function setDisplay(el, value) {
-  el.style.display = value ? el._vod : "none";
-}
 const rendererOptions = /* @__PURE__ */ extend({ patchProp }, nodeOps);
 let renderer;
 function ensureRenderer() {
@@ -6601,7 +6946,7 @@ const createApp = (...args) => {
       component.template = container.innerHTML;
     }
     container.innerHTML = "";
-    const proxy = mount2(container, false, container instanceof SVGElement);
+    const proxy = mount2(container, false, resolveRootNamespace(container));
     if (container instanceof Element) {
       container.removeAttribute("v-cloak");
       container.setAttribute("data-v-app", "");
@@ -6610,6 +6955,14 @@ const createApp = (...args) => {
   };
   return app2;
 };
+function resolveRootNamespace(container) {
+  if (container instanceof SVGElement) {
+    return "svg";
+  }
+  if (typeof MathMLElement === "function" && container instanceof MathMLElement) {
+    return "mathml";
+  }
+}
 function normalizeContainer(container) {
   if (isString$1(container)) {
     const res = document.querySelector(container);
@@ -7783,7 +8136,9 @@ function flatten$2(vNodes, filterCommentNode = true, result = []) {
       if (Array.isArray(vNode.children)) {
         flatten$2(vNode.children, filterCommentNode, result);
       }
-    } else if (vNode.type !== Comment) {
+    } else {
+      if (vNode.type === Comment && filterCommentNode)
+        return;
       result.push(vNode);
     }
   });
@@ -7898,10 +8253,12 @@ function mergeEventHandlers(handlers) {
 }
 function isNodeVShowFalse(vNode) {
   var _a2;
-  const showDir = (_a2 = vNode.dirs) === null || _a2 === void 0 ? void 0 : _a2.find(({ dir }) => dir === vShow);
+  const showDir = (_a2 = vNode.dirs) === null || _a2 === void 0 ? void 0 : _a2.find(({
+    dir
+  }) => dir === vShow);
   return !!(showDir && showDir.value === false);
 }
-const Wrapper = defineComponent({
+const Wrapper = /* @__PURE__ */ defineComponent({
   render() {
     var _a2, _b;
     return (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2);
@@ -7909,7 +8266,11 @@ const Wrapper = defineComponent({
 });
 const pureNumberRegex = /^(\d|\.)+$/;
 const numberRegex = /(\d|\.)+/;
-function formatLength(length, { c: c2 = 1, offset = 0, attachPx = true } = {}) {
+function formatLength(length, {
+  c: c2 = 1,
+  offset = 0,
+  attachPx = true
+} = {}) {
   if (typeof length === "number") {
     const result = (length + offset) * c2;
     if (result === 0)
@@ -7935,7 +8296,7 @@ function formatLength(length, { c: c2 = 1, offset = 0, attachPx = true } = {}) {
   return length;
 }
 function color2Class(color) {
-  return color.replace(/#|\(|\)|,|\s/g, "_");
+  return color.replace(/#|\(|\)|,|\s|\./g, "_");
 }
 function ampCount(selector) {
   let cnt = 0;
@@ -8452,10 +8813,6 @@ function plugin$1(options) {
   });
   return _plugin;
 }
-function createKey(prefix2, suffix2) {
-  return prefix2 + (suffix2 === "default" ? "" : suffix2.replace(/^[a-z]/, (startChar) => startChar.toUpperCase()));
-}
-createKey("abc", "def");
 const namespace = "n";
 const prefix = `.${namespace}-`;
 const elementPrefix = "__";
@@ -8467,20 +8824,43 @@ const plugin = plugin$1({
   modifierPrefix
 });
 cssr.use(plugin);
-const { c: c$1, find } = cssr;
-const { cB, cE, cM, cNotM } = plugin;
+const {
+  c: c$1,
+  find
+} = cssr;
+const {
+  cB,
+  cE,
+  cM,
+  cNotM
+} = plugin;
 function insideModal(style2) {
-  return c$1(({ props: { bPrefix } }) => `${bPrefix || prefix}modal, ${bPrefix || prefix}drawer`, [style2]);
+  return c$1(({
+    props: {
+      bPrefix
+    }
+  }) => `${bPrefix || prefix}modal, ${bPrefix || prefix}drawer`, [style2]);
 }
 function insidePopover(style2) {
-  return c$1(({ props: { bPrefix } }) => `${bPrefix || prefix}popover`, [style2]);
+  return c$1(({
+    props: {
+      bPrefix
+    }
+  }) => `${bPrefix || prefix}popover`, [style2]);
 }
 function asModal(style2) {
-  return c$1(({ props: { bPrefix } }) => `&${bPrefix || prefix}modal`, style2);
+  return c$1(({
+    props: {
+      bPrefix
+    }
+  }) => `&${bPrefix || prefix}modal`, style2);
 }
 const cCB = (...args) => {
   return c$1(">", [cB(...args)]);
 };
+function createKey(prefix2, suffix2) {
+  return prefix2 + (suffix2 === "default" ? "" : suffix2.replace(/^[a-z]/, (startChar) => startChar.toUpperCase()));
+}
 let _isJsdom;
 function isJsdom() {
   if (_isJsdom === void 0) {
@@ -9215,6 +9595,7 @@ function useKeyboard(options = {}, enabledRef) {
 const internalSelectionMenuInjectionKey = createInjectionKey("n-internal-select-menu");
 const internalSelectionMenuBodyInjectionKey = createInjectionKey("n-internal-select-menu-body");
 const modalBodyInjectionKey = createInjectionKey("n-modal-body");
+const modalProviderInjectionKey = createInjectionKey("n-modal-provider");
 const modalInjectionKey = createInjectionKey("n-modal");
 const drawerBodyInjectionKey = createInjectionKey("n-drawer-body");
 const drawerInjectionKey = createInjectionKey("n-drawer");
@@ -9240,7 +9621,9 @@ function useAdjustedTo(props) {
   }
   return useMemo(() => {
     var _a2;
-    const { to } = props;
+    const {
+      to
+    } = props;
     if (to !== void 0) {
       if (to === false)
         return teleportDisabled;
@@ -9377,7 +9760,7 @@ function getScrollParent(node) {
   }
   return getScrollParent(parentNode);
 }
-const Binder = defineComponent({
+const Binder = /* @__PURE__ */ defineComponent({
   name: "Binder",
   props: {
     syncTargetWithParent: Boolean,
@@ -9477,7 +9860,7 @@ const Binder = defineComponent({
   }
 });
 const VBinder = Binder;
-const VTarget = defineComponent({
+const VTarget = /* @__PURE__ */ defineComponent({
   name: "Target",
   setup() {
     const { setTargetRef, syncTarget } = inject("VBinder");
@@ -9817,7 +10200,7 @@ function resolveTo(selector) {
   }
   return selector();
 }
-const LazyTeleport = defineComponent({
+const LazyTeleport = /* @__PURE__ */ defineComponent({
   name: "LazyTeleport",
   props: {
     to: {
@@ -10184,7 +10567,7 @@ const style$C = c([
     })
   ])
 ]);
-const VFollower = defineComponent({
+const VFollower = /* @__PURE__ */ defineComponent({
   name: "Follower",
   inheritAttrs: false,
   props: {
@@ -10934,7 +11317,7 @@ class ResizeObserverDelegate {
   }
 }
 const resizeObserverManager = new ResizeObserverDelegate();
-const VResizeObserver = defineComponent({
+const VResizeObserver = /* @__PURE__ */ defineComponent({
   name: "ResizeObserver",
   props: {
     onResize: Function
@@ -10976,6 +11359,8 @@ const VResizeObserver = defineComponent({
 });
 let maybeTouch;
 function ensureMaybeTouch() {
+  if (typeof document === "undefined")
+    return false;
   if (maybeTouch === void 0) {
     if ("matchMedia" in window) {
       maybeTouch = window.matchMedia("(pointer:coarse)").matches;
@@ -10987,6 +11372,8 @@ function ensureMaybeTouch() {
 }
 let wheelScale;
 function ensureWheelScale() {
+  if (typeof document === "undefined")
+    return 1;
   if (wheelScale === void 0) {
     wheelScale = "chrome" in window ? window.devicePixelRatio : 1;
   }
@@ -11009,7 +11396,7 @@ const styles$1 = c(".v-vl", {
     })
   ])
 ]);
-const VVirtualList = defineComponent({
+const VVirtualList = /* @__PURE__ */ defineComponent({
   name: "VirtualList",
   inheritAttrs: false,
   props: {
@@ -11399,7 +11786,7 @@ const styles = c(".v-x-scroll", {
     height: 0
   })
 ]);
-const VXScroll = defineComponent({
+const VXScroll = /* @__PURE__ */ defineComponent({
   name: "XScroll",
   props: {
     disabled: Boolean,
@@ -11445,18 +11832,19 @@ const hiddenAttr = "v-hidden";
 const style$B = c("[v-hidden]", {
   display: "none!important"
 });
-const VOverflow = defineComponent({
+const VOverflow = /* @__PURE__ */ defineComponent({
   name: "Overflow",
   props: {
     getCounter: Function,
     getTail: Function,
     updateCounter: Function,
+    onUpdateCount: Function,
     onUpdateOverflow: Function
   },
   setup(props, { slots }) {
     const selfRef = ref(null);
     const counterRef = ref(null);
-    function deriveCounter() {
+    function deriveCounter(options) {
       const { value: self2 } = selfRef;
       const { getCounter, getTail } = props;
       let counter;
@@ -11471,6 +11859,13 @@ const VOverflow = defineComponent({
         counter.removeAttribute(hiddenAttr);
       }
       const { children } = self2;
+      if (options.showAllItemsBeforeCalculate) {
+        for (const child of children) {
+          if (child.hasAttribute(hiddenAttr)) {
+            child.removeAttribute(hiddenAttr);
+          }
+        }
+      }
       const containerWidth = self2.offsetWidth;
       const childWidths = [];
       const tail = slots.tail ? getTail === null || getTail === void 0 ? void 0 : getTail() : null;
@@ -11514,6 +11909,9 @@ const VOverflow = defineComponent({
                   tail.style.maxWidth = "";
                 }
               }
+              const { onUpdateCount } = props;
+              if (onUpdateCount)
+                onUpdateCount(restCount);
               break;
             }
           }
@@ -11538,7 +11936,9 @@ const VOverflow = defineComponent({
       anchorMetaName: cssrAnchorMetaName$1,
       ssr: ssrAdapter2
     });
-    onMounted(deriveCounter);
+    onMounted(() => deriveCounter({
+      showAllItemsBeforeCalculate: false
+    }));
     return {
       selfRef,
       counterRef,
@@ -11547,7 +11947,9 @@ const VOverflow = defineComponent({
   },
   render() {
     const { $slots } = this;
-    nextTick(this.sync);
+    nextTick(() => this.sync({
+      showAllItemsBeforeCalculate: false
+    }));
     return h("div", {
       class: "v-overflow",
       ref: "selfRef"
@@ -11621,7 +12023,7 @@ function isFocusable(element) {
   }
 }
 let stack = [];
-const FocusTrap = defineComponent({
+const FocusTrap = /* @__PURE__ */ defineComponent({
   name: "FocusTrap",
   props: {
     disabled: Boolean,
@@ -11822,13 +12224,17 @@ const FocusTrap = defineComponent({
 function useOnResize(elRef, onResize) {
   if (onResize) {
     onMounted(() => {
-      const { value: el } = elRef;
+      const {
+        value: el
+      } = elRef;
       if (el) {
         resizeObserverManager.registerHandler(el, onResize);
       }
     });
     onBeforeUnmount(() => {
-      const { value: el } = elRef;
+      const {
+        value: el
+      } = elRef;
       if (el) {
         resizeObserverManager.unregisterHandler(el);
       }
@@ -11925,7 +12331,9 @@ const useIsComposing = () => {
   return isComposingRef;
 };
 function useReactivated(callback) {
-  const isDeactivatedRef = { isDeactivated: false };
+  const isDeactivatedRef = {
+    isDeactivated: false
+  };
   let activateStateInitialized = false;
   onActivated(() => {
     isDeactivatedRef.isDeactivated = false;
@@ -11943,16 +12351,36 @@ function useReactivated(callback) {
   });
   return isDeactivatedRef;
 }
+const download = (url, name) => {
+  if (!url)
+    return;
+  const a = document.createElement("a");
+  a.href = url;
+  if (name !== void 0) {
+    a.download = name;
+  }
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
 const formItemInjectionKey = createInjectionKey("n-form-item");
-function useFormItem(props, { defaultSize = "medium", mergedSize, mergedDisabled } = {}) {
+function useFormItem(props, {
+  defaultSize = "medium",
+  mergedSize,
+  mergedDisabled
+} = {}) {
   const NFormItem = inject(formItemInjectionKey, null);
   provide(formItemInjectionKey, null);
   const mergedSizeRef = computed(mergedSize ? () => mergedSize(NFormItem) : () => {
-    const { size: size2 } = props;
+    const {
+      size: size2
+    } = props;
     if (size2)
       return size2;
     if (NFormItem) {
-      const { mergedSize: mergedSize2 } = NFormItem;
+      const {
+        mergedSize: mergedSize2
+      } = NFormItem;
       if (mergedSize2.value !== void 0) {
         return mergedSize2.value;
       }
@@ -11960,7 +12388,9 @@ function useFormItem(props, { defaultSize = "medium", mergedSize, mergedDisabled
     return defaultSize;
   });
   const mergedDisabledRef = computed(mergedDisabled ? () => mergedDisabled(NFormItem) : () => {
-    const { disabled } = props;
+    const {
+      disabled
+    } = props;
     if (disabled !== void 0) {
       return disabled;
     }
@@ -11970,7 +12400,9 @@ function useFormItem(props, { defaultSize = "medium", mergedSize, mergedDisabled
     return false;
   });
   const mergedStatusRef = computed(() => {
-    const { status } = props;
+    const {
+      status
+    } = props;
     if (status)
       return status;
     return NFormItem === null || NFormItem === void 0 ? void 0 : NFormItem.mergedValidationStatus.value;
@@ -13969,6 +14401,7 @@ const commonVariables$m = {
   fontSizeHuge: "16px",
   lineHeight: "1.6",
   heightMini: "16px",
+  // private now, it's too small
   heightTiny: "22px",
   heightSmall: "28px",
   heightMedium: "34px",
@@ -14028,11 +14461,35 @@ function useTheme(resolveId, mountId, style2, defaultTheme, props, clsPrefixRef)
   }
   const mergedThemeRef = computed(() => {
     var _a2;
-    const { theme: { common: selfCommon, self: self2, peers = {} } = {}, themeOverrides: selfOverrides = {}, builtinThemeOverrides: builtinOverrides = {} } = props;
-    const { common: selfCommonOverrides, peers: peersOverrides } = selfOverrides;
-    const { common: globalCommon = void 0, [resolveId]: { common: globalSelfCommon = void 0, self: globalSelf = void 0, peers: globalPeers = {} } = {} } = (NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedThemeRef.value) || {};
-    const { common: globalCommonOverrides = void 0, [resolveId]: globalSelfOverrides = {} } = (NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedThemeOverridesRef.value) || {};
-    const { common: globalSelfCommonOverrides, peers: globalPeersOverrides = {} } = globalSelfOverrides;
+    const {
+      theme: {
+        common: selfCommon,
+        self: self2,
+        peers = {}
+      } = {},
+      themeOverrides: selfOverrides = {},
+      builtinThemeOverrides: builtinOverrides = {}
+    } = props;
+    const {
+      common: selfCommonOverrides,
+      peers: peersOverrides
+    } = selfOverrides;
+    const {
+      common: globalCommon = void 0,
+      [resolveId]: {
+        common: globalSelfCommon = void 0,
+        self: globalSelf = void 0,
+        peers: globalPeers = {}
+      } = {}
+    } = (NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedThemeRef.value) || {};
+    const {
+      common: globalCommonOverrides = void 0,
+      [resolveId]: globalSelfOverrides = {}
+    } = (NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedThemeOverridesRef.value) || {};
+    const {
+      common: globalSelfCommonOverrides,
+      peers: globalPeersOverrides = {}
+    } = globalSelfOverrides;
     const mergedCommon = merge$2({}, selfCommon || globalSelfCommon || globalCommon || defaultTheme.common, globalCommonOverrides, globalSelfCommonOverrides, selfCommonOverrides);
     const mergedSelf = merge$2(
       // {}, executed every time, no need for empty obj
@@ -14068,7 +14525,9 @@ function useConfig(props = {}, options = {
     mergedBreakpointsRef: NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedBreakpointsRef,
     mergedBorderedRef: computed(() => {
       var _a2, _b;
-      const { bordered } = props;
+      const {
+        bordered
+      } = props;
       if (bordered !== void 0)
         return bordered;
       return (_b = (_a2 = NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedBorderedRef.value) !== null && _a2 !== void 0 ? _a2 : options.defaultBordered) !== null && _b !== void 0 ? _b : true;
@@ -14111,6 +14570,7 @@ const enUS = {
     dateFormat: "yyyy-MM-dd",
     dateTimeFormat: "yyyy-MM-dd HH:mm:ss",
     quarterFormat: "yyyy-qqq",
+    weekFormat: "yyyy-w",
     clear: "Clear",
     now: "Now",
     confirm: "Confirm",
@@ -14121,6 +14581,7 @@ const enUS = {
     monthPlaceholder: "Select Month",
     yearPlaceholder: "Select Year",
     quarterPlaceholder: "Select Quarter",
+    weekPlaceholder: "Select Week",
     startDatePlaceholder: "Start Date",
     endDatePlaceholder: "End Date",
     startDatetimePlaceholder: "Start Date and Time",
@@ -14158,7 +14619,8 @@ const enUS = {
     placeholder: "Select Time",
     positiveText: "OK",
     negativeText: "Cancel",
-    now: "Now"
+    now: "Now",
+    clear: "Clear"
   },
   Pagination: {
     goto: "Goto",
@@ -14661,7 +15123,10 @@ const dateEnUs = {
 };
 const dateEnUS = dateEnUs;
 function useLocale(ns) {
-  const { mergedLocaleRef, mergedDateLocaleRef } = inject(configProviderInjectionKey, null) || {};
+  const {
+    mergedLocaleRef,
+    mergedDateLocaleRef
+  } = inject(configProviderInjectionKey, null) || {};
   const localeRef = computed(() => {
     var _a2, _b;
     return (_b = (_a2 = mergedLocaleRef === null || mergedLocaleRef === void 0 ? void 0 : mergedLocaleRef.value) === null || _a2 === void 0 ? void 0 : _a2[ns]) !== null && _b !== void 0 ? _b : enUS$1[ns];
@@ -14730,7 +15195,10 @@ function useThemeClass(componentName, hashRef, cssVarsRef, props) {
       finalThemeHash += "-" + themeHash;
     if (hashValue)
       finalThemeHash += "-" + hashValue;
-    const { themeOverrides, builtinThemeOverrides } = props;
+    const {
+      themeOverrides,
+      builtinThemeOverrides
+    } = props;
     if (themeOverrides) {
       finalThemeHash += "-" + murmur2(JSON.stringify(themeOverrides));
     }
@@ -14766,7 +15234,9 @@ function useRtl(mountId, rtlStateRef, clsPrefixRef) {
     return void 0;
   const ssrAdapter2 = useSsrAdapter();
   const componentRtlStateRef = computed(() => {
-    const { value: rtlState } = rtlStateRef;
+    const {
+      value: rtlState
+    } = rtlStateRef;
     if (!rtlState) {
       return void 0;
     }
@@ -14778,11 +15248,15 @@ function useRtl(mountId, rtlStateRef, clsPrefixRef) {
   });
   const mountStyle = () => {
     watchEffect(() => {
-      const { value: clsPrefix } = clsPrefixRef;
+      const {
+        value: clsPrefix
+      } = clsPrefixRef;
       const id = `${clsPrefix}${mountId}Rtl`;
       if (exists(id, ssrAdapter2))
         return;
-      const { value: componentRtlState } = componentRtlStateRef;
+      const {
+        value: componentRtlState
+      } = componentRtlStateRef;
       if (!componentRtlState)
         return;
       componentRtlState.style.mount({
@@ -14803,18 +15277,26 @@ function useRtl(mountId, rtlStateRef, clsPrefixRef) {
   }
   return componentRtlStateRef;
 }
-const AddIcon = defineComponent({
+const AddIcon = /* @__PURE__ */ defineComponent({
   name: "Add",
   render() {
-    return h(
-      "svg",
-      { width: "512", height: "512", viewBox: "0 0 512 512", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-      h("path", { d: "M256 112V400M400 256H112", stroke: "currentColor", "stroke-width": "32", "stroke-linecap": "round", "stroke-linejoin": "round" })
-    );
+    return h("svg", {
+      width: "512",
+      height: "512",
+      viewBox: "0 0 512 512",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("path", {
+      d: "M256 112V400M400 256H112",
+      stroke: "currentColor",
+      "stroke-width": "32",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round"
+    }));
   }
 });
 function replaceable(name, icon) {
-  return defineComponent({
+  return /* @__PURE__ */ defineComponent({
     name: upperFirst$1(name),
     setup() {
       var _a2;
@@ -14827,182 +15309,232 @@ function replaceable(name, icon) {
     }
   });
 }
-const FinishedIcon = defineComponent({
+const FinishedIcon = /* @__PURE__ */ defineComponent({
   name: "Checkmark",
   render() {
-    return h(
-      "svg",
-      { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 16 16" },
-      h(
-        "g",
-        { fill: "none" },
-        h("path", { d: "M14.046 3.486a.75.75 0 0 1-.032 1.06l-7.93 7.474a.85.85 0 0 1-1.188-.022l-2.68-2.72a.75.75 0 1 1 1.068-1.053l2.234 2.267l7.468-7.038a.75.75 0 0 1 1.06.032z", fill: "currentColor" })
-      )
-    );
+    return h("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      viewBox: "0 0 16 16"
+    }, h("g", {
+      fill: "none"
+    }, h("path", {
+      d: "M14.046 3.486a.75.75 0 0 1-.032 1.06l-7.93 7.474a.85.85 0 0 1-1.188-.022l-2.68-2.72a.75.75 0 1 1 1.068-1.053l2.234 2.267l7.468-7.038a.75.75 0 0 1 1.06.032z",
+      fill: "currentColor"
+    })));
   }
 });
-const ChevronLeftIcon = defineComponent({
+const ChevronLeftIcon = /* @__PURE__ */ defineComponent({
   name: "ChevronLeft",
   render() {
-    return h(
-      "svg",
-      { viewBox: "0 0 16 16", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-      h("path", { d: "M10.3536 3.14645C10.5488 3.34171 10.5488 3.65829 10.3536 3.85355L6.20711 8L10.3536 12.1464C10.5488 12.3417 10.5488 12.6583 10.3536 12.8536C10.1583 13.0488 9.84171 13.0488 9.64645 12.8536L5.14645 8.35355C4.95118 8.15829 4.95118 7.84171 5.14645 7.64645L9.64645 3.14645C9.84171 2.95118 10.1583 2.95118 10.3536 3.14645Z", fill: "currentColor" })
-    );
+    return h("svg", {
+      viewBox: "0 0 16 16",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("path", {
+      d: "M10.3536 3.14645C10.5488 3.34171 10.5488 3.65829 10.3536 3.85355L6.20711 8L10.3536 12.1464C10.5488 12.3417 10.5488 12.6583 10.3536 12.8536C10.1583 13.0488 9.84171 13.0488 9.64645 12.8536L5.14645 8.35355C4.95118 8.15829 4.95118 7.84171 5.14645 7.64645L9.64645 3.14645C9.84171 2.95118 10.1583 2.95118 10.3536 3.14645Z",
+      fill: "currentColor"
+    }));
   }
 });
-const ChevronRightIcon = defineComponent({
+const ChevronRightIcon = /* @__PURE__ */ defineComponent({
   name: "ChevronRight",
   render() {
-    return h(
-      "svg",
-      { viewBox: "0 0 16 16", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-      h("path", { d: "M5.64645 3.14645C5.45118 3.34171 5.45118 3.65829 5.64645 3.85355L9.79289 8L5.64645 12.1464C5.45118 12.3417 5.45118 12.6583 5.64645 12.8536C5.84171 13.0488 6.15829 13.0488 6.35355 12.8536L10.8536 8.35355C11.0488 8.15829 11.0488 7.84171 10.8536 7.64645L6.35355 3.14645C6.15829 2.95118 5.84171 2.95118 5.64645 3.14645Z", fill: "currentColor" })
-    );
+    return h("svg", {
+      viewBox: "0 0 16 16",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("path", {
+      d: "M5.64645 3.14645C5.45118 3.34171 5.45118 3.65829 5.64645 3.85355L9.79289 8L5.64645 12.1464C5.45118 12.3417 5.45118 12.6583 5.64645 12.8536C5.84171 13.0488 6.15829 13.0488 6.35355 12.8536L10.8536 8.35355C11.0488 8.15829 11.0488 7.84171 10.8536 7.64645L6.35355 3.14645C6.15829 2.95118 5.84171 2.95118 5.64645 3.14645Z",
+      fill: "currentColor"
+    }));
   }
 });
-const ErrorIcon$1 = replaceable("close", h(
-  "svg",
-  { viewBox: "0 0 12 12", version: "1.1", xmlns: "http://www.w3.org/2000/svg", "aria-hidden": true },
-  h(
-    "g",
-    { stroke: "none", "stroke-width": "1", fill: "none", "fill-rule": "evenodd" },
-    h(
-      "g",
-      { fill: "currentColor", "fill-rule": "nonzero" },
-      h("path", { d: "M2.08859116,2.2156945 L2.14644661,2.14644661 C2.32001296,1.97288026 2.58943736,1.95359511 2.7843055,2.08859116 L2.85355339,2.14644661 L6,5.293 L9.14644661,2.14644661 C9.34170876,1.95118446 9.65829124,1.95118446 9.85355339,2.14644661 C10.0488155,2.34170876 10.0488155,2.65829124 9.85355339,2.85355339 L6.707,6 L9.85355339,9.14644661 C10.0271197,9.32001296 10.0464049,9.58943736 9.91140884,9.7843055 L9.85355339,9.85355339 C9.67998704,10.0271197 9.41056264,10.0464049 9.2156945,9.91140884 L9.14644661,9.85355339 L6,6.707 L2.85355339,9.85355339 C2.65829124,10.0488155 2.34170876,10.0488155 2.14644661,9.85355339 C1.95118446,9.65829124 1.95118446,9.34170876 2.14644661,9.14644661 L5.293,6 L2.14644661,2.85355339 C1.97288026,2.67998704 1.95359511,2.41056264 2.08859116,2.2156945 L2.14644661,2.14644661 L2.08859116,2.2156945 Z" })
-    )
-  )
-));
-const EyeIcon = defineComponent({
+const ErrorIcon$1 = replaceable("close", h("svg", {
+  viewBox: "0 0 12 12",
+  version: "1.1",
+  xmlns: "http://www.w3.org/2000/svg",
+  "aria-hidden": true
+}, h("g", {
+  stroke: "none",
+  "stroke-width": "1",
+  fill: "none",
+  "fill-rule": "evenodd"
+}, h("g", {
+  fill: "currentColor",
+  "fill-rule": "nonzero"
+}, h("path", {
+  d: "M2.08859116,2.2156945 L2.14644661,2.14644661 C2.32001296,1.97288026 2.58943736,1.95359511 2.7843055,2.08859116 L2.85355339,2.14644661 L6,5.293 L9.14644661,2.14644661 C9.34170876,1.95118446 9.65829124,1.95118446 9.85355339,2.14644661 C10.0488155,2.34170876 10.0488155,2.65829124 9.85355339,2.85355339 L6.707,6 L9.85355339,9.14644661 C10.0271197,9.32001296 10.0464049,9.58943736 9.91140884,9.7843055 L9.85355339,9.85355339 C9.67998704,10.0271197 9.41056264,10.0464049 9.2156945,9.91140884 L9.14644661,9.85355339 L6,6.707 L2.85355339,9.85355339 C2.65829124,10.0488155 2.34170876,10.0488155 2.14644661,9.85355339 C1.95118446,9.65829124 1.95118446,9.34170876 2.14644661,9.14644661 L5.293,6 L2.14644661,2.85355339 C1.97288026,2.67998704 1.95359511,2.41056264 2.08859116,2.2156945 L2.14644661,2.14644661 L2.08859116,2.2156945 Z"
+})))));
+const EyeIcon = /* @__PURE__ */ defineComponent({
   name: "Eye",
   render() {
-    return h(
-      "svg",
-      { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 512 512" },
-      h("path", { d: "M255.66 112c-77.94 0-157.89 45.11-220.83 135.33a16 16 0 0 0-.27 17.77C82.92 340.8 161.8 400 255.66 400c92.84 0 173.34-59.38 221.79-135.25a16.14 16.14 0 0 0 0-17.47C428.89 172.28 347.8 112 255.66 112z", fill: "none", stroke: "currentColor", "stroke-linecap": "round", "stroke-linejoin": "round", "stroke-width": "32" }),
-      h("circle", { cx: "256", cy: "256", r: "80", fill: "none", stroke: "currentColor", "stroke-miterlimit": "10", "stroke-width": "32" })
-    );
+    return h("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      viewBox: "0 0 512 512"
+    }, h("path", {
+      d: "M255.66 112c-77.94 0-157.89 45.11-220.83 135.33a16 16 0 0 0-.27 17.77C82.92 340.8 161.8 400 255.66 400c92.84 0 173.34-59.38 221.79-135.25a16.14 16.14 0 0 0 0-17.47C428.89 172.28 347.8 112 255.66 112z",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      "stroke-width": "32"
+    }), h("circle", {
+      cx: "256",
+      cy: "256",
+      r: "80",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-miterlimit": "10",
+      "stroke-width": "32"
+    }));
   }
 });
-const EyeOffIcon = defineComponent({
+const EyeOffIcon = /* @__PURE__ */ defineComponent({
   name: "EyeOff",
   render() {
-    return h(
-      "svg",
-      { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 512 512" },
-      h("path", { d: "M432 448a15.92 15.92 0 0 1-11.31-4.69l-352-352a16 16 0 0 1 22.62-22.62l352 352A16 16 0 0 1 432 448z", fill: "currentColor" }),
-      h("path", { d: "M255.66 384c-41.49 0-81.5-12.28-118.92-36.5c-34.07-22-64.74-53.51-88.7-91v-.08c19.94-28.57 41.78-52.73 65.24-72.21a2 2 0 0 0 .14-2.94L93.5 161.38a2 2 0 0 0-2.71-.12c-24.92 21-48.05 46.76-69.08 76.92a31.92 31.92 0 0 0-.64 35.54c26.41 41.33 60.4 76.14 98.28 100.65C162 402 207.9 416 255.66 416a239.13 239.13 0 0 0 75.8-12.58a2 2 0 0 0 .77-3.31l-21.58-21.58a4 4 0 0 0-3.83-1a204.8 204.8 0 0 1-51.16 6.47z", fill: "currentColor" }),
-      h("path", { d: "M490.84 238.6c-26.46-40.92-60.79-75.68-99.27-100.53C349 110.55 302 96 255.66 96a227.34 227.34 0 0 0-74.89 12.83a2 2 0 0 0-.75 3.31l21.55 21.55a4 4 0 0 0 3.88 1a192.82 192.82 0 0 1 50.21-6.69c40.69 0 80.58 12.43 118.55 37c34.71 22.4 65.74 53.88 89.76 91a.13.13 0 0 1 0 .16a310.72 310.72 0 0 1-64.12 72.73a2 2 0 0 0-.15 2.95l19.9 19.89a2 2 0 0 0 2.7.13a343.49 343.49 0 0 0 68.64-78.48a32.2 32.2 0 0 0-.1-34.78z", fill: "currentColor" }),
-      h("path", { d: "M256 160a95.88 95.88 0 0 0-21.37 2.4a2 2 0 0 0-1 3.38l112.59 112.56a2 2 0 0 0 3.38-1A96 96 0 0 0 256 160z", fill: "currentColor" }),
-      h("path", { d: "M165.78 233.66a2 2 0 0 0-3.38 1a96 96 0 0 0 115 115a2 2 0 0 0 1-3.38z", fill: "currentColor" })
-    );
+    return h("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      viewBox: "0 0 512 512"
+    }, h("path", {
+      d: "M432 448a15.92 15.92 0 0 1-11.31-4.69l-352-352a16 16 0 0 1 22.62-22.62l352 352A16 16 0 0 1 432 448z",
+      fill: "currentColor"
+    }), h("path", {
+      d: "M255.66 384c-41.49 0-81.5-12.28-118.92-36.5c-34.07-22-64.74-53.51-88.7-91v-.08c19.94-28.57 41.78-52.73 65.24-72.21a2 2 0 0 0 .14-2.94L93.5 161.38a2 2 0 0 0-2.71-.12c-24.92 21-48.05 46.76-69.08 76.92a31.92 31.92 0 0 0-.64 35.54c26.41 41.33 60.4 76.14 98.28 100.65C162 402 207.9 416 255.66 416a239.13 239.13 0 0 0 75.8-12.58a2 2 0 0 0 .77-3.31l-21.58-21.58a4 4 0 0 0-3.83-1a204.8 204.8 0 0 1-51.16 6.47z",
+      fill: "currentColor"
+    }), h("path", {
+      d: "M490.84 238.6c-26.46-40.92-60.79-75.68-99.27-100.53C349 110.55 302 96 255.66 96a227.34 227.34 0 0 0-74.89 12.83a2 2 0 0 0-.75 3.31l21.55 21.55a4 4 0 0 0 3.88 1a192.82 192.82 0 0 1 50.21-6.69c40.69 0 80.58 12.43 118.55 37c34.71 22.4 65.74 53.88 89.76 91a.13.13 0 0 1 0 .16a310.72 310.72 0 0 1-64.12 72.73a2 2 0 0 0-.15 2.95l19.9 19.89a2 2 0 0 0 2.7.13a343.49 343.49 0 0 0 68.64-78.48a32.2 32.2 0 0 0-.1-34.78z",
+      fill: "currentColor"
+    }), h("path", {
+      d: "M256 160a95.88 95.88 0 0 0-21.37 2.4a2 2 0 0 0-1 3.38l112.59 112.56a2 2 0 0 0 3.38-1A96 96 0 0 0 256 160z",
+      fill: "currentColor"
+    }), h("path", {
+      d: "M165.78 233.66a2 2 0 0 0-3.38 1a96 96 0 0 0 115 115a2 2 0 0 0 1-3.38z",
+      fill: "currentColor"
+    }));
   }
 });
-const EmptyIcon = defineComponent({
+const EmptyIcon = /* @__PURE__ */ defineComponent({
   name: "Empty",
   render() {
-    return h(
-      "svg",
-      { viewBox: "0 0 28 28", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-      h("path", { d: "M26 7.5C26 11.0899 23.0899 14 19.5 14C15.9101 14 13 11.0899 13 7.5C13 3.91015 15.9101 1 19.5 1C23.0899 1 26 3.91015 26 7.5ZM16.8536 4.14645C16.6583 3.95118 16.3417 3.95118 16.1464 4.14645C15.9512 4.34171 15.9512 4.65829 16.1464 4.85355L18.7929 7.5L16.1464 10.1464C15.9512 10.3417 15.9512 10.6583 16.1464 10.8536C16.3417 11.0488 16.6583 11.0488 16.8536 10.8536L19.5 8.20711L22.1464 10.8536C22.3417 11.0488 22.6583 11.0488 22.8536 10.8536C23.0488 10.6583 23.0488 10.3417 22.8536 10.1464L20.2071 7.5L22.8536 4.85355C23.0488 4.65829 23.0488 4.34171 22.8536 4.14645C22.6583 3.95118 22.3417 3.95118 22.1464 4.14645L19.5 6.79289L16.8536 4.14645Z", fill: "currentColor" }),
-      h("path", { d: "M25 22.75V12.5991C24.5572 13.0765 24.053 13.4961 23.5 13.8454V16H17.5L17.3982 16.0068C17.0322 16.0565 16.75 16.3703 16.75 16.75C16.75 18.2688 15.5188 19.5 14 19.5C12.4812 19.5 11.25 18.2688 11.25 16.75L11.2432 16.6482C11.1935 16.2822 10.8797 16 10.5 16H4.5V7.25C4.5 6.2835 5.2835 5.5 6.25 5.5H12.2696C12.4146 4.97463 12.6153 4.47237 12.865 4H6.25C4.45507 4 3 5.45507 3 7.25V22.75C3 24.5449 4.45507 26 6.25 26H21.75C23.5449 26 25 24.5449 25 22.75ZM4.5 22.75V17.5H9.81597L9.85751 17.7041C10.2905 19.5919 11.9808 21 14 21L14.215 20.9947C16.2095 20.8953 17.842 19.4209 18.184 17.5H23.5V22.75C23.5 23.7165 22.7165 24.5 21.75 24.5H6.25C5.2835 24.5 4.5 23.7165 4.5 22.75Z", fill: "currentColor" })
-    );
+    return h("svg", {
+      viewBox: "0 0 28 28",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("path", {
+      d: "M26 7.5C26 11.0899 23.0899 14 19.5 14C15.9101 14 13 11.0899 13 7.5C13 3.91015 15.9101 1 19.5 1C23.0899 1 26 3.91015 26 7.5ZM16.8536 4.14645C16.6583 3.95118 16.3417 3.95118 16.1464 4.14645C15.9512 4.34171 15.9512 4.65829 16.1464 4.85355L18.7929 7.5L16.1464 10.1464C15.9512 10.3417 15.9512 10.6583 16.1464 10.8536C16.3417 11.0488 16.6583 11.0488 16.8536 10.8536L19.5 8.20711L22.1464 10.8536C22.3417 11.0488 22.6583 11.0488 22.8536 10.8536C23.0488 10.6583 23.0488 10.3417 22.8536 10.1464L20.2071 7.5L22.8536 4.85355C23.0488 4.65829 23.0488 4.34171 22.8536 4.14645C22.6583 3.95118 22.3417 3.95118 22.1464 4.14645L19.5 6.79289L16.8536 4.14645Z",
+      fill: "currentColor"
+    }), h("path", {
+      d: "M25 22.75V12.5991C24.5572 13.0765 24.053 13.4961 23.5 13.8454V16H17.5L17.3982 16.0068C17.0322 16.0565 16.75 16.3703 16.75 16.75C16.75 18.2688 15.5188 19.5 14 19.5C12.4812 19.5 11.25 18.2688 11.25 16.75L11.2432 16.6482C11.1935 16.2822 10.8797 16 10.5 16H4.5V7.25C4.5 6.2835 5.2835 5.5 6.25 5.5H12.2696C12.4146 4.97463 12.6153 4.47237 12.865 4H6.25C4.45507 4 3 5.45507 3 7.25V22.75C3 24.5449 4.45507 26 6.25 26H21.75C23.5449 26 25 24.5449 25 22.75ZM4.5 22.75V17.5H9.81597L9.85751 17.7041C10.2905 19.5919 11.9808 21 14 21L14.215 20.9947C16.2095 20.8953 17.842 19.4209 18.184 17.5H23.5V22.75C23.5 23.7165 22.7165 24.5 21.75 24.5H6.25C5.2835 24.5 4.5 23.7165 4.5 22.75Z",
+      fill: "currentColor"
+    }));
   }
 });
-const ErrorIcon = replaceable("error", h(
-  "svg",
-  { viewBox: "0 0 48 48", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-  h(
-    "g",
-    { stroke: "none", "stroke-width": "1", "fill-rule": "evenodd" },
-    h(
-      "g",
-      { "fill-rule": "nonzero" },
-      h("path", { d: "M24,4 C35.045695,4 44,12.954305 44,24 C44,35.045695 35.045695,44 24,44 C12.954305,44 4,35.045695 4,24 C4,12.954305 12.954305,4 24,4 Z M17.8838835,16.1161165 L17.7823881,16.0249942 C17.3266086,15.6583353 16.6733914,15.6583353 16.2176119,16.0249942 L16.1161165,16.1161165 L16.0249942,16.2176119 C15.6583353,16.6733914 15.6583353,17.3266086 16.0249942,17.7823881 L16.1161165,17.8838835 L22.233,24 L16.1161165,30.1161165 L16.0249942,30.2176119 C15.6583353,30.6733914 15.6583353,31.3266086 16.0249942,31.7823881 L16.1161165,31.8838835 L16.2176119,31.9750058 C16.6733914,32.3416647 17.3266086,32.3416647 17.7823881,31.9750058 L17.8838835,31.8838835 L24,25.767 L30.1161165,31.8838835 L30.2176119,31.9750058 C30.6733914,32.3416647 31.3266086,32.3416647 31.7823881,31.9750058 L31.8838835,31.8838835 L31.9750058,31.7823881 C32.3416647,31.3266086 32.3416647,30.6733914 31.9750058,30.2176119 L31.8838835,30.1161165 L25.767,24 L31.8838835,17.8838835 L31.9750058,17.7823881 C32.3416647,17.3266086 32.3416647,16.6733914 31.9750058,16.2176119 L31.8838835,16.1161165 L31.7823881,16.0249942 C31.3266086,15.6583353 30.6733914,15.6583353 30.2176119,16.0249942 L30.1161165,16.1161165 L24,22.233 L17.8838835,16.1161165 L17.7823881,16.0249942 L17.8838835,16.1161165 Z" })
-    )
-  )
-));
-const InfoIcon = replaceable("info", h(
-  "svg",
-  { viewBox: "0 0 28 28", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-  h(
-    "g",
-    { stroke: "none", "stroke-width": "1", "fill-rule": "evenodd" },
-    h(
-      "g",
-      { "fill-rule": "nonzero" },
-      h("path", { d: "M14,2 C20.6274,2 26,7.37258 26,14 C26,20.6274 20.6274,26 14,26 C7.37258,26 2,20.6274 2,14 C2,7.37258 7.37258,2 14,2 Z M14,11 C13.4477,11 13,11.4477 13,12 L13,12 L13,20 C13,20.5523 13.4477,21 14,21 C14.5523,21 15,20.5523 15,20 L15,20 L15,12 C15,11.4477 14.5523,11 14,11 Z M14,6.75 C13.3096,6.75 12.75,7.30964 12.75,8 C12.75,8.69036 13.3096,9.25 14,9.25 C14.6904,9.25 15.25,8.69036 15.25,8 C15.25,7.30964 14.6904,6.75 14,6.75 Z" })
-    )
-  )
-));
-const SuccessIcon = replaceable("success", h(
-  "svg",
-  { viewBox: "0 0 48 48", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-  h(
-    "g",
-    { stroke: "none", "stroke-width": "1", "fill-rule": "evenodd" },
-    h(
-      "g",
-      { "fill-rule": "nonzero" },
-      h("path", { d: "M24,4 C35.045695,4 44,12.954305 44,24 C44,35.045695 35.045695,44 24,44 C12.954305,44 4,35.045695 4,24 C4,12.954305 12.954305,4 24,4 Z M32.6338835,17.6161165 C32.1782718,17.1605048 31.4584514,17.1301307 30.9676119,17.5249942 L30.8661165,17.6161165 L20.75,27.732233 L17.1338835,24.1161165 C16.6457281,23.6279612 15.8542719,23.6279612 15.3661165,24.1161165 C14.9105048,24.5717282 14.8801307,25.2915486 15.2749942,25.7823881 L15.3661165,25.8838835 L19.8661165,30.3838835 C20.3217282,30.8394952 21.0415486,30.8698693 21.5323881,30.4750058 L21.6338835,30.3838835 L32.6338835,19.3838835 C33.1220388,18.8957281 33.1220388,18.1042719 32.6338835,17.6161165 Z" })
-    )
-  )
-));
-const WarningIcon = replaceable("warning", h(
-  "svg",
-  { viewBox: "0 0 24 24", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-  h(
-    "g",
-    { stroke: "none", "stroke-width": "1", "fill-rule": "evenodd" },
-    h(
-      "g",
-      { "fill-rule": "nonzero" },
-      h("path", { d: "M12,2 C17.523,2 22,6.478 22,12 C22,17.522 17.523,22 12,22 C6.477,22 2,17.522 2,12 C2,6.478 6.477,2 12,2 Z M12.0018002,15.0037242 C11.450254,15.0037242 11.0031376,15.4508407 11.0031376,16.0023869 C11.0031376,16.553933 11.450254,17.0010495 12.0018002,17.0010495 C12.5533463,17.0010495 13.0004628,16.553933 13.0004628,16.0023869 C13.0004628,15.4508407 12.5533463,15.0037242 12.0018002,15.0037242 Z M11.99964,7 C11.4868042,7.00018474 11.0642719,7.38637706 11.0066858,7.8837365 L11,8.00036004 L11.0018003,13.0012393 L11.00857,13.117858 C11.0665141,13.6151758 11.4893244,14.0010638 12.0021602,14.0008793 C12.514996,14.0006946 12.9375283,13.6145023 12.9951144,13.1171428 L13.0018002,13.0005193 L13,7.99964009 L12.9932303,7.8830214 C12.9352861,7.38570354 12.5124758,6.99981552 11.99964,7 Z" })
-    )
-  )
-));
-const ChevronDownIcon = defineComponent({
+const ErrorIcon = replaceable("error", h("svg", {
+  viewBox: "0 0 48 48",
+  version: "1.1",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("g", {
+  stroke: "none",
+  "stroke-width": "1",
+  "fill-rule": "evenodd"
+}, h("g", {
+  "fill-rule": "nonzero"
+}, h("path", {
+  d: "M24,4 C35.045695,4 44,12.954305 44,24 C44,35.045695 35.045695,44 24,44 C12.954305,44 4,35.045695 4,24 C4,12.954305 12.954305,4 24,4 Z M17.8838835,16.1161165 L17.7823881,16.0249942 C17.3266086,15.6583353 16.6733914,15.6583353 16.2176119,16.0249942 L16.1161165,16.1161165 L16.0249942,16.2176119 C15.6583353,16.6733914 15.6583353,17.3266086 16.0249942,17.7823881 L16.1161165,17.8838835 L22.233,24 L16.1161165,30.1161165 L16.0249942,30.2176119 C15.6583353,30.6733914 15.6583353,31.3266086 16.0249942,31.7823881 L16.1161165,31.8838835 L16.2176119,31.9750058 C16.6733914,32.3416647 17.3266086,32.3416647 17.7823881,31.9750058 L17.8838835,31.8838835 L24,25.767 L30.1161165,31.8838835 L30.2176119,31.9750058 C30.6733914,32.3416647 31.3266086,32.3416647 31.7823881,31.9750058 L31.8838835,31.8838835 L31.9750058,31.7823881 C32.3416647,31.3266086 32.3416647,30.6733914 31.9750058,30.2176119 L31.8838835,30.1161165 L25.767,24 L31.8838835,17.8838835 L31.9750058,17.7823881 C32.3416647,17.3266086 32.3416647,16.6733914 31.9750058,16.2176119 L31.8838835,16.1161165 L31.7823881,16.0249942 C31.3266086,15.6583353 30.6733914,15.6583353 30.2176119,16.0249942 L30.1161165,16.1161165 L24,22.233 L17.8838835,16.1161165 L17.7823881,16.0249942 L17.8838835,16.1161165 Z"
+})))));
+const InfoIcon = replaceable("info", h("svg", {
+  viewBox: "0 0 28 28",
+  version: "1.1",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("g", {
+  stroke: "none",
+  "stroke-width": "1",
+  "fill-rule": "evenodd"
+}, h("g", {
+  "fill-rule": "nonzero"
+}, h("path", {
+  d: "M14,2 C20.6274,2 26,7.37258 26,14 C26,20.6274 20.6274,26 14,26 C7.37258,26 2,20.6274 2,14 C2,7.37258 7.37258,2 14,2 Z M14,11 C13.4477,11 13,11.4477 13,12 L13,12 L13,20 C13,20.5523 13.4477,21 14,21 C14.5523,21 15,20.5523 15,20 L15,20 L15,12 C15,11.4477 14.5523,11 14,11 Z M14,6.75 C13.3096,6.75 12.75,7.30964 12.75,8 C12.75,8.69036 13.3096,9.25 14,9.25 C14.6904,9.25 15.25,8.69036 15.25,8 C15.25,7.30964 14.6904,6.75 14,6.75 Z"
+})))));
+const SuccessIcon = replaceable("success", h("svg", {
+  viewBox: "0 0 48 48",
+  version: "1.1",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("g", {
+  stroke: "none",
+  "stroke-width": "1",
+  "fill-rule": "evenodd"
+}, h("g", {
+  "fill-rule": "nonzero"
+}, h("path", {
+  d: "M24,4 C35.045695,4 44,12.954305 44,24 C44,35.045695 35.045695,44 24,44 C12.954305,44 4,35.045695 4,24 C4,12.954305 12.954305,4 24,4 Z M32.6338835,17.6161165 C32.1782718,17.1605048 31.4584514,17.1301307 30.9676119,17.5249942 L30.8661165,17.6161165 L20.75,27.732233 L17.1338835,24.1161165 C16.6457281,23.6279612 15.8542719,23.6279612 15.3661165,24.1161165 C14.9105048,24.5717282 14.8801307,25.2915486 15.2749942,25.7823881 L15.3661165,25.8838835 L19.8661165,30.3838835 C20.3217282,30.8394952 21.0415486,30.8698693 21.5323881,30.4750058 L21.6338835,30.3838835 L32.6338835,19.3838835 C33.1220388,18.8957281 33.1220388,18.1042719 32.6338835,17.6161165 Z"
+})))));
+const WarningIcon = replaceable("warning", h("svg", {
+  viewBox: "0 0 24 24",
+  version: "1.1",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("g", {
+  stroke: "none",
+  "stroke-width": "1",
+  "fill-rule": "evenodd"
+}, h("g", {
+  "fill-rule": "nonzero"
+}, h("path", {
+  d: "M12,2 C17.523,2 22,6.478 22,12 C22,17.522 17.523,22 12,22 C6.477,22 2,17.522 2,12 C2,6.478 6.477,2 12,2 Z M12.0018002,15.0037242 C11.450254,15.0037242 11.0031376,15.4508407 11.0031376,16.0023869 C11.0031376,16.553933 11.450254,17.0010495 12.0018002,17.0010495 C12.5533463,17.0010495 13.0004628,16.553933 13.0004628,16.0023869 C13.0004628,15.4508407 12.5533463,15.0037242 12.0018002,15.0037242 Z M11.99964,7 C11.4868042,7.00018474 11.0642719,7.38637706 11.0066858,7.8837365 L11,8.00036004 L11.0018003,13.0012393 L11.00857,13.117858 C11.0665141,13.6151758 11.4893244,14.0010638 12.0021602,14.0008793 C12.514996,14.0006946 12.9375283,13.6145023 12.9951144,13.1171428 L13.0018002,13.0005193 L13,7.99964009 L12.9932303,7.8830214 C12.9352861,7.38570354 12.5124758,6.99981552 11.99964,7 Z"
+})))));
+const ChevronDownIcon = /* @__PURE__ */ defineComponent({
   name: "ChevronDown",
   render() {
-    return h(
-      "svg",
-      { viewBox: "0 0 16 16", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-      h("path", { d: "M3.14645 5.64645C3.34171 5.45118 3.65829 5.45118 3.85355 5.64645L8 9.79289L12.1464 5.64645C12.3417 5.45118 12.6583 5.45118 12.8536 5.64645C13.0488 5.84171 13.0488 6.15829 12.8536 6.35355L8.35355 10.8536C8.15829 11.0488 7.84171 11.0488 7.64645 10.8536L3.14645 6.35355C2.95118 6.15829 2.95118 5.84171 3.14645 5.64645Z", fill: "currentColor" })
-    );
+    return h("svg", {
+      viewBox: "0 0 16 16",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("path", {
+      d: "M3.14645 5.64645C3.34171 5.45118 3.65829 5.45118 3.85355 5.64645L8 9.79289L12.1464 5.64645C12.3417 5.45118 12.6583 5.45118 12.8536 5.64645C13.0488 5.84171 13.0488 6.15829 12.8536 6.35355L8.35355 10.8536C8.15829 11.0488 7.84171 11.0488 7.64645 10.8536L3.14645 6.35355C2.95118 6.15829 2.95118 5.84171 3.14645 5.64645Z",
+      fill: "currentColor"
+    }));
   }
 });
-const ClearIcon = replaceable("clear", h(
-  "svg",
-  { viewBox: "0 0 16 16", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-  h(
-    "g",
-    { stroke: "none", "stroke-width": "1", fill: "none", "fill-rule": "evenodd" },
-    h(
-      "g",
-      { fill: "currentColor", "fill-rule": "nonzero" },
-      h("path", { d: "M8,2 C11.3137085,2 14,4.6862915 14,8 C14,11.3137085 11.3137085,14 8,14 C4.6862915,14 2,11.3137085 2,8 C2,4.6862915 4.6862915,2 8,2 Z M6.5343055,5.83859116 C6.33943736,5.70359511 6.07001296,5.72288026 5.89644661,5.89644661 L5.89644661,5.89644661 L5.83859116,5.9656945 C5.70359511,6.16056264 5.72288026,6.42998704 5.89644661,6.60355339 L5.89644661,6.60355339 L7.293,8 L5.89644661,9.39644661 L5.83859116,9.4656945 C5.70359511,9.66056264 5.72288026,9.92998704 5.89644661,10.1035534 L5.89644661,10.1035534 L5.9656945,10.1614088 C6.16056264,10.2964049 6.42998704,10.2771197 6.60355339,10.1035534 L6.60355339,10.1035534 L8,8.707 L9.39644661,10.1035534 L9.4656945,10.1614088 C9.66056264,10.2964049 9.92998704,10.2771197 10.1035534,10.1035534 L10.1035534,10.1035534 L10.1614088,10.0343055 C10.2964049,9.83943736 10.2771197,9.57001296 10.1035534,9.39644661 L10.1035534,9.39644661 L8.707,8 L10.1035534,6.60355339 L10.1614088,6.5343055 C10.2964049,6.33943736 10.2771197,6.07001296 10.1035534,5.89644661 L10.1035534,5.89644661 L10.0343055,5.83859116 C9.83943736,5.70359511 9.57001296,5.72288026 9.39644661,5.89644661 L9.39644661,5.89644661 L8,7.293 L6.60355339,5.89644661 Z" })
-    )
-  )
-));
-const ChevronDownFilledIcon = defineComponent({
+const ClearIcon = replaceable("clear", h("svg", {
+  viewBox: "0 0 16 16",
+  version: "1.1",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("g", {
+  stroke: "none",
+  "stroke-width": "1",
+  fill: "none",
+  "fill-rule": "evenodd"
+}, h("g", {
+  fill: "currentColor",
+  "fill-rule": "nonzero"
+}, h("path", {
+  d: "M8,2 C11.3137085,2 14,4.6862915 14,8 C14,11.3137085 11.3137085,14 8,14 C4.6862915,14 2,11.3137085 2,8 C2,4.6862915 4.6862915,2 8,2 Z M6.5343055,5.83859116 C6.33943736,5.70359511 6.07001296,5.72288026 5.89644661,5.89644661 L5.89644661,5.89644661 L5.83859116,5.9656945 C5.70359511,6.16056264 5.72288026,6.42998704 5.89644661,6.60355339 L5.89644661,6.60355339 L7.293,8 L5.89644661,9.39644661 L5.83859116,9.4656945 C5.70359511,9.66056264 5.72288026,9.92998704 5.89644661,10.1035534 L5.89644661,10.1035534 L5.9656945,10.1614088 C6.16056264,10.2964049 6.42998704,10.2771197 6.60355339,10.1035534 L6.60355339,10.1035534 L8,8.707 L9.39644661,10.1035534 L9.4656945,10.1614088 C9.66056264,10.2964049 9.92998704,10.2771197 10.1035534,10.1035534 L10.1035534,10.1035534 L10.1614088,10.0343055 C10.2964049,9.83943736 10.2771197,9.57001296 10.1035534,9.39644661 L10.1035534,9.39644661 L8.707,8 L10.1035534,6.60355339 L10.1614088,6.5343055 C10.2964049,6.33943736 10.2771197,6.07001296 10.1035534,5.89644661 L10.1035534,5.89644661 L10.0343055,5.83859116 C9.83943736,5.70359511 9.57001296,5.72288026 9.39644661,5.89644661 L9.39644661,5.89644661 L8,7.293 L6.60355339,5.89644661 Z"
+})))));
+const ChevronDownFilledIcon = /* @__PURE__ */ defineComponent({
   name: "ChevronDownFilled",
   render() {
-    return h(
-      "svg",
-      { viewBox: "0 0 16 16", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-      h("path", { d: "M3.20041 5.73966C3.48226 5.43613 3.95681 5.41856 4.26034 5.70041L8 9.22652L11.7397 5.70041C12.0432 5.41856 12.5177 5.43613 12.7996 5.73966C13.0815 6.0432 13.0639 6.51775 12.7603 6.7996L8.51034 10.7996C8.22258 11.0668 7.77743 11.0668 7.48967 10.7996L3.23966 6.7996C2.93613 6.51775 2.91856 6.0432 3.20041 5.73966Z", fill: "currentColor" })
-    );
+    return h("svg", {
+      viewBox: "0 0 16 16",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("path", {
+      d: "M3.20041 5.73966C3.48226 5.43613 3.95681 5.41856 4.26034 5.70041L8 9.22652L11.7397 5.70041C12.0432 5.41856 12.5177 5.43613 12.7996 5.73966C13.0815 6.0432 13.0639 6.51775 12.7603 6.7996L8.51034 10.7996C8.22258 11.0668 7.77743 11.0668 7.48967 10.7996L3.23966 6.7996C2.93613 6.51775 2.91856 6.0432 3.20041 5.73966Z",
+      fill: "currentColor"
+    }));
   }
 });
-const NIconSwitchTransition = defineComponent({
+const NIconSwitchTransition = /* @__PURE__ */ defineComponent({
   name: "BaseIconSwitchTransition",
-  setup(_, { slots }) {
+  setup(_, {
+    slots
+  }) {
     const isMountedRef = isMounted();
-    return () => h(Transition, { name: "icon-switch-transition", appear: isMountedRef.value }, slots);
+    return () => h(Transition, {
+      name: "icon-switch-transition",
+      appear: isMountedRef.value
+    }, slots);
   }
 });
-const NFadeInExpandTransition = defineComponent({
+const NFadeInExpandTransition = /* @__PURE__ */ defineComponent({
   name: "FadeInExpandTransition",
   props: {
     appear: Boolean,
@@ -15016,7 +15548,9 @@ const NFadeInExpandTransition = defineComponent({
     // it make it from expanded to collapsed after mounted
     reverse: Boolean
   },
-  setup(props, { slots }) {
+  setup(props, {
+    slots
+  }) {
     function handleBeforeLeave(el) {
       if (props.width) {
         el.style.maxWidth = `${el.offsetWidth}px`;
@@ -15032,7 +15566,9 @@ const NFadeInExpandTransition = defineComponent({
         el.style.maxHeight = "0";
       }
       void el.offsetWidth;
-      const { onLeave } = props;
+      const {
+        onLeave
+      } = props;
       if (onLeave)
         onLeave();
     }
@@ -15042,7 +15578,9 @@ const NFadeInExpandTransition = defineComponent({
       } else {
         el.style.maxHeight = "";
       }
-      const { onAfterLeave } = props;
+      const {
+        onAfterLeave
+      } = props;
       if (onAfterLeave)
         onAfterLeave();
     }
@@ -15082,7 +15620,12 @@ const NFadeInExpandTransition = defineComponent({
       (_a2 = props.onAfterEnter) === null || _a2 === void 0 ? void 0 : _a2.call(props);
     }
     return () => {
-      const { group, width, appear, mode } = props;
+      const {
+        group,
+        width,
+        appear,
+        mode
+      } = props;
       const type = group ? TransitionGroup : Transition;
       const resolvedProps = {
         name: width ? "fade-in-width-expand-transition" : "fade-in-height-expand-transition",
@@ -15113,7 +15656,7 @@ const style$A = cB("base-icon", `
  height: 1em;
  width: 1em;
  `)]);
-const NBaseIcon = defineComponent({
+const NBaseIcon = /* @__PURE__ */ defineComponent({
   name: "BaseIcon",
   props: {
     role: String,
@@ -15138,7 +15681,16 @@ const NBaseIcon = defineComponent({
     useStyle("-base-icon", style$A, toRef(props, "clsPrefix"));
   },
   render() {
-    return h("i", { class: `${this.clsPrefix}-base-icon`, onClick: this.onClick, onMousedown: this.onMousedown, onMouseup: this.onMouseup, role: this.role, "aria-label": this.ariaLabel, "aria-hidden": this.ariaHidden, "aria-disabled": this.ariaDisabled }, this.$slots);
+    return h("i", {
+      class: `${this.clsPrefix}-base-icon`,
+      onClick: this.onClick,
+      onMousedown: this.onMousedown,
+      onMouseup: this.onMouseup,
+      role: this.role,
+      "aria-label": this.ariaLabel,
+      "aria-hidden": this.ariaHidden,
+      "aria-disabled": this.ariaDisabled
+    }, this.$slots);
   }
 });
 const style$z = cB("base-close", `
@@ -15186,7 +15738,7 @@ const style$z = cB("base-close", `
  `), cM("round", [c$1("&::before", `
  border-radius: 50%;
  `)])]);
-const NBaseClose = defineComponent({
+const NBaseClose = /* @__PURE__ */ defineComponent({
   name: "BaseClose",
   props: {
     isButtonTag: {
@@ -15212,34 +15764,48 @@ const NBaseClose = defineComponent({
   setup(props) {
     useStyle("-base-close", style$z, toRef(props, "clsPrefix"));
     return () => {
-      const { clsPrefix, disabled, absolute, round, isButtonTag } = props;
+      const {
+        clsPrefix,
+        disabled,
+        absolute,
+        round,
+        isButtonTag
+      } = props;
       const Tag = isButtonTag ? "button" : "div";
-      return h(
-        Tag,
-        { type: isButtonTag ? "button" : void 0, tabindex: disabled || !props.focusable ? -1 : 0, "aria-disabled": disabled, "aria-label": "close", role: isButtonTag ? void 0 : "button", disabled, class: [
-          `${clsPrefix}-base-close`,
-          absolute && `${clsPrefix}-base-close--absolute`,
-          disabled && `${clsPrefix}-base-close--disabled`,
-          round && `${clsPrefix}-base-close--round`
-        ], onMousedown: (e) => {
+      return h(Tag, {
+        type: isButtonTag ? "button" : void 0,
+        tabindex: disabled || !props.focusable ? -1 : 0,
+        "aria-disabled": disabled,
+        "aria-label": "close",
+        role: isButtonTag ? void 0 : "button",
+        disabled,
+        class: [`${clsPrefix}-base-close`, absolute && `${clsPrefix}-base-close--absolute`, disabled && `${clsPrefix}-base-close--disabled`, round && `${clsPrefix}-base-close--round`],
+        onMousedown: (e) => {
           if (!props.focusable) {
             e.preventDefault();
           }
-        }, onClick: props.onClick },
-        h(NBaseIcon, { clsPrefix }, {
-          default: () => h(ErrorIcon$1, null)
-        })
-      );
+        },
+        onClick: props.onClick
+      }, h(NBaseIcon, {
+        clsPrefix
+      }, {
+        default: () => h(ErrorIcon$1, null)
+      }));
     };
   }
 });
-const FocusDetector = defineComponent({
+const FocusDetector = /* @__PURE__ */ defineComponent({
   props: {
     onFocus: Function,
     onBlur: Function
   },
   setup(props) {
-    return () => h("div", { style: "width: 0; height: 0", tabindex: 0, onFocus: props.onFocus, onBlur: props.onBlur });
+    return () => h("div", {
+      style: "width: 0; height: 0",
+      tabindex: 0,
+      onFocus: props.onFocus,
+      onBlur: props.onBlur
+    });
   }
 });
 const {
@@ -15269,71 +15835,15 @@ function iconSwitchTransition({
     transition
   })];
 }
-const style$y = c$1([c$1("@keyframes loading-container-rotate", `
- to {
- -webkit-transform: rotate(360deg);
- transform: rotate(360deg);
- }
- `), c$1("@keyframes loading-layer-rotate", `
- 12.5% {
- -webkit-transform: rotate(135deg);
- transform: rotate(135deg);
- }
- 25% {
- -webkit-transform: rotate(270deg);
- transform: rotate(270deg);
- }
- 37.5% {
- -webkit-transform: rotate(405deg);
- transform: rotate(405deg);
- }
- 50% {
- -webkit-transform: rotate(540deg);
- transform: rotate(540deg);
- }
- 62.5% {
- -webkit-transform: rotate(675deg);
- transform: rotate(675deg);
- }
- 75% {
- -webkit-transform: rotate(810deg);
- transform: rotate(810deg);
- }
- 87.5% {
- -webkit-transform: rotate(945deg);
- transform: rotate(945deg);
+const style$y = c$1([c$1("@keyframes rotator", `
+ 0% {
+ -webkit-transform: rotate(0deg);
+ transform: rotate(0deg);
  }
  100% {
- -webkit-transform: rotate(1080deg);
- transform: rotate(1080deg);
- } 
- `), c$1("@keyframes loading-left-spin", `
- from {
- -webkit-transform: rotate(265deg);
- transform: rotate(265deg);
- }
- 50% {
- -webkit-transform: rotate(130deg);
- transform: rotate(130deg);
- }
- to {
- -webkit-transform: rotate(265deg);
- transform: rotate(265deg);
- }
- `), c$1("@keyframes loading-right-spin", `
- from {
- -webkit-transform: rotate(-265deg);
- transform: rotate(-265deg);
- }
- 50% {
- -webkit-transform: rotate(-130deg);
- transform: rotate(-130deg);
- }
- to {
- -webkit-transform: rotate(-265deg);
- transform: rotate(-265deg);
- }
- `), cB("base-loading", `
+ -webkit-transform: rotate(360deg);
+ transform: rotate(360deg);
+ }`), cB("base-loading", `
  position: relative;
  line-height: 0;
  width: 1em;
@@ -15342,61 +15852,7 @@ const style$y = c$1([c$1("@keyframes loading-container-rotate", `
  position: absolute;
  width: 100%;
  height: 100%;
- `, [iconSwitchTransition()]), cE("container", `
- display: inline-flex;
- position: relative;
- direction: ltr;
- line-height: 0;
- animation: loading-container-rotate 1568.2352941176ms linear infinite;
- font-size: 0;
- letter-spacing: 0;
- white-space: nowrap;
- opacity: 1;
- width: 100%;
- height: 100%;
- `, [cE("svg", `
- stroke: var(--n-text-color);
- fill: transparent;
- position: absolute;
- height: 100%;
- overflow: hidden;
- `), cE("container-layer", `
- position: absolute;
- width: 100%;
- height: 100%;
- animation: loading-layer-rotate 5332ms cubic-bezier(0.4, 0, 0.2, 1) infinite both;
- `, [cE("container-layer-left", `
- display: inline-flex;
- position: relative;
- width: 50%;
- height: 100%;
- overflow: hidden;
- `, [cE("svg", `
- animation: loading-left-spin 1333ms cubic-bezier(0.4, 0, 0.2, 1) infinite both;
- width: 200%;
- `)]), cE("container-layer-patch", `
- position: absolute;
- top: 0;
- left: 47.5%;
- box-sizing: border-box;
- width: 5%;
- height: 100%;
- overflow: hidden;
- `, [cE("svg", `
- left: -900%;
- width: 2000%;
- transform: rotate(180deg);
- `)]), cE("container-layer-right", `
- display: inline-flex;
- position: relative;
- width: 50%;
- height: 100%;
- overflow: hidden;
- `, [cE("svg", `
- animation: loading-right-spin 1333ms cubic-bezier(0.4, 0, 0.2, 1) infinite both;
- left: -100%;
- width: 200%;
- `)])])]), cE("placeholder", `
+ `, [iconSwitchTransition()]), cE("placeholder", `
  position: absolute;
  left: 50%;
  top: 50%;
@@ -15405,7 +15861,13 @@ const style$y = c$1([c$1("@keyframes loading-container-rotate", `
   left: "50%",
   top: "50%",
   originalTransform: "translateX(-50%) translateY(-50%)"
-})])])]);
+})]), cE("container", `
+ animation: rotator 3s linear infinite both;
+ `, [cE("icon", `
+ height: 1em;
+ width: 1em;
+ `)])])]);
+const duration = "1.6s";
 const exposedLoadingProps = {
   strokeWidth: {
     type: Number,
@@ -15416,72 +15878,94 @@ const exposedLoadingProps = {
     default: void 0
   }
 };
-const NBaseLoading = defineComponent({
+const NBaseLoading = /* @__PURE__ */ defineComponent({
   name: "BaseLoading",
-  props: Object.assign({ clsPrefix: {
-    type: String,
-    required: true
-  }, show: {
-    type: Boolean,
-    default: true
-  }, scale: {
-    type: Number,
-    default: 1
-  }, radius: {
-    type: Number,
-    default: 100
-  } }, exposedLoadingProps),
+  props: Object.assign({
+    clsPrefix: {
+      type: String,
+      required: true
+    },
+    show: {
+      type: Boolean,
+      default: true
+    },
+    scale: {
+      type: Number,
+      default: 1
+    },
+    radius: {
+      type: Number,
+      default: 100
+    }
+  }, exposedLoadingProps),
   setup(props) {
     useStyle("-base-loading", style$y, toRef(props, "clsPrefix"));
   },
   render() {
-    const { clsPrefix, radius, strokeWidth, stroke, scale } = this;
+    const {
+      clsPrefix,
+      radius,
+      strokeWidth,
+      stroke,
+      scale
+    } = this;
     const scaledRadius = radius / scale;
-    return h(
-      "div",
-      { class: `${clsPrefix}-base-loading`, role: "img", "aria-label": "loading" },
-      h(NIconSwitchTransition, null, {
-        default: () => this.show ? h(
-          "div",
-          { key: "icon", class: `${clsPrefix}-base-loading__transition-wrapper` },
-          h(
-            "div",
-            { class: `${clsPrefix}-base-loading__container` },
-            h(
-              "div",
-              { class: `${clsPrefix}-base-loading__container-layer` },
-              h(
-                "div",
-                { class: `${clsPrefix}-base-loading__container-layer-left` },
-                h(
-                  "svg",
-                  { class: `${clsPrefix}-base-loading__svg`, viewBox: `0 0 ${2 * scaledRadius} ${2 * scaledRadius}`, xmlns: "http://www.w3.org/2000/svg", style: { color: stroke } },
-                  h("circle", { fill: "none", stroke: "currentColor", "stroke-width": strokeWidth, "stroke-linecap": "round", cx: scaledRadius, cy: scaledRadius, r: radius - strokeWidth / 2, "stroke-dasharray": 4.91 * radius, "stroke-dashoffset": 2.46 * radius })
-                )
-              ),
-              h(
-                "div",
-                { class: `${clsPrefix}-base-loading__container-layer-patch` },
-                h(
-                  "svg",
-                  { class: `${clsPrefix}-base-loading__svg`, viewBox: `0 0 ${2 * scaledRadius} ${2 * scaledRadius}`, xmlns: "http://www.w3.org/2000/svg", style: { color: stroke } },
-                  h("circle", { fill: "none", stroke: "currentColor", "stroke-width": strokeWidth, "stroke-linecap": "round", cx: scaledRadius, cy: scaledRadius, r: radius - strokeWidth / 2, "stroke-dasharray": 4.91 * radius, "stroke-dashoffset": 2.46 * radius })
-                )
-              ),
-              h(
-                "div",
-                { class: `${clsPrefix}-base-loading__container-layer-right` },
-                h(
-                  "svg",
-                  { class: `${clsPrefix}-base-loading__svg`, viewBox: `0 0 ${2 * scaledRadius} ${2 * scaledRadius}`, xmlns: "http://www.w3.org/2000/svg", style: { color: stroke } },
-                  h("circle", { fill: "none", stroke: "currentColor", "stroke-width": strokeWidth, "stroke-linecap": "round", cx: scaledRadius, cy: scaledRadius, r: radius - strokeWidth / 2, "stroke-dasharray": 4.91 * radius, "stroke-dashoffset": 2.46 * radius })
-                )
-              )
-            )
-          )
-        ) : h("div", { key: "placeholder", class: `${clsPrefix}-base-loading__placeholder` }, this.$slots)
-      })
-    );
+    return h("div", {
+      class: `${clsPrefix}-base-loading`,
+      role: "img",
+      "aria-label": "loading"
+    }, h(NIconSwitchTransition, null, {
+      default: () => this.show ? h("div", {
+        key: "icon",
+        class: `${clsPrefix}-base-loading__transition-wrapper`
+      }, h("div", {
+        class: `${clsPrefix}-base-loading__container`
+      }, h("svg", {
+        class: `${clsPrefix}-base-loading__icon`,
+        viewBox: `0 0 ${2 * scaledRadius} ${2 * scaledRadius}`,
+        xmlns: "http://www.w3.org/2000/svg",
+        style: {
+          color: stroke
+        }
+      }, h("g", null, h("animateTransform", {
+        attributeName: "transform",
+        type: "rotate",
+        values: `0 ${scaledRadius} ${scaledRadius};270 ${scaledRadius} ${scaledRadius}`,
+        begin: "0s",
+        dur: duration,
+        fill: "freeze",
+        repeatCount: "indefinite"
+      }), h("circle", {
+        class: `${clsPrefix}-base-loading__icon`,
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": strokeWidth,
+        "stroke-linecap": "round",
+        cx: scaledRadius,
+        cy: scaledRadius,
+        r: radius - strokeWidth / 2,
+        "stroke-dasharray": 5.67 * radius,
+        "stroke-dashoffset": 18.48 * radius
+      }, h("animateTransform", {
+        attributeName: "transform",
+        type: "rotate",
+        values: `0 ${scaledRadius} ${scaledRadius};135 ${scaledRadius} ${scaledRadius};450 ${scaledRadius} ${scaledRadius}`,
+        begin: "0s",
+        dur: duration,
+        fill: "freeze",
+        repeatCount: "indefinite"
+      }), h("animate", {
+        attributeName: "stroke-dashoffset",
+        values: `${5.67 * radius};${1.42 * radius};${5.67 * radius}`,
+        begin: "0s",
+        dur: duration,
+        fill: "freeze",
+        repeatCount: "indefinite"
+      })))))) : h("div", {
+        key: "placeholder",
+        class: `${clsPrefix}-base-loading__placeholder`
+      }, this.$slots)
+    }));
   }
 });
 function toArray(arg) {
@@ -16177,7 +16661,9 @@ function neutral$1(alpha) {
   overlayRgba[3] = Number(alpha);
   return composite(baseBackgroundRgb$1, overlayRgba);
 }
-const derived$1 = Object.assign(Object.assign({ name: "common" }, commonVariables$m), {
+const derived$1 = Object.assign(Object.assign({
+  name: "common"
+}, commonVariables$m), {
   baseColor: base$1.neutralBase,
   // primary color
   primaryColor: base$1.primaryDefault,
@@ -16233,8 +16719,12 @@ const derived$1 = Object.assign(Object.assign({ name: "common" }, commonVariable
   closeColorPressed: "rgba(255, 255, 255, .08)",
   // clear
   clearColor: overlay$1(base$1.alpha4),
-  clearColorHover: scaleColor(overlay$1(base$1.alpha4), { alpha: 1.25 }),
-  clearColorPressed: scaleColor(overlay$1(base$1.alpha4), { alpha: 0.8 }),
+  clearColorHover: scaleColor(overlay$1(base$1.alpha4), {
+    alpha: 1.25
+  }),
+  clearColorPressed: scaleColor(overlay$1(base$1.alpha4), {
+    alpha: 0.8
+  }),
   scrollbarColor: overlay$1(base$1.alphaScrollbar),
   scrollbarColorHover: overlay$1(base$1.alphaScrollbarHover),
   scrollbarWidth: "5px",
@@ -16281,7 +16771,9 @@ const base = {
   alpha2: "0.72",
   alpha3: "0.38",
   alpha4: "0.24",
+  // disabled text, placeholder, icon
   alpha5: "0.18",
+  // disabled placeholder
   alphaClose: "0.6",
   alphaDisabled: "0.5",
   alphaDisabledInput: "0.02",
@@ -16337,7 +16829,9 @@ function neutral(alpha) {
   overlayRgba[3] = Number(alpha);
   return composite(baseBackgroundRgb, overlayRgba);
 }
-const derived = Object.assign(Object.assign({ name: "common" }, commonVariables$m), {
+const derived = Object.assign(Object.assign({
+  name: "common"
+}, commonVariables$m), {
   baseColor: base.neutralBase,
   // primary color
   primaryColor: base.primaryDefault,
@@ -16375,8 +16869,12 @@ const derived = Object.assign(Object.assign({ name: "common" }, commonVariables$
   placeholderColor: neutral(base.alpha4),
   placeholderColorDisabled: neutral(base.alpha5),
   iconColor: neutral(base.alpha4),
-  iconColorHover: scaleColor(neutral(base.alpha4), { lightness: 0.75 }),
-  iconColorPressed: scaleColor(neutral(base.alpha4), { lightness: 0.9 }),
+  iconColorHover: scaleColor(neutral(base.alpha4), {
+    lightness: 0.75
+  }),
+  iconColorPressed: scaleColor(neutral(base.alpha4), {
+    lightness: 0.9
+  }),
   iconColorDisabled: neutral(base.alpha5),
   opacity1: base.alpha1,
   opacity2: base.alpha2,
@@ -16393,8 +16891,12 @@ const derived = Object.assign(Object.assign({ name: "common" }, commonVariables$
   closeColorPressed: "rgba(0, 0, 0, .13)",
   // clear
   clearColor: neutral(base.alpha4),
-  clearColorHover: scaleColor(neutral(base.alpha4), { lightness: 0.75 }),
-  clearColorPressed: scaleColor(neutral(base.alpha4), { lightness: 0.9 }),
+  clearColorHover: scaleColor(neutral(base.alpha4), {
+    lightness: 0.75
+  }),
+  clearColorPressed: scaleColor(neutral(base.alpha4), {
+    lightness: 0.9
+  }),
   scrollbarColor: overlay(base.alphaScrollbar),
   scrollbarColorHover: overlay(base.alphaScrollbarHover),
   scrollbarWidth: "5px",
@@ -16432,15 +16934,23 @@ const derived = Object.assign(Object.assign({ name: "common" }, commonVariables$
   boxShadow3: "0 6px 16px -9px rgba(0, 0, 0, .08), 0 9px 28px 0 rgba(0, 0, 0, .05), 0 12px 48px 16px rgba(0, 0, 0, .03)"
 });
 const commonLight = derived;
-const commonVars$c = {
+const commonVars$d = {
   iconSizeSmall: "34px",
   iconSizeMedium: "40px",
   iconSizeLarge: "46px",
   iconSizeHuge: "52px"
 };
-const self$1d = (vars) => {
-  const { textColorDisabled, iconColor, textColor2, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge } = vars;
-  return Object.assign(Object.assign({}, commonVars$c), {
+const self$1i = (vars) => {
+  const {
+    textColorDisabled,
+    iconColor,
+    textColor2,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge,
+    fontSizeHuge
+  } = vars;
+  return Object.assign(Object.assign({}, commonVars$d), {
     fontSizeSmall,
     fontSizeMedium,
     fontSizeLarge,
@@ -16453,13 +16963,13 @@ const self$1d = (vars) => {
 const emptyLight = {
   name: "Empty",
   common: commonLight,
-  self: self$1d
+  self: self$1i
 };
 const emptyLight$1 = emptyLight;
 const emptyDark = {
   name: "Empty",
   common: commonDark,
-  self: self$1d
+  self: self$1i
 };
 const emptyDark$1 = emptyDark;
 const style$x = cB("empty", `
@@ -16486,23 +16996,34 @@ const style$x = cB("empty", `
  margin-top: 12px;
  color: var(--n-extra-text-color);
  `)]);
-const emptyProps = Object.assign(Object.assign({}, useTheme.props), { description: String, showDescription: {
-  type: Boolean,
-  default: true
-}, showIcon: {
-  type: Boolean,
-  default: true
-}, size: {
-  type: String,
-  default: "medium"
-}, renderIcon: Function });
-const NEmpty = defineComponent({
+const emptyProps = Object.assign(Object.assign({}, useTheme.props), {
+  description: String,
+  showDescription: {
+    type: Boolean,
+    default: true
+  },
+  showIcon: {
+    type: Boolean,
+    default: true
+  },
+  size: {
+    type: String,
+    default: "medium"
+  },
+  renderIcon: Function
+});
+const NEmpty = /* @__PURE__ */ defineComponent({
   name: "Empty",
   props: emptyProps,
   setup(props) {
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Empty", "-empty", style$x, emptyLight$1, props, mergedClsPrefixRef);
-    const { localeRef } = useLocale("Empty");
+    const {
+      localeRef
+    } = useLocale("Empty");
     const NConfigProvider2 = inject(configProviderInjectionKey, null);
     const mergedDescriptionRef = computed(() => {
       var _a2, _b, _c;
@@ -16513,8 +17034,21 @@ const NEmpty = defineComponent({
       return ((_b = (_a2 = NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedComponentPropsRef.value) === null || _a2 === void 0 ? void 0 : _a2.Empty) === null || _b === void 0 ? void 0 : _b.renderIcon) || (() => h(EmptyIcon, null));
     });
     const cssVarsRef = computed(() => {
-      const { size: size2 } = props;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { [createKey("iconSize", size2)]: iconSize, [createKey("fontSize", size2)]: fontSize2, textColor, iconColor, extraTextColor } } = themeRef.value;
+      const {
+        size: size2
+      } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          [createKey("iconSize", size2)]: iconSize,
+          [createKey("fontSize", size2)]: fontSize2,
+          textColor,
+          iconColor,
+          extraTextColor
+        }
+      } = themeRef.value;
       return {
         "--n-icon-size": iconSize,
         "--n-font-size": fontSize2,
@@ -16526,7 +17060,9 @@ const NEmpty = defineComponent({
     });
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("empty", computed(() => {
       let hash = "";
-      const { size: size2 } = props;
+      const {
+        size: size2
+      } = props;
       hash += size2[0];
       return hash;
     }), cssVarsRef, props) : void 0;
@@ -16542,19 +17078,33 @@ const NEmpty = defineComponent({
     };
   },
   render() {
-    const { $slots, mergedClsPrefix, onRender } = this;
+    const {
+      $slots,
+      mergedClsPrefix,
+      onRender
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h(
-      "div",
-      { class: [`${mergedClsPrefix}-empty`, this.themeClass], style: this.cssVars },
-      this.showIcon ? h("div", { class: `${mergedClsPrefix}-empty__icon` }, $slots.icon ? $slots.icon() : h(NBaseIcon, { clsPrefix: mergedClsPrefix }, { default: this.mergedRenderIcon })) : null,
-      this.showDescription ? h("div", { class: `${mergedClsPrefix}-empty__description` }, $slots.default ? $slots.default() : this.localizedDescription) : null,
-      $slots.extra ? h("div", { class: `${mergedClsPrefix}-empty__extra` }, $slots.extra()) : null
-    );
+    return h("div", {
+      class: [`${mergedClsPrefix}-empty`, this.themeClass],
+      style: this.cssVars
+    }, this.showIcon ? h("div", {
+      class: `${mergedClsPrefix}-empty__icon`
+    }, $slots.icon ? $slots.icon() : h(NBaseIcon, {
+      clsPrefix: mergedClsPrefix
+    }, {
+      default: this.mergedRenderIcon
+    })) : null, this.showDescription ? h("div", {
+      class: `${mergedClsPrefix}-empty__description`
+    }, $slots.default ? $slots.default() : this.localizedDescription) : null, $slots.extra ? h("div", {
+      class: `${mergedClsPrefix}-empty__extra`
+    }, $slots.extra()) : null);
   }
 });
-const self$1c = (vars) => {
-  const { scrollbarColor, scrollbarColorHover } = vars;
+const self$1h = (vars) => {
+  const {
+    scrollbarColor,
+    scrollbarColorHover
+  } = vars;
   return {
     color: scrollbarColor,
     colorHover: scrollbarColorHover
@@ -16563,13 +17113,13 @@ const self$1c = (vars) => {
 const scrollbarLight = {
   name: "Scrollbar",
   common: commonLight,
-  self: self$1c
+  self: self$1h
 };
 const scrollbarLight$1 = scrollbarLight;
 const scrollbarDark = {
   name: "Scrollbar",
   common: commonDark,
-  self: self$1c
+  self: self$1h
 };
 const scrollbarDark$1 = scrollbarDark;
 const {
@@ -16635,17 +17185,14 @@ const style$w = cB("scrollbar", `
  width: var(--n-scrollbar-width);
  border-radius: var(--n-scrollbar-border-radius);
  bottom: 0;
- `)])]), cM("disabled", [c$1(">", [cE("scrollbar", {
-  pointerEvents: "none"
-})])]), c$1(">", [cE("scrollbar", `
+ `)])]), cM("disabled", [c$1(">", [cE("scrollbar", "pointer-events: none;")])]), c$1(">", [cE("scrollbar", `
+ z-index: 1;
  position: absolute;
  cursor: pointer;
  pointer-events: all;
  background-color: var(--n-scrollbar-color);
  transition: background-color .2s var(--n-scrollbar-bezier);
- `, [fadeInTransition(), c$1("&:hover", {
-  backgroundColor: "var(--n-scrollbar-color-hover)"
-})])])])])]);
+ `, [fadeInTransition(), c$1("&:hover", "background-color: var(--n-scrollbar-color-hover);")])])])])]);
 const scrollbarProps$1 = Object.assign(Object.assign({}, useTheme.props), {
   size: {
     type: Number,
@@ -16671,7 +17218,7 @@ const scrollbarProps$1 = Object.assign(Object.assign({}, useTheme.props), {
   content: Function,
   containerClass: String,
   containerStyle: [String, Object],
-  contentClass: String,
+  contentClass: [String, Array],
   contentStyle: [String, Object],
   horizontalRailStyle: [String, Object],
   verticalRailStyle: [String, Object],
@@ -16681,12 +17228,16 @@ const scrollbarProps$1 = Object.assign(Object.assign({}, useTheme.props), {
   internalOnUpdateScrollLeft: Function,
   internalHoistYRail: Boolean
 });
-const Scrollbar$1 = defineComponent({
+const Scrollbar$1 = /* @__PURE__ */ defineComponent({
   name: "Scrollbar",
   props: scrollbarProps$1,
   inheritAttrs: false,
   setup(props) {
-    const { mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig(props);
     const rtlEnabledRef = useRtl("Scrollbar", mergedRtlRef, mergedClsPrefixRef);
     const wrapperRef = ref(null);
     const containerRef = ref(null);
@@ -16713,9 +17264,15 @@ const Scrollbar$1 = defineComponent({
     let memoMouseY = 0;
     const isIos2 = useIsIos();
     const yBarSizeRef = computed(() => {
-      const { value: containerHeight } = containerHeightRef;
-      const { value: contentHeight } = contentHeightRef;
-      const { value: yRailSize } = yRailSizeRef;
+      const {
+        value: containerHeight
+      } = containerHeightRef;
+      const {
+        value: contentHeight
+      } = contentHeightRef;
+      const {
+        value: yRailSize
+      } = yRailSizeRef;
       if (containerHeight === null || contentHeight === null || yRailSize === null) {
         return 0;
       } else {
@@ -16726,9 +17283,15 @@ const Scrollbar$1 = defineComponent({
       return `${yBarSizeRef.value}px`;
     });
     const xBarSizeRef = computed(() => {
-      const { value: containerWidth } = containerWidthRef;
-      const { value: contentWidth } = contentWidthRef;
-      const { value: xRailSize } = xRailSizeRef;
+      const {
+        value: containerWidth
+      } = containerWidthRef;
+      const {
+        value: contentWidth
+      } = contentWidthRef;
+      const {
+        value: xRailSize
+      } = xRailSizeRef;
       if (containerWidth === null || contentWidth === null || xRailSize === null) {
         return 0;
       } else {
@@ -16739,10 +17302,18 @@ const Scrollbar$1 = defineComponent({
       return `${xBarSizeRef.value}px`;
     });
     const yBarTopRef = computed(() => {
-      const { value: containerHeight } = containerHeightRef;
-      const { value: containerScrollTop } = containerScrollTopRef;
-      const { value: contentHeight } = contentHeightRef;
-      const { value: yRailSize } = yRailSizeRef;
+      const {
+        value: containerHeight
+      } = containerHeightRef;
+      const {
+        value: containerScrollTop
+      } = containerScrollTopRef;
+      const {
+        value: contentHeight
+      } = contentHeightRef;
+      const {
+        value: yRailSize
+      } = yRailSizeRef;
       if (containerHeight === null || contentHeight === null || yRailSize === null) {
         return 0;
       } else {
@@ -16756,10 +17327,18 @@ const Scrollbar$1 = defineComponent({
       return `${yBarTopRef.value}px`;
     });
     const xBarLeftRef = computed(() => {
-      const { value: containerWidth } = containerWidthRef;
-      const { value: containerScrollLeft } = containerScrollLeftRef;
-      const { value: contentWidth } = contentWidthRef;
-      const { value: xRailSize } = xRailSizeRef;
+      const {
+        value: containerWidth
+      } = containerWidthRef;
+      const {
+        value: containerScrollLeft
+      } = containerScrollLeftRef;
+      const {
+        value: contentWidth
+      } = contentWidthRef;
+      const {
+        value: xRailSize
+      } = xRailSizeRef;
       if (containerWidth === null || contentWidth === null || xRailSize === null) {
         return 0;
       } else {
@@ -16773,31 +17352,47 @@ const Scrollbar$1 = defineComponent({
       return `${xBarLeftRef.value}px`;
     });
     const needYBarRef = computed(() => {
-      const { value: containerHeight } = containerHeightRef;
-      const { value: contentHeight } = contentHeightRef;
+      const {
+        value: containerHeight
+      } = containerHeightRef;
+      const {
+        value: contentHeight
+      } = contentHeightRef;
       return containerHeight !== null && contentHeight !== null && contentHeight > containerHeight;
     });
     const needXBarRef = computed(() => {
-      const { value: containerWidth } = containerWidthRef;
-      const { value: contentWidth } = contentWidthRef;
+      const {
+        value: containerWidth
+      } = containerWidthRef;
+      const {
+        value: contentWidth
+      } = contentWidthRef;
       return containerWidth !== null && contentWidth !== null && contentWidth > containerWidth;
     });
     const mergedShowXBarRef = computed(() => {
-      const { trigger: trigger2 } = props;
+      const {
+        trigger: trigger2
+      } = props;
       return trigger2 === "none" || isShowXBarRef.value;
     });
     const mergedShowYBarRef = computed(() => {
-      const { trigger: trigger2 } = props;
+      const {
+        trigger: trigger2
+      } = props;
       return trigger2 === "none" || isShowYBarRef.value;
     });
     const mergedContainerRef = computed(() => {
-      const { container } = props;
+      const {
+        container
+      } = props;
       if (container)
         return container();
       return containerRef.value;
     });
     const mergedContentRef = computed(() => {
-      const { content } = props;
+      const {
+        content
+      } = props;
       if (content)
         return content();
       return contentRef.value;
@@ -16818,7 +17413,9 @@ const Scrollbar$1 = defineComponent({
     const handleContainerResize = (e) => {
       if (activateState.isDeactivated)
         return;
-      const { onResize } = props;
+      const {
+        onResize
+      } = props;
       if (onResize)
         onResize(e);
       sync();
@@ -16827,10 +17424,19 @@ const Scrollbar$1 = defineComponent({
       if (!props.scrollable)
         return;
       if (typeof options === "number") {
-        scrollToPosition2(y !== null && y !== void 0 ? y : 0, options, 0, false, "auto");
+        scrollToPosition2(options, y !== null && y !== void 0 ? y : 0, 0, false, "auto");
         return;
       }
-      const { left, top, index: index2, elSize, position, behavior, el, debounce: debounce2 = true } = options;
+      const {
+        left,
+        top,
+        index: index2,
+        elSize,
+        position,
+        behavior,
+        el,
+        debounce: debounce2 = true
+      } = options;
       if (left !== void 0 || top !== void 0) {
         scrollToPosition2(left !== null && left !== void 0 ? left : 0, top !== null && top !== void 0 ? top : 0, 0, false, behavior);
       }
@@ -16847,7 +17453,9 @@ const Scrollbar$1 = defineComponent({
     const scrollBy = (options, y) => {
       if (!props.scrollable)
         return;
-      const { value: container } = mergedContainerRef;
+      const {
+        value: container
+      } = mergedContainerRef;
       if (!container)
         return;
       if (typeof options === "object") {
@@ -16857,11 +17465,16 @@ const Scrollbar$1 = defineComponent({
       }
     };
     function scrollToPosition2(left, top, elSize, debounce2, behavior) {
-      const { value: container } = mergedContainerRef;
+      const {
+        value: container
+      } = mergedContainerRef;
       if (!container)
         return;
       if (debounce2) {
-        const { scrollTop, offsetHeight } = container;
+        const {
+          scrollTop,
+          offsetHeight
+        } = container;
         if (top > scrollTop) {
           if (top + elSize <= scrollTop + offsetHeight)
             ;
@@ -16922,31 +17535,43 @@ const Scrollbar$1 = defineComponent({
       isShowYBarRef.value = true;
     }
     function handleScroll(e) {
-      const { onScroll } = props;
+      const {
+        onScroll
+      } = props;
       if (onScroll)
         onScroll(e);
       syncScrollState();
     }
     function syncScrollState() {
-      const { value: container } = mergedContainerRef;
+      const {
+        value: container
+      } = mergedContainerRef;
       if (container) {
         containerScrollTopRef.value = container.scrollTop;
         containerScrollLeftRef.value = container.scrollLeft * ((rtlEnabledRef === null || rtlEnabledRef === void 0 ? void 0 : rtlEnabledRef.value) ? -1 : 1);
       }
     }
     function syncPositionState() {
-      const { value: content } = mergedContentRef;
+      const {
+        value: content
+      } = mergedContentRef;
       if (content) {
         contentHeightRef.value = content.offsetHeight;
         contentWidthRef.value = content.offsetWidth;
       }
-      const { value: container } = mergedContainerRef;
+      const {
+        value: container
+      } = mergedContainerRef;
       if (container) {
         containerHeightRef.value = container.offsetHeight;
         containerWidthRef.value = container.offsetWidth;
       }
-      const { value: xRailEl } = xRailRef;
-      const { value: yRailEl } = yRailRef;
+      const {
+        value: xRailEl
+      } = xRailRef;
+      const {
+        value: yRailEl
+      } = yRailRef;
       if (xRailEl) {
         xRailSizeRef.value = xRailEl.offsetWidth;
       }
@@ -16955,7 +17580,9 @@ const Scrollbar$1 = defineComponent({
       }
     }
     function syncUnifiedContainer() {
-      const { value: container } = mergedContainerRef;
+      const {
+        value: container
+      } = mergedContainerRef;
       if (container) {
         containerScrollTopRef.value = container.scrollTop;
         containerScrollLeftRef.value = container.scrollLeft * ((rtlEnabledRef === null || rtlEnabledRef === void 0 ? void 0 : rtlEnabledRef.value) ? -1 : 1);
@@ -16964,8 +17591,12 @@ const Scrollbar$1 = defineComponent({
         contentHeightRef.value = container.scrollHeight;
         contentWidthRef.value = container.scrollWidth;
       }
-      const { value: xRailEl } = xRailRef;
-      const { value: yRailEl } = yRailRef;
+      const {
+        value: xRailEl
+      } = xRailRef;
+      const {
+        value: yRailEl
+      } = yRailRef;
       if (xRailEl) {
         xRailSizeRef.value = xRailEl.offsetWidth;
       }
@@ -17005,9 +17636,15 @@ const Scrollbar$1 = defineComponent({
       if (yBarVanishTimerId !== void 0) {
         window.clearTimeout(yBarVanishTimerId);
       }
-      const { value: containerWidth } = containerWidthRef;
-      const { value: contentWidth } = contentWidthRef;
-      const { value: xBarSize } = xBarSizeRef;
+      const {
+        value: containerWidth
+      } = containerWidthRef;
+      const {
+        value: contentWidth
+      } = contentWidthRef;
+      const {
+        value: xBarSize
+      } = xBarSizeRef;
       if (containerWidth === null || contentWidth === null)
         return;
       const dX = (rtlEnabledRef === null || rtlEnabledRef === void 0 ? void 0 : rtlEnabledRef.value) ? window.innerWidth - e.clientX - memoMouseX : e.clientX - memoMouseX;
@@ -17016,10 +17653,14 @@ const Scrollbar$1 = defineComponent({
       let toScrollLeft = memoXLeft + dScrollLeft;
       toScrollLeft = Math.min(toScrollLeftUpperBound, toScrollLeft);
       toScrollLeft = Math.max(toScrollLeft, 0);
-      const { value: container } = mergedContainerRef;
+      const {
+        value: container
+      } = mergedContainerRef;
       if (container) {
         container.scrollLeft = toScrollLeft * ((rtlEnabledRef === null || rtlEnabledRef === void 0 ? void 0 : rtlEnabledRef.value) ? -1 : 1);
-        const { internalOnUpdateScrollLeft } = props;
+        const {
+          internalOnUpdateScrollLeft
+        } = props;
         if (internalOnUpdateScrollLeft)
           internalOnUpdateScrollLeft(toScrollLeft);
       }
@@ -17053,9 +17694,15 @@ const Scrollbar$1 = defineComponent({
       if (yBarVanishTimerId !== void 0) {
         window.clearTimeout(yBarVanishTimerId);
       }
-      const { value: containerHeight } = containerHeightRef;
-      const { value: contentHeight } = contentHeightRef;
-      const { value: yBarSize } = yBarSizeRef;
+      const {
+        value: containerHeight
+      } = containerHeightRef;
+      const {
+        value: contentHeight
+      } = contentHeightRef;
+      const {
+        value: yBarSize
+      } = yBarSizeRef;
       if (containerHeight === null || contentHeight === null)
         return;
       const dY = e.clientY - memoMouseY;
@@ -17064,7 +17711,9 @@ const Scrollbar$1 = defineComponent({
       let toScrollTop = memoYTop + dScrollTop;
       toScrollTop = Math.min(toScrollTopUpperBound, toScrollTop);
       toScrollTop = Math.max(toScrollTop, 0);
-      const { value: container } = mergedContainerRef;
+      const {
+        value: container
+      } = mergedContainerRef;
       if (container) {
         container.scrollTop = toScrollTop;
       }
@@ -17081,11 +17730,21 @@ const Scrollbar$1 = defineComponent({
       }
     }
     watchEffect(() => {
-      const { value: needXBar } = needXBarRef;
-      const { value: needYBar } = needYBarRef;
-      const { value: mergedClsPrefix } = mergedClsPrefixRef;
-      const { value: xRailEl } = xRailRef;
-      const { value: yRailEl } = yRailRef;
+      const {
+        value: needXBar
+      } = needXBarRef;
+      const {
+        value: needYBar
+      } = needYBarRef;
+      const {
+        value: mergedClsPrefix
+      } = mergedClsPrefixRef;
+      const {
+        value: xRailEl
+      } = xRailRef;
+      const {
+        value: yRailEl
+      } = yRailRef;
       if (xRailEl) {
         if (!needXBar) {
           xRailEl.classList.add(`${mergedClsPrefix}-scrollbar-rail--disabled`);
@@ -17118,7 +17777,18 @@ const Scrollbar$1 = defineComponent({
     });
     const themeRef = useTheme("Scrollbar", "-scrollbar", style$w, scrollbarLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, scrollbarBorderRadius, scrollbarHeight, scrollbarWidth }, self: { color, colorHover } } = themeRef.value;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2,
+          scrollbarBorderRadius,
+          scrollbarHeight,
+          scrollbarWidth
+        },
+        self: {
+          color,
+          colorHover
+        }
+      } = themeRef.value;
       return {
         "--n-scrollbar-bezier": cubicBezierEaseInOut2,
         "--n-scrollbar-color": color,
@@ -17167,20 +17837,40 @@ const Scrollbar$1 = defineComponent({
   },
   render() {
     var _a2;
-    const { $slots, mergedClsPrefix, triggerDisplayManually, rtlEnabled, internalHoistYRail } = this;
+    const {
+      $slots,
+      mergedClsPrefix,
+      triggerDisplayManually,
+      rtlEnabled,
+      internalHoistYRail
+    } = this;
     if (!this.scrollable)
       return (_a2 = $slots.default) === null || _a2 === void 0 ? void 0 : _a2.call($slots);
     const triggerIsNone = this.trigger === "none";
-    const createYRail = (style2) => {
-      return h("div", { ref: "yRailRef", class: [
-        `${mergedClsPrefix}-scrollbar-rail`,
-        `${mergedClsPrefix}-scrollbar-rail--vertical`
-      ], "data-scrollbar-rail": true, style: [style2 || "", this.verticalRailStyle], "aria-hiddens": true }, h(triggerIsNone ? Wrapper : Transition, triggerIsNone ? null : { name: "fade-in-transition" }, {
-        default: () => this.needYBar && this.isShowYBar && !this.isIos ? h("div", { class: `${mergedClsPrefix}-scrollbar-rail__scrollbar`, style: {
-          height: this.yBarSizePx,
-          top: this.yBarTopPx
-        }, onMousedown: this.handleYScrollMouseDown }) : null
-      }));
+    const createYRail = (className, style2) => {
+      return h("div", {
+        ref: "yRailRef",
+        class: [`${mergedClsPrefix}-scrollbar-rail`, `${mergedClsPrefix}-scrollbar-rail--vertical`, className],
+        "data-scrollbar-rail": true,
+        style: [style2 || "", this.verticalRailStyle],
+        "aria-hidden": true
+      }, h(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        triggerIsNone ? Wrapper : Transition,
+        triggerIsNone ? null : {
+          name: "fade-in-transition"
+        },
+        {
+          default: () => this.needYBar && this.isShowYBar && !this.isIos ? h("div", {
+            class: `${mergedClsPrefix}-scrollbar-rail__scrollbar`,
+            style: {
+              height: this.yBarSizePx,
+              top: this.yBarTopPx
+            },
+            onMousedown: this.handleYScrollMouseDown
+          }) : null
+        }
+      ));
     };
     const createChildren = () => {
       var _a3, _b;
@@ -17188,56 +17878,60 @@ const Scrollbar$1 = defineComponent({
       return h("div", mergeProps(this.$attrs, {
         role: "none",
         ref: "wrapperRef",
-        class: [
-          `${mergedClsPrefix}-scrollbar`,
-          this.themeClass,
-          rtlEnabled && `${mergedClsPrefix}-scrollbar--rtl`
-        ],
+        class: [`${mergedClsPrefix}-scrollbar`, this.themeClass, rtlEnabled && `${mergedClsPrefix}-scrollbar--rtl`],
         style: this.cssVars,
         onMouseenter: triggerDisplayManually ? void 0 : this.handleMouseEnterWrapper,
         onMouseleave: triggerDisplayManually ? void 0 : this.handleMouseLeaveWrapper
-      }), [
-        this.container ? (_b = $slots.default) === null || _b === void 0 ? void 0 : _b.call($slots) : h(
-          "div",
-          { role: "none", ref: "containerRef", class: [
-            `${mergedClsPrefix}-scrollbar-container`,
-            this.containerClass
-          ], style: this.containerStyle, onScroll: this.handleScroll, onWheel: this.onWheel },
-          h(VResizeObserver, { onResize: this.handleContentResize }, {
-            default: () => h("div", { ref: "contentRef", role: "none", style: [
-              {
-                width: this.xScrollable ? "fit-content" : null
-              },
-              this.contentStyle
-            ], class: [
-              `${mergedClsPrefix}-scrollbar-content`,
-              this.contentClass
-            ] }, $slots)
-          })
-        ),
-        internalHoistYRail ? null : createYRail(void 0),
-        this.xScrollable && h("div", { ref: "xRailRef", class: [
-          `${mergedClsPrefix}-scrollbar-rail`,
-          `${mergedClsPrefix}-scrollbar-rail--horizontal`
-        ], style: this.horizontalRailStyle, "data-scrollbar-rail": true, "aria-hidden": true }, h(triggerIsNone ? Wrapper : Transition, triggerIsNone ? null : { name: "fade-in-transition" }, {
-          default: () => this.needXBar && this.isShowXBar && !this.isIos ? h("div", { class: `${mergedClsPrefix}-scrollbar-rail__scrollbar`, style: {
-            width: this.xBarSizePx,
-            right: rtlEnabled ? this.xBarLeftPx : void 0,
-            left: rtlEnabled ? void 0 : this.xBarLeftPx
-          }, onMousedown: this.handleXScrollMouseDown }) : null
-        }))
-      ]);
+      }), [this.container ? (_b = $slots.default) === null || _b === void 0 ? void 0 : _b.call($slots) : h("div", {
+        role: "none",
+        ref: "containerRef",
+        class: [`${mergedClsPrefix}-scrollbar-container`, this.containerClass],
+        style: this.containerStyle,
+        onScroll: this.handleScroll,
+        onWheel: this.onWheel
+      }, h(VResizeObserver, {
+        onResize: this.handleContentResize
+      }, {
+        default: () => h("div", {
+          ref: "contentRef",
+          role: "none",
+          style: [{
+            width: this.xScrollable ? "fit-content" : null
+          }, this.contentStyle],
+          class: [`${mergedClsPrefix}-scrollbar-content`, this.contentClass]
+        }, $slots)
+      })), internalHoistYRail ? null : createYRail(void 0, void 0), this.xScrollable && h("div", {
+        ref: "xRailRef",
+        class: [`${mergedClsPrefix}-scrollbar-rail`, `${mergedClsPrefix}-scrollbar-rail--horizontal`],
+        style: this.horizontalRailStyle,
+        "data-scrollbar-rail": true,
+        "aria-hidden": true
+      }, h(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        triggerIsNone ? Wrapper : Transition,
+        triggerIsNone ? null : {
+          name: "fade-in-transition"
+        },
+        {
+          default: () => this.needXBar && this.isShowXBar && !this.isIos ? h("div", {
+            class: `${mergedClsPrefix}-scrollbar-rail__scrollbar`,
+            style: {
+              width: this.xBarSizePx,
+              right: rtlEnabled ? this.xBarLeftPx : void 0,
+              left: rtlEnabled ? void 0 : this.xBarLeftPx
+            },
+            onMousedown: this.handleXScrollMouseDown
+          }) : null
+        }
+      ))]);
     };
-    const scrollbarNode = this.container ? createChildren() : h(VResizeObserver, { onResize: this.handleContainerResize }, {
+    const scrollbarNode = this.container ? createChildren() : h(VResizeObserver, {
+      onResize: this.handleContainerResize
+    }, {
       default: createChildren
     });
     if (internalHoistYRail) {
-      return h(
-        Fragment,
-        null,
-        scrollbarNode,
-        createYRail(this.cssVars)
-      );
+      return h(Fragment, null, scrollbarNode, createYRail(this.themeClass, this.cssVars));
     } else {
       return scrollbarNode;
     }
@@ -17257,9 +17951,52 @@ const commonVariables$l = {
   optionPaddingHuge: "0 12px",
   loadingSize: "18px"
 };
-const self$1b = (vars) => {
-  const { borderRadius, popoverColor, textColor3, dividerColor, textColor2, primaryColorPressed, textColorDisabled, primaryColor, opacityDisabled, hoverColor, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge, heightSmall, heightMedium, heightLarge, heightHuge } = vars;
-  return Object.assign(Object.assign({}, commonVariables$l), { optionFontSizeSmall: fontSizeSmall, optionFontSizeMedium: fontSizeMedium, optionFontSizeLarge: fontSizeLarge, optionFontSizeHuge: fontSizeHuge, optionHeightSmall: heightSmall, optionHeightMedium: heightMedium, optionHeightLarge: heightLarge, optionHeightHuge: heightHuge, borderRadius, color: popoverColor, groupHeaderTextColor: textColor3, actionDividerColor: dividerColor, optionTextColor: textColor2, optionTextColorPressed: primaryColorPressed, optionTextColorDisabled: textColorDisabled, optionTextColorActive: primaryColor, optionOpacityDisabled: opacityDisabled, optionCheckColor: primaryColor, optionColorPending: hoverColor, optionColorActive: "rgba(0, 0, 0, 0)", optionColorActivePending: hoverColor, actionTextColor: textColor2, loadingColor: primaryColor });
+const self$1g = (vars) => {
+  const {
+    borderRadius,
+    popoverColor,
+    textColor3,
+    dividerColor,
+    textColor2,
+    primaryColorPressed,
+    textColorDisabled,
+    primaryColor,
+    opacityDisabled,
+    hoverColor,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge,
+    fontSizeHuge,
+    heightSmall,
+    heightMedium,
+    heightLarge,
+    heightHuge
+  } = vars;
+  return Object.assign(Object.assign({}, commonVariables$l), {
+    optionFontSizeSmall: fontSizeSmall,
+    optionFontSizeMedium: fontSizeMedium,
+    optionFontSizeLarge: fontSizeLarge,
+    optionFontSizeHuge: fontSizeHuge,
+    optionHeightSmall: heightSmall,
+    optionHeightMedium: heightMedium,
+    optionHeightLarge: heightLarge,
+    optionHeightHuge: heightHuge,
+    borderRadius,
+    color: popoverColor,
+    groupHeaderTextColor: textColor3,
+    actionDividerColor: dividerColor,
+    optionTextColor: textColor2,
+    optionTextColorPressed: primaryColorPressed,
+    optionTextColorDisabled: textColorDisabled,
+    optionTextColorActive: primaryColor,
+    optionOpacityDisabled: opacityDisabled,
+    optionCheckColor: primaryColor,
+    optionColorPending: hoverColor,
+    optionColorActive: "rgba(0, 0, 0, 0)",
+    optionColorActivePending: hoverColor,
+    actionTextColor: textColor2,
+    loadingColor: primaryColor
+  });
 };
 const internalSelectMenuLight = createTheme({
   name: "InternalSelectMenu",
@@ -17268,7 +18005,7 @@ const internalSelectMenuLight = createTheme({
     Scrollbar: scrollbarLight$1,
     Empty: emptyLight$1
   },
-  self: self$1b
+  self: self$1g
 });
 const internalSelectMenuLight$1 = internalSelectMenuLight;
 const internalSelectMenuDark = {
@@ -17278,17 +18015,22 @@ const internalSelectMenuDark = {
     Scrollbar: scrollbarDark$1,
     Empty: emptyDark$1
   },
-  self: self$1b
+  self: self$1g
 };
 const internalSelectMenuDark$1 = internalSelectMenuDark;
 function renderCheckMark(show, clsPrefix) {
-  return h(Transition, { name: "fade-in-scale-up-transition" }, {
-    default: () => show ? h(NBaseIcon, { clsPrefix, class: `${clsPrefix}-base-select-option__check` }, {
+  return h(Transition, {
+    name: "fade-in-scale-up-transition"
+  }, {
+    default: () => show ? h(NBaseIcon, {
+      clsPrefix,
+      class: `${clsPrefix}-base-select-option__check`
+    }, {
       default: () => h(FinishedIcon)
     }) : null
   });
 }
-const NSelectOption = defineComponent({
+const NSelectOption = /* @__PURE__ */ defineComponent({
   name: "NBaseSelectOption",
   props: {
     clsPrefix: {
@@ -17317,26 +18059,36 @@ const NSelectOption = defineComponent({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(internalSelectionMenuInjectionKey);
     const isPendingRef = useMemo(() => {
-      const { value: pendingTmNode } = pendingTmNodeRef;
+      const {
+        value: pendingTmNode
+      } = pendingTmNodeRef;
       if (!pendingTmNode)
         return false;
       return props.tmNode.key === pendingTmNode.key;
     });
     function handleClick2(e) {
-      const { tmNode } = props;
+      const {
+        tmNode
+      } = props;
       if (tmNode.disabled)
         return;
       handleOptionClick(e, tmNode);
     }
     function handleMouseEnter(e) {
-      const { tmNode } = props;
+      const {
+        tmNode
+      } = props;
       if (tmNode.disabled)
         return;
       handleOptionMouseEnter(e, tmNode);
     }
     function handleMouseMove(e) {
-      const { tmNode } = props;
-      const { value: isPending } = isPendingRef;
+      const {
+        tmNode
+      } = props;
+      const {
+        value: isPending
+      } = isPendingRef;
       if (tmNode.disabled || isPending)
         return;
       handleOptionMouseEnter(e, tmNode);
@@ -17344,21 +18096,31 @@ const NSelectOption = defineComponent({
     return {
       multiple: multipleRef,
       isGrouped: useMemo(() => {
-        const { tmNode } = props;
-        const { parent } = tmNode;
+        const {
+          tmNode
+        } = props;
+        const {
+          parent
+        } = tmNode;
         return parent && parent.rawNode.type === "group";
       }),
       showCheckmark: showCheckmarkRef,
       nodeProps: nodePropsRef,
       isPending: isPendingRef,
       isSelected: useMemo(() => {
-        const { value } = valueRef;
-        const { value: multiple } = multipleRef;
+        const {
+          value
+        } = valueRef;
+        const {
+          value: multiple
+        } = multipleRef;
         if (value === null)
           return false;
         const optionValue = props.tmNode.rawNode[valueFieldRef.value];
         if (multiple) {
-          const { value: valueSet } = valueSetRef;
+          const {
+            value: valueSet
+          } = valueSetRef;
           return valueSet.has(optionValue);
         } else {
           return value === optionValue;
@@ -17373,36 +18135,52 @@ const NSelectOption = defineComponent({
     };
   },
   render() {
-    const { clsPrefix, tmNode: { rawNode }, isSelected, isPending, isGrouped, showCheckmark, nodeProps, renderOption, renderLabel, handleClick: handleClick2, handleMouseEnter, handleMouseMove } = this;
+    const {
+      clsPrefix,
+      tmNode: {
+        rawNode
+      },
+      isSelected,
+      isPending,
+      isGrouped,
+      showCheckmark,
+      nodeProps,
+      renderOption,
+      renderLabel,
+      handleClick: handleClick2,
+      handleMouseEnter,
+      handleMouseMove
+    } = this;
     const checkmark = renderCheckMark(isSelected, clsPrefix);
-    const children = renderLabel ? [renderLabel(rawNode, isSelected), showCheckmark && checkmark] : [
-      render$1(rawNode[this.labelField], rawNode, isSelected),
-      showCheckmark && checkmark
-    ];
+    const children = renderLabel ? [renderLabel(rawNode, isSelected), showCheckmark && checkmark] : [render$1(rawNode[this.labelField], rawNode, isSelected), showCheckmark && checkmark];
     const attrs = nodeProps === null || nodeProps === void 0 ? void 0 : nodeProps(rawNode);
-    const node = h(
-      "div",
-      Object.assign({}, attrs, { class: [
-        `${clsPrefix}-base-select-option`,
-        rawNode.class,
-        attrs === null || attrs === void 0 ? void 0 : attrs.class,
-        {
-          [`${clsPrefix}-base-select-option--disabled`]: rawNode.disabled,
-          [`${clsPrefix}-base-select-option--selected`]: isSelected,
-          [`${clsPrefix}-base-select-option--grouped`]: isGrouped,
-          [`${clsPrefix}-base-select-option--pending`]: isPending,
-          [`${clsPrefix}-base-select-option--show-checkmark`]: showCheckmark
-        }
-      ], style: [(attrs === null || attrs === void 0 ? void 0 : attrs.style) || "", rawNode.style || ""], onClick: mergeEventHandlers([handleClick2, attrs === null || attrs === void 0 ? void 0 : attrs.onClick]), onMouseenter: mergeEventHandlers([
-        handleMouseEnter,
-        attrs === null || attrs === void 0 ? void 0 : attrs.onMouseenter
-      ]), onMousemove: mergeEventHandlers([handleMouseMove, attrs === null || attrs === void 0 ? void 0 : attrs.onMousemove]) }),
-      h("div", { class: `${clsPrefix}-base-select-option__content` }, children)
-    );
-    return rawNode.render ? rawNode.render({ node, option: rawNode, selected: isSelected }) : renderOption ? renderOption({ node, option: rawNode, selected: isSelected }) : node;
+    const node = h("div", Object.assign({}, attrs, {
+      class: [`${clsPrefix}-base-select-option`, rawNode.class, attrs === null || attrs === void 0 ? void 0 : attrs.class, {
+        [`${clsPrefix}-base-select-option--disabled`]: rawNode.disabled,
+        [`${clsPrefix}-base-select-option--selected`]: isSelected,
+        [`${clsPrefix}-base-select-option--grouped`]: isGrouped,
+        [`${clsPrefix}-base-select-option--pending`]: isPending,
+        [`${clsPrefix}-base-select-option--show-checkmark`]: showCheckmark
+      }],
+      style: [(attrs === null || attrs === void 0 ? void 0 : attrs.style) || "", rawNode.style || ""],
+      onClick: mergeEventHandlers([handleClick2, attrs === null || attrs === void 0 ? void 0 : attrs.onClick]),
+      onMouseenter: mergeEventHandlers([handleMouseEnter, attrs === null || attrs === void 0 ? void 0 : attrs.onMouseenter]),
+      onMousemove: mergeEventHandlers([handleMouseMove, attrs === null || attrs === void 0 ? void 0 : attrs.onMousemove])
+    }), h("div", {
+      class: `${clsPrefix}-base-select-option__content`
+    }, children));
+    return rawNode.render ? rawNode.render({
+      node,
+      option: rawNode,
+      selected: isSelected
+    }) : renderOption ? renderOption({
+      node,
+      option: rawNode,
+      selected: isSelected
+    }) : node;
   }
 });
-const NSelectGroupHeader = defineComponent({
+const NSelectGroupHeader = /* @__PURE__ */ defineComponent({
   name: "NBaseSelectGroupHeader",
   props: {
     clsPrefix: {
@@ -17430,11 +18208,28 @@ const NSelectGroupHeader = defineComponent({
     };
   },
   render() {
-    const { clsPrefix, renderLabel, renderOption, nodeProps, tmNode: { rawNode } } = this;
+    const {
+      clsPrefix,
+      renderLabel,
+      renderOption,
+      nodeProps,
+      tmNode: {
+        rawNode
+      }
+    } = this;
     const attrs = nodeProps === null || nodeProps === void 0 ? void 0 : nodeProps(rawNode);
     const children = renderLabel ? renderLabel(rawNode, false) : render$1(rawNode[this.labelField], rawNode, false);
-    const node = h("div", Object.assign({}, attrs, { class: [`${clsPrefix}-base-select-group-header`, attrs === null || attrs === void 0 ? void 0 : attrs.class] }), children);
-    return rawNode.render ? rawNode.render({ node, option: rawNode }) : renderOption ? renderOption({ node, option: rawNode, selected: false }) : node;
+    const node = h("div", Object.assign({}, attrs, {
+      class: [`${clsPrefix}-base-select-group-header`, attrs === null || attrs === void 0 ? void 0 : attrs.class]
+    }), children);
+    return rawNode.render ? rawNode.render({
+      node,
+      option: rawNode
+    }) : renderOption ? renderOption({
+      node,
+      option: rawNode,
+      selected: false
+    }) : node;
   }
 });
 const {
@@ -17443,17 +18238,17 @@ const {
 } = commonVariables$m;
 function fadeInScaleUpTransition({
   transformOrigin = "inherit",
-  duration = ".2s",
+  duration: duration2 = ".2s",
   enterScale = ".9",
   originalTransform = "",
   originalTransition = ""
 } = {}) {
   return [c$1("&.fade-in-scale-up-transition-leave-active", {
     transformOrigin,
-    transition: `opacity ${duration} ${cubicBezierEaseIn$5}, transform ${duration} ${cubicBezierEaseIn$5} ${originalTransition && "," + originalTransition}`
+    transition: `opacity ${duration2} ${cubicBezierEaseIn$5}, transform ${duration2} ${cubicBezierEaseIn$5} ${originalTransition && "," + originalTransition}`
   }), c$1("&.fade-in-scale-up-transition-enter-active", {
     transformOrigin,
-    transition: `opacity ${duration} ${cubicBezierEaseOut$5}, transform ${duration} ${cubicBezierEaseOut$5} ${originalTransition && "," + originalTransition}`
+    transition: `opacity ${duration2} ${cubicBezierEaseOut$5}, transform ${duration2} ${cubicBezierEaseOut$5} ${originalTransition && "," + originalTransition}`
   }), c$1("&.fade-in-scale-up-transition-enter-from, &.fade-in-scale-up-transition-leave-to", {
     opacity: 0,
     transform: `${originalTransform} scale(${enterScale})`
@@ -17502,6 +18297,14 @@ const style$v = cB("base-select-menu", `
  `), cE("loading", `
  color: var(--n-loading-color);
  font-size: var(--n-loading-size);
+ `), cE("header", `
+ padding: 8px var(--n-option-padding-left);
+ font-size: var(--n-option-font-size);
+ transition: 
+ color .3s var(--n-bezier),
+ border-color .3s var(--n-bezier);
+ border-bottom: 1px solid var(--n-action-divider-color);
+ color: var(--n-action-text-color);
  `), cE("action", `
  padding: 8px var(--n-option-padding-left);
  font-size: var(--n-option-font-size);
@@ -17564,7 +18367,7 @@ const style$v = cB("base-select-menu", `
  `, [fadeInScaleUpTransition({
   enterScale: "0.5"
 })])])]);
-const NInternalSelectMenu = defineComponent({
+const NInternalSelectMenu = /* @__PURE__ */ defineComponent({
   name: "InternalSelectMenu",
   props: Object.assign(Object.assign({}, useTheme.props), {
     clsPrefix: {
@@ -17611,7 +18414,10 @@ const NInternalSelectMenu = defineComponent({
     renderLabel: Function,
     renderOption: Function,
     nodeProps: Function,
-    showCheckmark: { type: Boolean, default: true },
+    showCheckmark: {
+      type: Boolean,
+      default: true
+    },
     onMousedown: Function,
     onScroll: Function,
     onFocus: Function,
@@ -17631,6 +18437,11 @@ const NInternalSelectMenu = defineComponent({
     onToggle: Function
   }),
   setup(props) {
+    const {
+      mergedClsPrefixRef,
+      mergedRtlRef
+    } = useConfig(props);
+    const rtlEnabledRef = useRtl("InternalSelectMenu", mergedRtlRef, mergedClsPrefixRef);
     const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$v, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const virtualListRef = ref(null);
@@ -17639,9 +18450,13 @@ const NInternalSelectMenu = defineComponent({
     const fIndexGetterRef = computed(() => createIndexGetter(flattenedNodesRef.value));
     const pendingNodeRef = ref(null);
     function initPendingNode() {
-      const { treeMate } = props;
+      const {
+        treeMate
+      } = props;
       let defaultPendingNode = null;
-      const { value } = props;
+      const {
+        value
+      } = props;
       if (value === null) {
         defaultPendingNode = treeMate.getFirstAvailableNode();
       } else {
@@ -17661,7 +18476,9 @@ const NInternalSelectMenu = defineComponent({
       }
     }
     function clearPendingNodeIfInvalid() {
-      const { value: pendingNode } = pendingNodeRef;
+      const {
+        value: pendingNode
+      } = pendingNodeRef;
       if (pendingNode && !props.treeMate.getNode(pendingNode.key)) {
         pendingNodeRef.value = null;
       }
@@ -17709,12 +18526,16 @@ const NInternalSelectMenu = defineComponent({
       return tmNodes && tmNodes.length === 0;
     });
     function doToggle(tmNode) {
-      const { onToggle } = props;
+      const {
+        onToggle
+      } = props;
       if (onToggle)
         onToggle(tmNode);
     }
     function doScroll(e) {
-      const { onScroll } = props;
+      const {
+        onScroll
+      } = props;
       if (onScroll)
         onScroll(e);
     }
@@ -17728,7 +18549,9 @@ const NInternalSelectMenu = defineComponent({
       (_a2 = scrollbarRef.value) === null || _a2 === void 0 ? void 0 : _a2.sync();
     }
     function getPendingTmNode() {
-      const { value: pendingTmNode } = pendingNodeRef;
+      const {
+        value: pendingTmNode
+      } = pendingNodeRef;
       if (pendingTmNode)
         return pendingTmNode;
       return null;
@@ -17763,15 +18586,23 @@ const NInternalSelectMenu = defineComponent({
       e.preventDefault();
     }
     function next() {
-      const { value: pendingTmNode } = pendingNodeRef;
+      const {
+        value: pendingTmNode
+      } = pendingNodeRef;
       if (pendingTmNode) {
-        setPendingTmNode(pendingTmNode.getNext({ loop: true }), true);
+        setPendingTmNode(pendingTmNode.getNext({
+          loop: true
+        }), true);
       }
     }
     function prev() {
-      const { value: pendingTmNode } = pendingNodeRef;
+      const {
+        value: pendingTmNode
+      } = pendingNodeRef;
       if (pendingTmNode) {
-        setPendingTmNode(pendingTmNode.getPrev({ loop: true }), true);
+        setPendingTmNode(pendingTmNode.getPrev({
+          loop: true
+        }), true);
       }
     }
     function setPendingTmNode(tmNode, doScroll2 = false) {
@@ -17788,7 +18619,9 @@ const NInternalSelectMenu = defineComponent({
       if (fIndex === null)
         return;
       if (props.virtualScroll) {
-        (_a2 = virtualListRef.value) === null || _a2 === void 0 ? void 0 : _a2.scrollTo({ index: fIndex });
+        (_a2 = virtualListRef.value) === null || _a2 === void 0 ? void 0 : _a2.scrollTo({
+          index: fIndex
+        });
       } else {
         (_b = scrollbarRef.value) === null || _b === void 0 ? void 0 : _b.scrollTo({
           index: fIndex,
@@ -17824,13 +18657,43 @@ const NInternalSelectMenu = defineComponent({
     });
     provide(internalSelectionMenuBodyInjectionKey, selfRef);
     onMounted(() => {
-      const { value } = scrollbarRef;
+      const {
+        value
+      } = scrollbarRef;
       if (value)
         value.sync();
     });
     const cssVarsRef = computed(() => {
-      const { size: size2 } = props;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { height, borderRadius, color, groupHeaderTextColor, actionDividerColor, optionTextColorPressed, optionTextColor, optionTextColorDisabled, optionTextColorActive, optionOpacityDisabled, optionCheckColor, actionTextColor, optionColorPending, optionColorActive, loadingColor, loadingSize, optionColorActivePending, [createKey("optionFontSize", size2)]: fontSize2, [createKey("optionHeight", size2)]: optionHeight, [createKey("optionPadding", size2)]: optionPadding } } = themeRef.value;
+      const {
+        size: size2
+      } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          height,
+          borderRadius,
+          color,
+          groupHeaderTextColor,
+          actionDividerColor,
+          optionTextColorPressed,
+          optionTextColor,
+          optionTextColorDisabled,
+          optionTextColorActive,
+          optionOpacityDisabled,
+          optionCheckColor,
+          actionTextColor,
+          optionColorPending,
+          optionColorActive,
+          loadingColor,
+          loadingSize,
+          optionColorActivePending,
+          [createKey("optionFontSize", size2)]: fontSize2,
+          [createKey("optionHeight", size2)]: optionHeight,
+          [createKey("optionPadding", size2)]: optionPadding
+        }
+      } = themeRef.value;
       return {
         "--n-height": height,
         "--n-action-divider-color": actionDividerColor,
@@ -17857,7 +18720,9 @@ const NInternalSelectMenu = defineComponent({
         "--n-loading-size": loadingSize
       };
     });
-    const { inlineThemeDisabled } = props;
+    const {
+      inlineThemeDisabled
+    } = props;
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("internal-select-menu", computed(() => props.size[0]), cssVarsRef, props) : void 0;
     const exposedProps = {
       selfRef,
@@ -17868,6 +18733,8 @@ const NInternalSelectMenu = defineComponent({
     useOnResize(selfRef, props.onResize);
     return Object.assign({
       mergedTheme: themeRef,
+      mergedClsPrefix: mergedClsPrefixRef,
+      rtlEnabled: rtlEnabledRef,
       virtualListRef,
       scrollbarRef,
       itemSize: itemSizeRef,
@@ -17875,11 +18742,15 @@ const NInternalSelectMenu = defineComponent({
       flattenedNodes: flattenedNodesRef,
       empty: emptyRef,
       virtualListContainer() {
-        const { value } = virtualListRef;
+        const {
+          value
+        } = virtualListRef;
         return value === null || value === void 0 ? void 0 : value.listElRef;
       },
       virtualListContent() {
-        const { value } = virtualListRef;
+        const {
+          value
+        } = virtualListRef;
         return value === null || value === void 0 ? void 0 : value.itemsElRef;
       },
       doScroll,
@@ -17896,38 +18767,101 @@ const NInternalSelectMenu = defineComponent({
     }, exposedProps);
   },
   render() {
-    const { $slots, virtualScroll, clsPrefix, mergedTheme, themeClass, onRender } = this;
+    const {
+      $slots,
+      virtualScroll,
+      clsPrefix,
+      mergedTheme,
+      themeClass,
+      onRender
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h(
-      "div",
-      { ref: "selfRef", tabindex: this.focusable ? 0 : -1, class: [
-        `${clsPrefix}-base-select-menu`,
-        themeClass,
-        this.multiple && `${clsPrefix}-base-select-menu--multiple`
-      ], style: this.cssVars, onFocusin: this.handleFocusin, onFocusout: this.handleFocusout, onKeyup: this.handleKeyUp, onKeydown: this.handleKeyDown, onMousedown: this.handleMouseDown, onMouseenter: this.onMouseenter, onMouseleave: this.onMouseleave },
-      this.loading ? h(
-        "div",
-        { class: `${clsPrefix}-base-select-menu__loading` },
-        h(NBaseLoading, { clsPrefix, strokeWidth: 20 })
-      ) : !this.empty ? h(NScrollbar$1, { ref: "scrollbarRef", theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, scrollable: this.scrollable, container: virtualScroll ? this.virtualListContainer : void 0, content: virtualScroll ? this.virtualListContent : void 0, onScroll: virtualScroll ? void 0 : this.doScroll }, {
-        default: () => {
-          return virtualScroll ? h(VVirtualList, { ref: "virtualListRef", class: `${clsPrefix}-virtual-list`, items: this.flattenedNodes, itemSize: this.itemSize, showScrollbar: false, paddingTop: this.padding.top, paddingBottom: this.padding.bottom, onResize: this.handleVirtualListResize, onScroll: this.handleVirtualListScroll, itemResizable: true }, {
-            default: ({ item: tmNode }) => {
-              return tmNode.isGroup ? h(NSelectGroupHeader, { key: tmNode.key, clsPrefix, tmNode }) : tmNode.ignored ? null : h(NSelectOption, { clsPrefix, key: tmNode.key, tmNode });
-            }
-          }) : h("div", { class: `${clsPrefix}-base-select-menu-option-wrapper`, style: {
+    return h("div", {
+      ref: "selfRef",
+      tabindex: this.focusable ? 0 : -1,
+      class: [`${clsPrefix}-base-select-menu`, this.rtlEnabled && `${clsPrefix}-base-select-menu--rtl`, themeClass, this.multiple && `${clsPrefix}-base-select-menu--multiple`],
+      style: this.cssVars,
+      onFocusin: this.handleFocusin,
+      onFocusout: this.handleFocusout,
+      onKeyup: this.handleKeyUp,
+      onKeydown: this.handleKeyDown,
+      onMousedown: this.handleMouseDown,
+      onMouseenter: this.onMouseenter,
+      onMouseleave: this.onMouseleave
+    }, resolveWrappedSlot($slots.header, (children) => children && h("div", {
+      class: `${clsPrefix}-base-select-menu__header`,
+      "data-header": true,
+      key: "header"
+    }, children)), this.loading ? h("div", {
+      class: `${clsPrefix}-base-select-menu__loading`
+    }, h(NBaseLoading, {
+      clsPrefix,
+      strokeWidth: 20
+    })) : !this.empty ? h(NScrollbar$1, {
+      ref: "scrollbarRef",
+      theme: mergedTheme.peers.Scrollbar,
+      themeOverrides: mergedTheme.peerOverrides.Scrollbar,
+      scrollable: this.scrollable,
+      container: virtualScroll ? this.virtualListContainer : void 0,
+      content: virtualScroll ? this.virtualListContent : void 0,
+      onScroll: virtualScroll ? void 0 : this.doScroll
+    }, {
+      default: () => {
+        return virtualScroll ? h(VVirtualList, {
+          ref: "virtualListRef",
+          class: `${clsPrefix}-virtual-list`,
+          items: this.flattenedNodes,
+          itemSize: this.itemSize,
+          showScrollbar: false,
+          paddingTop: this.padding.top,
+          paddingBottom: this.padding.bottom,
+          onResize: this.handleVirtualListResize,
+          onScroll: this.handleVirtualListScroll,
+          itemResizable: true
+        }, {
+          default: ({
+            item: tmNode
+          }) => {
+            return tmNode.isGroup ? h(NSelectGroupHeader, {
+              key: tmNode.key,
+              clsPrefix,
+              tmNode
+            }) : tmNode.ignored ? null : h(NSelectOption, {
+              clsPrefix,
+              key: tmNode.key,
+              tmNode
+            });
+          }
+        }) : h("div", {
+          class: `${clsPrefix}-base-select-menu-option-wrapper`,
+          style: {
             paddingTop: this.padding.top,
             paddingBottom: this.padding.bottom
-          } }, this.flattenedNodes.map((tmNode) => tmNode.isGroup ? h(NSelectGroupHeader, { key: tmNode.key, clsPrefix, tmNode }) : h(NSelectOption, { clsPrefix, key: tmNode.key, tmNode })));
-        }
-      }) : h("div", { class: `${clsPrefix}-base-select-menu__empty`, "data-empty": true, "data-action": true }, resolveSlot($slots.empty, () => [
-        h(NEmpty, { theme: mergedTheme.peers.Empty, themeOverrides: mergedTheme.peerOverrides.Empty })
-      ])),
-      resolveWrappedSlot($slots.action, (children) => children && [
-        h("div", { class: `${clsPrefix}-base-select-menu__action`, "data-action": true, key: "action" }, children),
-        h(FocusDetector, { onFocus: this.onTabOut, key: "focus-detector" })
-      ])
-    );
+          }
+        }, this.flattenedNodes.map((tmNode) => tmNode.isGroup ? h(NSelectGroupHeader, {
+          key: tmNode.key,
+          clsPrefix,
+          tmNode
+        }) : h(NSelectOption, {
+          clsPrefix,
+          key: tmNode.key,
+          tmNode
+        })));
+      }
+    }) : h("div", {
+      class: `${clsPrefix}-base-select-menu__empty`,
+      "data-empty": true
+    }, resolveSlot($slots.empty, () => [h(NEmpty, {
+      theme: mergedTheme.peers.Empty,
+      themeOverrides: mergedTheme.peerOverrides.Empty
+    })])), resolveWrappedSlot($slots.action, (children) => children && [h("div", {
+      class: `${clsPrefix}-base-select-menu__action`,
+      "data-action": true,
+      key: "action"
+    }, children), h(FocusDetector, {
+      onFocus: this.onTabOut,
+      key: "focus-detector"
+    })]));
   }
 });
 const style$u = cB("base-wave", `
@@ -17938,7 +18872,7 @@ const style$u = cB("base-wave", `
  bottom: 0;
  border-radius: inherit;
 `);
-const NBaseWave = defineComponent({
+const NBaseWave = /* @__PURE__ */ defineComponent({
   name: "BaseWave",
   props: {
     clsPrefix: {
@@ -17978,11 +18912,14 @@ const NBaseWave = defineComponent({
     };
   },
   render() {
-    const { clsPrefix } = this;
-    return h("div", { ref: "selfRef", "aria-hidden": true, class: [
-      `${clsPrefix}-base-wave`,
-      this.active && `${clsPrefix}-base-wave--active`
-    ] });
+    const {
+      clsPrefix
+    } = this;
+    return h("div", {
+      ref: "selfRef",
+      "aria-hidden": true,
+      class: [`${clsPrefix}-base-wave`, this.active && `${clsPrefix}-base-wave--active`]
+    });
   }
 });
 const commonVariables$k = {
@@ -17993,8 +18930,15 @@ const commonVariables$k = {
   arrowHeight: "6px",
   padding: "8px 14px"
 };
-const self$1a = (vars) => {
-  const { boxShadow2, popoverColor, textColor2, borderRadius, fontSize: fontSize2, dividerColor } = vars;
+const self$1f = (vars) => {
+  const {
+    boxShadow2,
+    popoverColor,
+    textColor2,
+    borderRadius,
+    fontSize: fontSize2,
+    dividerColor
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$k), {
     fontSize: fontSize2,
     borderRadius,
@@ -18007,13 +18951,13 @@ const self$1a = (vars) => {
 const popoverLight = {
   name: "Popover",
   common: commonLight,
-  self: self$1a
+  self: self$1f
 };
 const popoverLight$1 = popoverLight;
 const popoverDark = {
   name: "Popover",
   common: commonDark,
-  self: self$1a
+  self: self$1f
 };
 const popoverDark$1 = popoverDark;
 const oppositePlacement = {
@@ -18179,7 +19123,10 @@ const popoverBodyProps = Object.assign(Object.assign({}, useTheme.props), {
   duration: Number,
   raw: Boolean,
   arrowPointToCenter: Boolean,
+  arrowClass: String,
   arrowStyle: [String, Object],
+  arrowWrapperClass: String,
+  arrowWrapperStyle: [String, Object],
   displayDirective: String,
   x: Number,
   y: Number,
@@ -18189,8 +19136,11 @@ const popoverBodyProps = Object.assign(Object.assign({}, useTheme.props), {
   width: [Number, String],
   keepAliveOnHover: Boolean,
   scrollable: Boolean,
+  contentClass: String,
   contentStyle: [Object, String],
+  headerClass: String,
   headerStyle: [Object, String],
+  footerClass: String,
   footerStyle: [Object, String],
   // private
   internalDeactivateImmediately: Boolean,
@@ -18202,19 +19152,35 @@ const popoverBodyProps = Object.assign(Object.assign({}, useTheme.props), {
   minWidth: Number,
   maxWidth: Number
 });
-const renderArrow = ({ arrowStyle, clsPrefix }) => {
-  return h(
-    "div",
-    { key: "__popover-arrow__", class: `${clsPrefix}-popover-arrow-wrapper` },
-    h("div", { class: `${clsPrefix}-popover-arrow`, style: arrowStyle })
-  );
+const renderArrow = ({
+  arrowClass,
+  arrowStyle,
+  arrowWrapperClass,
+  arrowWrapperStyle,
+  clsPrefix
+}) => {
+  return h("div", {
+    key: "__popover-arrow__",
+    style: arrowWrapperStyle,
+    class: [`${clsPrefix}-popover-arrow-wrapper`, arrowWrapperClass]
+  }, h("div", {
+    class: [`${clsPrefix}-popover-arrow`, arrowClass],
+    style: arrowStyle
+  }));
 };
-const NPopoverBody = defineComponent({
+const NPopoverBody = /* @__PURE__ */ defineComponent({
   name: "PopoverBody",
   inheritAttrs: false,
   props: popoverBodyProps,
-  setup(props, { slots, attrs }) {
-    const { namespaceRef, mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+  setup(props, {
+    slots,
+    attrs
+  }) {
+    const {
+      namespaceRef,
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Popover", "-popover", style$t, popoverLight$1, props, mergedClsPrefixRef);
     const followerRef = ref(null);
     const NPopover2 = inject("NPopover");
@@ -18222,35 +19188,38 @@ const NPopoverBody = defineComponent({
     const followerEnabledRef = ref(props.show);
     const displayedRef = ref(false);
     watchEffect(() => {
-      const { show } = props;
+      const {
+        show
+      } = props;
       if (show && !isJsdom() && !props.internalDeactivateImmediately) {
         displayedRef.value = true;
       }
     });
     const directivesRef = computed(() => {
-      const { trigger: trigger2, onClickoutside } = props;
+      const {
+        trigger: trigger2,
+        onClickoutside
+      } = props;
       const directives = [];
-      const { positionManuallyRef: { value: positionManually } } = NPopover2;
+      const {
+        positionManuallyRef: {
+          value: positionManually
+        }
+      } = NPopover2;
       if (!positionManually) {
         if (trigger2 === "click" && !onClickoutside) {
-          directives.push([
-            clickoutside$1,
-            handleClickOutside,
-            void 0,
-            { capture: true }
-          ]);
+          directives.push([clickoutside$1, handleClickOutside, void 0, {
+            capture: true
+          }]);
         }
         if (trigger2 === "hover") {
           directives.push([mousemoveoutside$1, handleMouseMoveOutside]);
         }
       }
       if (onClickoutside) {
-        directives.push([
-          clickoutside$1,
-          handleClickOutside,
-          void 0,
-          { capture: true }
-        ]);
+        directives.push([clickoutside$1, handleClickOutside, void 0, {
+          capture: true
+        }]);
       }
       if (props.displayDirective === "show" || props.animated && displayedRef.value) {
         directives.push([vShow, props.show]);
@@ -18261,14 +19230,23 @@ const NPopoverBody = defineComponent({
       const width = props.width === "trigger" ? void 0 : formatLength(props.width);
       const style2 = [];
       if (width) {
-        style2.push({ width });
+        style2.push({
+          width
+        });
       }
-      const { maxWidth, minWidth } = props;
+      const {
+        maxWidth,
+        minWidth
+      } = props;
       if (maxWidth) {
-        style2.push({ maxWidth: formatLength(maxWidth) });
+        style2.push({
+          maxWidth: formatLength(maxWidth)
+        });
       }
       if (minWidth) {
-        style2.push({ maxWidth: formatLength(minWidth) });
+        style2.push({
+          maxWidth: formatLength(minWidth)
+        });
       }
       if (!inlineThemeDisabled) {
         style2.push(cssVarsRef.value);
@@ -18276,7 +19254,27 @@ const NPopoverBody = defineComponent({
       return style2;
     });
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, cubicBezierEaseIn: cubicBezierEaseIn2, cubicBezierEaseOut: cubicBezierEaseOut2 }, self: { space, spaceArrow, padding, fontSize: fontSize2, textColor, dividerColor, color, boxShadow, borderRadius, arrowHeight, arrowOffset, arrowOffsetVertical } } = themeRef.value;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2,
+          cubicBezierEaseIn: cubicBezierEaseIn2,
+          cubicBezierEaseOut: cubicBezierEaseOut2
+        },
+        self: {
+          space,
+          spaceArrow,
+          padding,
+          fontSize: fontSize2,
+          textColor,
+          dividerColor,
+          color,
+          boxShadow,
+          borderRadius,
+          arrowHeight,
+          arrowOffset,
+          arrowOffsetVertical
+        }
+      } = themeRef.value;
       return {
         "--n-box-shadow": boxShadow,
         "--n-bezier": cubicBezierEaseInOut2,
@@ -18349,68 +19347,79 @@ const NPopoverBody = defineComponent({
       }
       let contentNode;
       const renderBody = NPopover2.internalRenderBodyRef.value;
-      const { value: mergedClsPrefix } = mergedClsPrefixRef;
+      const {
+        value: mergedClsPrefix
+      } = mergedClsPrefixRef;
       if (!renderBody) {
-        const { value: extraClass } = NPopover2.extraClassRef;
-        const { internalTrapFocus } = props;
+        const {
+          value: extraClass
+        } = NPopover2.extraClassRef;
+        const {
+          internalTrapFocus
+        } = props;
         const hasHeaderOrFooter = !isSlotEmpty(slots.header) || !isSlotEmpty(slots.footer);
         const renderContentInnerNode = () => {
-          var _a2;
-          const body = hasHeaderOrFooter ? h(
-            Fragment,
-            null,
-            resolveWrappedSlot(slots.header, (children) => {
-              return children ? h("div", { class: `${mergedClsPrefix}-popover__header`, style: props.headerStyle }, children) : null;
-            }),
-            resolveWrappedSlot(slots.default, (children) => {
-              return children ? h("div", { class: `${mergedClsPrefix}-popover__content`, style: props.contentStyle }, slots) : null;
-            }),
-            resolveWrappedSlot(slots.footer, (children) => {
-              return children ? h("div", { class: `${mergedClsPrefix}-popover__footer`, style: props.footerStyle }, children) : null;
-            })
-          ) : props.scrollable ? (_a2 = slots.default) === null || _a2 === void 0 ? void 0 : _a2.call(slots) : h("div", { class: `${mergedClsPrefix}-popover__content`, style: props.contentStyle }, slots);
-          const maybeScrollableBody = props.scrollable ? h(XScrollbar, { contentClass: hasHeaderOrFooter ? void 0 : `${mergedClsPrefix}-popover__content`, contentStyle: hasHeaderOrFooter ? void 0 : props.contentStyle }, {
+          var _a2, _b;
+          const body = hasHeaderOrFooter ? h(Fragment, null, resolveWrappedSlot(slots.header, (children) => {
+            return children ? h("div", {
+              class: [`${mergedClsPrefix}-popover__header`, props.headerClass],
+              style: props.headerStyle
+            }, children) : null;
+          }), resolveWrappedSlot(slots.default, (children) => {
+            return children ? h("div", {
+              class: [`${mergedClsPrefix}-popover__content`, props.contentClass],
+              style: props.contentStyle
+            }, slots) : null;
+          }), resolveWrappedSlot(slots.footer, (children) => {
+            return children ? h("div", {
+              class: [`${mergedClsPrefix}-popover__footer`, props.footerClass],
+              style: props.footerStyle
+            }, children) : null;
+          })) : props.scrollable ? (_a2 = slots.default) === null || _a2 === void 0 ? void 0 : _a2.call(slots) : h("div", {
+            class: [`${mergedClsPrefix}-popover__content`, props.contentClass],
+            style: props.contentStyle
+          }, slots);
+          const maybeScrollableBody = props.scrollable ? h(XScrollbar, {
+            contentClass: hasHeaderOrFooter ? void 0 : `${mergedClsPrefix}-popover__content ${(_b = props.contentClass) !== null && _b !== void 0 ? _b : ""}`,
+            contentStyle: hasHeaderOrFooter ? void 0 : props.contentStyle
+          }, {
             default: () => body
           }) : body;
           const arrow = props.showArrow ? renderArrow({
+            arrowClass: props.arrowClass,
             arrowStyle: props.arrowStyle,
+            arrowWrapperClass: props.arrowWrapperClass,
+            arrowWrapperStyle: props.arrowWrapperStyle,
             clsPrefix: mergedClsPrefix
           }) : null;
           return [maybeScrollableBody, arrow];
         };
         contentNode = h("div", mergeProps({
-          class: [
-            `${mergedClsPrefix}-popover`,
-            `${mergedClsPrefix}-popover-shared`,
-            themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass.value,
-            extraClass.map((v) => `${mergedClsPrefix}-${v}`),
-            {
-              [`${mergedClsPrefix}-popover--scrollable`]: props.scrollable,
-              [`${mergedClsPrefix}-popover--show-header-or-footer`]: hasHeaderOrFooter,
-              [`${mergedClsPrefix}-popover--raw`]: props.raw,
-              [`${mergedClsPrefix}-popover-shared--overlap`]: props.overlap,
-              [`${mergedClsPrefix}-popover-shared--show-arrow`]: props.showArrow,
-              [`${mergedClsPrefix}-popover-shared--center-arrow`]: props.arrowPointToCenter
-            }
-          ],
+          class: [`${mergedClsPrefix}-popover`, `${mergedClsPrefix}-popover-shared`, themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass.value, extraClass.map((v) => `${mergedClsPrefix}-${v}`), {
+            [`${mergedClsPrefix}-popover--scrollable`]: props.scrollable,
+            [`${mergedClsPrefix}-popover--show-header-or-footer`]: hasHeaderOrFooter,
+            [`${mergedClsPrefix}-popover--raw`]: props.raw,
+            [`${mergedClsPrefix}-popover-shared--overlap`]: props.overlap,
+            [`${mergedClsPrefix}-popover-shared--show-arrow`]: props.showArrow,
+            [`${mergedClsPrefix}-popover-shared--center-arrow`]: props.arrowPointToCenter
+          }],
           ref: bodyRef,
           style: styleRef.value,
           onKeydown: NPopover2.handleKeydown,
           onMouseenter: handleMouseEnter,
           onMouseleave: handleMouseLeave
-        }, attrs), internalTrapFocus ? h(FocusTrap, { active: props.show, autoFocus: true }, { default: renderContentInnerNode }) : renderContentInnerNode());
+        }, attrs), internalTrapFocus ? h(FocusTrap, {
+          active: props.show,
+          autoFocus: true
+        }, {
+          default: renderContentInnerNode
+        }) : renderContentInnerNode());
       } else {
         contentNode = renderBody(
           // The popover class and overlap class must exists, they will be used
           // to place the body & transition animation.
           // Shadow class exists for reuse box-shadow.
-          [
-            `${mergedClsPrefix}-popover-shared`,
-            themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass.value,
-            props.overlap && `${mergedClsPrefix}-popover-shared--overlap`,
-            props.showArrow && `${mergedClsPrefix}-popover-shared--show-arrow`,
-            props.arrowPointToCenter && `${mergedClsPrefix}-popover-shared--center-arrow`
-          ],
+          [`${mergedClsPrefix}-popover-shared`, themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass.value, props.overlap && `${mergedClsPrefix}-popover-shared--overlap`, props.showArrow && `${mergedClsPrefix}-popover-shared--show-arrow`, props.arrowPointToCenter && `${mergedClsPrefix}-popover-shared--center-arrow`],
           bodyRef,
           styleRef.value,
           handleMouseEnter,
@@ -18431,7 +19440,21 @@ const NPopoverBody = defineComponent({
     };
   },
   render() {
-    return h(VFollower, { ref: "followerRef", zIndex: this.zIndex, show: this.show, enabled: this.followerEnabled, to: this.adjustedTo, x: this.x, y: this.y, flip: this.flip, placement: this.placement, containerClass: this.namespace, overlap: this.overlap, width: this.width === "trigger" ? "target" : void 0, teleportDisabled: this.adjustedTo === useAdjustedTo.tdkey }, {
+    return h(VFollower, {
+      ref: "followerRef",
+      zIndex: this.zIndex,
+      show: this.show,
+      enabled: this.followerEnabled,
+      to: this.adjustedTo,
+      x: this.x,
+      y: this.y,
+      flip: this.flip,
+      placement: this.placement,
+      containerClass: this.namespace,
+      overlap: this.overlap,
+      width: this.width === "trigger" ? "target" : void 0,
+      teleportDisabled: this.adjustedTo === useAdjustedTo.tdkey
+    }, {
       default: () => {
         return this.animated ? h(Transition, {
           name: "popover-transition",
@@ -18517,7 +19540,10 @@ const popoverBaseProps = {
     type: String,
     default: "if"
   },
+  arrowClass: String,
   arrowStyle: [String, Object],
+  arrowWrapperClass: String,
+  arrowWrapperStyle: [String, Object],
   flip: {
     type: Boolean,
     default: true
@@ -18538,8 +19564,11 @@ const popoverBaseProps = {
   zIndex: Number,
   to: useAdjustedTo.propTo,
   scrollable: Boolean,
+  contentClass: String,
   contentStyle: [Object, String],
+  headerClass: String,
   headerStyle: [Object, String],
+  footerClass: String,
   footerStyle: [Object, String],
   // events
   onClickoutside: Function,
@@ -18567,8 +19596,11 @@ const popoverBaseProps = {
   minWidth: Number,
   maxWidth: Number
 };
-const popoverProps = Object.assign(Object.assign(Object.assign({}, useTheme.props), popoverBaseProps), { internalOnAfterLeave: Function, internalRenderBody: Function });
-const NPopover = defineComponent({
+const popoverProps = Object.assign(Object.assign(Object.assign({}, useTheme.props), popoverBaseProps), {
+  internalOnAfterLeave: Function,
+  internalRenderBody: Function
+});
+const NPopover = /* @__PURE__ */ defineComponent({
   name: "Popover",
   inheritAttrs: false,
   props: popoverProps,
@@ -18587,7 +19619,9 @@ const NPopover = defineComponent({
     const getMergedDisabled = () => {
       if (props.disabled)
         return true;
-      const { getDisabled } = props;
+      const {
+        getDisabled
+      } = props;
       if (getDisabled === null || getDisabled === void 0 ? void 0 : getDisabled())
         return true;
       return false;
@@ -18610,7 +19644,12 @@ const NPopover = defineComponent({
       return props.x !== void 0 && props.y !== void 0;
     });
     function doUpdateShow(value) {
-      const { "onUpdate:show": _onUpdateShow, onUpdateShow, onShow, onHide } = props;
+      const {
+        "onUpdate:show": _onUpdateShow,
+        onUpdateShow,
+        onShow,
+        onHide
+      } = props;
       uncontrolledShowRef.value = value;
       if (_onUpdateShow) {
         call(_onUpdateShow, value);
@@ -18631,14 +19670,18 @@ const NPopover = defineComponent({
       }
     }
     function clearShowTimer() {
-      const { value: showTimerId } = showTimerIdRef;
+      const {
+        value: showTimerId
+      } = showTimerIdRef;
       if (showTimerId) {
         window.clearTimeout(showTimerId);
         showTimerIdRef.value = null;
       }
     }
     function clearHideTimer() {
-      const { value: hideTimerId } = hideTimerIdRef;
+      const {
+        value: hideTimerId
+      } = hideTimerIdRef;
       if (hideTimerId) {
         window.clearTimeout(hideTimerId);
         hideTimerIdRef.value = null;
@@ -18672,7 +19715,9 @@ const NPopover = defineComponent({
           doUpdateShow(true);
           showTimerIdRef.value = null;
         };
-        const { delay } = props;
+        const {
+          delay
+        } = props;
         if (delay === 0) {
           delayCallback();
         } else {
@@ -18692,11 +19737,13 @@ const NPopover = defineComponent({
           doUpdateShow(false);
           hideTimerIdRef.value = null;
         };
-        const { duration } = props;
-        if (duration === 0) {
+        const {
+          duration: duration2
+        } = props;
+        if (duration2 === 0) {
           delayedCallback();
         } else {
-          hideTimerIdRef.value = window.setTimeout(delayedCallback, duration);
+          hideTimerIdRef.value = window.setTimeout(delayedCallback, duration2);
         }
       }
     }
@@ -18780,7 +19827,10 @@ const NPopover = defineComponent({
   },
   render() {
     var _a2;
-    const { positionManually, $slots: slots } = this;
+    const {
+      positionManually,
+      $slots: slots
+    } = this;
     let triggerVNode;
     let popoverInside = false;
     if (!positionManually) {
@@ -18811,17 +19861,13 @@ const NPopover = defineComponent({
           if (!triggerVNode.props.internalInheritedEventHandlers) {
             triggerVNode.props.internalInheritedEventHandlers = [handlers];
           } else {
-            triggerVNode.props.internalInheritedEventHandlers = [
-              handlers,
-              ...triggerVNode.props.internalInheritedEventHandlers
-            ];
+            triggerVNode.props.internalInheritedEventHandlers = [handlers, ...triggerVNode.props.internalInheritedEventHandlers];
           }
         } else {
-          const { internalInheritedEventHandlers } = this;
-          const ascendantAndCurrentHandlers = [
-            handlers,
-            ...internalInheritedEventHandlers
-          ];
+          const {
+            internalInheritedEventHandlers
+          } = this;
+          const ascendantAndCurrentHandlers = [handlers, ...internalInheritedEventHandlers];
           const mergedHandlers = {
             onBlur: (e) => {
               ascendantAndCurrentHandlers.forEach((_handlers) => {
@@ -18853,38 +19899,41 @@ const NPopover = defineComponent({
         }
       }
     }
-    return h(VBinder, { ref: "binderInstRef", syncTarget: !popoverInside, syncTargetWithParent: this.internalSyncTargetWithParent }, {
+    return h(VBinder, {
+      ref: "binderInstRef",
+      syncTarget: !popoverInside,
+      syncTargetWithParent: this.internalSyncTargetWithParent
+    }, {
       default: () => {
         void this.mergedShowConsideringDisabledProp;
         const mergedShow = this.getMergedShow();
-        return [
-          this.internalTrapFocus && mergedShow ? withDirectives(h("div", { style: { position: "fixed", inset: 0 } }), [
-            [
-              zindexable$1,
-              {
-                enabled: mergedShow,
-                zIndex: this.zIndex
-              }
-            ]
-          ]) : null,
-          positionManually ? null : h(VTarget, null, {
-            default: () => triggerVNode
-          }),
-          h(NPopoverBody, keep(this.$props, bodyPropKeys, Object.assign(Object.assign({}, this.$attrs), { showArrow: this.mergedShowArrow, show: mergedShow })), {
-            default: () => {
-              var _a3, _b;
-              return (_b = (_a3 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a3);
-            },
-            header: () => {
-              var _a3, _b;
-              return (_b = (_a3 = this.$slots).header) === null || _b === void 0 ? void 0 : _b.call(_a3);
-            },
-            footer: () => {
-              var _a3, _b;
-              return (_b = (_a3 = this.$slots).footer) === null || _b === void 0 ? void 0 : _b.call(_a3);
-            }
-          })
-        ];
+        return [this.internalTrapFocus && mergedShow ? withDirectives(h("div", {
+          style: {
+            position: "fixed",
+            inset: 0
+          }
+        }), [[zindexable$1, {
+          enabled: mergedShow,
+          zIndex: this.zIndex
+        }]]) : null, positionManually ? null : h(VTarget, null, {
+          default: () => triggerVNode
+        }), h(NPopoverBody, keep(this.$props, bodyPropKeys, Object.assign(Object.assign({}, this.$attrs), {
+          showArrow: this.mergedShowArrow,
+          show: mergedShow
+        })), {
+          default: () => {
+            var _a3, _b;
+            return (_b = (_a3 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a3);
+          },
+          header: () => {
+            var _a3, _b;
+            return (_b = (_a3 = this.$slots).header) === null || _b === void 0 ? void 0 : _b.call(_a3);
+          },
+          footer: () => {
+            var _a3, _b;
+            return (_b = (_a3 = this.$slots).footer) === null || _b === void 0 ? void 0 : _b.call(_a3);
+          }
+        })];
       }
     });
   }
@@ -18899,14 +19948,43 @@ const commonVariables$j = {
   closeSizeMedium: "18px",
   closeSizeLarge: "18px",
   padding: "0 7px",
-  closeMargin: "0 0 0 4px",
-  closeMarginRtl: "0 4px 0 0"
+  closeMargin: "0 0 0 4px"
 };
 const tagDark = {
   name: "Tag",
   common: commonDark,
   self(vars) {
-    const { textColor2, primaryColorHover, primaryColorPressed, primaryColor, infoColor, successColor, warningColor, errorColor, baseColor, borderColor, tagColor, opacityDisabled, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, borderRadiusSmall: borderRadius, fontSizeMini, fontSizeTiny, fontSizeSmall, fontSizeMedium, heightMini, heightTiny, heightSmall, heightMedium, buttonColor2Hover, buttonColor2Pressed, fontWeightStrong } = vars;
+    const {
+      textColor2,
+      primaryColorHover,
+      primaryColorPressed,
+      primaryColor,
+      infoColor,
+      successColor,
+      warningColor,
+      errorColor,
+      baseColor,
+      borderColor,
+      tagColor,
+      opacityDisabled,
+      closeIconColor,
+      closeIconColorHover,
+      closeIconColorPressed,
+      closeColorHover,
+      closeColorPressed,
+      borderRadiusSmall: borderRadius,
+      fontSizeMini,
+      fontSizeTiny,
+      fontSizeSmall,
+      fontSizeMedium,
+      heightMini,
+      heightTiny,
+      heightSmall,
+      heightMedium,
+      buttonColor2Hover,
+      buttonColor2Pressed,
+      fontWeightStrong
+    } = vars;
     return Object.assign(Object.assign({}, commonVariables$j), {
       closeBorderRadius: borderRadius,
       heightTiny: heightMini,
@@ -18941,59 +20019,157 @@ const tagDark = {
       closeIconColorPressed,
       closeColorHover,
       closeColorPressed,
-      borderPrimary: `1px solid ${changeColor(primaryColor, { alpha: 0.3 })}`,
+      borderPrimary: `1px solid ${changeColor(primaryColor, {
+        alpha: 0.3
+      })}`,
       textColorPrimary: primaryColor,
-      colorPrimary: changeColor(primaryColor, { alpha: 0.16 }),
+      colorPrimary: changeColor(primaryColor, {
+        alpha: 0.16
+      }),
       colorBorderedPrimary: "#0000",
-      closeIconColorPrimary: scaleColor(primaryColor, { lightness: 0.7 }),
-      closeIconColorHoverPrimary: scaleColor(primaryColor, { lightness: 0.7 }),
+      closeIconColorPrimary: scaleColor(primaryColor, {
+        lightness: 0.7
+      }),
+      closeIconColorHoverPrimary: scaleColor(primaryColor, {
+        lightness: 0.7
+      }),
       closeIconColorPressedPrimary: scaleColor(primaryColor, {
         lightness: 0.7
       }),
-      closeColorHoverPrimary: changeColor(primaryColor, { alpha: 0.16 }),
-      closeColorPressedPrimary: changeColor(primaryColor, { alpha: 0.12 }),
-      borderInfo: `1px solid ${changeColor(infoColor, { alpha: 0.3 })}`,
+      closeColorHoverPrimary: changeColor(primaryColor, {
+        alpha: 0.16
+      }),
+      closeColorPressedPrimary: changeColor(primaryColor, {
+        alpha: 0.12
+      }),
+      borderInfo: `1px solid ${changeColor(infoColor, {
+        alpha: 0.3
+      })}`,
       textColorInfo: infoColor,
-      colorInfo: changeColor(infoColor, { alpha: 0.16 }),
+      colorInfo: changeColor(infoColor, {
+        alpha: 0.16
+      }),
       colorBorderedInfo: "#0000",
-      closeIconColorInfo: scaleColor(infoColor, { alpha: 0.7 }),
-      closeIconColorHoverInfo: scaleColor(infoColor, { alpha: 0.7 }),
-      closeIconColorPressedInfo: scaleColor(infoColor, { alpha: 0.7 }),
-      closeColorHoverInfo: changeColor(infoColor, { alpha: 0.16 }),
-      closeColorPressedInfo: changeColor(infoColor, { alpha: 0.12 }),
-      borderSuccess: `1px solid ${changeColor(successColor, { alpha: 0.3 })}`,
+      closeIconColorInfo: scaleColor(infoColor, {
+        alpha: 0.7
+      }),
+      closeIconColorHoverInfo: scaleColor(infoColor, {
+        alpha: 0.7
+      }),
+      closeIconColorPressedInfo: scaleColor(infoColor, {
+        alpha: 0.7
+      }),
+      closeColorHoverInfo: changeColor(infoColor, {
+        alpha: 0.16
+      }),
+      closeColorPressedInfo: changeColor(infoColor, {
+        alpha: 0.12
+      }),
+      borderSuccess: `1px solid ${changeColor(successColor, {
+        alpha: 0.3
+      })}`,
       textColorSuccess: successColor,
-      colorSuccess: changeColor(successColor, { alpha: 0.16 }),
+      colorSuccess: changeColor(successColor, {
+        alpha: 0.16
+      }),
       colorBorderedSuccess: "#0000",
-      closeIconColorSuccess: scaleColor(successColor, { alpha: 0.7 }),
-      closeIconColorHoverSuccess: scaleColor(successColor, { alpha: 0.7 }),
-      closeIconColorPressedSuccess: scaleColor(successColor, { alpha: 0.7 }),
-      closeColorHoverSuccess: changeColor(successColor, { alpha: 0.16 }),
-      closeColorPressedSuccess: changeColor(successColor, { alpha: 0.12 }),
-      borderWarning: `1px solid ${changeColor(warningColor, { alpha: 0.3 })}`,
+      closeIconColorSuccess: scaleColor(successColor, {
+        alpha: 0.7
+      }),
+      closeIconColorHoverSuccess: scaleColor(successColor, {
+        alpha: 0.7
+      }),
+      closeIconColorPressedSuccess: scaleColor(successColor, {
+        alpha: 0.7
+      }),
+      closeColorHoverSuccess: changeColor(successColor, {
+        alpha: 0.16
+      }),
+      closeColorPressedSuccess: changeColor(successColor, {
+        alpha: 0.12
+      }),
+      borderWarning: `1px solid ${changeColor(warningColor, {
+        alpha: 0.3
+      })}`,
       textColorWarning: warningColor,
-      colorWarning: changeColor(warningColor, { alpha: 0.16 }),
+      colorWarning: changeColor(warningColor, {
+        alpha: 0.16
+      }),
       colorBorderedWarning: "#0000",
-      closeIconColorWarning: scaleColor(warningColor, { alpha: 0.7 }),
-      closeIconColorHoverWarning: scaleColor(warningColor, { alpha: 0.7 }),
-      closeIconColorPressedWarning: scaleColor(warningColor, { alpha: 0.7 }),
-      closeColorHoverWarning: changeColor(warningColor, { alpha: 0.16 }),
-      closeColorPressedWarning: changeColor(warningColor, { alpha: 0.11 }),
-      borderError: `1px solid ${changeColor(errorColor, { alpha: 0.3 })}`,
+      closeIconColorWarning: scaleColor(warningColor, {
+        alpha: 0.7
+      }),
+      closeIconColorHoverWarning: scaleColor(warningColor, {
+        alpha: 0.7
+      }),
+      closeIconColorPressedWarning: scaleColor(warningColor, {
+        alpha: 0.7
+      }),
+      closeColorHoverWarning: changeColor(warningColor, {
+        alpha: 0.16
+      }),
+      closeColorPressedWarning: changeColor(warningColor, {
+        alpha: 0.11
+      }),
+      borderError: `1px solid ${changeColor(errorColor, {
+        alpha: 0.3
+      })}`,
       textColorError: errorColor,
-      colorError: changeColor(errorColor, { alpha: 0.16 }),
+      colorError: changeColor(errorColor, {
+        alpha: 0.16
+      }),
       colorBorderedError: "#0000",
-      closeIconColorError: scaleColor(errorColor, { alpha: 0.7 }),
-      closeIconColorHoverError: scaleColor(errorColor, { alpha: 0.7 }),
-      closeIconColorPressedError: scaleColor(errorColor, { alpha: 0.7 }),
-      closeColorHoverError: changeColor(errorColor, { alpha: 0.16 }),
-      closeColorPressedError: changeColor(errorColor, { alpha: 0.12 })
+      closeIconColorError: scaleColor(errorColor, {
+        alpha: 0.7
+      }),
+      closeIconColorHoverError: scaleColor(errorColor, {
+        alpha: 0.7
+      }),
+      closeIconColorPressedError: scaleColor(errorColor, {
+        alpha: 0.7
+      }),
+      closeColorHoverError: changeColor(errorColor, {
+        alpha: 0.16
+      }),
+      closeColorPressedError: changeColor(errorColor, {
+        alpha: 0.12
+      })
     });
   }
 };
 const tagDark$1 = tagDark;
-const self$19 = (vars) => {
-  const { textColor2, primaryColorHover, primaryColorPressed, primaryColor, infoColor, successColor, warningColor, errorColor, baseColor, borderColor, opacityDisabled, tagColor, closeIconColor, closeIconColorHover, closeIconColorPressed, borderRadiusSmall: borderRadius, fontSizeMini, fontSizeTiny, fontSizeSmall, fontSizeMedium, heightMini, heightTiny, heightSmall, heightMedium, closeColorHover, closeColorPressed, buttonColor2Hover, buttonColor2Pressed, fontWeightStrong } = vars;
+const self$1e = (vars) => {
+  const {
+    textColor2,
+    primaryColorHover,
+    primaryColorPressed,
+    primaryColor,
+    infoColor,
+    successColor,
+    warningColor,
+    errorColor,
+    baseColor,
+    borderColor,
+    opacityDisabled,
+    tagColor,
+    closeIconColor,
+    closeIconColorHover,
+    closeIconColorPressed,
+    borderRadiusSmall: borderRadius,
+    fontSizeMini,
+    fontSizeTiny,
+    fontSizeSmall,
+    fontSizeMedium,
+    heightMini,
+    heightTiny,
+    heightSmall,
+    heightMedium,
+    closeColorHover,
+    closeColorPressed,
+    buttonColor2Hover,
+    buttonColor2Pressed,
+    fontWeightStrong
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$j), {
     closeBorderRadius: borderRadius,
     heightTiny: heightMini,
@@ -19028,57 +20204,107 @@ const self$19 = (vars) => {
     closeIconColorPressed,
     closeColorHover,
     closeColorPressed,
-    borderPrimary: `1px solid ${changeColor(primaryColor, { alpha: 0.3 })}`,
+    borderPrimary: `1px solid ${changeColor(primaryColor, {
+      alpha: 0.3
+    })}`,
     textColorPrimary: primaryColor,
-    colorPrimary: changeColor(primaryColor, { alpha: 0.12 }),
-    colorBorderedPrimary: changeColor(primaryColor, { alpha: 0.1 }),
+    colorPrimary: changeColor(primaryColor, {
+      alpha: 0.12
+    }),
+    colorBorderedPrimary: changeColor(primaryColor, {
+      alpha: 0.1
+    }),
     closeIconColorPrimary: primaryColor,
     closeIconColorHoverPrimary: primaryColor,
     closeIconColorPressedPrimary: primaryColor,
-    closeColorHoverPrimary: changeColor(primaryColor, { alpha: 0.12 }),
-    closeColorPressedPrimary: changeColor(primaryColor, { alpha: 0.18 }),
-    borderInfo: `1px solid ${changeColor(infoColor, { alpha: 0.3 })}`,
+    closeColorHoverPrimary: changeColor(primaryColor, {
+      alpha: 0.12
+    }),
+    closeColorPressedPrimary: changeColor(primaryColor, {
+      alpha: 0.18
+    }),
+    borderInfo: `1px solid ${changeColor(infoColor, {
+      alpha: 0.3
+    })}`,
     textColorInfo: infoColor,
-    colorInfo: changeColor(infoColor, { alpha: 0.12 }),
-    colorBorderedInfo: changeColor(infoColor, { alpha: 0.1 }),
+    colorInfo: changeColor(infoColor, {
+      alpha: 0.12
+    }),
+    colorBorderedInfo: changeColor(infoColor, {
+      alpha: 0.1
+    }),
     closeIconColorInfo: infoColor,
     closeIconColorHoverInfo: infoColor,
     closeIconColorPressedInfo: infoColor,
-    closeColorHoverInfo: changeColor(infoColor, { alpha: 0.12 }),
-    closeColorPressedInfo: changeColor(infoColor, { alpha: 0.18 }),
-    borderSuccess: `1px solid ${changeColor(successColor, { alpha: 0.3 })}`,
+    closeColorHoverInfo: changeColor(infoColor, {
+      alpha: 0.12
+    }),
+    closeColorPressedInfo: changeColor(infoColor, {
+      alpha: 0.18
+    }),
+    borderSuccess: `1px solid ${changeColor(successColor, {
+      alpha: 0.3
+    })}`,
     textColorSuccess: successColor,
-    colorSuccess: changeColor(successColor, { alpha: 0.12 }),
-    colorBorderedSuccess: changeColor(successColor, { alpha: 0.1 }),
+    colorSuccess: changeColor(successColor, {
+      alpha: 0.12
+    }),
+    colorBorderedSuccess: changeColor(successColor, {
+      alpha: 0.1
+    }),
     closeIconColorSuccess: successColor,
     closeIconColorHoverSuccess: successColor,
     closeIconColorPressedSuccess: successColor,
-    closeColorHoverSuccess: changeColor(successColor, { alpha: 0.12 }),
-    closeColorPressedSuccess: changeColor(successColor, { alpha: 0.18 }),
-    borderWarning: `1px solid ${changeColor(warningColor, { alpha: 0.35 })}`,
+    closeColorHoverSuccess: changeColor(successColor, {
+      alpha: 0.12
+    }),
+    closeColorPressedSuccess: changeColor(successColor, {
+      alpha: 0.18
+    }),
+    borderWarning: `1px solid ${changeColor(warningColor, {
+      alpha: 0.35
+    })}`,
     textColorWarning: warningColor,
-    colorWarning: changeColor(warningColor, { alpha: 0.15 }),
-    colorBorderedWarning: changeColor(warningColor, { alpha: 0.12 }),
+    colorWarning: changeColor(warningColor, {
+      alpha: 0.15
+    }),
+    colorBorderedWarning: changeColor(warningColor, {
+      alpha: 0.12
+    }),
     closeIconColorWarning: warningColor,
     closeIconColorHoverWarning: warningColor,
     closeIconColorPressedWarning: warningColor,
-    closeColorHoverWarning: changeColor(warningColor, { alpha: 0.12 }),
-    closeColorPressedWarning: changeColor(warningColor, { alpha: 0.18 }),
-    borderError: `1px solid ${changeColor(errorColor, { alpha: 0.23 })}`,
+    closeColorHoverWarning: changeColor(warningColor, {
+      alpha: 0.12
+    }),
+    closeColorPressedWarning: changeColor(warningColor, {
+      alpha: 0.18
+    }),
+    borderError: `1px solid ${changeColor(errorColor, {
+      alpha: 0.23
+    })}`,
     textColorError: errorColor,
-    colorError: changeColor(errorColor, { alpha: 0.1 }),
-    colorBorderedError: changeColor(errorColor, { alpha: 0.08 }),
+    colorError: changeColor(errorColor, {
+      alpha: 0.1
+    }),
+    colorBorderedError: changeColor(errorColor, {
+      alpha: 0.08
+    }),
     closeIconColorError: errorColor,
     closeIconColorHoverError: errorColor,
     closeIconColorPressedError: errorColor,
-    closeColorHoverError: changeColor(errorColor, { alpha: 0.12 }),
-    closeColorPressedError: changeColor(errorColor, { alpha: 0.18 })
+    closeColorHoverError: changeColor(errorColor, {
+      alpha: 0.12
+    }),
+    closeColorPressedError: changeColor(errorColor, {
+      alpha: 0.18
+    })
   });
 };
 const tagLight = {
   name: "Tag",
   common: commonLight,
-  self: self$19
+  self: self$1e
 };
 const tagLight$1 = tagLight;
 const commonProps = {
@@ -19099,6 +20325,7 @@ const commonProps = {
   }
 };
 const style$s = cB("tag", `
+ --n-close-margin: var(--n-close-margin-top) var(--n-close-margin-right) var(--n-close-margin-bottom) var(--n-close-margin-left);
  white-space: nowrap;
  position: relative;
  box-sizing: border-box;
@@ -19195,12 +20422,17 @@ const tagProps = Object.assign(Object.assign(Object.assign({}, useTheme.props), 
   onCheckedChange: Function
 });
 const tagInjectionKey = createInjectionKey("n-tag");
-const NTag = defineComponent({
+const NTag = /* @__PURE__ */ defineComponent({
   name: "Tag",
   props: tagProps,
   setup(props) {
     const contentRef = ref(null);
-    const { mergedBorderedRef, mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
+    const {
+      mergedBorderedRef,
+      mergedClsPrefixRef,
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig(props);
     const themeRef = useTheme("Tag", "-tag", style$s, tagLight$1, props, mergedClsPrefixRef);
     provide(tagInjectionKey, {
       roundRef: toRef(props, "round")
@@ -19208,7 +20440,12 @@ const NTag = defineComponent({
     function handleClick2(e) {
       if (!props.disabled) {
         if (props.checkable) {
-          const { checked, onCheckedChange, onUpdateChecked, "onUpdate:checked": _onUpdateChecked } = props;
+          const {
+            checked,
+            onCheckedChange,
+            onUpdateChecked,
+            "onUpdate:checked": _onUpdateChecked
+          } = props;
           if (onUpdateChecked)
             onUpdateChecked(!checked);
           if (_onUpdateChecked)
@@ -19223,22 +20460,69 @@ const NTag = defineComponent({
         e.stopPropagation();
       }
       if (!props.disabled) {
-        const { onClose } = props;
+        const {
+          onClose
+        } = props;
         if (onClose)
           call(onClose, e);
       }
     }
     const tagPublicMethods = {
       setTextContent(textContent) {
-        const { value } = contentRef;
+        const {
+          value
+        } = contentRef;
         if (value)
           value.textContent = textContent;
       }
     };
     const rtlEnabledRef = useRtl("Tag", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { type, size: size2, color: { color, textColor } = {} } = props;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { padding, closeMargin, closeMarginRtl, borderRadius, opacityDisabled, textColorCheckable, textColorHoverCheckable, textColorPressedCheckable, textColorChecked, colorCheckable, colorHoverCheckable, colorPressedCheckable, colorChecked, colorCheckedHover, colorCheckedPressed, closeBorderRadius, fontWeightStrong, [createKey("colorBordered", type)]: colorBordered, [createKey("closeSize", size2)]: closeSize, [createKey("closeIconSize", size2)]: closeIconSize, [createKey("fontSize", size2)]: fontSize2, [createKey("height", size2)]: height, [createKey("color", type)]: typedColor, [createKey("textColor", type)]: typeTextColor, [createKey("border", type)]: border, [createKey("closeIconColor", type)]: closeIconColor, [createKey("closeIconColorHover", type)]: closeIconColorHover, [createKey("closeIconColorPressed", type)]: closeIconColorPressed, [createKey("closeColorHover", type)]: closeColorHover, [createKey("closeColorPressed", type)]: closeColorPressed } } = themeRef.value;
+      const {
+        type,
+        size: size2,
+        color: {
+          color,
+          textColor
+        } = {}
+      } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          padding,
+          closeMargin,
+          borderRadius,
+          opacityDisabled,
+          textColorCheckable,
+          textColorHoverCheckable,
+          textColorPressedCheckable,
+          textColorChecked,
+          colorCheckable,
+          colorHoverCheckable,
+          colorPressedCheckable,
+          colorChecked,
+          colorCheckedHover,
+          colorCheckedPressed,
+          closeBorderRadius,
+          fontWeightStrong,
+          [createKey("colorBordered", type)]: colorBordered,
+          [createKey("closeSize", size2)]: closeSize,
+          [createKey("closeIconSize", size2)]: closeIconSize,
+          [createKey("fontSize", size2)]: fontSize2,
+          [createKey("height", size2)]: height,
+          [createKey("color", type)]: typedColor,
+          [createKey("textColor", type)]: typeTextColor,
+          [createKey("border", type)]: border,
+          [createKey("closeIconColor", type)]: closeIconColor,
+          [createKey("closeIconColorHover", type)]: closeIconColorHover,
+          [createKey("closeIconColorPressed", type)]: closeIconColorPressed,
+          [createKey("closeColorHover", type)]: closeColorHover,
+          [createKey("closeColorPressed", type)]: closeColorPressed
+        }
+      } = themeRef.value;
+      const closeMarginDiscrete = getMargin(closeMargin);
       return {
         "--n-font-weight-strong": fontWeightStrong,
         "--n-avatar-size-override": `calc(${height} - 8px)`,
@@ -19253,8 +20537,10 @@ const NTag = defineComponent({
         "--n-close-icon-color-hover": closeIconColorHover,
         "--n-close-icon-color-pressed": closeIconColorPressed,
         "--n-close-icon-color-disabled": closeIconColor,
-        "--n-close-margin": closeMargin,
-        "--n-close-margin-rtl": closeMarginRtl,
+        "--n-close-margin-top": closeMarginDiscrete.top,
+        "--n-close-margin-right": closeMarginDiscrete.right,
+        "--n-close-margin-bottom": closeMarginDiscrete.bottom,
+        "--n-close-margin-left": closeMarginDiscrete.left,
         "--n-close-size": closeSize,
         "--n-color": color || (mergedBorderedRef.value ? colorBordered : typedColor),
         "--n-color-checkable": colorCheckable,
@@ -19276,7 +20562,14 @@ const NTag = defineComponent({
     });
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("tag", computed(() => {
       let hash = "";
-      const { type, size: size2, color: { color, textColor } = {} } = props;
+      const {
+        type,
+        size: size2,
+        color: {
+          color,
+          textColor
+        } = {}
+      } = props;
       hash += type[0];
       hash += size2[0];
       if (color) {
@@ -19304,32 +20597,58 @@ const NTag = defineComponent({
   },
   render() {
     var _a2, _b;
-    const { mergedClsPrefix, rtlEnabled, closable, color: { borderColor } = {}, round, onRender, $slots } = this;
+    const {
+      mergedClsPrefix,
+      rtlEnabled,
+      closable,
+      color: {
+        borderColor
+      } = {},
+      round,
+      onRender,
+      $slots
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    const avatarNode = resolveWrappedSlot($slots.avatar, (children) => children && h("div", { class: `${mergedClsPrefix}-tag__avatar` }, children));
-    const iconNode = resolveWrappedSlot($slots.icon, (children) => children && h("div", { class: `${mergedClsPrefix}-tag__icon` }, children));
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-tag`,
-        this.themeClass,
-        {
-          [`${mergedClsPrefix}-tag--rtl`]: rtlEnabled,
-          [`${mergedClsPrefix}-tag--strong`]: this.strong,
-          [`${mergedClsPrefix}-tag--disabled`]: this.disabled,
-          [`${mergedClsPrefix}-tag--checkable`]: this.checkable,
-          [`${mergedClsPrefix}-tag--checked`]: this.checkable && this.checked,
-          [`${mergedClsPrefix}-tag--round`]: round,
-          [`${mergedClsPrefix}-tag--avatar`]: avatarNode,
-          [`${mergedClsPrefix}-tag--icon`]: iconNode,
-          [`${mergedClsPrefix}-tag--closable`]: closable
-        }
-      ], style: this.cssVars, onClick: this.handleClick, onMouseenter: this.onMouseenter, onMouseleave: this.onMouseleave },
-      iconNode || avatarNode,
-      h("span", { class: `${mergedClsPrefix}-tag__content`, ref: "contentRef" }, (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2)),
-      !this.checkable && closable ? h(NBaseClose, { clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-tag__close`, disabled: this.disabled, onClick: this.handleCloseClick, focusable: this.internalCloseFocusable, round, isButtonTag: this.internalCloseIsButtonTag, absolute: true }) : null,
-      !this.checkable && this.mergedBordered ? h("div", { class: `${mergedClsPrefix}-tag__border`, style: { borderColor } }) : null
-    );
+    const avatarNode = resolveWrappedSlot($slots.avatar, (children) => children && h("div", {
+      class: `${mergedClsPrefix}-tag__avatar`
+    }, children));
+    const iconNode = resolveWrappedSlot($slots.icon, (children) => children && h("div", {
+      class: `${mergedClsPrefix}-tag__icon`
+    }, children));
+    return h("div", {
+      class: [`${mergedClsPrefix}-tag`, this.themeClass, {
+        [`${mergedClsPrefix}-tag--rtl`]: rtlEnabled,
+        [`${mergedClsPrefix}-tag--strong`]: this.strong,
+        [`${mergedClsPrefix}-tag--disabled`]: this.disabled,
+        [`${mergedClsPrefix}-tag--checkable`]: this.checkable,
+        [`${mergedClsPrefix}-tag--checked`]: this.checkable && this.checked,
+        [`${mergedClsPrefix}-tag--round`]: round,
+        [`${mergedClsPrefix}-tag--avatar`]: avatarNode,
+        [`${mergedClsPrefix}-tag--icon`]: iconNode,
+        [`${mergedClsPrefix}-tag--closable`]: closable
+      }],
+      style: this.cssVars,
+      onClick: this.handleClick,
+      onMouseenter: this.onMouseenter,
+      onMouseleave: this.onMouseleave
+    }, iconNode || avatarNode, h("span", {
+      class: `${mergedClsPrefix}-tag__content`,
+      ref: "contentRef"
+    }, (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2)), !this.checkable && closable ? h(NBaseClose, {
+      clsPrefix: mergedClsPrefix,
+      class: `${mergedClsPrefix}-tag__close`,
+      disabled: this.disabled,
+      onClick: this.handleCloseClick,
+      focusable: this.internalCloseFocusable,
+      round,
+      isButtonTag: this.internalCloseIsButtonTag,
+      absolute: true
+    }) : null, !this.checkable && this.mergedBordered ? h("div", {
+      class: `${mergedClsPrefix}-tag__border`,
+      style: {
+        borderColor
+      }
+    }) : null);
   }
 });
 const style$r = cB("base-clear", `
@@ -19361,7 +20680,7 @@ const style$r = cB("base-clear", `
   left: "50%",
   top: "50%"
 })])])]);
-const NBaseClear = defineComponent({
+const NBaseClear = /* @__PURE__ */ defineComponent({
   name: "BaseClear",
   props: {
     clsPrefix: {
@@ -19375,31 +20694,38 @@ const NBaseClear = defineComponent({
     useStyle("-base-clear", style$r, toRef(props, "clsPrefix"));
     return {
       handleMouseDown(e) {
-        var _a2;
         e.preventDefault();
-        (_a2 = props.onClear) === null || _a2 === void 0 ? void 0 : _a2.call(props, e);
       }
     };
   },
   render() {
-    const { clsPrefix } = this;
-    return h(
-      "div",
-      { class: `${clsPrefix}-base-clear` },
-      h(NIconSwitchTransition, null, {
-        default: () => {
-          var _a2, _b;
-          return this.show ? h("div", { key: "dismiss", class: `${clsPrefix}-base-clear__clear`, onClick: this.onClear, onMousedown: this.handleMouseDown, "data-clear": true }, resolveSlot(this.$slots.icon, () => [
-            h(NBaseIcon, { clsPrefix }, {
-              default: () => h(ClearIcon, null)
-            })
-          ])) : h("div", { key: "icon", class: `${clsPrefix}-base-clear__placeholder` }, (_b = (_a2 = this.$slots).placeholder) === null || _b === void 0 ? void 0 : _b.call(_a2));
-        }
-      })
-    );
+    const {
+      clsPrefix
+    } = this;
+    return h("div", {
+      class: `${clsPrefix}-base-clear`
+    }, h(NIconSwitchTransition, null, {
+      default: () => {
+        var _a2, _b;
+        return this.show ? h("div", {
+          key: "dismiss",
+          class: `${clsPrefix}-base-clear__clear`,
+          onClick: this.onClear,
+          onMousedown: this.handleMouseDown,
+          "data-clear": true
+        }, resolveSlot(this.$slots.icon, () => [h(NBaseIcon, {
+          clsPrefix
+        }, {
+          default: () => h(ClearIcon, null)
+        })])) : h("div", {
+          key: "icon",
+          class: `${clsPrefix}-base-clear__placeholder`
+        }, (_b = (_a2 = this.$slots).placeholder) === null || _b === void 0 ? void 0 : _b.call(_a2));
+      }
+    }));
   }
 });
-const NBaseSuffix = defineComponent({
+const NBaseSuffix = /* @__PURE__ */ defineComponent({
   name: "InternalSelectionSuffix",
   props: {
     clsPrefix: {
@@ -19420,30 +20746,73 @@ const NBaseSuffix = defineComponent({
     },
     onClear: Function
   },
-  setup(props, { slots }) {
+  setup(props, {
+    slots
+  }) {
     return () => {
-      const { clsPrefix } = props;
-      return h(NBaseLoading, { clsPrefix, class: `${clsPrefix}-base-suffix`, strokeWidth: 24, scale: 0.85, show: props.loading }, {
-        default: () => props.showArrow ? h(NBaseClear, { clsPrefix, show: props.showClear, onClear: props.onClear }, {
-          placeholder: () => h(NBaseIcon, { clsPrefix, class: `${clsPrefix}-base-suffix__arrow` }, {
-            default: () => resolveSlot(slots.default, () => [
-              h(ChevronDownIcon, null)
-            ])
+      const {
+        clsPrefix
+      } = props;
+      return h(NBaseLoading, {
+        clsPrefix,
+        class: `${clsPrefix}-base-suffix`,
+        strokeWidth: 24,
+        scale: 0.85,
+        show: props.loading
+      }, {
+        default: () => props.showArrow ? h(NBaseClear, {
+          clsPrefix,
+          show: props.showClear,
+          onClear: props.onClear
+        }, {
+          placeholder: () => h(NBaseIcon, {
+            clsPrefix,
+            class: `${clsPrefix}-base-suffix__arrow`
+          }, {
+            default: () => resolveSlot(slots.default, () => [h(ChevronDownIcon, null)])
           })
         }) : null
       });
     };
   }
 });
-const commonVars$b = {
+const commonVars$c = {
   paddingSingle: "0 26px 0 12px",
   paddingMultiple: "3px 26px 0 12px",
   clearSize: "16px",
   arrowSize: "16px"
 };
-const self$18 = (vars) => {
-  const { borderRadius, textColor2, textColorDisabled, inputColor, inputColorDisabled, primaryColor, primaryColorHover, warningColor, warningColorHover, errorColor, errorColorHover, borderColor, iconColor, iconColorDisabled, clearColor, clearColorHover, clearColorPressed, placeholderColor, placeholderColorDisabled, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightTiny, heightSmall, heightMedium, heightLarge } = vars;
-  return Object.assign(Object.assign({}, commonVars$b), {
+const self$1d = (vars) => {
+  const {
+    borderRadius,
+    textColor2,
+    textColorDisabled,
+    inputColor,
+    inputColorDisabled,
+    primaryColor,
+    primaryColorHover,
+    warningColor,
+    warningColorHover,
+    errorColor,
+    errorColorHover,
+    borderColor,
+    iconColor,
+    iconColorDisabled,
+    clearColor,
+    clearColorHover,
+    clearColorPressed,
+    placeholderColor,
+    placeholderColorDisabled,
+    fontSizeTiny,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge,
+    heightTiny,
+    heightSmall,
+    heightMedium,
+    heightLarge
+  } = vars;
+  return Object.assign(Object.assign({}, commonVars$c), {
     fontSizeTiny,
     fontSizeSmall,
     fontSizeMedium,
@@ -19515,7 +20884,7 @@ const internalSelectionLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$18
+  self: self$1d
 });
 const internalSelectionLight$1 = internalSelectionLight;
 const internalSelectionDark = {
@@ -19525,8 +20894,35 @@ const internalSelectionDark = {
     Popover: popoverDark$1
   },
   self(vars) {
-    const { borderRadius, textColor2, textColorDisabled, inputColor, inputColorDisabled, primaryColor, primaryColorHover, warningColor, warningColorHover, errorColor, errorColorHover, iconColor, iconColorDisabled, clearColor, clearColorHover, clearColorPressed, placeholderColor, placeholderColorDisabled, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightTiny, heightSmall, heightMedium, heightLarge } = vars;
-    return Object.assign(Object.assign({}, commonVars$b), {
+    const {
+      borderRadius,
+      textColor2,
+      textColorDisabled,
+      inputColor,
+      inputColorDisabled,
+      primaryColor,
+      primaryColorHover,
+      warningColor,
+      warningColorHover,
+      errorColor,
+      errorColorHover,
+      iconColor,
+      iconColorDisabled,
+      clearColor,
+      clearColorHover,
+      clearColorPressed,
+      placeholderColor,
+      placeholderColorDisabled,
+      fontSizeTiny,
+      fontSizeSmall,
+      fontSizeMedium,
+      fontSizeLarge,
+      heightTiny,
+      heightSmall,
+      heightMedium,
+      heightLarge
+    } = vars;
+    return Object.assign(Object.assign({}, commonVars$c), {
       fontSizeTiny,
       fontSizeSmall,
       fontSizeMedium,
@@ -19543,7 +20939,9 @@ const internalSelectionDark = {
       placeholderColorDisabled,
       color: inputColor,
       colorDisabled: inputColorDisabled,
-      colorActive: changeColor(primaryColor, { alpha: 0.1 }),
+      colorActive: changeColor(primaryColor, {
+        alpha: 0.1
+      }),
       border: "1px solid #0000",
       borderHover: `1px solid ${primaryColorHover}`,
       borderActive: `1px solid ${primaryColor}`,
@@ -19571,7 +20969,9 @@ const internalSelectionDark = {
       boxShadowFocusWarning: `0 0 8px 0 ${changeColor(warningColor, {
         alpha: 0.4
       })}`,
-      colorActiveWarning: changeColor(warningColor, { alpha: 0.1 }),
+      colorActiveWarning: changeColor(warningColor, {
+        alpha: 0.1
+      }),
       caretColorWarning: warningColor,
       // error
       borderError: `1px solid ${errorColor}`,
@@ -19585,7 +20985,9 @@ const internalSelectionDark = {
       boxShadowFocusError: `0 0 8px 0 ${changeColor(errorColor, {
         alpha: 0.4
       })}`,
-      colorActiveError: changeColor(errorColor, { alpha: 0.1 }),
+      colorActiveError: changeColor(errorColor, {
+        alpha: 0.1
+      }),
       caretColorError: errorColor,
       clearColor,
       clearColorHover,
@@ -19595,6 +20997,8 @@ const internalSelectionDark = {
 };
 const internalSelectionDark$1 = internalSelectionDark;
 const style$q = c$1([cB("base-selection", `
+ --n-padding-single: var(--n-padding-single-top) var(--n-padding-single-right) var(--n-padding-single-bottom) var(--n-padding-single-left);
+ --n-padding-multiple: var(--n-padding-multiple-top) var(--n-padding-multiple-right) var(--n-padding-multiple-bottom) var(--n-padding-multiple-left);
  position: relative;
  z-index: auto;
  box-shadow: none;
@@ -19793,34 +21197,82 @@ const style$q = c$1([cB("base-selection", `
  text-overflow: ellipsis;
  overflow: hidden;
  `)])])]);
-const NInternalSelection = defineComponent({
+const NInternalSelection = /* @__PURE__ */ defineComponent({
   name: "InternalSelection",
-  props: Object.assign(Object.assign({}, useTheme.props), { clsPrefix: {
-    type: String,
-    required: true
-  }, bordered: {
-    type: Boolean,
-    default: void 0
-  }, active: Boolean, pattern: {
-    type: String,
-    default: ""
-  }, placeholder: String, selectedOption: {
-    type: Object,
-    default: null
-  }, selectedOptions: {
-    type: Array,
-    default: null
-  }, labelField: { type: String, default: "label" }, valueField: {
-    type: String,
-    default: "value"
-  }, multiple: Boolean, filterable: Boolean, clearable: Boolean, disabled: Boolean, size: {
-    type: String,
-    default: "medium"
-  }, loading: Boolean, autofocus: Boolean, showArrow: {
-    type: Boolean,
-    default: true
-  }, inputProps: Object, focused: Boolean, renderTag: Function, onKeydown: Function, onClick: Function, onBlur: Function, onFocus: Function, onDeleteOption: Function, maxTagCount: [String, Number], onClear: Function, onPatternInput: Function, onPatternFocus: Function, onPatternBlur: Function, renderLabel: Function, status: String, inlineThemeDisabled: Boolean, ignoreComposition: { type: Boolean, default: true }, onResize: Function }),
+  props: Object.assign(Object.assign({}, useTheme.props), {
+    clsPrefix: {
+      type: String,
+      required: true
+    },
+    bordered: {
+      type: Boolean,
+      default: void 0
+    },
+    active: Boolean,
+    pattern: {
+      type: String,
+      default: ""
+    },
+    placeholder: String,
+    selectedOption: {
+      type: Object,
+      default: null
+    },
+    selectedOptions: {
+      type: Array,
+      default: null
+    },
+    labelField: {
+      type: String,
+      default: "label"
+    },
+    valueField: {
+      type: String,
+      default: "value"
+    },
+    multiple: Boolean,
+    filterable: Boolean,
+    clearable: Boolean,
+    disabled: Boolean,
+    size: {
+      type: String,
+      default: "medium"
+    },
+    loading: Boolean,
+    autofocus: Boolean,
+    showArrow: {
+      type: Boolean,
+      default: true
+    },
+    inputProps: Object,
+    focused: Boolean,
+    renderTag: Function,
+    onKeydown: Function,
+    onClick: Function,
+    onBlur: Function,
+    onFocus: Function,
+    onDeleteOption: Function,
+    maxTagCount: [String, Number],
+    ellipsisTagPopoverProps: Object,
+    onClear: Function,
+    onPatternInput: Function,
+    onPatternFocus: Function,
+    onPatternBlur: Function,
+    renderLabel: Function,
+    status: String,
+    inlineThemeDisabled: Boolean,
+    ignoreComposition: {
+      type: Boolean,
+      default: true
+    },
+    onResize: Function
+  }),
   setup(props) {
+    const {
+      mergedClsPrefixRef,
+      mergedRtlRef
+    } = useConfig(props);
+    const rtlEnabledRef = useRtl("InternalSelection", mergedRtlRef, mergedClsPrefixRef);
     const patternInputMirrorRef = ref(null);
     const patternInputRef = ref(null);
     const selfRef = ref(null);
@@ -19860,24 +21312,34 @@ const NInternalSelection = defineComponent({
     });
     function syncMirrorWidth() {
       var _a2;
-      const { value: patternInputMirrorEl } = patternInputMirrorRef;
+      const {
+        value: patternInputMirrorEl
+      } = patternInputMirrorRef;
       if (patternInputMirrorEl) {
-        const { value: patternInputEl } = patternInputRef;
+        const {
+          value: patternInputEl
+        } = patternInputRef;
         if (patternInputEl) {
           patternInputEl.style.width = `${patternInputMirrorEl.offsetWidth}px`;
           if (props.maxTagCount !== "responsive") {
-            (_a2 = overflowRef.value) === null || _a2 === void 0 ? void 0 : _a2.sync();
+            (_a2 = overflowRef.value) === null || _a2 === void 0 ? void 0 : _a2.sync({
+              showAllItemsBeforeCalculate: false
+            });
           }
         }
       }
     }
     function hideInputTag() {
-      const { value: inputTagEl } = inputTagElRef;
+      const {
+        value: inputTagEl
+      } = inputTagElRef;
       if (inputTagEl)
         inputTagEl.style.display = "none";
     }
     function showInputTag() {
-      const { value: inputTagEl } = inputTagElRef;
+      const {
+        value: inputTagEl
+      } = inputTagElRef;
       if (inputTagEl)
         inputTagEl.style.display = "inline-block";
     }
@@ -19891,27 +21353,37 @@ const NInternalSelection = defineComponent({
       }
     });
     function doFocus(e) {
-      const { onFocus } = props;
+      const {
+        onFocus
+      } = props;
       if (onFocus)
         onFocus(e);
     }
     function doBlur(e) {
-      const { onBlur } = props;
+      const {
+        onBlur
+      } = props;
       if (onBlur)
         onBlur(e);
     }
     function doDeleteOption(value) {
-      const { onDeleteOption } = props;
+      const {
+        onDeleteOption
+      } = props;
       if (onDeleteOption)
         onDeleteOption(value);
     }
     function doClear(e) {
-      const { onClear } = props;
+      const {
+        onClear
+      } = props;
       if (onClear)
         onClear(e);
     }
     function doPatternInput(value) {
-      const { onPatternInput } = props;
+      const {
+        onPatternInput
+      } = props;
       if (onPatternInput)
         onPatternInput(value);
     }
@@ -19949,7 +21421,9 @@ const NInternalSelection = defineComponent({
     function handlePatternKeyDown(e) {
       if (e.key === "Backspace" && !isComposingRef2.value) {
         if (!props.pattern.length) {
-          const { selectedOptions } = props;
+          const {
+            selectedOptions
+          } = props;
           if (selectedOptions === null || selectedOptions === void 0 ? void 0 : selectedOptions.length) {
             handleDeleteOption(selectedOptions[selectedOptions.length - 1]);
           }
@@ -19959,7 +21433,9 @@ const NInternalSelection = defineComponent({
     const isComposingRef2 = ref(false);
     let cachedInputEvent = null;
     function handlePatternInputInput(e) {
-      const { value: patternInputMirrorEl } = patternInputMirrorRef;
+      const {
+        value: patternInputMirrorEl
+      } = patternInputMirrorRef;
       if (patternInputMirrorEl) {
         const inputText = e.target.value;
         patternInputMirrorEl.textContent = inputText;
@@ -20002,10 +21478,14 @@ const NInternalSelection = defineComponent({
         (_a2 = patternInputWrapperRef.value) === null || _a2 === void 0 ? void 0 : _a2.blur();
         (_b = patternInputRef.value) === null || _b === void 0 ? void 0 : _b.blur();
       } else if (props.multiple) {
-        const { value: multipleEl } = multipleElRef;
+        const {
+          value: multipleEl
+        } = multipleElRef;
         multipleEl === null || multipleEl === void 0 ? void 0 : multipleEl.blur();
       } else {
-        const { value: singleEl } = singleElRef;
+        const {
+          value: singleEl
+        } = singleElRef;
         singleEl === null || singleEl === void 0 ? void 0 : singleEl.blur();
       }
     }
@@ -20021,26 +21501,34 @@ const NInternalSelection = defineComponent({
       }
     }
     function focusInput() {
-      const { value: patternInputEl } = patternInputRef;
+      const {
+        value: patternInputEl
+      } = patternInputRef;
       if (patternInputEl) {
         showInputTag();
         patternInputEl.focus();
       }
     }
     function blurInput() {
-      const { value: patternInputEl } = patternInputRef;
+      const {
+        value: patternInputEl
+      } = patternInputRef;
       if (patternInputEl) {
         patternInputEl.blur();
       }
     }
     function updateCounter(count) {
-      const { value } = counterRef;
+      const {
+        value
+      } = counterRef;
       if (value) {
         value.setTextContent(`+${count}`);
       }
     }
     function getCounter() {
-      const { value } = counterWrapperRef;
+      const {
+        value
+      } = counterWrapperRef;
       return value;
     }
     function getTail() {
@@ -20088,59 +21576,70 @@ const NInternalSelection = defineComponent({
       });
     });
     useOnResize(selfRef, props.onResize);
-    const { inlineThemeDisabled } = props;
+    const {
+      inlineThemeDisabled
+    } = props;
     const cssVarsRef = computed(() => {
-      const { size: size2 } = props;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: {
-        borderRadius,
-        color,
-        placeholderColor,
-        textColor,
-        paddingSingle,
-        paddingMultiple,
-        caretColor,
-        colorDisabled,
-        textColorDisabled,
-        placeholderColorDisabled,
-        colorActive,
-        boxShadowFocus,
-        boxShadowActive,
-        boxShadowHover,
-        border,
-        borderFocus,
-        borderHover,
-        borderActive,
-        arrowColor,
-        arrowColorDisabled,
-        loadingColor,
-        // form warning
-        colorActiveWarning,
-        boxShadowFocusWarning,
-        boxShadowActiveWarning,
-        boxShadowHoverWarning,
-        borderWarning,
-        borderFocusWarning,
-        borderHoverWarning,
-        borderActiveWarning,
-        // form error
-        colorActiveError,
-        boxShadowFocusError,
-        boxShadowActiveError,
-        boxShadowHoverError,
-        borderError,
-        borderFocusError,
-        borderHoverError,
-        borderActiveError,
-        // clear
-        clearColor,
-        clearColorHover,
-        clearColorPressed,
-        clearSize,
-        // arrow
-        arrowSize: arrowSize2,
-        [createKey("height", size2)]: height,
-        [createKey("fontSize", size2)]: fontSize2
-      } } = themeRef.value;
+      const {
+        size: size2
+      } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          borderRadius,
+          color,
+          placeholderColor,
+          textColor,
+          paddingSingle,
+          paddingMultiple,
+          caretColor,
+          colorDisabled,
+          textColorDisabled,
+          placeholderColorDisabled,
+          colorActive,
+          boxShadowFocus,
+          boxShadowActive,
+          boxShadowHover,
+          border,
+          borderFocus,
+          borderHover,
+          borderActive,
+          arrowColor,
+          arrowColorDisabled,
+          loadingColor,
+          // form warning
+          colorActiveWarning,
+          boxShadowFocusWarning,
+          boxShadowActiveWarning,
+          boxShadowHoverWarning,
+          borderWarning,
+          borderFocusWarning,
+          borderHoverWarning,
+          borderActiveWarning,
+          // form error
+          colorActiveError,
+          boxShadowFocusError,
+          boxShadowActiveError,
+          boxShadowHoverError,
+          borderError,
+          borderFocusError,
+          borderHoverError,
+          borderActiveError,
+          // clear
+          clearColor,
+          clearColorHover,
+          clearColorPressed,
+          clearSize,
+          // arrow
+          arrowSize: arrowSize2,
+          [createKey("height", size2)]: height,
+          [createKey("fontSize", size2)]: fontSize2
+        }
+      } = themeRef.value;
+      const paddingSingleDiscrete = getMargin(paddingSingle);
+      const paddingMultipleDiscrete = getMargin(paddingMultiple);
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-border": border,
@@ -20157,8 +21656,14 @@ const NInternalSelection = defineComponent({
         "--n-color-disabled": colorDisabled,
         "--n-font-size": fontSize2,
         "--n-height": height,
-        "--n-padding-single": paddingSingle,
-        "--n-padding-multiple": paddingMultiple,
+        "--n-padding-single-top": paddingSingleDiscrete.top,
+        "--n-padding-multiple-top": paddingMultipleDiscrete.top,
+        "--n-padding-single-right": paddingSingleDiscrete.right,
+        "--n-padding-multiple-right": paddingMultipleDiscrete.right,
+        "--n-padding-single-left": paddingSingleDiscrete.left,
+        "--n-padding-multiple-left": paddingMultipleDiscrete.left,
+        "--n-padding-single-bottom": paddingSingleDiscrete.bottom,
+        "--n-padding-multiple-bottom": paddingMultipleDiscrete.bottom,
         "--n-placeholder-color": placeholderColor,
         "--n-placeholder-color-disabled": placeholderColorDisabled,
         "--n-text-color": textColor,
@@ -20199,6 +21704,8 @@ const NInternalSelection = defineComponent({
     return {
       mergedTheme: themeRef,
       mergedClearable: mergedClearableRef,
+      mergedClsPrefix: mergedClsPrefixRef,
+      rtlEnabled: rtlEnabledRef,
       patternInputFocused: patternInputFocusedRef,
       filterablePlaceholder: filterablePlaceholderRef,
       label: labelRef,
@@ -20246,13 +21753,32 @@ const NInternalSelection = defineComponent({
     };
   },
   render() {
-    const { status, multiple, size: size2, disabled, filterable, maxTagCount, bordered, clsPrefix, onRender, renderTag, renderLabel } = this;
+    const {
+      status,
+      multiple,
+      size: size2,
+      disabled,
+      filterable,
+      maxTagCount,
+      bordered,
+      clsPrefix,
+      ellipsisTagPopoverProps,
+      onRender,
+      renderTag,
+      renderLabel
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
     const maxTagCountResponsive = maxTagCount === "responsive";
     const maxTagCountNumeric = typeof maxTagCount === "number";
     const useMaxTagCount = maxTagCountResponsive || maxTagCountNumeric;
     const suffix2 = h(Wrapper, null, {
-      default: () => h(NBaseSuffix, { clsPrefix, loading: this.loading, showArrow: this.showArrow, showClear: this.mergedClearable && this.selected, onClear: this.handleClear }, {
+      default: () => h(NBaseSuffix, {
+        clsPrefix,
+        loading: this.loading,
+        showArrow: this.showArrow,
+        showClear: this.mergedClearable && this.selected,
+        onClear: this.handleClear
+      }, {
         default: () => {
           var _a2, _b;
           return (_b = (_a2 = this.$slots).arrow) === null || _b === void 0 ? void 0 : _b.call(_a2);
@@ -20261,60 +21787,109 @@ const NInternalSelection = defineComponent({
     });
     let body;
     if (multiple) {
-      const { labelField } = this;
-      const createTag = (option) => h("div", { class: `${clsPrefix}-base-selection-tag-wrapper`, key: option.value }, renderTag ? renderTag({
+      const {
+        labelField
+      } = this;
+      const createTag = (option) => h("div", {
+        class: `${clsPrefix}-base-selection-tag-wrapper`,
+        key: option.value
+      }, renderTag ? renderTag({
         option,
         handleClose: () => {
           this.handleDeleteOption(option);
         }
-      }) : h(NTag, { size: size2, closable: !option.disabled, disabled, onClose: () => {
-        this.handleDeleteOption(option);
-      }, internalCloseIsButtonTag: false, internalCloseFocusable: false }, {
+      }) : h(NTag, {
+        size: size2,
+        closable: !option.disabled,
+        disabled,
+        onClose: () => {
+          this.handleDeleteOption(option);
+        },
+        internalCloseIsButtonTag: false,
+        internalCloseFocusable: false
+      }, {
         default: () => renderLabel ? renderLabel(option, true) : render$1(option[labelField], option, true)
       }));
       const createOriginalTagNodes = () => (maxTagCountNumeric ? this.selectedOptions.slice(0, maxTagCount) : this.selectedOptions).map(createTag);
-      const input = filterable ? h(
-        "div",
-        { class: `${clsPrefix}-base-selection-input-tag`, ref: "inputTagElRef", key: "__input-tag__" },
-        h("input", Object.assign({}, this.inputProps, { ref: "patternInputRef", tabindex: -1, disabled, value: this.pattern, autofocus: this.autofocus, class: `${clsPrefix}-base-selection-input-tag__input`, onBlur: this.handlePatternInputBlur, onFocus: this.handlePatternInputFocus, onKeydown: this.handlePatternKeyDown, onInput: this.handlePatternInputInput, onCompositionstart: this.handleCompositionStart, onCompositionend: this.handleCompositionEnd })),
-        h("span", { ref: "patternInputMirrorRef", class: `${clsPrefix}-base-selection-input-tag__mirror` }, this.pattern)
-      ) : null;
-      const renderCounter = maxTagCountResponsive ? () => h(
-        "div",
-        { class: `${clsPrefix}-base-selection-tag-wrapper`, ref: "counterWrapperRef" },
-        h(NTag, { size: size2, ref: "counterRef", onMouseenter: this.handleMouseEnterCounter, onMouseleave: this.handleMouseLeaveCounter, disabled })
-      ) : void 0;
+      const input = filterable ? h("div", {
+        class: `${clsPrefix}-base-selection-input-tag`,
+        ref: "inputTagElRef",
+        key: "__input-tag__"
+      }, h("input", Object.assign({}, this.inputProps, {
+        ref: "patternInputRef",
+        tabindex: -1,
+        disabled,
+        value: this.pattern,
+        autofocus: this.autofocus,
+        class: `${clsPrefix}-base-selection-input-tag__input`,
+        onBlur: this.handlePatternInputBlur,
+        onFocus: this.handlePatternInputFocus,
+        onKeydown: this.handlePatternKeyDown,
+        onInput: this.handlePatternInputInput,
+        onCompositionstart: this.handleCompositionStart,
+        onCompositionend: this.handleCompositionEnd
+      })), h("span", {
+        ref: "patternInputMirrorRef",
+        class: `${clsPrefix}-base-selection-input-tag__mirror`
+      }, this.pattern)) : null;
+      const renderCounter = maxTagCountResponsive ? () => h("div", {
+        class: `${clsPrefix}-base-selection-tag-wrapper`,
+        ref: "counterWrapperRef"
+      }, h(NTag, {
+        size: size2,
+        ref: "counterRef",
+        onMouseenter: this.handleMouseEnterCounter,
+        onMouseleave: this.handleMouseLeaveCounter,
+        disabled
+      })) : void 0;
       let counter;
       if (maxTagCountNumeric) {
         const rest = this.selectedOptions.length - maxTagCount;
         if (rest > 0) {
-          counter = h(
-            "div",
-            { class: `${clsPrefix}-base-selection-tag-wrapper`, key: "__counter__" },
-            h(NTag, { size: size2, ref: "counterRef", onMouseenter: this.handleMouseEnterCounter, disabled }, {
-              default: () => `+${rest}`
-            })
-          );
+          counter = h("div", {
+            class: `${clsPrefix}-base-selection-tag-wrapper`,
+            key: "__counter__"
+          }, h(NTag, {
+            size: size2,
+            ref: "counterRef",
+            onMouseenter: this.handleMouseEnterCounter,
+            disabled
+          }, {
+            default: () => `+${rest}`
+          }));
         }
       }
-      const tags = maxTagCountResponsive ? filterable ? h(VOverflow, { ref: "overflowRef", updateCounter: this.updateCounter, getCounter: this.getCounter, getTail: this.getTail, style: {
-        width: "100%",
-        display: "flex",
-        overflow: "hidden"
-      } }, {
+      const tags = maxTagCountResponsive ? filterable ? h(VOverflow, {
+        ref: "overflowRef",
+        updateCounter: this.updateCounter,
+        getCounter: this.getCounter,
+        getTail: this.getTail,
+        style: {
+          width: "100%",
+          display: "flex",
+          overflow: "hidden"
+        }
+      }, {
         default: createOriginalTagNodes,
         counter: renderCounter,
         tail: () => input
-      }) : h(VOverflow, { ref: "overflowRef", updateCounter: this.updateCounter, getCounter: this.getCounter, style: {
-        width: "100%",
-        display: "flex",
-        overflow: "hidden"
-      } }, {
+      }) : h(VOverflow, {
+        ref: "overflowRef",
+        updateCounter: this.updateCounter,
+        getCounter: this.getCounter,
+        style: {
+          width: "100%",
+          display: "flex",
+          overflow: "hidden"
+        }
+      }, {
         default: createOriginalTagNodes,
         counter: renderCounter
-      }) : maxTagCountNumeric ? createOriginalTagNodes().concat(counter) : createOriginalTagNodes();
-      const renderPopover = useMaxTagCount ? () => h("div", { class: `${clsPrefix}-base-selection-popover` }, maxTagCountResponsive ? createOriginalTagNodes() : this.selectedOptions.map(createTag)) : void 0;
-      const popoverProps2 = useMaxTagCount ? {
+      }) : maxTagCountNumeric && counter ? createOriginalTagNodes().concat(counter) : createOriginalTagNodes();
+      const renderPopover = useMaxTagCount ? () => h("div", {
+        class: `${clsPrefix}-base-selection-popover`
+      }, maxTagCountResponsive ? createOriginalTagNodes() : this.selectedOptions.map(createTag)) : void 0;
+      const popoverProps2 = useMaxTagCount ? Object.assign({
         show: this.showTagsPanel,
         trigger: "hover",
         overlap: true,
@@ -20323,108 +21898,121 @@ const NInternalSelection = defineComponent({
         onUpdateShow: this.onPopoverUpdateShow,
         theme: this.mergedTheme.peers.Popover,
         themeOverrides: this.mergedTheme.peerOverrides.Popover
-      } : null;
+      }, ellipsisTagPopoverProps) : null;
       const showPlaceholder = this.selected ? false : this.active ? !this.pattern && !this.isComposing : true;
-      const placeholder = showPlaceholder ? h(
-        "div",
-        { class: `${clsPrefix}-base-selection-placeholder ${clsPrefix}-base-selection-overlay` },
-        h("div", { class: `${clsPrefix}-base-selection-placeholder__inner` }, this.placeholder)
-      ) : null;
-      const popoverTrigger = filterable ? h(
-        "div",
-        { ref: "patternInputWrapperRef", class: `${clsPrefix}-base-selection-tags` },
-        tags,
-        maxTagCountResponsive ? null : input,
-        suffix2
-      ) : h(
-        "div",
-        { ref: "multipleElRef", class: `${clsPrefix}-base-selection-tags`, tabindex: disabled ? void 0 : 0 },
-        tags,
-        suffix2
-      );
-      body = h(
-        Fragment,
-        null,
-        useMaxTagCount ? h(NPopover, Object.assign({}, popoverProps2, { scrollable: true, style: "max-height: calc(var(--v-target-height) * 6.6);" }), {
-          trigger: () => popoverTrigger,
-          default: renderPopover
-        }) : popoverTrigger,
-        placeholder
-      );
+      const placeholder = showPlaceholder ? h("div", {
+        class: `${clsPrefix}-base-selection-placeholder ${clsPrefix}-base-selection-overlay`
+      }, h("div", {
+        class: `${clsPrefix}-base-selection-placeholder__inner`
+      }, this.placeholder)) : null;
+      const popoverTrigger = filterable ? h("div", {
+        ref: "patternInputWrapperRef",
+        class: `${clsPrefix}-base-selection-tags`
+      }, tags, maxTagCountResponsive ? null : input, suffix2) : h("div", {
+        ref: "multipleElRef",
+        class: `${clsPrefix}-base-selection-tags`,
+        tabindex: disabled ? void 0 : 0
+      }, tags, suffix2);
+      body = h(Fragment, null, useMaxTagCount ? h(NPopover, Object.assign({}, popoverProps2, {
+        scrollable: true,
+        style: "max-height: calc(var(--v-target-height) * 6.6);"
+      }), {
+        trigger: () => popoverTrigger,
+        default: renderPopover
+      }) : popoverTrigger, placeholder);
     } else {
       if (filterable) {
         const hasInput = this.pattern || this.isComposing;
         const showPlaceholder = this.active ? !hasInput : !this.selected;
         const showSelectedLabel = this.active ? false : this.selected;
-        body = h(
-          "div",
-          { ref: "patternInputWrapperRef", class: `${clsPrefix}-base-selection-label` },
-          h("input", Object.assign({}, this.inputProps, { ref: "patternInputRef", class: `${clsPrefix}-base-selection-input`, value: this.active ? this.pattern : "", placeholder: "", readonly: disabled, disabled, tabindex: -1, autofocus: this.autofocus, onFocus: this.handlePatternInputFocus, onBlur: this.handlePatternInputBlur, onInput: this.handlePatternInputInput, onCompositionstart: this.handleCompositionStart, onCompositionend: this.handleCompositionEnd })),
-          showSelectedLabel ? h(
-            "div",
-            { class: `${clsPrefix}-base-selection-label__render-label ${clsPrefix}-base-selection-overlay`, key: "input" },
-            h("div", { class: `${clsPrefix}-base-selection-overlay__wrapper` }, renderTag ? renderTag({
-              option: this.selectedOption,
-              handleClose: () => {
-              }
-            }) : renderLabel ? renderLabel(this.selectedOption, true) : render$1(this.label, this.selectedOption, true))
-          ) : null,
-          showPlaceholder ? h(
-            "div",
-            { class: `${clsPrefix}-base-selection-placeholder ${clsPrefix}-base-selection-overlay`, key: "placeholder" },
-            h("div", { class: `${clsPrefix}-base-selection-overlay__wrapper` }, this.filterablePlaceholder)
-          ) : null,
-          suffix2
-        );
+        body = h("div", {
+          ref: "patternInputWrapperRef",
+          class: `${clsPrefix}-base-selection-label`,
+          title: this.patternInputFocused ? void 0 : getTitleAttribute(this.label)
+        }, h("input", Object.assign({}, this.inputProps, {
+          ref: "patternInputRef",
+          class: `${clsPrefix}-base-selection-input`,
+          value: this.active ? this.pattern : "",
+          placeholder: "",
+          readonly: disabled,
+          disabled,
+          tabindex: -1,
+          autofocus: this.autofocus,
+          onFocus: this.handlePatternInputFocus,
+          onBlur: this.handlePatternInputBlur,
+          onInput: this.handlePatternInputInput,
+          onCompositionstart: this.handleCompositionStart,
+          onCompositionend: this.handleCompositionEnd
+        })), showSelectedLabel ? h("div", {
+          class: `${clsPrefix}-base-selection-label__render-label ${clsPrefix}-base-selection-overlay`,
+          key: "input"
+        }, h("div", {
+          class: `${clsPrefix}-base-selection-overlay__wrapper`
+        }, renderTag ? renderTag({
+          option: this.selectedOption,
+          handleClose: () => {
+          }
+        }) : renderLabel ? renderLabel(this.selectedOption, true) : render$1(this.label, this.selectedOption, true))) : null, showPlaceholder ? h("div", {
+          class: `${clsPrefix}-base-selection-placeholder ${clsPrefix}-base-selection-overlay`,
+          key: "placeholder"
+        }, h("div", {
+          class: `${clsPrefix}-base-selection-overlay__wrapper`
+        }, this.filterablePlaceholder)) : null, suffix2);
       } else {
-        body = h(
-          "div",
-          { ref: "singleElRef", class: `${clsPrefix}-base-selection-label`, tabindex: this.disabled ? void 0 : 0 },
-          this.label !== void 0 ? h(
-            "div",
-            { class: `${clsPrefix}-base-selection-input`, title: getTitleAttribute(this.label), key: "input" },
-            h("div", { class: `${clsPrefix}-base-selection-input__content` }, renderTag ? renderTag({
-              option: this.selectedOption,
-              handleClose: () => {
-              }
-            }) : renderLabel ? renderLabel(this.selectedOption, true) : render$1(this.label, this.selectedOption, true))
-          ) : h(
-            "div",
-            { class: `${clsPrefix}-base-selection-placeholder ${clsPrefix}-base-selection-overlay`, key: "placeholder" },
-            h("div", { class: `${clsPrefix}-base-selection-placeholder__inner` }, this.placeholder)
-          ),
-          suffix2
-        );
+        body = h("div", {
+          ref: "singleElRef",
+          class: `${clsPrefix}-base-selection-label`,
+          tabindex: this.disabled ? void 0 : 0
+        }, this.label !== void 0 ? h("div", {
+          class: `${clsPrefix}-base-selection-input`,
+          title: getTitleAttribute(this.label),
+          key: "input"
+        }, h("div", {
+          class: `${clsPrefix}-base-selection-input__content`
+        }, renderTag ? renderTag({
+          option: this.selectedOption,
+          handleClose: () => {
+          }
+        }) : renderLabel ? renderLabel(this.selectedOption, true) : render$1(this.label, this.selectedOption, true))) : h("div", {
+          class: `${clsPrefix}-base-selection-placeholder ${clsPrefix}-base-selection-overlay`,
+          key: "placeholder"
+        }, h("div", {
+          class: `${clsPrefix}-base-selection-placeholder__inner`
+        }, this.placeholder)), suffix2);
       }
     }
-    return h(
-      "div",
-      { ref: "selfRef", class: [
-        `${clsPrefix}-base-selection`,
-        this.themeClass,
-        status && `${clsPrefix}-base-selection--${status}-status`,
-        {
-          [`${clsPrefix}-base-selection--active`]: this.active,
-          [`${clsPrefix}-base-selection--selected`]: this.selected || this.active && this.pattern,
-          [`${clsPrefix}-base-selection--disabled`]: this.disabled,
-          [`${clsPrefix}-base-selection--multiple`]: this.multiple,
-          // focus is not controlled by selection itself since it always need
-          // to be managed together with menu. provide :focus style will cause
-          // many redundant codes.
-          [`${clsPrefix}-base-selection--focus`]: this.focused
-        }
-      ], style: this.cssVars, onClick: this.onClick, onMouseenter: this.handleMouseEnter, onMouseleave: this.handleMouseLeave, onKeydown: this.onKeydown, onFocusin: this.handleFocusin, onFocusout: this.handleFocusout, onMousedown: this.handleMouseDown },
-      body,
-      bordered ? h("div", { class: `${clsPrefix}-base-selection__border` }) : null,
-      bordered ? h("div", { class: `${clsPrefix}-base-selection__state-border` }) : null
-    );
+    return h("div", {
+      ref: "selfRef",
+      class: [`${clsPrefix}-base-selection`, this.rtlEnabled && `${clsPrefix}-base-selection--rtl`, this.themeClass, status && `${clsPrefix}-base-selection--${status}-status`, {
+        [`${clsPrefix}-base-selection--active`]: this.active,
+        [`${clsPrefix}-base-selection--selected`]: this.selected || this.active && this.pattern,
+        [`${clsPrefix}-base-selection--disabled`]: this.disabled,
+        [`${clsPrefix}-base-selection--multiple`]: this.multiple,
+        // focus is not controlled by selection itself since it always need
+        // to be managed together with menu. provide :focus style will cause
+        // many redundant codes.
+        [`${clsPrefix}-base-selection--focus`]: this.focused
+      }],
+      style: this.cssVars,
+      onClick: this.onClick,
+      onMouseenter: this.handleMouseEnter,
+      onMouseleave: this.handleMouseLeave,
+      onKeydown: this.onKeydown,
+      onFocusin: this.handleFocusin,
+      onFocusout: this.handleFocusout,
+      onMousedown: this.handleMouseDown
+    }, body, bordered ? h("div", {
+      class: `${clsPrefix}-base-selection__border`
+    }) : null, bordered ? h("div", {
+      class: `${clsPrefix}-base-selection__state-border`
+    }) : null);
   }
 });
 const {
   cubicBezierEaseInOut: cubicBezierEaseInOut$1
 } = commonVariables$m;
 function fadeInWidthExpandTransition({
-  duration = ".2s",
+  duration: duration2 = ".2s",
   delay = ".1s"
 } = {}) {
   return [c$1("&.fade-in-width-expand-transition-leave-from, &.fade-in-width-expand-transition-enter-to", {
@@ -20436,20 +22024,20 @@ function fadeInWidthExpandTransition({
  `), c$1("&.fade-in-width-expand-transition-leave-active", `
  overflow: hidden;
  transition:
- opacity ${duration} ${cubicBezierEaseInOut$1},
- max-width ${duration} ${cubicBezierEaseInOut$1} ${delay},
- margin-left ${duration} ${cubicBezierEaseInOut$1} ${delay},
- margin-right ${duration} ${cubicBezierEaseInOut$1} ${delay};
+ opacity ${duration2} ${cubicBezierEaseInOut$1},
+ max-width ${duration2} ${cubicBezierEaseInOut$1} ${delay},
+ margin-left ${duration2} ${cubicBezierEaseInOut$1} ${delay},
+ margin-right ${duration2} ${cubicBezierEaseInOut$1} ${delay};
  `), c$1("&.fade-in-width-expand-transition-enter-active", `
  overflow: hidden;
  transition:
- opacity ${duration} ${cubicBezierEaseInOut$1} ${delay},
- max-width ${duration} ${cubicBezierEaseInOut$1},
- margin-left ${duration} ${cubicBezierEaseInOut$1},
- margin-right ${duration} ${cubicBezierEaseInOut$1};
+ opacity ${duration2} ${cubicBezierEaseInOut$1} ${delay},
+ max-width ${duration2} ${cubicBezierEaseInOut$1},
+ margin-left ${duration2} ${cubicBezierEaseInOut$1},
+ margin-right ${duration2} ${cubicBezierEaseInOut$1};
  `)];
 }
-const commonVars$a = {
+const commonVars$b = {
   iconMargin: "11px 8px 0 12px",
   iconMarginRtl: "11px 12px 0 8px",
   iconSize: "24px",
@@ -20463,8 +22051,26 @@ const alertDark = {
   name: "Alert",
   common: commonDark,
   self(vars) {
-    const { lineHeight: lineHeight2, borderRadius, fontWeightStrong, dividerColor, inputColor, textColor1, textColor2, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, infoColorSuppl, successColorSuppl, warningColorSuppl, errorColorSuppl, fontSize: fontSize2 } = vars;
-    return Object.assign(Object.assign({}, commonVars$a), {
+    const {
+      lineHeight: lineHeight2,
+      borderRadius,
+      fontWeightStrong,
+      dividerColor,
+      inputColor,
+      textColor1,
+      textColor2,
+      closeColorHover,
+      closeColorPressed,
+      closeIconColor,
+      closeIconColorHover,
+      closeIconColorPressed,
+      infoColorSuppl,
+      successColorSuppl,
+      warningColorSuppl,
+      errorColorSuppl,
+      fontSize: fontSize2
+    } = vars;
+    return Object.assign(Object.assign({}, commonVars$b), {
       fontSize: fontSize2,
       lineHeight: lineHeight2,
       titleFontWeight: fontWeightStrong,
@@ -20480,8 +22086,12 @@ const alertDark = {
       closeIconColor,
       closeIconColorHover,
       closeIconColorPressed,
-      borderInfo: `1px solid ${changeColor(infoColorSuppl, { alpha: 0.35 })}`,
-      colorInfo: changeColor(infoColorSuppl, { alpha: 0.25 }),
+      borderInfo: `1px solid ${changeColor(infoColorSuppl, {
+        alpha: 0.35
+      })}`,
+      colorInfo: changeColor(infoColorSuppl, {
+        alpha: 0.25
+      }),
       titleTextColorInfo: textColor1,
       iconColorInfo: infoColorSuppl,
       contentTextColorInfo: textColor2,
@@ -20493,7 +22103,9 @@ const alertDark = {
       borderSuccess: `1px solid ${changeColor(successColorSuppl, {
         alpha: 0.35
       })}`,
-      colorSuccess: changeColor(successColorSuppl, { alpha: 0.25 }),
+      colorSuccess: changeColor(successColorSuppl, {
+        alpha: 0.25
+      }),
       titleTextColorSuccess: textColor1,
       iconColorSuccess: successColorSuppl,
       contentTextColorSuccess: textColor2,
@@ -20505,7 +22117,9 @@ const alertDark = {
       borderWarning: `1px solid ${changeColor(warningColorSuppl, {
         alpha: 0.35
       })}`,
-      colorWarning: changeColor(warningColorSuppl, { alpha: 0.25 }),
+      colorWarning: changeColor(warningColorSuppl, {
+        alpha: 0.25
+      }),
       titleTextColorWarning: textColor1,
       iconColorWarning: warningColorSuppl,
       contentTextColorWarning: textColor2,
@@ -20514,8 +22128,12 @@ const alertDark = {
       closeIconColorWarning: closeIconColor,
       closeIconColorHoverWarning: closeIconColorHover,
       closeIconColorPressedWarning: closeIconColorPressed,
-      borderError: `1px solid ${changeColor(errorColorSuppl, { alpha: 0.35 })}`,
-      colorError: changeColor(errorColorSuppl, { alpha: 0.25 }),
+      borderError: `1px solid ${changeColor(errorColorSuppl, {
+        alpha: 0.35
+      })}`,
+      colorError: changeColor(errorColorSuppl, {
+        alpha: 0.25
+      }),
       titleTextColorError: textColor1,
       iconColorError: errorColorSuppl,
       contentTextColorError: textColor2,
@@ -20528,9 +22146,28 @@ const alertDark = {
   }
 };
 const alertDark$1 = alertDark;
-const self$17 = (vars) => {
-  const { lineHeight: lineHeight2, borderRadius, fontWeightStrong, baseColor, dividerColor, actionColor, textColor1, textColor2, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, infoColor, successColor, warningColor, errorColor, fontSize: fontSize2 } = vars;
-  return Object.assign(Object.assign({}, commonVars$a), {
+const self$1c = (vars) => {
+  const {
+    lineHeight: lineHeight2,
+    borderRadius,
+    fontWeightStrong,
+    baseColor,
+    dividerColor,
+    actionColor,
+    textColor1,
+    textColor2,
+    closeColorHover,
+    closeColorPressed,
+    closeIconColor,
+    closeIconColorHover,
+    closeIconColorPressed,
+    infoColor,
+    successColor,
+    warningColor,
+    errorColor,
+    fontSize: fontSize2
+  } = vars;
+  return Object.assign(Object.assign({}, commonVars$b), {
     fontSize: fontSize2,
     lineHeight: lineHeight2,
     titleFontWeight: fontWeightStrong,
@@ -20546,8 +22183,12 @@ const self$17 = (vars) => {
     closeIconColor,
     closeIconColorHover,
     closeIconColorPressed,
-    borderInfo: `1px solid ${composite(baseColor, changeColor(infoColor, { alpha: 0.25 }))}`,
-    colorInfo: composite(baseColor, changeColor(infoColor, { alpha: 0.08 })),
+    borderInfo: `1px solid ${composite(baseColor, changeColor(infoColor, {
+      alpha: 0.25
+    }))}`,
+    colorInfo: composite(baseColor, changeColor(infoColor, {
+      alpha: 0.08
+    })),
     titleTextColorInfo: textColor1,
     iconColorInfo: infoColor,
     contentTextColorInfo: textColor2,
@@ -20556,8 +22197,12 @@ const self$17 = (vars) => {
     closeIconColorInfo: closeIconColor,
     closeIconColorHoverInfo: closeIconColorHover,
     closeIconColorPressedInfo: closeIconColorPressed,
-    borderSuccess: `1px solid ${composite(baseColor, changeColor(successColor, { alpha: 0.25 }))}`,
-    colorSuccess: composite(baseColor, changeColor(successColor, { alpha: 0.08 })),
+    borderSuccess: `1px solid ${composite(baseColor, changeColor(successColor, {
+      alpha: 0.25
+    }))}`,
+    colorSuccess: composite(baseColor, changeColor(successColor, {
+      alpha: 0.08
+    })),
     titleTextColorSuccess: textColor1,
     iconColorSuccess: successColor,
     contentTextColorSuccess: textColor2,
@@ -20566,8 +22211,12 @@ const self$17 = (vars) => {
     closeIconColorSuccess: closeIconColor,
     closeIconColorHoverSuccess: closeIconColorHover,
     closeIconColorPressedSuccess: closeIconColorPressed,
-    borderWarning: `1px solid ${composite(baseColor, changeColor(warningColor, { alpha: 0.33 }))}`,
-    colorWarning: composite(baseColor, changeColor(warningColor, { alpha: 0.08 })),
+    borderWarning: `1px solid ${composite(baseColor, changeColor(warningColor, {
+      alpha: 0.33
+    }))}`,
+    colorWarning: composite(baseColor, changeColor(warningColor, {
+      alpha: 0.08
+    })),
     titleTextColorWarning: textColor1,
     iconColorWarning: warningColor,
     contentTextColorWarning: textColor2,
@@ -20576,8 +22225,12 @@ const self$17 = (vars) => {
     closeIconColorWarning: closeIconColor,
     closeIconColorHoverWarning: closeIconColorHover,
     closeIconColorPressedWarning: closeIconColorPressed,
-    borderError: `1px solid ${composite(baseColor, changeColor(errorColor, { alpha: 0.25 }))}`,
-    colorError: composite(baseColor, changeColor(errorColor, { alpha: 0.08 })),
+    borderError: `1px solid ${composite(baseColor, changeColor(errorColor, {
+      alpha: 0.25
+    }))}`,
+    colorError: composite(baseColor, changeColor(errorColor, {
+      alpha: 0.08
+    })),
     titleTextColorError: textColor1,
     iconColorError: errorColor,
     contentTextColorError: textColor2,
@@ -20591,7 +22244,7 @@ const self$17 = (vars) => {
 const alertLight = {
   name: "Alert",
   common: commonLight,
-  self: self$17
+  self: self$1c
 };
 const alertLight$1 = alertLight;
 const {
@@ -20601,7 +22254,7 @@ const {
 } = commonVariables$m;
 function fadeInHeightExpandTransition({
   overflow = "hidden",
-  duration = ".3s",
+  duration: duration2 = ".3s",
   originalTransition = "",
   leavingDelay = "0s",
   foldPadding = false,
@@ -20624,22 +22277,22 @@ function fadeInHeightExpandTransition({
   })), c$1(`&.fade-in-height-expand-transition-${leaveClass}-active`, `
  overflow: ${overflow};
  transition:
- max-height ${duration} ${cubicBezierEaseInOut} ${leavingDelay},
- opacity ${duration} ${cubicBezierEaseOut$4} ${leavingDelay},
- margin-top ${duration} ${cubicBezierEaseInOut} ${leavingDelay},
- margin-bottom ${duration} ${cubicBezierEaseInOut} ${leavingDelay},
- padding-top ${duration} ${cubicBezierEaseInOut} ${leavingDelay},
- padding-bottom ${duration} ${cubicBezierEaseInOut} ${leavingDelay}
+ max-height ${duration2} ${cubicBezierEaseInOut} ${leavingDelay},
+ opacity ${duration2} ${cubicBezierEaseOut$4} ${leavingDelay},
+ margin-top ${duration2} ${cubicBezierEaseInOut} ${leavingDelay},
+ margin-bottom ${duration2} ${cubicBezierEaseInOut} ${leavingDelay},
+ padding-top ${duration2} ${cubicBezierEaseInOut} ${leavingDelay},
+ padding-bottom ${duration2} ${cubicBezierEaseInOut} ${leavingDelay}
  ${originalTransition ? "," + originalTransition : ""}
  `), c$1(`&.fade-in-height-expand-transition-${enterClass}-active`, `
  overflow: ${overflow};
  transition:
- max-height ${duration} ${cubicBezierEaseInOut},
- opacity ${duration} ${cubicBezierEaseIn$4},
- margin-top ${duration} ${cubicBezierEaseInOut},
- margin-bottom ${duration} ${cubicBezierEaseInOut},
- padding-top ${duration} ${cubicBezierEaseInOut},
- padding-bottom ${duration} ${cubicBezierEaseInOut}
+ max-height ${duration2} ${cubicBezierEaseInOut},
+ opacity ${duration2} ${cubicBezierEaseIn$4},
+ margin-top ${duration2} ${cubicBezierEaseInOut},
+ margin-bottom ${duration2} ${cubicBezierEaseInOut},
+ padding-top ${duration2} ${cubicBezierEaseInOut},
+ padding-bottom ${duration2} ${cubicBezierEaseInOut}
  ${originalTransition ? "," + originalTransition : ""}
  `)];
 }
@@ -20751,19 +22404,48 @@ const alertProps = Object.assign(Object.assign({}, useTheme.props), {
   /** @deprecated */
   onAfterHide: Function
 });
-const NAlert = defineComponent({
+const NAlert = /* @__PURE__ */ defineComponent({
   name: "Alert",
   inheritAttrs: false,
   props: alertProps,
   setup(props) {
-    const { mergedClsPrefixRef, mergedBorderedRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      mergedBorderedRef,
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig(props);
     const themeRef = useTheme("Alert", "-alert", style$p, alertLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Alert", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
-      const { fontSize: fontSize2, borderRadius, titleFontWeight, lineHeight: lineHeight2, iconSize, iconMargin, iconMarginRtl, closeIconSize, closeBorderRadius, closeSize, closeMargin, closeMarginRtl, padding } = self2;
-      const { type } = props;
-      const { left, right } = getMargin(iconMargin);
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: self2
+      } = themeRef.value;
+      const {
+        fontSize: fontSize2,
+        borderRadius,
+        titleFontWeight,
+        lineHeight: lineHeight2,
+        iconSize,
+        iconMargin,
+        iconMarginRtl,
+        closeIconSize,
+        closeBorderRadius,
+        closeSize,
+        closeMargin,
+        closeMarginRtl,
+        padding
+      } = self2;
+      const {
+        type
+      } = props;
+      const {
+        left,
+        right
+      } = getMargin(iconMargin);
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-color": self2[createKey("color", type)],
@@ -20835,9 +22517,14 @@ const NAlert = defineComponent({
   render() {
     var _a2;
     (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-    return h(NFadeInExpandTransition, { onAfterLeave: this.handleAfterLeave }, {
+    return h(NFadeInExpandTransition, {
+      onAfterLeave: this.handleAfterLeave
+    }, {
       default: () => {
-        const { mergedClsPrefix, $slots } = this;
+        const {
+          mergedClsPrefix,
+          $slots
+        } = this;
         const attrs = {
           class: [
             `${mergedClsPrefix}-alert`,
@@ -20851,58 +22538,70 @@ const NAlert = defineComponent({
           style: this.cssVars,
           role: "alert"
         };
-        return this.visible ? h(
-          "div",
-          Object.assign({}, mergeProps(this.$attrs, attrs)),
-          this.closable && h(NBaseClose, { clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-alert__close`, onClick: this.handleCloseClick }),
-          this.bordered && h("div", { class: `${mergedClsPrefix}-alert__border` }),
-          this.showIcon && h("div", { class: `${mergedClsPrefix}-alert__icon`, "aria-hidden": "true" }, resolveSlot($slots.icon, () => [
-            h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
-              default: () => {
-                switch (this.type) {
-                  case "success":
-                    return h(SuccessIcon, null);
-                  case "info":
-                    return h(InfoIcon, null);
-                  case "warning":
-                    return h(WarningIcon, null);
-                  case "error":
-                    return h(ErrorIcon, null);
-                  default:
-                    return null;
-                }
+        return this.visible ? (
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          h("div", Object.assign({}, mergeProps(this.$attrs, attrs)), this.closable && h(NBaseClose, {
+            clsPrefix: mergedClsPrefix,
+            class: `${mergedClsPrefix}-alert__close`,
+            onClick: this.handleCloseClick
+          }), this.bordered && h("div", {
+            class: `${mergedClsPrefix}-alert__border`
+          }), this.showIcon && h("div", {
+            class: `${mergedClsPrefix}-alert__icon`,
+            "aria-hidden": "true"
+          }, resolveSlot($slots.icon, () => [h(NBaseIcon, {
+            clsPrefix: mergedClsPrefix
+          }, {
+            default: () => {
+              switch (this.type) {
+                case "success":
+                  return h(SuccessIcon, null);
+                case "info":
+                  return h(InfoIcon, null);
+                case "warning":
+                  return h(WarningIcon, null);
+                case "error":
+                  return h(ErrorIcon, null);
+                default:
+                  return null;
               }
-            })
-          ])),
-          h(
-            "div",
-            { class: [
-              `${mergedClsPrefix}-alert-body`,
-              this.mergedBordered && `${mergedClsPrefix}-alert-body--bordered`
-            ] },
-            resolveWrappedSlot($slots.header, (children) => {
-              const mergedChildren = children || this.title;
-              return mergedChildren ? h("div", { class: `${mergedClsPrefix}-alert-body__title` }, mergedChildren) : null;
-            }),
-            $slots.default && h("div", { class: `${mergedClsPrefix}-alert-body__content` }, $slots)
-          )
+            }
+          })])), h("div", {
+            class: [`${mergedClsPrefix}-alert-body`, this.mergedBordered && `${mergedClsPrefix}-alert-body--bordered`]
+          }, resolveWrappedSlot($slots.header, (children) => {
+            const mergedChildren = children || this.title;
+            return mergedChildren ? h("div", {
+              class: `${mergedClsPrefix}-alert-body__title`
+            }, mergedChildren) : null;
+          }), $slots.default && h("div", {
+            class: `${mergedClsPrefix}-alert-body__content`
+          }, $slots)))
         ) : null;
       }
     });
   }
 });
-const commonVars$9 = {
+const commonVars$a = {
   linkFontSize: "13px",
   linkPadding: "0 0 0 16px",
   railWidth: "4px"
 };
-const self$16 = (vars) => {
-  const { borderRadius, railColor, primaryColor, primaryColorHover, primaryColorPressed, textColor2 } = vars;
-  return Object.assign(Object.assign({}, commonVars$9), {
+const self$1b = (vars) => {
+  const {
+    borderRadius,
+    railColor,
+    primaryColor,
+    primaryColorHover,
+    primaryColorPressed,
+    textColor2
+  } = vars;
+  return Object.assign(Object.assign({}, commonVars$a), {
     borderRadius,
     railColor,
     railColorActive: primaryColor,
-    linkColor: changeColor(primaryColor, { alpha: 0.15 }),
+    linkColor: changeColor(primaryColor, {
+      alpha: 0.15
+    }),
     linkTextColor: textColor2,
     linkTextColorHover: primaryColorHover,
     linkTextColorPressed: primaryColorPressed,
@@ -20912,13 +22611,13 @@ const self$16 = (vars) => {
 const anchorLight = {
   name: "Anchor",
   common: commonLight,
-  self: self$16
+  self: self$1b
 };
 const anchorLight$1 = anchorLight;
 const anchorDark = {
   name: "Anchor",
   common: commonDark,
-  self: self$16
+  self: self$1b
 };
 const anchorDark$1 = anchorDark;
 function getIsGroup(option) {
@@ -21002,7 +22701,38 @@ const inputDark = {
   name: "Input",
   common: commonDark,
   self(vars) {
-    const { textColor2, textColor3, textColorDisabled, primaryColor, primaryColorHover, inputColor, inputColorDisabled, warningColor, warningColorHover, errorColor, errorColorHover, borderRadius, lineHeight: lineHeight2, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightTiny, heightSmall, heightMedium, heightLarge, clearColor, clearColorHover, clearColorPressed, placeholderColor, placeholderColorDisabled, iconColor, iconColorDisabled, iconColorHover, iconColorPressed } = vars;
+    const {
+      textColor2,
+      textColor3,
+      textColorDisabled,
+      primaryColor,
+      primaryColorHover,
+      inputColor,
+      inputColorDisabled,
+      warningColor,
+      warningColorHover,
+      errorColor,
+      errorColorHover,
+      borderRadius,
+      lineHeight: lineHeight2,
+      fontSizeTiny,
+      fontSizeSmall,
+      fontSizeMedium,
+      fontSizeLarge,
+      heightTiny,
+      heightSmall,
+      heightMedium,
+      heightLarge,
+      clearColor,
+      clearColorHover,
+      clearColorPressed,
+      placeholderColor,
+      placeholderColorDisabled,
+      iconColor,
+      iconColorDisabled,
+      iconColorHover,
+      iconColorPressed
+    } = vars;
     return Object.assign(Object.assign({}, commonVariables$i), {
       countTextColorDisabled: textColorDisabled,
       countTextColor: textColor3,
@@ -21028,19 +22758,25 @@ const inputDark = {
       placeholderColorDisabled,
       color: inputColor,
       colorDisabled: inputColorDisabled,
-      colorFocus: changeColor(primaryColor, { alpha: 0.1 }),
+      colorFocus: changeColor(primaryColor, {
+        alpha: 0.1
+      }),
       groupLabelBorder: "1px solid #0000",
       border: "1px solid #0000",
       borderHover: `1px solid ${primaryColorHover}`,
       borderDisabled: "1px solid #0000",
       borderFocus: `1px solid ${primaryColorHover}`,
-      boxShadowFocus: `0 0 8px 0 ${changeColor(primaryColor, { alpha: 0.3 })}`,
+      boxShadowFocus: `0 0 8px 0 ${changeColor(primaryColor, {
+        alpha: 0.3
+      })}`,
       loadingColor: primaryColor,
       // warning
       loadingColorWarning: warningColor,
       borderWarning: `1px solid ${warningColor}`,
       borderHoverWarning: `1px solid ${warningColorHover}`,
-      colorFocusWarning: changeColor(warningColor, { alpha: 0.1 }),
+      colorFocusWarning: changeColor(warningColor, {
+        alpha: 0.1
+      }),
       borderFocusWarning: `1px solid ${warningColorHover}`,
       boxShadowFocusWarning: `0 0 8px 0 ${changeColor(warningColor, {
         alpha: 0.3
@@ -21050,7 +22786,9 @@ const inputDark = {
       loadingColorError: errorColor,
       borderError: `1px solid ${errorColor}`,
       borderHoverError: `1px solid ${errorColorHover}`,
-      colorFocusError: changeColor(errorColor, { alpha: 0.1 }),
+      colorFocusError: changeColor(errorColor, {
+        alpha: 0.1
+      }),
       borderFocusError: `1px solid ${errorColorHover}`,
       boxShadowFocusError: `0 0 8px 0 ${changeColor(errorColor, {
         alpha: 0.3
@@ -21068,8 +22806,41 @@ const inputDark = {
   }
 };
 const inputDark$1 = inputDark;
-const self$15 = (vars) => {
-  const { textColor2, textColor3, textColorDisabled, primaryColor, primaryColorHover, inputColor, inputColorDisabled, borderColor, warningColor, warningColorHover, errorColor, errorColorHover, borderRadius, lineHeight: lineHeight2, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightTiny, heightSmall, heightMedium, heightLarge, actionColor, clearColor, clearColorHover, clearColorPressed, placeholderColor, placeholderColorDisabled, iconColor, iconColorDisabled, iconColorHover, iconColorPressed } = vars;
+const self$1a = (vars) => {
+  const {
+    textColor2,
+    textColor3,
+    textColorDisabled,
+    primaryColor,
+    primaryColorHover,
+    inputColor,
+    inputColorDisabled,
+    borderColor,
+    warningColor,
+    warningColorHover,
+    errorColor,
+    errorColorHover,
+    borderRadius,
+    lineHeight: lineHeight2,
+    fontSizeTiny,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge,
+    heightTiny,
+    heightSmall,
+    heightMedium,
+    heightLarge,
+    actionColor,
+    clearColor,
+    clearColorHover,
+    clearColorPressed,
+    placeholderColor,
+    placeholderColorDisabled,
+    iconColor,
+    iconColorDisabled,
+    iconColorHover,
+    iconColorPressed
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$i), {
     countTextColorDisabled: textColorDisabled,
     countTextColor: textColor3,
@@ -21101,7 +22872,9 @@ const self$15 = (vars) => {
     borderHover: `1px solid ${primaryColorHover}`,
     borderDisabled: `1px solid ${borderColor}`,
     borderFocus: `1px solid ${primaryColorHover}`,
-    boxShadowFocus: `0 0 0 2px ${changeColor(primaryColor, { alpha: 0.2 })}`,
+    boxShadowFocus: `0 0 0 2px ${changeColor(primaryColor, {
+      alpha: 0.2
+    })}`,
     loadingColor: primaryColor,
     // warning
     loadingColorWarning: warningColor,
@@ -21136,7 +22909,7 @@ const self$15 = (vars) => {
 const inputLight = {
   name: "Input",
   common: commonLight,
-  self: self$15
+  self: self$1a
 };
 const inputLight$1 = inputLight;
 const inputInjectionKey = createInjectionKey("n-input");
@@ -21153,12 +22926,18 @@ function isEmptyInputValue(value) {
 function useCursor(inputElRef) {
   const selectionRef = ref(null);
   function recordCursor() {
-    const { value: input } = inputElRef;
+    const {
+      value: input
+    } = inputElRef;
     if (!(input === null || input === void 0 ? void 0 : input.focus)) {
       reset();
       return;
     }
-    const { selectionStart, selectionEnd, value } = input;
+    const {
+      selectionStart,
+      selectionEnd,
+      value
+    } = input;
     if (selectionStart == null || selectionEnd == null) {
       reset();
       return;
@@ -21172,13 +22951,23 @@ function useCursor(inputElRef) {
   }
   function restoreCursor() {
     var _a2;
-    const { value: selection } = selectionRef;
-    const { value: inputEl } = inputElRef;
+    const {
+      value: selection
+    } = selectionRef;
+    const {
+      value: inputEl
+    } = inputElRef;
     if (!selection || !inputEl) {
       return;
     }
-    const { value } = inputEl;
-    const { start, beforeText, afterText } = selection;
+    const {
+      value
+    } = inputEl;
+    const {
+      start,
+      beforeText,
+      afterText
+    } = selection;
     let startPos = value.length;
     if (value.endsWith(afterText)) {
       startPos = value.length - afterText.length;
@@ -21202,27 +22991,40 @@ function useCursor(inputElRef) {
     restoreCursor
   };
 }
-const WordCount = defineComponent({
+const WordCount = /* @__PURE__ */ defineComponent({
   name: "InputWordCount",
-  setup(_, { slots }) {
-    const { mergedValueRef, maxlengthRef, mergedClsPrefixRef, countGraphemesRef } = (
+  setup(_, {
+    slots
+  }) {
+    const {
+      mergedValueRef,
+      maxlengthRef,
+      mergedClsPrefixRef,
+      countGraphemesRef
+    } = (
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(inputInjectionKey)
     );
     const wordCountRef = computed(() => {
-      const { value: mergedValue } = mergedValueRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
       if (mergedValue === null || Array.isArray(mergedValue))
         return 0;
       return (countGraphemesRef.value || len)(mergedValue);
     });
     return () => {
-      const { value: maxlength } = maxlengthRef;
-      const { value: mergedValue } = mergedValueRef;
-      return h("span", { class: `${mergedClsPrefixRef.value}-input-word-count` }, resolveSlotWithProps(slots.default, {
+      const {
+        value: maxlength
+      } = maxlengthRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
+      return h("span", {
+        class: `${mergedClsPrefixRef.value}-input-word-count`
+      }, resolveSlotWithProps(slots.default, {
         value: mergedValue === null || Array.isArray(mergedValue) ? "" : mergedValue
-      }, () => [
-        maxlength === void 0 ? wordCountRef.value : `${wordCountRef.value} / ${maxlength}`
-      ]));
+      }, () => [maxlength === void 0 ? wordCountRef.value : `${wordCountRef.value} / ${maxlength}`]));
     };
   }
 });
@@ -21324,7 +23126,7 @@ const style$o = cB("input", `
  padding: 0;
  height: var(--n-height);
  line-height: var(--n-height);
- `, [c$1("+", [cE("placeholder", `
+ `, [c$1("&[type=password]::-ms-reveal", "display: none;"), c$1("+", [cE("placeholder", `
  display: flex;
  align-items: center; 
  `)])]),
@@ -21580,11 +23382,16 @@ const inputProps = Object.assign(Object.assign({}, useTheme.props), {
   /** deprecated */
   showPasswordToggle: Boolean
 });
-const NInput = defineComponent({
+const NInput = /* @__PURE__ */ defineComponent({
   name: "Input",
   props: inputProps,
   setup(props) {
-    const { mergedClsPrefixRef, mergedBorderedRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      mergedBorderedRef,
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig(props);
     const themeRef = useTheme("Input", "-input", style$o, inputLight$1, props, mergedClsPrefixRef);
     if (isSafari) {
       useStyle("-input-safari", safariStyle, mergedClsPrefixRef);
@@ -21598,19 +23405,28 @@ const NInput = defineComponent({
     const currentFocusedInputRef = ref(null);
     const focusedInputCursorControl = useCursor(currentFocusedInputRef);
     const textareaScrollbarInstRef = ref(null);
-    const { localeRef } = useLocale("Input");
+    const {
+      localeRef
+    } = useLocale("Input");
     const uncontrolledValueRef = ref(props.defaultValue);
     const controlledValueRef = toRef(props, "value");
     const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
     const formItem = useFormItem(props);
-    const { mergedSizeRef, mergedDisabledRef, mergedStatusRef } = formItem;
+    const {
+      mergedSizeRef,
+      mergedDisabledRef,
+      mergedStatusRef
+    } = formItem;
     const focusedRef = ref(false);
     const hoverRef = ref(false);
     const isComposingRef2 = ref(false);
     const activatedRef = ref(false);
     let syncSource = null;
     const mergedPlaceholderRef = computed(() => {
-      const { placeholder, pair } = props;
+      const {
+        placeholder,
+        pair
+      } = props;
       if (pair) {
         if (Array.isArray(placeholder)) {
           return placeholder;
@@ -21625,15 +23441,27 @@ const NInput = defineComponent({
       }
     });
     const showPlaceholder1Ref = computed(() => {
-      const { value: isComposing } = isComposingRef2;
-      const { value: mergedValue } = mergedValueRef;
-      const { value: mergedPlaceholder } = mergedPlaceholderRef;
+      const {
+        value: isComposing
+      } = isComposingRef2;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
+      const {
+        value: mergedPlaceholder
+      } = mergedPlaceholderRef;
       return !isComposing && (isEmptyInputValue(mergedValue) || Array.isArray(mergedValue) && isEmptyInputValue(mergedValue[0])) && mergedPlaceholder[0];
     });
     const showPlaceholder2Ref = computed(() => {
-      const { value: isComposing } = isComposingRef2;
-      const { value: mergedValue } = mergedValueRef;
-      const { value: mergedPlaceholder } = mergedPlaceholderRef;
+      const {
+        value: isComposing
+      } = isComposingRef2;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
+      const {
+        value: mergedPlaceholder
+      } = mergedPlaceholderRef;
       return !isComposing && mergedPlaceholder[1] && (isEmptyInputValue(mergedValue) || Array.isArray(mergedValue) && isEmptyInputValue(mergedValue[1]));
     });
     const mergedFocusRef = useMemo(() => {
@@ -21643,8 +23471,12 @@ const NInput = defineComponent({
       if (mergedDisabledRef.value || props.readonly || !props.clearable || !mergedFocusRef.value && !hoverRef.value) {
         return false;
       }
-      const { value: mergedValue } = mergedValueRef;
-      const { value: mergedFocus } = mergedFocusRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
+      const {
+        value: mergedFocus
+      } = mergedFocusRef;
       if (props.pair) {
         return !!(Array.isArray(mergedValue) && (mergedValue[0] || mergedValue[1])) && (hoverRef.value || mergedFocus);
       } else {
@@ -21652,7 +23484,9 @@ const NInput = defineComponent({
       }
     });
     const mergedShowPasswordOnRef = computed(() => {
-      const { showPasswordOn } = props;
+      const {
+        showPasswordOn
+      } = props;
       if (showPasswordOn) {
         return showPasswordOn;
       }
@@ -21662,7 +23496,9 @@ const NInput = defineComponent({
     });
     const passwordVisibleRef = ref(false);
     const textDecorationStyleRef = computed(() => {
-      const { textDecoration } = props;
+      const {
+        textDecoration
+      } = props;
       if (!textDecoration)
         return ["", ""];
       if (Array.isArray(textDecoration)) {
@@ -21670,17 +23506,17 @@ const NInput = defineComponent({
           textDecoration: v
         }));
       }
-      return [
-        {
-          textDecoration
-        }
-      ];
+      return [{
+        textDecoration
+      }];
     });
     const textAreaScrollContainerWidthRef = ref(void 0);
     const updateTextAreaStyle = () => {
       var _a2, _b;
       if (props.type === "textarea") {
-        const { autosize } = props;
+        const {
+          autosize
+        } = props;
         if (autosize) {
           textAreaScrollContainerWidthRef.value = (_b = (_a2 = textareaScrollbarInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.$el) === null || _b === void 0 ? void 0 : _b.offsetWidth;
         }
@@ -21688,11 +23524,17 @@ const NInput = defineComponent({
           return;
         if (typeof autosize === "boolean")
           return;
-        const { paddingTop: stylePaddingTop, paddingBottom: stylePaddingBottom, lineHeight: styleLineHeight } = window.getComputedStyle(textareaElRef.value);
+        const {
+          paddingTop: stylePaddingTop,
+          paddingBottom: stylePaddingBottom,
+          lineHeight: styleLineHeight
+        } = window.getComputedStyle(textareaElRef.value);
         const paddingTop = Number(stylePaddingTop.slice(0, -2));
         const paddingBottom = Number(stylePaddingBottom.slice(0, -2));
         const lineHeight2 = Number(styleLineHeight.slice(0, -2));
-        const { value: textareaMirrorEl } = textareaMirrorElRef;
+        const {
+          value: textareaMirrorEl
+        } = textareaMirrorElRef;
         if (!textareaMirrorEl)
           return;
         if (autosize.minRows) {
@@ -21707,87 +23549,125 @@ const NInput = defineComponent({
       }
     };
     const maxlengthRef = computed(() => {
-      const { maxlength } = props;
+      const {
+        maxlength
+      } = props;
       return maxlength === void 0 ? void 0 : Number(maxlength);
     });
     onMounted(() => {
-      const { value } = mergedValueRef;
+      const {
+        value
+      } = mergedValueRef;
       if (!Array.isArray(value)) {
         syncMirror(value);
       }
     });
     const vm = getCurrentInstance().proxy;
-    function doUpdateValue(value) {
-      const { onUpdateValue, "onUpdate:value": _onUpdateValue, onInput } = props;
-      const { nTriggerFormInput } = formItem;
+    function doUpdateValue(value, meta) {
+      const {
+        onUpdateValue,
+        "onUpdate:value": _onUpdateValue,
+        onInput
+      } = props;
+      const {
+        nTriggerFormInput
+      } = formItem;
       if (onUpdateValue)
-        call(onUpdateValue, value);
+        call(onUpdateValue, value, meta);
       if (_onUpdateValue)
-        call(_onUpdateValue, value);
+        call(_onUpdateValue, value, meta);
       if (onInput)
-        call(onInput, value);
+        call(onInput, value, meta);
       uncontrolledValueRef.value = value;
       nTriggerFormInput();
     }
-    function doChange(value) {
-      const { onChange } = props;
-      const { nTriggerFormChange } = formItem;
+    function doChange(value, meta) {
+      const {
+        onChange
+      } = props;
+      const {
+        nTriggerFormChange
+      } = formItem;
       if (onChange)
-        call(onChange, value);
+        call(onChange, value, meta);
       uncontrolledValueRef.value = value;
       nTriggerFormChange();
     }
     function doBlur(e) {
-      const { onBlur } = props;
-      const { nTriggerFormBlur } = formItem;
+      const {
+        onBlur
+      } = props;
+      const {
+        nTriggerFormBlur
+      } = formItem;
       if (onBlur)
         call(onBlur, e);
       nTriggerFormBlur();
     }
     function doFocus(e) {
-      const { onFocus } = props;
-      const { nTriggerFormFocus } = formItem;
+      const {
+        onFocus
+      } = props;
+      const {
+        nTriggerFormFocus
+      } = formItem;
       if (onFocus)
         call(onFocus, e);
       nTriggerFormFocus();
     }
     function doClear(e) {
-      const { onClear } = props;
+      const {
+        onClear
+      } = props;
       if (onClear)
         call(onClear, e);
     }
     function doUpdateValueBlur(e) {
-      const { onInputBlur } = props;
+      const {
+        onInputBlur
+      } = props;
       if (onInputBlur)
         call(onInputBlur, e);
     }
     function doUpdateValueFocus(e) {
-      const { onInputFocus } = props;
+      const {
+        onInputFocus
+      } = props;
       if (onInputFocus)
         call(onInputFocus, e);
     }
     function doDeactivate() {
-      const { onDeactivate } = props;
+      const {
+        onDeactivate
+      } = props;
       if (onDeactivate)
         call(onDeactivate);
     }
     function doActivate() {
-      const { onActivate } = props;
+      const {
+        onActivate
+      } = props;
       if (onActivate)
         call(onActivate);
     }
     function doClick(e) {
-      const { onClick } = props;
+      const {
+        onClick
+      } = props;
       if (onClick)
         call(onClick, e);
     }
     function doWrapperFocus(e) {
-      const { onWrapperFocus } = props;
+      const {
+        onWrapperFocus
+      } = props;
       if (onWrapperFocus)
         call(onWrapperFocus, e);
     }
     function doWrapperBlur(e) {
-      const { onWrapperBlur } = props;
+      const {
+        onWrapperBlur
+      } = props;
       if (onWrapperBlur)
         call(onWrapperBlur, e);
     }
@@ -21809,7 +23689,9 @@ const NInput = defineComponent({
         isComposingRef2.value = false;
       }
       if (props.type === "textarea") {
-        const { value: textareaScrollbarInst } = textareaScrollbarInstRef;
+        const {
+          value: textareaScrollbarInst
+        } = textareaScrollbarInstRef;
         if (textareaScrollbarInst) {
           textareaScrollbarInst.syncUnifiedContainer();
         }
@@ -21821,16 +23703,26 @@ const NInput = defineComponent({
       const isIncomingValueValid = allowInput(targetValue);
       if (isIncomingValueValid) {
         if (!props.pair) {
-          event2 === "input" ? doUpdateValue(targetValue) : doChange(targetValue);
+          event2 === "input" ? doUpdateValue(targetValue, {
+            source: index2
+          }) : doChange(targetValue, {
+            source: index2
+          });
         } else {
-          let { value } = mergedValueRef;
+          let {
+            value
+          } = mergedValueRef;
           if (!Array.isArray(value)) {
             value = ["", ""];
           } else {
             value = [value[0], value[1]];
           }
           value[index2] = targetValue;
-          event2 === "input" ? doUpdateValue(value) : doChange(value);
+          event2 === "input" ? doUpdateValue(value, {
+            source: index2
+          }) : doChange(value, {
+            source: index2
+          });
         }
       }
       vm.$forceUpdate();
@@ -21839,7 +23731,11 @@ const NInput = defineComponent({
       }
     }
     function allowInput(value) {
-      const { countGraphemes, maxlength, minlength } = props;
+      const {
+        countGraphemes,
+        maxlength,
+        minlength
+      } = props;
       if (countGraphemes) {
         let graphemesCount;
         if (maxlength !== void 0) {
@@ -21857,7 +23753,9 @@ const NInput = defineComponent({
             return false;
         }
       }
-      const { allowInput: allowInput2 } = props;
+      const {
+        allowInput: allowInput2
+      } = props;
       if (typeof allowInput2 === "function") {
         return allowInput2(value);
       }
@@ -21922,24 +23820,46 @@ const NInput = defineComponent({
     }
     function handleClear(e) {
       doClear(e);
+      clearValue();
+    }
+    function clearValue() {
       if (props.pair) {
-        doUpdateValue(["", ""]);
-        doChange(["", ""]);
+        doUpdateValue(["", ""], {
+          source: "clear"
+        });
+        doChange(["", ""], {
+          source: "clear"
+        });
       } else {
-        doUpdateValue("");
-        doChange("");
+        doUpdateValue("", {
+          source: "clear"
+        });
+        doChange("", {
+          source: "clear"
+        });
       }
     }
     function handleMouseDown(e) {
-      const { onMousedown } = props;
+      const {
+        onMousedown
+      } = props;
       if (onMousedown)
         onMousedown(e);
-      const { tagName } = e.target;
+      const {
+        tagName
+      } = e.target;
       if (tagName !== "INPUT" && tagName !== "TEXTAREA") {
         if (props.resizable) {
-          const { value: wrapperEl } = wrapperElRef;
+          const {
+            value: wrapperEl
+          } = wrapperElRef;
           if (wrapperEl) {
-            const { left, top, width, height } = wrapperEl.getBoundingClientRect();
+            const {
+              left,
+              top,
+              width,
+              height
+            } = wrapperEl.getBoundingClientRect();
             const resizeHandleSize = 14;
             if (left + width - resizeHandleSize < e.clientX && e.clientX < left + width && top + height - resizeHandleSize < e.clientY && e.clientY < top + height) {
               return;
@@ -22010,7 +23930,9 @@ const NInput = defineComponent({
     function handleWrapperKeydownEnter(e) {
       var _a2, _b;
       if (props.passivelyActivated) {
-        const { value: focused } = activatedRef;
+        const {
+          value: focused
+        } = activatedRef;
         if (focused) {
           if (props.internalDeactivateOnEnter) {
             handleWrapperKeydownEsc();
@@ -22065,30 +23987,44 @@ const NInput = defineComponent({
         inputElRef.value.focus();
     }
     function deactivate() {
-      const { value: wrapperEl } = wrapperElRef;
+      const {
+        value: wrapperEl
+      } = wrapperElRef;
       if ((wrapperEl === null || wrapperEl === void 0 ? void 0 : wrapperEl.contains(document.activeElement)) && wrapperEl !== document.activeElement) {
         handleWrapperKeydownEsc();
       }
     }
     function scrollTo(options) {
       if (props.type === "textarea") {
-        const { value: textareaEl } = textareaElRef;
+        const {
+          value: textareaEl
+        } = textareaElRef;
         textareaEl === null || textareaEl === void 0 ? void 0 : textareaEl.scrollTo(options);
       } else {
-        const { value: inputEl } = inputElRef;
+        const {
+          value: inputEl
+        } = inputElRef;
         inputEl === null || inputEl === void 0 ? void 0 : inputEl.scrollTo(options);
       }
     }
     function syncMirror(value) {
-      const { type, pair, autosize } = props;
+      const {
+        type,
+        pair,
+        autosize
+      } = props;
       if (!pair && autosize) {
         if (type === "textarea") {
-          const { value: textareaMirrorEl } = textareaMirrorElRef;
+          const {
+            value: textareaMirrorEl
+          } = textareaMirrorElRef;
           if (textareaMirrorEl) {
             textareaMirrorEl.textContent = (value !== null && value !== void 0 ? value : "") + "\r\n";
           }
         } else {
-          const { value: inputMirrorEl } = inputMirrorElRef;
+          const {
+            value: inputMirrorEl
+          } = inputMirrorElRef;
           if (inputMirrorEl) {
             if (value) {
               inputMirrorEl.textContent = value;
@@ -22107,13 +24043,18 @@ const NInput = defineComponent({
     });
     function handleTextAreaScroll(e) {
       var _a2;
-      const { scrollTop } = e.target;
+      const {
+        scrollTop
+      } = e.target;
       placeholderStyleRef.value.top = `${-scrollTop}px`;
       (_a2 = textareaScrollbarInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.syncUnifiedContainer();
     }
     let stopWatchMergedValue1 = null;
     watchEffect(() => {
-      const { autosize, type } = props;
+      const {
+        autosize,
+        type
+      } = props;
       if (autosize && type === "textarea") {
         stopWatchMergedValue1 = watch(mergedValueRef, (value) => {
           if (!Array.isArray(value) && value !== syncSource) {
@@ -22148,6 +24089,7 @@ const NInput = defineComponent({
       inputElRef,
       textareaElRef,
       isCompositing: isComposingRef2,
+      clear: clearValue,
       focus,
       blur,
       select,
@@ -22157,9 +24099,66 @@ const NInput = defineComponent({
     };
     const rtlEnabledRef = useRtl("Input", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { value: size2 } = mergedSizeRef;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { color, borderRadius, textColor, caretColor, caretColorError, caretColorWarning, textDecorationColor, border, borderDisabled, borderHover, borderFocus, placeholderColor, placeholderColorDisabled, lineHeightTextarea, colorDisabled, colorFocus, textColorDisabled, boxShadowFocus, iconSize, colorFocusWarning, boxShadowFocusWarning, borderWarning, borderFocusWarning, borderHoverWarning, colorFocusError, boxShadowFocusError, borderError, borderFocusError, borderHoverError, clearSize, clearColor, clearColorHover, clearColorPressed, iconColor, iconColorDisabled, suffixTextColor, countTextColor, countTextColorDisabled, iconColorHover, iconColorPressed, loadingColor, loadingColorError, loadingColorWarning, [createKey("padding", size2)]: padding, [createKey("fontSize", size2)]: fontSize2, [createKey("height", size2)]: height } } = themeRef.value;
-      const { left: paddingLeft, right: paddingRight } = getMargin(padding);
+      const {
+        value: size2
+      } = mergedSizeRef;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          color,
+          borderRadius,
+          textColor,
+          caretColor,
+          caretColorError,
+          caretColorWarning,
+          textDecorationColor,
+          border,
+          borderDisabled,
+          borderHover,
+          borderFocus,
+          placeholderColor,
+          placeholderColorDisabled,
+          lineHeightTextarea,
+          colorDisabled,
+          colorFocus,
+          textColorDisabled,
+          boxShadowFocus,
+          iconSize,
+          colorFocusWarning,
+          boxShadowFocusWarning,
+          borderWarning,
+          borderFocusWarning,
+          borderHoverWarning,
+          colorFocusError,
+          boxShadowFocusError,
+          borderError,
+          borderFocusError,
+          borderHoverError,
+          clearSize,
+          clearColor,
+          clearColorHover,
+          clearColorPressed,
+          iconColor,
+          iconColorDisabled,
+          suffixTextColor,
+          countTextColor,
+          countTextColorDisabled,
+          iconColorHover,
+          iconColorPressed,
+          loadingColor,
+          loadingColorError,
+          loadingColorWarning,
+          [createKey("padding", size2)]: padding,
+          [createKey("fontSize", size2)]: fontSize2,
+          [createKey("height", size2)]: height
+        }
+      } = themeRef.value;
+      const {
+        left: paddingLeft,
+        right: paddingRight
+      } = getMargin(padding);
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-count-text-color": countTextColor,
@@ -22215,7 +24214,9 @@ const NInput = defineComponent({
       };
     });
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("input", computed(() => {
-      const { value: size2 } = mergedSizeRef;
+      const {
+        value: size2
+      } = mergedSizeRef;
       return size2[0];
     }), cssVarsRef, props) : void 0;
     return Object.assign(Object.assign({}, exposedProps), {
@@ -22279,160 +24280,230 @@ const NInput = defineComponent({
   },
   render() {
     var _a2, _b;
-    const { mergedClsPrefix, mergedStatus, themeClass, type, countGraphemes, onRender } = this;
+    const {
+      mergedClsPrefix,
+      mergedStatus,
+      themeClass,
+      type,
+      countGraphemes,
+      onRender
+    } = this;
     const $slots = this.$slots;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h(
-      "div",
-      { ref: "wrapperElRef", class: [
-        `${mergedClsPrefix}-input`,
-        themeClass,
-        mergedStatus && `${mergedClsPrefix}-input--${mergedStatus}-status`,
-        {
-          [`${mergedClsPrefix}-input--rtl`]: this.rtlEnabled,
-          [`${mergedClsPrefix}-input--disabled`]: this.mergedDisabled,
-          [`${mergedClsPrefix}-input--textarea`]: type === "textarea",
-          [`${mergedClsPrefix}-input--resizable`]: this.resizable && !this.autosize,
-          [`${mergedClsPrefix}-input--autosize`]: this.autosize,
-          [`${mergedClsPrefix}-input--round`]: this.round && !(type === "textarea"),
-          [`${mergedClsPrefix}-input--pair`]: this.pair,
-          [`${mergedClsPrefix}-input--focus`]: this.mergedFocus,
-          [`${mergedClsPrefix}-input--stateful`]: this.stateful
-        }
-      ], style: this.cssVars, tabindex: !this.mergedDisabled && this.passivelyActivated && !this.activated ? 0 : void 0, onFocus: this.handleWrapperFocus, onBlur: this.handleWrapperBlur, onClick: this.handleClick, onMousedown: this.handleMouseDown, onMouseenter: this.handleMouseEnter, onMouseleave: this.handleMouseLeave, onCompositionstart: this.handleCompositionStart, onCompositionend: this.handleCompositionEnd, onKeyup: this.handleWrapperKeyup, onKeydown: this.handleWrapperKeydown },
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-input-wrapper` },
-        resolveWrappedSlot($slots.prefix, (children) => children && h("div", { class: `${mergedClsPrefix}-input__prefix` }, children)),
-        type === "textarea" ? h(NScrollbar$1, { ref: "textareaScrollbarInstRef", class: `${mergedClsPrefix}-input__textarea`, container: this.getTextareaScrollContainer, triggerDisplayManually: true, useUnifiedContainer: true, internalHoistYRail: true }, {
-          default: () => {
+    return h("div", {
+      ref: "wrapperElRef",
+      class: [`${mergedClsPrefix}-input`, themeClass, mergedStatus && `${mergedClsPrefix}-input--${mergedStatus}-status`, {
+        [`${mergedClsPrefix}-input--rtl`]: this.rtlEnabled,
+        [`${mergedClsPrefix}-input--disabled`]: this.mergedDisabled,
+        [`${mergedClsPrefix}-input--textarea`]: type === "textarea",
+        [`${mergedClsPrefix}-input--resizable`]: this.resizable && !this.autosize,
+        [`${mergedClsPrefix}-input--autosize`]: this.autosize,
+        [`${mergedClsPrefix}-input--round`]: this.round && !(type === "textarea"),
+        [`${mergedClsPrefix}-input--pair`]: this.pair,
+        [`${mergedClsPrefix}-input--focus`]: this.mergedFocus,
+        [`${mergedClsPrefix}-input--stateful`]: this.stateful
+      }],
+      style: this.cssVars,
+      tabindex: !this.mergedDisabled && this.passivelyActivated && !this.activated ? 0 : void 0,
+      onFocus: this.handleWrapperFocus,
+      onBlur: this.handleWrapperBlur,
+      onClick: this.handleClick,
+      onMousedown: this.handleMouseDown,
+      onMouseenter: this.handleMouseEnter,
+      onMouseleave: this.handleMouseLeave,
+      onCompositionstart: this.handleCompositionStart,
+      onCompositionend: this.handleCompositionEnd,
+      onKeyup: this.handleWrapperKeyup,
+      onKeydown: this.handleWrapperKeydown
+    }, h("div", {
+      class: `${mergedClsPrefix}-input-wrapper`
+    }, resolveWrappedSlot($slots.prefix, (children) => children && h("div", {
+      class: `${mergedClsPrefix}-input__prefix`
+    }, children)), type === "textarea" ? h(NScrollbar$1, {
+      ref: "textareaScrollbarInstRef",
+      class: `${mergedClsPrefix}-input__textarea`,
+      container: this.getTextareaScrollContainer,
+      triggerDisplayManually: true,
+      useUnifiedContainer: true,
+      internalHoistYRail: true
+    }, {
+      default: () => {
+        var _a3, _b2;
+        const {
+          textAreaScrollContainerWidth
+        } = this;
+        const scrollContainerWidthStyle = {
+          width: this.autosize && textAreaScrollContainerWidth && `${textAreaScrollContainerWidth}px`
+        };
+        return h(Fragment, null, h("textarea", Object.assign({}, this.inputProps, {
+          ref: "textareaElRef",
+          class: [`${mergedClsPrefix}-input__textarea-el`, (_a3 = this.inputProps) === null || _a3 === void 0 ? void 0 : _a3.class],
+          autofocus: this.autofocus,
+          rows: Number(this.rows),
+          placeholder: this.placeholder,
+          value: this.mergedValue,
+          disabled: this.mergedDisabled,
+          maxlength: countGraphemes ? void 0 : this.maxlength,
+          minlength: countGraphemes ? void 0 : this.minlength,
+          readonly: this.readonly,
+          tabindex: this.passivelyActivated && !this.activated ? -1 : void 0,
+          style: [this.textDecorationStyle[0], (_b2 = this.inputProps) === null || _b2 === void 0 ? void 0 : _b2.style, scrollContainerWidthStyle],
+          onBlur: this.handleInputBlur,
+          onFocus: (e) => {
+            this.handleInputFocus(e, 2);
+          },
+          onInput: this.handleInput,
+          onChange: this.handleChange,
+          onScroll: this.handleTextAreaScroll
+        })), this.showPlaceholder1 ? h("div", {
+          class: `${mergedClsPrefix}-input__placeholder`,
+          style: [this.placeholderStyle, scrollContainerWidthStyle],
+          key: "placeholder"
+        }, this.mergedPlaceholder[0]) : null, this.autosize ? h(VResizeObserver, {
+          onResize: this.handleTextAreaMirrorResize
+        }, {
+          default: () => h("div", {
+            ref: "textareaMirrorElRef",
+            class: `${mergedClsPrefix}-input__textarea-mirror`,
+            key: "mirror"
+          })
+        }) : null);
+      }
+    }) : h("div", {
+      class: `${mergedClsPrefix}-input__input`
+    }, h("input", Object.assign({
+      type: type === "password" && this.mergedShowPasswordOn && this.passwordVisible ? "text" : type
+    }, this.inputProps, {
+      ref: "inputElRef",
+      class: [`${mergedClsPrefix}-input__input-el`, (_a2 = this.inputProps) === null || _a2 === void 0 ? void 0 : _a2.class],
+      style: [this.textDecorationStyle[0], (_b = this.inputProps) === null || _b === void 0 ? void 0 : _b.style],
+      tabindex: this.passivelyActivated && !this.activated ? -1 : void 0,
+      placeholder: this.mergedPlaceholder[0],
+      disabled: this.mergedDisabled,
+      maxlength: countGraphemes ? void 0 : this.maxlength,
+      minlength: countGraphemes ? void 0 : this.minlength,
+      value: Array.isArray(this.mergedValue) ? this.mergedValue[0] : this.mergedValue,
+      readonly: this.readonly,
+      autofocus: this.autofocus,
+      size: this.attrSize,
+      onBlur: this.handleInputBlur,
+      onFocus: (e) => {
+        this.handleInputFocus(e, 0);
+      },
+      onInput: (e) => {
+        this.handleInput(e, 0);
+      },
+      onChange: (e) => {
+        this.handleChange(e, 0);
+      }
+    })), this.showPlaceholder1 ? h("div", {
+      class: `${mergedClsPrefix}-input__placeholder`
+    }, h("span", null, this.mergedPlaceholder[0])) : null, this.autosize ? h("div", {
+      class: `${mergedClsPrefix}-input__input-mirror`,
+      key: "mirror",
+      ref: "inputMirrorElRef"
+    }, " ") : null), !this.pair && resolveWrappedSlot($slots.suffix, (children) => {
+      return children || this.clearable || this.showCount || this.mergedShowPasswordOn || this.loading !== void 0 ? h("div", {
+        class: `${mergedClsPrefix}-input__suffix`
+      }, [resolveWrappedSlot($slots["clear-icon-placeholder"], (children2) => {
+        return (this.clearable || children2) && h(NBaseClear, {
+          clsPrefix: mergedClsPrefix,
+          show: this.showClearButton,
+          onClear: this.handleClear
+        }, {
+          placeholder: () => children2,
+          icon: () => {
             var _a3, _b2;
-            const { textAreaScrollContainerWidth } = this;
-            const scrollContainerWidthStyle = {
-              width: this.autosize && textAreaScrollContainerWidth && `${textAreaScrollContainerWidth}px`
-            };
-            return h(
-              Fragment,
-              null,
-              h("textarea", Object.assign({}, this.inputProps, { ref: "textareaElRef", class: [
-                `${mergedClsPrefix}-input__textarea-el`,
-                (_a3 = this.inputProps) === null || _a3 === void 0 ? void 0 : _a3.class
-              ], autofocus: this.autofocus, rows: Number(this.rows), placeholder: this.placeholder, value: this.mergedValue, disabled: this.mergedDisabled, maxlength: countGraphemes ? void 0 : this.maxlength, minlength: countGraphemes ? void 0 : this.minlength, readonly: this.readonly, tabindex: this.passivelyActivated && !this.activated ? -1 : void 0, style: [
-                this.textDecorationStyle[0],
-                (_b2 = this.inputProps) === null || _b2 === void 0 ? void 0 : _b2.style,
-                scrollContainerWidthStyle
-              ], onBlur: this.handleInputBlur, onFocus: (e) => {
-                this.handleInputFocus(e, 2);
-              }, onInput: this.handleInput, onChange: this.handleChange, onScroll: this.handleTextAreaScroll })),
-              this.showPlaceholder1 ? h("div", { class: `${mergedClsPrefix}-input__placeholder`, style: [
-                this.placeholderStyle,
-                scrollContainerWidthStyle
-              ], key: "placeholder" }, this.mergedPlaceholder[0]) : null,
-              this.autosize ? h(VResizeObserver, { onResize: this.handleTextAreaMirrorResize }, {
-                default: () => h("div", { ref: "textareaMirrorElRef", class: `${mergedClsPrefix}-input__textarea-mirror`, key: "mirror" })
-              }) : null
-            );
+            return (_b2 = (_a3 = this.$slots)["clear-icon"]) === null || _b2 === void 0 ? void 0 : _b2.call(_a3);
           }
-        }) : h(
-          "div",
-          { class: `${mergedClsPrefix}-input__input` },
-          h("input", Object.assign({ type: type === "password" && this.mergedShowPasswordOn && this.passwordVisible ? "text" : type }, this.inputProps, { ref: "inputElRef", class: [
-            `${mergedClsPrefix}-input__input-el`,
-            (_a2 = this.inputProps) === null || _a2 === void 0 ? void 0 : _a2.class
-          ], style: [
-            this.textDecorationStyle[0],
-            (_b = this.inputProps) === null || _b === void 0 ? void 0 : _b.style
-          ], tabindex: this.passivelyActivated && !this.activated ? -1 : void 0, placeholder: this.mergedPlaceholder[0], disabled: this.mergedDisabled, maxlength: countGraphemes ? void 0 : this.maxlength, minlength: countGraphemes ? void 0 : this.minlength, value: Array.isArray(this.mergedValue) ? this.mergedValue[0] : this.mergedValue, readonly: this.readonly, autofocus: this.autofocus, size: this.attrSize, onBlur: this.handleInputBlur, onFocus: (e) => {
-            this.handleInputFocus(e, 0);
-          }, onInput: (e) => {
-            this.handleInput(e, 0);
-          }, onChange: (e) => {
-            this.handleChange(e, 0);
-          } })),
-          this.showPlaceholder1 ? h(
-            "div",
-            { class: `${mergedClsPrefix}-input__placeholder` },
-            h("span", null, this.mergedPlaceholder[0])
-          ) : null,
-          this.autosize ? h("div", { class: `${mergedClsPrefix}-input__input-mirror`, key: "mirror", ref: "inputMirrorElRef" }, " ") : null
-        ),
-        !this.pair && resolveWrappedSlot($slots.suffix, (children) => {
-          return children || this.clearable || this.showCount || this.mergedShowPasswordOn || this.loading !== void 0 ? h("div", { class: `${mergedClsPrefix}-input__suffix` }, [
-            resolveWrappedSlot($slots["clear-icon-placeholder"], (children2) => {
-              return (this.clearable || children2) && h(NBaseClear, { clsPrefix: mergedClsPrefix, show: this.showClearButton, onClear: this.handleClear }, {
-                placeholder: () => children2,
-                icon: () => {
-                  var _a3, _b2;
-                  return (_b2 = (_a3 = this.$slots)["clear-icon"]) === null || _b2 === void 0 ? void 0 : _b2.call(_a3);
-                }
-              });
-            }),
-            !this.internalLoadingBeforeSuffix ? children : null,
-            this.loading !== void 0 ? h(NBaseSuffix, { clsPrefix: mergedClsPrefix, loading: this.loading, showArrow: false, showClear: false, style: this.cssVars }) : null,
-            this.internalLoadingBeforeSuffix ? children : null,
-            this.showCount && this.type !== "textarea" ? h(WordCount, null, {
-              default: (props) => {
-                var _a3;
-                return (_a3 = $slots.count) === null || _a3 === void 0 ? void 0 : _a3.call($slots, props);
-              }
-            }) : null,
-            this.mergedShowPasswordOn && this.type === "password" ? h("div", { class: `${mergedClsPrefix}-input__eye`, onMousedown: this.handlePasswordToggleMousedown, onClick: this.handlePasswordToggleClick }, this.passwordVisible ? resolveSlot($slots["password-visible-icon"], () => [
-              h(NBaseIcon, { clsPrefix: mergedClsPrefix }, { default: () => h(EyeIcon, null) })
-            ]) : resolveSlot($slots["password-invisible-icon"], () => [
-              h(NBaseIcon, { clsPrefix: mergedClsPrefix }, { default: () => h(EyeOffIcon, null) })
-            ])) : null
-          ]) : null;
-        })
-      ),
-      this.pair ? h("span", { class: `${mergedClsPrefix}-input__separator` }, resolveSlot($slots.separator, () => [this.separator])) : null,
-      this.pair ? h(
-        "div",
-        { class: `${mergedClsPrefix}-input-wrapper` },
-        h(
-          "div",
-          { class: `${mergedClsPrefix}-input__input` },
-          h("input", { ref: "inputEl2Ref", type: this.type, class: `${mergedClsPrefix}-input__input-el`, tabindex: this.passivelyActivated && !this.activated ? -1 : void 0, placeholder: this.mergedPlaceholder[1], disabled: this.mergedDisabled, maxlength: countGraphemes ? void 0 : this.maxlength, minlength: countGraphemes ? void 0 : this.minlength, value: Array.isArray(this.mergedValue) ? this.mergedValue[1] : void 0, readonly: this.readonly, style: this.textDecorationStyle[1], onBlur: this.handleInputBlur, onFocus: (e) => {
-            this.handleInputFocus(e, 1);
-          }, onInput: (e) => {
-            this.handleInput(e, 1);
-          }, onChange: (e) => {
-            this.handleChange(e, 1);
-          } }),
-          this.showPlaceholder2 ? h(
-            "div",
-            { class: `${mergedClsPrefix}-input__placeholder` },
-            h("span", null, this.mergedPlaceholder[1])
-          ) : null
-        ),
-        resolveWrappedSlot($slots.suffix, (children) => {
-          return (this.clearable || children) && h("div", { class: `${mergedClsPrefix}-input__suffix` }, [
-            this.clearable && h(NBaseClear, { clsPrefix: mergedClsPrefix, show: this.showClearButton, onClear: this.handleClear }, {
-              icon: () => {
-                var _a3;
-                return (_a3 = $slots["clear-icon"]) === null || _a3 === void 0 ? void 0 : _a3.call($slots);
-              },
-              placeholder: () => {
-                var _a3;
-                return (_a3 = $slots["clear-icon-placeholder"]) === null || _a3 === void 0 ? void 0 : _a3.call($slots);
-              }
-            }),
-            children
-          ]);
-        })
-      ) : null,
-      this.mergedBordered ? h("div", { class: `${mergedClsPrefix}-input__border` }) : null,
-      this.mergedBordered ? h("div", { class: `${mergedClsPrefix}-input__state-border` }) : null,
-      this.showCount && type === "textarea" ? h(WordCount, null, {
+        });
+      }), !this.internalLoadingBeforeSuffix ? children : null, this.loading !== void 0 ? h(NBaseSuffix, {
+        clsPrefix: mergedClsPrefix,
+        loading: this.loading,
+        showArrow: false,
+        showClear: false,
+        style: this.cssVars
+      }) : null, this.internalLoadingBeforeSuffix ? children : null, this.showCount && this.type !== "textarea" ? h(WordCount, null, {
         default: (props) => {
           var _a3;
-          const { renderCount } = this;
-          if (renderCount) {
-            return renderCount(props);
-          }
           return (_a3 = $slots.count) === null || _a3 === void 0 ? void 0 : _a3.call($slots, props);
         }
-      }) : null
-    );
+      }) : null, this.mergedShowPasswordOn && this.type === "password" ? h("div", {
+        class: `${mergedClsPrefix}-input__eye`,
+        onMousedown: this.handlePasswordToggleMousedown,
+        onClick: this.handlePasswordToggleClick
+      }, this.passwordVisible ? resolveSlot($slots["password-visible-icon"], () => [h(NBaseIcon, {
+        clsPrefix: mergedClsPrefix
+      }, {
+        default: () => h(EyeIcon, null)
+      })]) : resolveSlot($slots["password-invisible-icon"], () => [h(NBaseIcon, {
+        clsPrefix: mergedClsPrefix
+      }, {
+        default: () => h(EyeOffIcon, null)
+      })])) : null]) : null;
+    })), this.pair ? h("span", {
+      class: `${mergedClsPrefix}-input__separator`
+    }, resolveSlot($slots.separator, () => [this.separator])) : null, this.pair ? h("div", {
+      class: `${mergedClsPrefix}-input-wrapper`
+    }, h("div", {
+      class: `${mergedClsPrefix}-input__input`
+    }, h("input", {
+      ref: "inputEl2Ref",
+      type: this.type,
+      class: `${mergedClsPrefix}-input__input-el`,
+      tabindex: this.passivelyActivated && !this.activated ? -1 : void 0,
+      placeholder: this.mergedPlaceholder[1],
+      disabled: this.mergedDisabled,
+      maxlength: countGraphemes ? void 0 : this.maxlength,
+      minlength: countGraphemes ? void 0 : this.minlength,
+      value: Array.isArray(this.mergedValue) ? this.mergedValue[1] : void 0,
+      readonly: this.readonly,
+      style: this.textDecorationStyle[1],
+      onBlur: this.handleInputBlur,
+      onFocus: (e) => {
+        this.handleInputFocus(e, 1);
+      },
+      onInput: (e) => {
+        this.handleInput(e, 1);
+      },
+      onChange: (e) => {
+        this.handleChange(e, 1);
+      }
+    }), this.showPlaceholder2 ? h("div", {
+      class: `${mergedClsPrefix}-input__placeholder`
+    }, h("span", null, this.mergedPlaceholder[1])) : null), resolveWrappedSlot($slots.suffix, (children) => {
+      return (this.clearable || children) && h("div", {
+        class: `${mergedClsPrefix}-input__suffix`
+      }, [this.clearable && h(NBaseClear, {
+        clsPrefix: mergedClsPrefix,
+        show: this.showClearButton,
+        onClear: this.handleClear
+      }, {
+        icon: () => {
+          var _a3;
+          return (_a3 = $slots["clear-icon"]) === null || _a3 === void 0 ? void 0 : _a3.call($slots);
+        },
+        placeholder: () => {
+          var _a3;
+          return (_a3 = $slots["clear-icon-placeholder"]) === null || _a3 === void 0 ? void 0 : _a3.call($slots);
+        }
+      }), children]);
+    })) : null, this.mergedBordered ? h("div", {
+      class: `${mergedClsPrefix}-input__border`
+    }) : null, this.mergedBordered ? h("div", {
+      class: `${mergedClsPrefix}-input__state-border`
+    }) : null, this.showCount && type === "textarea" ? h(WordCount, null, {
+      default: (props) => {
+        var _a3;
+        const {
+          renderCount
+        } = this;
+        if (renderCount) {
+          return renderCount(props);
+        }
+        return (_a3 = $slots.count) === null || _a3 === void 0 ? void 0 : _a3.call($slots, props);
+      }
+    }) : null);
   }
 });
 const style$n = cB("input-group", `
@@ -22492,23 +24563,31 @@ const style$n = cB("input-group", `
  border-bottom-left-radius: 0!important;
  `)])])])])])]);
 const inputGroupProps = {};
-const NInputGroup = defineComponent({
+const NInputGroup = /* @__PURE__ */ defineComponent({
   name: "InputGroup",
   props: inputGroupProps,
   setup(props) {
-    const { mergedClsPrefixRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef
+    } = useConfig(props);
     useStyle("-input-group", style$n, mergedClsPrefixRef);
     return {
       mergedClsPrefix: mergedClsPrefixRef
     };
   },
   render() {
-    const { mergedClsPrefix } = this;
-    return h("div", { class: `${mergedClsPrefix}-input-group` }, this.$slots);
+    const {
+      mergedClsPrefix
+    } = this;
+    return h("div", {
+      class: `${mergedClsPrefix}-input-group`
+    }, this.$slots);
   }
 });
-function self$14(vars) {
-  const { boxShadow2 } = vars;
+function self$19(vars) {
+  const {
+    boxShadow2
+  } = vars;
   return {
     menuBoxShadow: boxShadow2
   };
@@ -22520,7 +24599,7 @@ const autoCompleteLight = createTheme({
     InternalSelectMenu: internalSelectMenuLight$1,
     Input: inputLight$1
   },
-  self: self$14
+  self: self$19
 });
 const autoCompleteLight$1 = autoCompleteLight;
 const autoCompleteDark = {
@@ -22530,11 +24609,23 @@ const autoCompleteDark = {
     InternalSelectMenu: internalSelectMenuDark$1,
     Input: inputDark$1
   },
-  self: self$14
+  self: self$19
 };
 const autoCompleteDark$1 = autoCompleteDark;
-const self$13 = (vars) => {
-  const { borderRadius, avatarColor, cardColor, fontSize: fontSize2, heightTiny, heightSmall, heightMedium, heightLarge, heightHuge, modalColor, popoverColor } = vars;
+const self$18 = (vars) => {
+  const {
+    borderRadius,
+    avatarColor,
+    cardColor,
+    fontSize: fontSize2,
+    heightTiny,
+    heightSmall,
+    heightMedium,
+    heightLarge,
+    heightHuge,
+    modalColor,
+    popoverColor
+  } = vars;
   return {
     borderRadius,
     fontSize: fontSize2,
@@ -22552,16 +24643,16 @@ const self$13 = (vars) => {
 const avatarLight = {
   name: "Avatar",
   common: commonLight,
-  self: self$13
+  self: self$18
 };
 const avatarLight$1 = avatarLight;
 const avatarDark = {
   name: "Avatar",
   common: commonDark,
-  self: self$13
+  self: self$18
 };
 const avatarDark$1 = avatarDark;
-const self$12 = () => {
+const self$17 = () => {
   return {
     gap: "-12px"
   };
@@ -22572,7 +24663,7 @@ const avatarGroupLight = createTheme({
   peers: {
     Avatar: avatarLight$1
   },
-  self: self$12
+  self: self$17
 });
 const avatarGroupLight$1 = avatarGroupLight;
 const avatarGroupDark = {
@@ -22581,7 +24672,7 @@ const avatarGroupDark = {
   peers: {
     Avatar: avatarDark$1
   },
-  self: self$12
+  self: self$17
 };
 const avatarGroupDark$1 = avatarGroupDark;
 const commonVariables$h = {
@@ -22594,26 +24685,60 @@ const backTopDark = {
   name: "BackTop",
   common: commonDark,
   self(vars) {
-    const { popoverColor, textColor2, primaryColorHover, primaryColorPressed } = vars;
-    return Object.assign(Object.assign({}, commonVariables$h), { color: popoverColor, textColor: textColor2, iconColor: textColor2, iconColorHover: primaryColorHover, iconColorPressed: primaryColorPressed, boxShadow: "0 2px 8px 0px rgba(0, 0, 0, .12)", boxShadowHover: "0 2px 12px 0px rgba(0, 0, 0, .18)", boxShadowPressed: "0 2px 12px 0px rgba(0, 0, 0, .18)" });
+    const {
+      popoverColor,
+      textColor2,
+      primaryColorHover,
+      primaryColorPressed
+    } = vars;
+    return Object.assign(Object.assign({}, commonVariables$h), {
+      color: popoverColor,
+      textColor: textColor2,
+      iconColor: textColor2,
+      iconColorHover: primaryColorHover,
+      iconColorPressed: primaryColorPressed,
+      boxShadow: "0 2px 8px 0px rgba(0, 0, 0, .12)",
+      boxShadowHover: "0 2px 12px 0px rgba(0, 0, 0, .18)",
+      boxShadowPressed: "0 2px 12px 0px rgba(0, 0, 0, .18)"
+    });
   }
 };
 const backTopDark$1 = backTopDark;
-const self$11 = (vars) => {
-  const { popoverColor, textColor2, primaryColorHover, primaryColorPressed } = vars;
-  return Object.assign(Object.assign({}, commonVariables$h), { color: popoverColor, textColor: textColor2, iconColor: textColor2, iconColorHover: primaryColorHover, iconColorPressed: primaryColorPressed, boxShadow: "0 2px 8px 0px rgba(0, 0, 0, .12)", boxShadowHover: "0 2px 12px 0px rgba(0, 0, 0, .18)", boxShadowPressed: "0 2px 12px 0px rgba(0, 0, 0, .18)" });
+const self$16 = (vars) => {
+  const {
+    popoverColor,
+    textColor2,
+    primaryColorHover,
+    primaryColorPressed
+  } = vars;
+  return Object.assign(Object.assign({}, commonVariables$h), {
+    color: popoverColor,
+    textColor: textColor2,
+    iconColor: textColor2,
+    iconColorHover: primaryColorHover,
+    iconColorPressed: primaryColorPressed,
+    boxShadow: "0 2px 8px 0px rgba(0, 0, 0, .12)",
+    boxShadowHover: "0 2px 12px 0px rgba(0, 0, 0, .18)",
+    boxShadowPressed: "0 2px 12px 0px rgba(0, 0, 0, .18)"
+  });
 };
 const backTopLight = {
   name: "BackTop",
   common: commonLight,
-  self: self$11
+  self: self$16
 };
 const backTopLight$1 = backTopLight;
 const badgeDark = {
   name: "Badge",
   common: commonDark,
   self(vars) {
-    const { errorColorSuppl, infoColorSuppl, successColorSuppl, warningColorSuppl, fontFamily: fontFamily2 } = vars;
+    const {
+      errorColorSuppl,
+      infoColorSuppl,
+      successColorSuppl,
+      warningColorSuppl,
+      fontFamily: fontFamily2
+    } = vars;
     return {
       color: errorColorSuppl,
       colorInfo: infoColorSuppl,
@@ -22626,8 +24751,14 @@ const badgeDark = {
   }
 };
 const badgeDark$1 = badgeDark;
-const self$10 = (vars) => {
-  const { errorColor, infoColor, successColor, warningColor, fontFamily: fontFamily2 } = vars;
+const self$15 = (vars) => {
+  const {
+    errorColor,
+    infoColor,
+    successColor,
+    warningColor,
+    fontFamily: fontFamily2
+  } = vars;
   return {
     color: errorColor,
     colorInfo: infoColor,
@@ -22641,26 +24772,44 @@ const self$10 = (vars) => {
 const badgeLight = {
   name: "Badge",
   common: commonLight,
-  self: self$10
+  self: self$15
 };
 const badgeLight$1 = badgeLight;
 const commonVariables$g = {
   fontWeightActive: "400"
 };
-const self$$ = (vars) => {
-  const { fontSize: fontSize2, textColor3, textColor2, borderRadius, buttonColor2Hover, buttonColor2Pressed } = vars;
-  return Object.assign(Object.assign({}, commonVariables$g), { fontSize: fontSize2, itemLineHeight: "1.25", itemTextColor: textColor3, itemTextColorHover: textColor2, itemTextColorPressed: textColor2, itemTextColorActive: textColor2, itemBorderRadius: borderRadius, itemColorHover: buttonColor2Hover, itemColorPressed: buttonColor2Pressed, separatorColor: textColor3 });
+const self$14 = (vars) => {
+  const {
+    fontSize: fontSize2,
+    textColor3,
+    textColor2,
+    borderRadius,
+    buttonColor2Hover,
+    buttonColor2Pressed
+  } = vars;
+  return Object.assign(Object.assign({}, commonVariables$g), {
+    fontSize: fontSize2,
+    itemLineHeight: "1.25",
+    itemTextColor: textColor3,
+    itemTextColorHover: textColor2,
+    itemTextColorPressed: textColor2,
+    itemTextColorActive: textColor2,
+    itemBorderRadius: borderRadius,
+    itemColorHover: buttonColor2Hover,
+    itemColorPressed: buttonColor2Pressed,
+    separatorColor: textColor3
+  });
 };
 const breadcrumbLight = {
   name: "Breadcrumb",
   common: commonLight,
-  self: self$$
+  self: self$14
 };
 const breadcrumbLight$1 = breadcrumbLight;
 const breadcrumbDark = {
   name: "Breadcrumb",
   common: commonDark,
-  self: self$$
+  self: self$14
 };
 const breadcrumbDark$1 = breadcrumbDark;
 function createHoverColor(rgb) {
@@ -22689,8 +24838,43 @@ const commonVariables$f = {
   iconSizeLarge: "20px",
   rippleDuration: ".6s"
 };
-const self$_ = (vars) => {
-  const { heightTiny, heightSmall, heightMedium, heightLarge, borderRadius, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, opacityDisabled, textColor2, textColor3, primaryColorHover, primaryColorPressed, borderColor, primaryColor, baseColor, infoColor, infoColorHover, infoColorPressed, successColor, successColorHover, successColorPressed, warningColor, warningColorHover, warningColorPressed, errorColor, errorColorHover, errorColorPressed, fontWeight, buttonColor2, buttonColor2Hover, buttonColor2Pressed, fontWeightStrong } = vars;
+const self$13 = (vars) => {
+  const {
+    heightTiny,
+    heightSmall,
+    heightMedium,
+    heightLarge,
+    borderRadius,
+    fontSizeTiny,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge,
+    opacityDisabled,
+    textColor2,
+    textColor3,
+    primaryColorHover,
+    primaryColorPressed,
+    borderColor,
+    primaryColor,
+    baseColor,
+    infoColor,
+    infoColorHover,
+    infoColorPressed,
+    successColor,
+    successColorHover,
+    successColorPressed,
+    warningColor,
+    warningColorHover,
+    warningColorPressed,
+    errorColor,
+    errorColorHover,
+    errorColorPressed,
+    fontWeight,
+    buttonColor2,
+    buttonColor2Hover,
+    buttonColor2Pressed,
+    fontWeightStrong
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$f), {
     heightTiny,
     heightSmall,
@@ -22891,14 +25075,14 @@ const self$_ = (vars) => {
 const buttonLight = {
   name: "Button",
   common: commonLight,
-  self: self$_
+  self: self$13
 };
 const buttonLight$1 = buttonLight;
 const buttonDark = {
   name: "Button",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$_(vars);
+    const commonSelf = self$13(vars);
     commonSelf.waveOpacity = "0.8";
     commonSelf.colorOpacitySecondary = "0.16";
     commonSelf.colorOpacitySecondaryHover = "0.2";
@@ -23059,32 +25243,58 @@ const style$m = c$1([cB("button", `
     opacity: 0
   }
 })]);
-const buttonProps = Object.assign(Object.assign({}, useTheme.props), { color: String, textColor: String, text: Boolean, block: Boolean, loading: Boolean, disabled: Boolean, circle: Boolean, size: String, ghost: Boolean, round: Boolean, secondary: Boolean, tertiary: Boolean, quaternary: Boolean, strong: Boolean, focusable: {
-  type: Boolean,
-  default: true
-}, keyboard: {
-  type: Boolean,
-  default: true
-}, tag: {
-  type: String,
-  default: "button"
-}, type: {
-  type: String,
-  default: "default"
-}, dashed: Boolean, renderIcon: Function, iconPlacement: {
-  type: String,
-  default: "left"
-}, attrType: {
-  type: String,
-  default: "button"
-}, bordered: {
-  type: Boolean,
-  default: true
-}, onClick: [Function, Array], nativeFocusBehavior: {
-  type: Boolean,
-  default: !isSafari
-} });
-const Button = defineComponent({
+const buttonProps = Object.assign(Object.assign({}, useTheme.props), {
+  color: String,
+  textColor: String,
+  text: Boolean,
+  block: Boolean,
+  loading: Boolean,
+  disabled: Boolean,
+  circle: Boolean,
+  size: String,
+  ghost: Boolean,
+  round: Boolean,
+  secondary: Boolean,
+  tertiary: Boolean,
+  quaternary: Boolean,
+  strong: Boolean,
+  focusable: {
+    type: Boolean,
+    default: true
+  },
+  keyboard: {
+    type: Boolean,
+    default: true
+  },
+  tag: {
+    type: String,
+    default: "button"
+  },
+  type: {
+    type: String,
+    default: "default"
+  },
+  dashed: Boolean,
+  renderIcon: Function,
+  iconPlacement: {
+    type: String,
+    default: "left"
+  },
+  attrType: {
+    type: String,
+    default: "button"
+  },
+  bordered: {
+    type: Boolean,
+    default: true
+  },
+  onClick: [Function, Array],
+  nativeFocusBehavior: {
+    type: Boolean,
+    default: !isSafari
+  }
+});
+const Button = /* @__PURE__ */ defineComponent({
   name: "Button",
   props: buttonProps,
   setup(props) {
@@ -23095,16 +25305,24 @@ const Button = defineComponent({
       return !props.quaternary && !props.tertiary && !props.secondary && !props.text && (!props.color || props.ghost || props.dashed) && props.bordered;
     });
     const NButtonGroup = inject(buttonGroupInjectionKey, {});
-    const { mergedSizeRef } = useFormItem({}, {
+    const {
+      mergedSizeRef
+    } = useFormItem({}, {
       defaultSize: "medium",
       mergedSize: (NFormItem) => {
-        const { size: size2 } = props;
+        const {
+          size: size2
+        } = props;
         if (size2)
           return size2;
-        const { size: buttonGroupSize } = NButtonGroup;
+        const {
+          size: buttonGroupSize
+        } = NButtonGroup;
         if (buttonGroupSize)
           return buttonGroupSize;
-        const { mergedSize: formItemSize } = NFormItem || {};
+        const {
+          mergedSize: formItemSize
+        } = NFormItem || {};
         if (formItemSize) {
           return formItemSize.value;
         }
@@ -23127,13 +25345,17 @@ const Button = defineComponent({
         return;
       }
       if (mergedFocusableRef.value) {
-        (_a2 = selfElRef.value) === null || _a2 === void 0 ? void 0 : _a2.focus({ preventScroll: true });
+        (_a2 = selfElRef.value) === null || _a2 === void 0 ? void 0 : _a2.focus({
+          preventScroll: true
+        });
       }
     };
     const handleClick2 = (e) => {
       var _a2;
       if (!props.disabled && !props.loading) {
-        const { onClick } = props;
+        const {
+          onClick
+        } = props;
         if (onClick)
           call(onClick, e);
         if (!props.text) {
@@ -23163,15 +25385,43 @@ const Button = defineComponent({
     const handleBlur = () => {
       enterPressedRef.value = false;
     };
-    const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
+    const {
+      inlineThemeDisabled,
+      mergedClsPrefixRef,
+      mergedRtlRef
+    } = useConfig(props);
     const themeRef = useTheme("Button", "-button", style$m, buttonLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Button", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const theme = themeRef.value;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, cubicBezierEaseOut: cubicBezierEaseOut2 }, self: self2 } = theme;
-      const { rippleDuration, opacityDisabled, fontWeight, fontWeightStrong } = self2;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2,
+          cubicBezierEaseOut: cubicBezierEaseOut2
+        },
+        self: self2
+      } = theme;
+      const {
+        rippleDuration,
+        opacityDisabled,
+        fontWeight,
+        fontWeightStrong
+      } = self2;
       const size2 = mergedSizeRef.value;
-      const { dashed, type, ghost, text, color, round, circle, textColor, secondary, tertiary, quaternary, strong } = props;
+      const {
+        dashed,
+        type,
+        ghost,
+        text,
+        color,
+        round,
+        circle,
+        textColor,
+        secondary,
+        tertiary,
+        quaternary,
+        strong
+      } = props;
       const fontProps = {
         "font-weight": strong ? fontWeightStrong : fontWeight
       };
@@ -23308,7 +25558,16 @@ const Button = defineComponent({
           "--n-border-disabled": self2[createKey("borderDisabled", mergedType)]
         };
       }
-      const { [createKey("height", size2)]: height, [createKey("fontSize", size2)]: fontSize2, [createKey("padding", size2)]: padding, [createKey("paddingRound", size2)]: paddingRound, [createKey("iconSize", size2)]: iconSize, [createKey("borderRadius", size2)]: borderRadius, [createKey("iconMargin", size2)]: iconMargin, waveOpacity } = self2;
+      const {
+        [createKey("height", size2)]: height,
+        [createKey("fontSize", size2)]: fontSize2,
+        [createKey("padding", size2)]: padding,
+        [createKey("paddingRound", size2)]: paddingRound,
+        [createKey("iconSize", size2)]: iconSize,
+        [createKey("borderRadius", size2)]: borderRadius,
+        [createKey("iconMargin", size2)]: iconMargin,
+        waveOpacity
+      } = self2;
       const sizeProps = {
         "--n-width": circle && !text ? height : "initial",
         "--n-height": text ? "initial" : height,
@@ -23318,11 +25577,30 @@ const Button = defineComponent({
         "--n-icon-margin": iconMargin,
         "--n-border-radius": text ? "initial" : circle || round ? height : borderRadius
       };
-      return Object.assign(Object.assign(Object.assign(Object.assign({ "--n-bezier": cubicBezierEaseInOut2, "--n-bezier-ease-out": cubicBezierEaseOut2, "--n-ripple-duration": rippleDuration, "--n-opacity-disabled": opacityDisabled, "--n-wave-opacity": waveOpacity }, fontProps), colorProps), borderProps), sizeProps);
+      return Object.assign(Object.assign(Object.assign(Object.assign({
+        "--n-bezier": cubicBezierEaseInOut2,
+        "--n-bezier-ease-out": cubicBezierEaseOut2,
+        "--n-ripple-duration": rippleDuration,
+        "--n-opacity-disabled": opacityDisabled,
+        "--n-wave-opacity": waveOpacity
+      }, fontProps), colorProps), borderProps), sizeProps);
     });
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("button", computed(() => {
       let hash = "";
-      const { dashed, type, ghost, text, color, round, circle, textColor, secondary, tertiary, quaternary, strong } = props;
+      const {
+        dashed,
+        type,
+        ghost,
+        text,
+        color,
+        round,
+        circle,
+        textColor,
+        secondary,
+        tertiary,
+        quaternary,
+        strong
+      } = props;
       if (dashed)
         hash += "a";
       if (ghost)
@@ -23345,7 +25623,9 @@ const Button = defineComponent({
         hash += "j" + color2Class(color);
       if (textColor)
         hash += "k" + color2Class(textColor);
-      const { value: size2 } = mergedSizeRef;
+      const {
+        value: size2
+      } = mergedSizeRef;
       hash += "l" + size2[0];
       hash += "m" + type[0];
       return hash;
@@ -23365,7 +25645,9 @@ const Button = defineComponent({
       handleKeyup,
       handleClick: handleClick2,
       customColorCssVars: computed(() => {
-        const { color } = props;
+        const {
+          color
+        } = props;
         if (!color)
           return null;
         const hoverColor = createHoverColor(color);
@@ -23383,12 +25665,18 @@ const Button = defineComponent({
     };
   },
   render() {
-    const { mergedClsPrefix, tag: Component, onRender } = this;
+    const {
+      mergedClsPrefix,
+      tag: Component,
+      onRender
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    const children = resolveWrappedSlot(this.$slots.default, (children2) => children2 && h("span", { class: `${mergedClsPrefix}-button__content` }, children2));
-    return h(
-      Component,
-      { ref: "selfElRef", class: [
+    const children = resolveWrappedSlot(this.$slots.default, (children2) => children2 && h("span", {
+      class: `${mergedClsPrefix}-button__content`
+    }, children2));
+    return h(Component, {
+      ref: "selfElRef",
+      class: [
         this.themeClass,
         `${mergedClsPrefix}-button`,
         `${mergedClsPrefix}-button--${this.type}-type`,
@@ -23403,24 +25691,48 @@ const Button = defineComponent({
         this.loading && `${mergedClsPrefix}-button--loading`,
         this.ghost && `${mergedClsPrefix}-button--ghost`
         // required for button group border collapse
-      ], tabindex: this.mergedFocusable ? 0 : -1, type: this.attrType, style: this.cssVars, disabled: this.disabled, onClick: this.handleClick, onBlur: this.handleBlur, onMousedown: this.handleMousedown, onKeyup: this.handleKeyup, onKeydown: this.handleKeydown },
-      this.iconPlacement === "right" && children,
-      h(NFadeInExpandTransition, { width: true }, {
-        default: () => resolveWrappedSlot(this.$slots.icon, (children2) => (this.loading || this.renderIcon || children2) && h(
-          "span",
-          { class: `${mergedClsPrefix}-button__icon`, style: {
-            margin: isSlotEmpty(this.$slots.default) ? "0" : ""
-          } },
-          h(NIconSwitchTransition, null, {
-            default: () => this.loading ? h(NBaseLoading, { clsPrefix: mergedClsPrefix, key: "loading", class: `${mergedClsPrefix}-icon-slot`, strokeWidth: 20 }) : h("div", { key: "icon", class: `${mergedClsPrefix}-icon-slot`, role: "none" }, this.renderIcon ? this.renderIcon() : children2)
-          })
-        ))
-      }),
-      this.iconPlacement === "left" && children,
-      !this.text ? h(NBaseWave, { ref: "waveElRef", clsPrefix: mergedClsPrefix }) : null,
-      this.showBorder ? h("div", { "aria-hidden": true, class: `${mergedClsPrefix}-button__border`, style: this.customColorCssVars }) : null,
-      this.showBorder ? h("div", { "aria-hidden": true, class: `${mergedClsPrefix}-button__state-border`, style: this.customColorCssVars }) : null
-    );
+      ],
+      tabindex: this.mergedFocusable ? 0 : -1,
+      type: this.attrType,
+      style: this.cssVars,
+      disabled: this.disabled,
+      onClick: this.handleClick,
+      onBlur: this.handleBlur,
+      onMousedown: this.handleMousedown,
+      onKeyup: this.handleKeyup,
+      onKeydown: this.handleKeydown
+    }, this.iconPlacement === "right" && children, h(NFadeInExpandTransition, {
+      width: true
+    }, {
+      default: () => resolveWrappedSlot(this.$slots.icon, (children2) => (this.loading || this.renderIcon || children2) && h("span", {
+        class: `${mergedClsPrefix}-button__icon`,
+        style: {
+          margin: isSlotEmpty(this.$slots.default) ? "0" : ""
+        }
+      }, h(NIconSwitchTransition, null, {
+        default: () => this.loading ? h(NBaseLoading, {
+          clsPrefix: mergedClsPrefix,
+          key: "loading",
+          class: `${mergedClsPrefix}-icon-slot`,
+          strokeWidth: 20
+        }) : h("div", {
+          key: "icon",
+          class: `${mergedClsPrefix}-icon-slot`,
+          role: "none"
+        }, this.renderIcon ? this.renderIcon() : children2)
+      })))
+    }), this.iconPlacement === "left" && children, !this.text ? h(NBaseWave, {
+      ref: "waveElRef",
+      clsPrefix: mergedClsPrefix
+    }) : null, this.showBorder ? h("div", {
+      "aria-hidden": true,
+      class: `${mergedClsPrefix}-button__border`,
+      style: this.customColorCssVars
+    }) : null, this.showBorder ? h("div", {
+      "aria-hidden": true,
+      class: `${mergedClsPrefix}-button__state-border`,
+      style: this.customColorCssVars
+    }) : null);
   }
 });
 const NButton = Button;
@@ -23428,8 +25740,23 @@ const XButton = Button;
 const commonVariables$e = {
   titleFontSize: "22px"
 };
-const self$Z = (vars) => {
-  const { borderRadius, fontSize: fontSize2, lineHeight: lineHeight2, textColor2, textColor1, textColorDisabled, dividerColor, fontWeightStrong, primaryColor, baseColor, hoverColor, cardColor, modalColor, popoverColor } = vars;
+const self$12 = (vars) => {
+  const {
+    borderRadius,
+    fontSize: fontSize2,
+    lineHeight: lineHeight2,
+    textColor2,
+    textColor1,
+    textColorDisabled,
+    dividerColor,
+    fontWeightStrong,
+    primaryColor,
+    baseColor,
+    hoverColor,
+    cardColor,
+    modalColor,
+    popoverColor
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$e), {
     borderRadius,
     borderColor: composite(cardColor, dividerColor),
@@ -23458,7 +25785,7 @@ const calendarLight = createTheme({
   peers: {
     Button: buttonLight$1
   },
-  self: self$Z
+  self: self$12
 });
 const calendarLight$1 = calendarLight;
 const calendarDark = {
@@ -23467,11 +25794,25 @@ const calendarDark = {
   peers: {
     Button: buttonDark$1
   },
-  self: self$Z
+  self: self$12
 };
 const calendarDark$1 = calendarDark;
-const self$Y = (vars) => {
-  const { fontSize: fontSize2, boxShadow2, popoverColor, textColor2, borderRadius, borderColor, heightSmall, heightMedium, heightLarge, fontSizeSmall, fontSizeMedium, fontSizeLarge, dividerColor } = vars;
+const self$11 = (vars) => {
+  const {
+    fontSize: fontSize2,
+    boxShadow2,
+    popoverColor,
+    textColor2,
+    borderRadius,
+    borderColor,
+    heightSmall,
+    heightMedium,
+    heightLarge,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge,
+    dividerColor
+  } = vars;
   return {
     panelFontSize: fontSize2,
     boxShadow: boxShadow2,
@@ -23495,7 +25836,7 @@ const colorPickerLight = createTheme({
     Input: inputLight$1,
     Button: buttonLight$1
   },
-  self: self$Y
+  self: self$11
 });
 const colorPickerLight$1 = colorPickerLight;
 const colorPickerDark = {
@@ -23505,7 +25846,7 @@ const colorPickerDark = {
     Input: inputDark$1,
     Button: buttonDark$1
   },
-  self: self$Y
+  self: self$11
 };
 const colorPickerDark$1 = colorPickerDark;
 function deriveDefaultValue(modes, showAlpha) {
@@ -23613,7 +25954,7 @@ const HANDLE_SIZE_NUM$1 = 12;
 const RADIUS$2 = "6px";
 const RADIUS_NUM = 6;
 const GRADIENT = "linear-gradient(90deg,red,#ff0 16.66%,#0f0 33.33%,#0ff 50%,#00f 66.66%,#f0f 83.33%,red)";
-const HueSlider = defineComponent({
+const HueSlider = /* @__PURE__ */ defineComponent({
   name: "HueSlider",
   props: {
     clsPrefix: {
@@ -23640,10 +25981,15 @@ const HueSlider = defineComponent({
       handleMouseMove(e);
     }
     function handleMouseMove(e) {
-      const { value: railEl } = railRef;
+      const {
+        value: railEl
+      } = railRef;
       if (!railEl)
         return;
-      const { width, left } = railEl.getBoundingClientRect();
+      const {
+        width,
+        left
+      } = railEl.getBoundingClientRect();
       const newHue = normalizeHue((e.clientX - left - RADIUS_NUM) / (width - HANDLE_SIZE_NUM$1) * 360);
       props.onUpdateHue(newHue);
     }
@@ -23659,56 +26005,57 @@ const HueSlider = defineComponent({
     };
   },
   render() {
-    const { clsPrefix } = this;
-    return h(
-      "div",
-      { class: `${clsPrefix}-color-picker-slider`, style: {
+    const {
+      clsPrefix
+    } = this;
+    return h("div", {
+      class: `${clsPrefix}-color-picker-slider`,
+      style: {
         height: HANDLE_SIZE$2,
         borderRadius: RADIUS$2
-      } },
-      h(
-        "div",
-        { ref: "railRef", style: {
-          boxShadow: "inset 0 0 2px 0 rgba(0, 0, 0, .24)",
-          boxSizing: "border-box",
-          backgroundImage: GRADIENT,
-          height: HANDLE_SIZE$2,
-          borderRadius: RADIUS$2,
-          position: "relative"
-        }, onMousedown: this.handleMouseDown },
-        h(
-          "div",
-          { style: {
-            position: "absolute",
-            left: RADIUS$2,
-            right: RADIUS$2,
-            top: 0,
-            bottom: 0
-          } },
-          h(
-            "div",
-            { class: `${clsPrefix}-color-picker-handle`, style: {
-              left: `calc((${this.hue}%) / 359 * 100 - ${RADIUS$2})`,
-              borderRadius: RADIUS$2,
-              width: HANDLE_SIZE$2,
-              height: HANDLE_SIZE$2
-            } },
-            h("div", { class: `${clsPrefix}-color-picker-handle__fill`, style: {
-              backgroundColor: `hsl(${this.hue}, 100%, 50%)`,
-              borderRadius: RADIUS$2,
-              width: HANDLE_SIZE$2,
-              height: HANDLE_SIZE$2
-            } })
-          )
-        )
-      )
-    );
+      }
+    }, h("div", {
+      ref: "railRef",
+      style: {
+        boxShadow: "inset 0 0 2px 0 rgba(0, 0, 0, .24)",
+        boxSizing: "border-box",
+        backgroundImage: GRADIENT,
+        height: HANDLE_SIZE$2,
+        borderRadius: RADIUS$2,
+        position: "relative"
+      },
+      onMousedown: this.handleMouseDown
+    }, h("div", {
+      style: {
+        position: "absolute",
+        left: RADIUS$2,
+        right: RADIUS$2,
+        top: 0,
+        bottom: 0
+      }
+    }, h("div", {
+      class: `${clsPrefix}-color-picker-handle`,
+      style: {
+        left: `calc((${this.hue}%) / 359 * 100 - ${RADIUS$2})`,
+        borderRadius: RADIUS$2,
+        width: HANDLE_SIZE$2,
+        height: HANDLE_SIZE$2
+      }
+    }, h("div", {
+      class: `${clsPrefix}-color-picker-handle__fill`,
+      style: {
+        backgroundColor: `hsl(${this.hue}, 100%, 50%)`,
+        borderRadius: RADIUS$2,
+        width: HANDLE_SIZE$2,
+        height: HANDLE_SIZE$2
+      }
+    })))));
   }
 });
 const HANDLE_SIZE$1 = "12px";
 const HANDLE_SIZE_NUM = 12;
 const RADIUS$1 = "6px";
-const AlphaSlider = defineComponent({
+const AlphaSlider = /* @__PURE__ */ defineComponent({
   name: "AlphaSlider",
   props: {
     clsPrefix: {
@@ -23739,10 +26086,15 @@ const AlphaSlider = defineComponent({
       handleMouseMove(e);
     }
     function handleMouseMove(e) {
-      const { value: railEl } = railRef;
+      const {
+        value: railEl
+      } = railRef;
       if (!railEl)
         return;
-      const { width, left } = railEl.getBoundingClientRect();
+      const {
+        width,
+        left
+      } = railEl.getBoundingClientRect();
       const newAlpha = (e.clientX - left) / (width - HANDLE_SIZE_NUM);
       props.onUpdateAlpha(normalizeAlpha(newAlpha));
     }
@@ -23755,7 +26107,9 @@ const AlphaSlider = defineComponent({
     return {
       railRef,
       railBackgroundImage: computed(() => {
-        const { rgba: rgba2 } = props;
+        const {
+          rgba: rgba2
+        } = props;
         if (!rgba2)
           return "";
         return `linear-gradient(to right, rgba(${rgba2[0]}, ${rgba2[1]}, ${rgba2[2]}, 0) 0%, rgba(${rgba2[0]}, ${rgba2[1]}, ${rgba2[2]}, 1) 100%)`;
@@ -23764,60 +26118,64 @@ const AlphaSlider = defineComponent({
     };
   },
   render() {
-    const { clsPrefix } = this;
-    return h(
-      "div",
-      { class: `${clsPrefix}-color-picker-slider`, ref: "railRef", style: {
+    const {
+      clsPrefix
+    } = this;
+    return h("div", {
+      class: `${clsPrefix}-color-picker-slider`,
+      ref: "railRef",
+      style: {
         height: HANDLE_SIZE$1,
         borderRadius: RADIUS$1
-      }, onMousedown: this.handleMouseDown },
-      h(
-        "div",
-        { style: {
-          borderRadius: RADIUS$1,
-          position: "absolute",
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0,
-          overflow: "hidden"
-        } },
-        h("div", { class: `${clsPrefix}-color-picker-checkboard` }),
-        h("div", { class: `${clsPrefix}-color-picker-slider__image`, style: {
-          backgroundImage: this.railBackgroundImage
-        } })
-      ),
-      this.rgba && h(
-        "div",
-        { style: {
-          position: "absolute",
-          left: RADIUS$1,
-          right: RADIUS$1,
-          top: 0,
-          bottom: 0
-        } },
-        h(
-          "div",
-          { class: `${clsPrefix}-color-picker-handle`, style: {
-            left: `calc(${this.alpha * 100}% - ${RADIUS$1})`,
-            borderRadius: RADIUS$1,
-            width: HANDLE_SIZE$1,
-            height: HANDLE_SIZE$1
-          } },
-          h("div", { class: `${clsPrefix}-color-picker-handle__fill`, style: {
-            backgroundColor: toRgbaString(this.rgba),
-            borderRadius: RADIUS$1,
-            width: HANDLE_SIZE$1,
-            height: HANDLE_SIZE$1
-          } })
-        )
-      )
-    );
+      },
+      onMousedown: this.handleMouseDown
+    }, h("div", {
+      style: {
+        borderRadius: RADIUS$1,
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        overflow: "hidden"
+      }
+    }, h("div", {
+      class: `${clsPrefix}-color-picker-checkboard`
+    }), h("div", {
+      class: `${clsPrefix}-color-picker-slider__image`,
+      style: {
+        backgroundImage: this.railBackgroundImage
+      }
+    })), this.rgba && h("div", {
+      style: {
+        position: "absolute",
+        left: RADIUS$1,
+        right: RADIUS$1,
+        top: 0,
+        bottom: 0
+      }
+    }, h("div", {
+      class: `${clsPrefix}-color-picker-handle`,
+      style: {
+        left: `calc(${this.alpha * 100}% - ${RADIUS$1})`,
+        borderRadius: RADIUS$1,
+        width: HANDLE_SIZE$1,
+        height: HANDLE_SIZE$1
+      }
+    }, h("div", {
+      class: `${clsPrefix}-color-picker-handle__fill`,
+      style: {
+        backgroundColor: toRgbaString(this.rgba),
+        borderRadius: RADIUS$1,
+        width: HANDLE_SIZE$1,
+        height: HANDLE_SIZE$1
+      }
+    }))));
   }
 });
 const HANDLE_SIZE = "12px";
 const RADIUS = "6px";
-const Pallete = defineComponent({
+const Pallete = /* @__PURE__ */ defineComponent({
   name: "Pallete",
   props: {
     clsPrefix: {
@@ -23853,10 +26211,17 @@ const Pallete = defineComponent({
       handleMouseMove(e);
     }
     function handleMouseMove(e) {
-      const { value: palleteEl } = palleteRef;
+      const {
+        value: palleteEl
+      } = palleteRef;
       if (!palleteEl)
         return;
-      const { width, height, left, bottom } = palleteEl.getBoundingClientRect();
+      const {
+        width,
+        height,
+        left,
+        bottom
+      } = palleteEl.getBoundingClientRect();
       const newV = (bottom - e.clientY) / height;
       const newS = (e.clientX - left) / width;
       const normalizedNewS = 100 * (newS > 1 ? 1 : newS < 0 ? 0 : newS);
@@ -23872,7 +26237,9 @@ const Pallete = defineComponent({
     return {
       palleteRef,
       handleColor: computed(() => {
-        const { rgba: rgba2 } = props;
+        const {
+          rgba: rgba2
+        } = props;
         if (!rgba2)
           return "";
         return `rgb(${rgba2[0]}, ${rgba2[1]}, ${rgba2[2]})`;
@@ -23881,33 +26248,41 @@ const Pallete = defineComponent({
     };
   },
   render() {
-    const { clsPrefix } = this;
-    return h(
-      "div",
-      { class: `${clsPrefix}-color-picker-pallete`, onMousedown: this.handleMouseDown, ref: "palleteRef" },
-      h("div", { class: `${clsPrefix}-color-picker-pallete__layer`, style: {
+    const {
+      clsPrefix
+    } = this;
+    return h("div", {
+      class: `${clsPrefix}-color-picker-pallete`,
+      onMousedown: this.handleMouseDown,
+      ref: "palleteRef"
+    }, h("div", {
+      class: `${clsPrefix}-color-picker-pallete__layer`,
+      style: {
         backgroundImage: `linear-gradient(90deg, white, hsl(${this.displayedHue}, 100%, 50%))`
-      } }),
-      h("div", { class: `${clsPrefix}-color-picker-pallete__layer ${clsPrefix}-color-picker-pallete__layer--shadowed`, style: {
+      }
+    }), h("div", {
+      class: `${clsPrefix}-color-picker-pallete__layer ${clsPrefix}-color-picker-pallete__layer--shadowed`,
+      style: {
         backgroundImage: "linear-gradient(180deg, rgba(0, 0, 0, 0%), rgba(0, 0, 0, 100%))"
-      } }),
-      this.rgba && h(
-        "div",
-        { class: `${clsPrefix}-color-picker-handle`, style: {
-          width: HANDLE_SIZE,
-          height: HANDLE_SIZE,
-          borderRadius: RADIUS,
-          left: `calc(${this.displayedSv[0]}% - ${RADIUS})`,
-          bottom: `calc(${this.displayedSv[1]}% - ${RADIUS})`
-        } },
-        h("div", { class: `${clsPrefix}-color-picker-handle__fill`, style: {
-          backgroundColor: this.handleColor,
-          borderRadius: RADIUS,
-          width: HANDLE_SIZE,
-          height: HANDLE_SIZE
-        } })
-      )
-    );
+      }
+    }), this.rgba && h("div", {
+      class: `${clsPrefix}-color-picker-handle`,
+      style: {
+        width: HANDLE_SIZE,
+        height: HANDLE_SIZE,
+        borderRadius: RADIUS,
+        left: `calc(${this.displayedSv[0]}% - ${RADIUS})`,
+        bottom: `calc(${this.displayedSv[1]}% - ${RADIUS})`
+      }
+    }, h("div", {
+      class: `${clsPrefix}-color-picker-handle__fill`,
+      style: {
+        backgroundColor: this.handleColor,
+        borderRadius: RADIUS,
+        width: HANDLE_SIZE,
+        height: HANDLE_SIZE
+      }
+    })));
   }
 });
 const colorPickerInjectionKey = createInjectionKey("n-color-picker");
@@ -23945,7 +26320,7 @@ function normalizeAlphaUnit(value) {
 const inputThemeOverrides = {
   paddingSmall: "0 4px"
 };
-const ColorInputUnit = defineComponent({
+const ColorInputUnit = /* @__PURE__ */ defineComponent({
   name: "ColorInputUnit",
   props: {
     label: {
@@ -23964,15 +26339,21 @@ const ColorInputUnit = defineComponent({
   },
   setup(props) {
     const inputValueRef = ref("");
-    const { themeRef } = inject(colorPickerInjectionKey, null);
+    const {
+      themeRef
+    } = inject(colorPickerInjectionKey, null);
     watchEffect(() => {
       inputValueRef.value = getInputString();
     });
     function getInputString() {
-      const { value } = props;
+      const {
+        value
+      } = props;
       if (value === null)
         return "";
-      const { label } = props;
+      const {
+        label
+      } = props;
       if (label === "HEX") {
         return value;
       }
@@ -24041,7 +26422,9 @@ const ColorInputUnit = defineComponent({
     };
   },
   render() {
-    const { mergedTheme } = this;
+    const {
+      mergedTheme
+    } = this;
     return h(NInput, {
       size: "small",
       placeholder: this.label,
@@ -24056,7 +26439,7 @@ const ColorInputUnit = defineComponent({
     });
   }
 });
-const ColorInput = defineComponent({
+const ColorInput = /* @__PURE__ */ defineComponent({
   name: "ColorInput",
   props: {
     clsPrefix: {
@@ -24096,7 +26479,9 @@ const ColorInput = defineComponent({
   setup(props) {
     return {
       handleUnitUpdateValue(index2, value) {
-        const { showAlpha } = props;
+        const {
+          showAlpha
+        } = props;
         if (props.mode === "hex") {
           props.onUpdateValue((showAlpha ? toHexaString : toHexString)(value));
           return;
@@ -24125,35 +26510,52 @@ const ColorInput = defineComponent({
     };
   },
   render() {
-    const { clsPrefix, modes } = this;
-    return h(
-      "div",
-      { class: `${clsPrefix}-color-picker-input` },
-      h("div", { class: `${clsPrefix}-color-picker-input__mode`, onClick: this.onUpdateMode, style: {
+    const {
+      clsPrefix,
+      modes
+    } = this;
+    return h("div", {
+      class: `${clsPrefix}-color-picker-input`
+    }, h("div", {
+      class: `${clsPrefix}-color-picker-input__mode`,
+      onClick: this.onUpdateMode,
+      style: {
         cursor: modes.length === 1 ? "" : "pointer"
-      } }, this.mode.toUpperCase() + (this.showAlpha ? "A" : "")),
-      h(NInputGroup, null, {
-        default: () => {
-          const { mode, valueArr, showAlpha } = this;
-          if (mode === "hex") {
-            let hexValue = null;
-            try {
-              hexValue = valueArr === null ? null : (showAlpha ? toHexaString : toHexString)(valueArr);
-            } catch (_a2) {
-            }
-            return h(ColorInputUnit, { label: "HEX", showAlpha, value: hexValue, onUpdateValue: (unitValue) => {
-              this.handleUnitUpdateValue(0, unitValue);
-            } });
+      }
+    }, this.mode.toUpperCase() + (this.showAlpha ? "A" : "")), h(NInputGroup, null, {
+      default: () => {
+        const {
+          mode,
+          valueArr,
+          showAlpha
+        } = this;
+        if (mode === "hex") {
+          let hexValue = null;
+          try {
+            hexValue = valueArr === null ? null : (showAlpha ? toHexaString : toHexString)(valueArr);
+          } catch (_a2) {
           }
-          return (mode + (showAlpha ? "a" : "")).split("").map((v, i) => h(ColorInputUnit, { label: v.toUpperCase(), value: valueArr === null ? null : valueArr[i], onUpdateValue: (unitValue) => {
-            this.handleUnitUpdateValue(i, unitValue);
-          } }));
+          return h(ColorInputUnit, {
+            label: "HEX",
+            showAlpha,
+            value: hexValue,
+            onUpdateValue: (unitValue) => {
+              this.handleUnitUpdateValue(0, unitValue);
+            }
+          });
         }
-      })
-    );
+        return (mode + (showAlpha ? "a" : "")).split("").map((v, i) => h(ColorInputUnit, {
+          label: v.toUpperCase(),
+          value: valueArr === null ? null : valueArr[i],
+          onUpdateValue: (unitValue) => {
+            this.handleUnitUpdateValue(i, unitValue);
+          }
+        }));
+      }
+    }));
   }
 });
-const ColorPickerTrigger = defineComponent({
+const ColorPickerTrigger = /* @__PURE__ */ defineComponent({
   name: "ColorPickerTrigger",
   props: {
     clsPrefix: {
@@ -24172,33 +26574,41 @@ const ColorPickerTrigger = defineComponent({
     onClick: Function
   },
   setup(props) {
-    const { colorPickerSlots, renderLabelRef } = inject(colorPickerInjectionKey, null);
+    const {
+      colorPickerSlots,
+      renderLabelRef
+    } = inject(colorPickerInjectionKey, null);
     return () => {
-      const { hsla: hsla2, value, clsPrefix, onClick, disabled } = props;
+      const {
+        hsla: hsla2,
+        value,
+        clsPrefix,
+        onClick,
+        disabled
+      } = props;
       const renderLabel = colorPickerSlots.label || renderLabelRef.value;
-      return h(
-        "div",
-        { class: [
-          `${clsPrefix}-color-picker-trigger`,
-          disabled && `${clsPrefix}-color-picker-trigger--disabled`
-        ], onClick: disabled ? void 0 : onClick },
-        h(
-          "div",
-          { class: `${clsPrefix}-color-picker-trigger__fill` },
-          h("div", { class: `${clsPrefix}-color-picker-checkboard` }),
-          h("div", { style: {
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            backgroundColor: hsla2 ? toHslaString(hsla2) : ""
-          } }),
-          value && hsla2 ? h("div", { class: `${clsPrefix}-color-picker-trigger__value`, style: {
-            color: hsla2[2] > 50 || hsla2[3] < 0.5 ? "black" : "white"
-          } }, renderLabel ? renderLabel(value) : value) : null
-        )
-      );
+      return h("div", {
+        class: [`${clsPrefix}-color-picker-trigger`, disabled && `${clsPrefix}-color-picker-trigger--disabled`],
+        onClick: disabled ? void 0 : onClick
+      }, h("div", {
+        class: `${clsPrefix}-color-picker-trigger__fill`
+      }, h("div", {
+        class: `${clsPrefix}-color-picker-checkboard`
+      }), h("div", {
+        style: {
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          backgroundColor: hsla2 ? toHslaString(hsla2) : ""
+        }
+      }), value && hsla2 ? h("div", {
+        class: `${clsPrefix}-color-picker-trigger__value`,
+        style: {
+          color: hsla2[2] > 50 || hsla2[3] < 0.5 ? "black" : "white"
+        }
+      }, renderLabel ? renderLabel(value) : value) : null));
     };
   }
 });
@@ -24211,10 +26621,13 @@ function normalizeColor(color, mode) {
 }
 function getHexFromName(color) {
   const ctx2 = document.createElement("canvas").getContext("2d");
+  if (!ctx2) {
+    return "#000000";
+  }
   ctx2.fillStyle = color;
   return ctx2.fillStyle;
 }
-const ColorPickerSwatches = defineComponent({
+const ColorPickerSwatches = /* @__PURE__ */ defineComponent({
   name: "ColorPickerSwatches",
   props: {
     clsPrefix: {
@@ -24244,8 +26657,13 @@ const ColorPickerSwatches = defineComponent({
       };
     }));
     function normalizeOutput(parsed) {
-      const { mode: modeProp } = props;
-      let { value, mode: swatchColorMode } = parsed;
+      const {
+        mode: modeProp
+      } = props;
+      let {
+        value,
+        mode: swatchColorMode
+      } = parsed;
       if (!swatchColorMode) {
         swatchColorMode = "hex";
         if (/^[a-zA-Z]+$/.test(value)) {
@@ -24273,19 +26691,29 @@ const ColorPickerSwatches = defineComponent({
     };
   },
   render() {
-    const { clsPrefix } = this;
-    return h("div", { class: `${clsPrefix}-color-picker-swatches` }, this.parsedSwatchesRef.map((swatch) => h(
-      "div",
-      { class: `${clsPrefix}-color-picker-swatch`, tabindex: 0, onClick: () => {
+    const {
+      clsPrefix
+    } = this;
+    return h("div", {
+      class: `${clsPrefix}-color-picker-swatches`
+    }, this.parsedSwatchesRef.map((swatch) => h("div", {
+      class: `${clsPrefix}-color-picker-swatch`,
+      tabindex: 0,
+      onClick: () => {
         this.handleSwatchSelect(swatch);
-      }, onKeydown: (e) => {
+      },
+      onKeydown: (e) => {
         this.handleSwatchKeyDown(e, swatch);
-      } },
-      h("div", { class: `${clsPrefix}-color-picker-swatch__fill`, style: { background: swatch.legalValue } })
-    )));
+      }
+    }, h("div", {
+      class: `${clsPrefix}-color-picker-swatch__fill`,
+      style: {
+        background: swatch.legalValue
+      }
+    }))));
   }
 });
-const ColorPreview = defineComponent({
+const ColorPreview = /* @__PURE__ */ defineComponent({
   name: "ColorPreview",
   props: {
     clsPrefix: {
@@ -24321,15 +26749,22 @@ const ColorPreview = defineComponent({
     };
   },
   render() {
-    const { clsPrefix } = this;
-    return h(
-      "div",
-      { class: `${clsPrefix}-color-picker-preview__preview` },
-      h("span", { class: `${clsPrefix}-color-picker-preview__fill`, style: {
+    const {
+      clsPrefix
+    } = this;
+    return h("div", {
+      class: `${clsPrefix}-color-picker-preview__preview`
+    }, h("span", {
+      class: `${clsPrefix}-color-picker-preview__fill`,
+      style: {
         background: this.color || "#000000"
-      } }),
-      h("input", { class: `${clsPrefix}-color-picker-preview__input`, type: "color", value: this.color, onChange: this.handleChange })
-    );
+      }
+    }), h("input", {
+      class: `${clsPrefix}-color-picker-preview__input`,
+      type: "color",
+      value: this.color,
+      onChange: this.handleChange
+    }));
   }
 });
 const style$l = c$1([cB("color-picker", `
@@ -24513,36 +26948,69 @@ const style$l = c$1([cB("color-picker", `
  filter: blur(2px);
  content: "";
  `)])])])])]);
-const colorPickerProps = Object.assign(Object.assign({}, useTheme.props), { value: String, show: {
-  type: Boolean,
-  default: void 0
-}, defaultShow: Boolean, defaultValue: String, modes: {
-  type: Array,
-  // no hsva by default since browser doesn't support it
-  default: () => ["rgb", "hex", "hsl"]
-}, placement: {
-  type: String,
-  default: "bottom-start"
-}, to: useAdjustedTo.propTo, showAlpha: {
-  type: Boolean,
-  default: true
-}, showPreview: Boolean, swatches: Array, disabled: {
-  type: Boolean,
-  default: void 0
-}, actions: {
-  type: Array,
-  default: null
-}, internalActions: Array, size: String, renderLabel: Function, onComplete: Function, onConfirm: Function, "onUpdate:show": [Function, Array], onUpdateShow: [Function, Array], "onUpdate:value": [Function, Array], onUpdateValue: [Function, Array] });
-const NColorPicker = defineComponent({
+const colorPickerProps = Object.assign(Object.assign({}, useTheme.props), {
+  value: String,
+  show: {
+    type: Boolean,
+    default: void 0
+  },
+  defaultShow: Boolean,
+  defaultValue: String,
+  modes: {
+    type: Array,
+    // no hsva by default since browser doesn't support it
+    default: () => ["rgb", "hex", "hsl"]
+  },
+  placement: {
+    type: String,
+    default: "bottom-start"
+  },
+  to: useAdjustedTo.propTo,
+  showAlpha: {
+    type: Boolean,
+    default: true
+  },
+  showPreview: Boolean,
+  swatches: Array,
+  disabled: {
+    type: Boolean,
+    default: void 0
+  },
+  actions: {
+    type: Array,
+    default: null
+  },
+  internalActions: Array,
+  size: String,
+  renderLabel: Function,
+  onComplete: Function,
+  onConfirm: Function,
+  "onUpdate:show": [Function, Array],
+  onUpdateShow: [Function, Array],
+  "onUpdate:value": [Function, Array],
+  onUpdateValue: [Function, Array]
+});
+const NColorPicker = /* @__PURE__ */ defineComponent({
   name: "ColorPicker",
   props: colorPickerProps,
-  setup(props, { slots }) {
+  setup(props, {
+    slots
+  }) {
     const selfRef = ref(null);
     let upcomingValue = null;
     const formItem = useFormItem(props);
-    const { mergedSizeRef, mergedDisabledRef } = formItem;
-    const { localeRef } = useLocale("global");
-    const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedSizeRef,
+      mergedDisabledRef
+    } = formItem;
+    const {
+      localeRef
+    } = useLocale("global");
+    const {
+      mergedClsPrefixRef,
+      namespaceRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("ColorPicker", "-color-picker", style$l, colorPickerLight$1, props, mergedClsPrefixRef);
     provide(colorPickerInjectionKey, {
       themeRef,
@@ -24552,24 +27020,35 @@ const NColorPicker = defineComponent({
     const uncontrolledShowRef = ref(props.defaultShow);
     const mergedShowRef = useMergedState(toRef(props, "show"), uncontrolledShowRef);
     function doUpdateShow(value) {
-      const { onUpdateShow, "onUpdate:show": _onUpdateShow } = props;
+      const {
+        onUpdateShow,
+        "onUpdate:show": _onUpdateShow
+      } = props;
       if (onUpdateShow)
         call(onUpdateShow, value);
       if (_onUpdateShow)
         call(_onUpdateShow, value);
       uncontrolledShowRef.value = value;
     }
-    const { defaultValue } = props;
+    const {
+      defaultValue
+    } = props;
     const uncontrolledValueRef = ref(defaultValue === void 0 ? deriveDefaultValue(props.modes, props.showAlpha) : defaultValue);
     const mergedValueRef = useMergedState(toRef(props, "value"), uncontrolledValueRef);
     const undoStackRef = ref([mergedValueRef.value]);
     const valueIndexRef = ref(0);
     const valueModeRef = computed(() => getModeFromValue(mergedValueRef.value));
-    const { modes } = props;
+    const {
+      modes
+    } = props;
     const displayedModeRef = ref(getModeFromValue(mergedValueRef.value) || modes[0] || "rgb");
     function handleUpdateDisplayedMode() {
-      const { modes: modes2 } = props;
-      const { value: displayedMode } = displayedModeRef;
+      const {
+        modes: modes2
+      } = props;
+      const {
+        value: displayedMode
+      } = displayedModeRef;
       const currentModeIndex = modes2.findIndex((mode) => mode === displayedMode);
       if (~currentModeIndex) {
         displayedModeRef.value = modes2[(currentModeIndex + 1) % modes2.length];
@@ -24579,7 +27058,9 @@ const NColorPicker = defineComponent({
     }
     let _h, s, l, v, r, g, b, a;
     const hsvaRef = computed(() => {
-      const { value: mergedValue } = mergedValueRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
       if (!mergedValue)
         return null;
       switch (valueModeRef.value) {
@@ -24595,7 +27076,9 @@ const NColorPicker = defineComponent({
       }
     });
     const rgbaRef = computed(() => {
-      const { value: mergedValue } = mergedValueRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
       if (!mergedValue)
         return null;
       switch (valueModeRef.value) {
@@ -24611,7 +27094,9 @@ const NColorPicker = defineComponent({
       }
     });
     const hslaRef = computed(() => {
-      const { value: mergedValue } = mergedValueRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
       if (!mergedValue)
         return null;
       switch (valueModeRef.value) {
@@ -24641,64 +27126,54 @@ const NColorPicker = defineComponent({
     const displayedAlphaRef = ref(1);
     const displayedSvRef = ref([0, 0]);
     function handleUpdateSv(s2, v2) {
-      const { value: hsvaArr } = hsvaRef;
+      const {
+        value: hsvaArr
+      } = hsvaRef;
       const hue = displayedHueRef.value;
       const alpha = hsvaArr ? hsvaArr[3] : 1;
       displayedSvRef.value = [s2, v2];
-      const { showAlpha } = props;
+      const {
+        showAlpha
+      } = props;
       switch (displayedModeRef.value) {
         case "hsv":
           doUpdateValue((showAlpha ? toHsvaString : toHsvString)([hue, s2, v2, alpha]), "cursor");
           break;
         case "hsl":
-          doUpdateValue((showAlpha ? toHslaString : toHslString)([
-            ...hsv2hsl(hue, s2, v2),
-            alpha
-          ]), "cursor");
+          doUpdateValue((showAlpha ? toHslaString : toHslString)([...hsv2hsl(hue, s2, v2), alpha]), "cursor");
           break;
         case "rgb":
-          doUpdateValue((showAlpha ? toRgbaString : toRgbString)([
-            ...hsv2rgb(hue, s2, v2),
-            alpha
-          ]), "cursor");
+          doUpdateValue((showAlpha ? toRgbaString : toRgbString)([...hsv2rgb(hue, s2, v2), alpha]), "cursor");
           break;
         case "hex":
-          doUpdateValue((showAlpha ? toHexaString : toHexString)([
-            ...hsv2rgb(hue, s2, v2),
-            alpha
-          ]), "cursor");
+          doUpdateValue((showAlpha ? toHexaString : toHexString)([...hsv2rgb(hue, s2, v2), alpha]), "cursor");
           break;
       }
     }
     function handleUpdateHue(hue) {
       displayedHueRef.value = hue;
-      const { value: hsvaArr } = hsvaRef;
+      const {
+        value: hsvaArr
+      } = hsvaRef;
       if (!hsvaArr) {
         return;
       }
       const [, s2, v2, a2] = hsvaArr;
-      const { showAlpha } = props;
+      const {
+        showAlpha
+      } = props;
       switch (displayedModeRef.value) {
         case "hsv":
           doUpdateValue((showAlpha ? toHsvaString : toHsvString)([hue, s2, v2, a2]), "cursor");
           break;
         case "rgb":
-          doUpdateValue((showAlpha ? toRgbaString : toRgbString)([
-            ...hsv2rgb(hue, s2, v2),
-            a2
-          ]), "cursor");
+          doUpdateValue((showAlpha ? toRgbaString : toRgbString)([...hsv2rgb(hue, s2, v2), a2]), "cursor");
           break;
         case "hex":
-          doUpdateValue((showAlpha ? toHexaString : toHexString)([
-            ...hsv2rgb(hue, s2, v2),
-            a2
-          ]), "cursor");
+          doUpdateValue((showAlpha ? toHexaString : toHexString)([...hsv2rgb(hue, s2, v2), a2]), "cursor");
           break;
         case "hsl":
-          doUpdateValue((showAlpha ? toHslaString : toHslString)([
-            ...hsv2hsl(hue, s2, v2),
-            a2
-          ]), "cursor");
+          doUpdateValue((showAlpha ? toHslaString : toHslString)([...hsv2hsl(hue, s2, v2), a2]), "cursor");
           break;
       }
     }
@@ -24729,8 +27204,14 @@ const NColorPicker = defineComponent({
       } else {
         upcomingValue = null;
       }
-      const { nTriggerFormChange, nTriggerFormInput } = formItem;
-      const { onUpdateValue, "onUpdate:value": _onUpdateValue } = props;
+      const {
+        nTriggerFormChange,
+        nTriggerFormInput
+      } = formItem;
+      const {
+        onUpdateValue,
+        "onUpdate:value": _onUpdateValue
+      } = props;
       if (onUpdateValue)
         call(onUpdateValue, value);
       if (_onUpdateValue)
@@ -24744,15 +27225,26 @@ const NColorPicker = defineComponent({
       void nextTick(handleComplete);
     }
     function handleComplete(pushStack = true) {
-      const { value } = mergedValueRef;
+      const {
+        value
+      } = mergedValueRef;
       if (value) {
-        const { nTriggerFormChange, nTriggerFormInput } = formItem;
-        const { onComplete } = props;
+        const {
+          nTriggerFormChange,
+          nTriggerFormInput
+        } = formItem;
+        const {
+          onComplete
+        } = props;
         if (onComplete) {
           onComplete(value);
         }
-        const { value: undoStack } = undoStackRef;
-        const { value: valueIndex } = valueIndexRef;
+        const {
+          value: undoStack
+        } = undoStackRef;
+        const {
+          value: valueIndex
+        } = valueIndexRef;
         if (pushStack) {
           undoStack.splice(valueIndex + 1, undoStack.length, value);
           valueIndexRef.value = valueIndex + 1;
@@ -24762,7 +27254,9 @@ const NColorPicker = defineComponent({
       }
     }
     function undo() {
-      const { value: valueIndex } = valueIndexRef;
+      const {
+        value: valueIndex
+      } = valueIndexRef;
       if (valueIndex - 1 < 0)
         return;
       doUpdateValue(undoStackRef.value[valueIndex - 1], "input");
@@ -24770,7 +27264,9 @@ const NColorPicker = defineComponent({
       valueIndexRef.value = valueIndex - 1;
     }
     function redo() {
-      const { value: valueIndex } = valueIndexRef;
+      const {
+        value: valueIndex
+      } = valueIndexRef;
       if (valueIndex < 0 || valueIndex + 1 >= undoStackRef.value.length)
         return;
       doUpdateValue(undoStackRef.value[valueIndex + 1], "input");
@@ -24782,8 +27278,12 @@ const NColorPicker = defineComponent({
       doUpdateShow(false);
     }
     function handleConfirm() {
-      const { value } = mergedValueRef;
-      const { onConfirm } = props;
+      const {
+        value
+      } = mergedValueRef;
+      const {
+        onConfirm
+      } = props;
       if (onConfirm) {
         onConfirm(value);
       }
@@ -24791,7 +27291,9 @@ const NColorPicker = defineComponent({
     }
     const undoableRef = computed(() => valueIndexRef.value >= 1);
     const redoableRef = computed(() => {
-      const { value: undoStack } = undoStackRef;
+      const {
+        value: undoStack
+      } = undoStackRef;
       return undoStack.length > 1 && valueIndexRef.value < undoStack.length - 1;
     });
     watch(mergedShowRef, (value) => {
@@ -24804,7 +27306,9 @@ const NColorPicker = defineComponent({
       if (upcomingValue && upcomingValue === mergedValueRef.value)
         ;
       else {
-        const { value } = hsvaRef;
+        const {
+          value
+        } = hsvaRef;
         if (value) {
           displayedHueRef.value = value[0];
           displayedAlphaRef.value = value[3];
@@ -24814,8 +27318,25 @@ const NColorPicker = defineComponent({
       upcomingValue = null;
     });
     const cssVarsRef = computed(() => {
-      const { value: mergedSize } = mergedSizeRef;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { textColor, color, panelFontSize, boxShadow, border, borderRadius, dividerColor, [createKey("height", mergedSize)]: height, [createKey("fontSize", mergedSize)]: fontSize2 } } = themeRef.value;
+      const {
+        value: mergedSize
+      } = mergedSizeRef;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          textColor,
+          color,
+          panelFontSize,
+          boxShadow,
+          border,
+          borderRadius,
+          dividerColor,
+          [createKey("height", mergedSize)]: height,
+          [createKey("fontSize", mergedSize)]: fontSize2
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-text-color": textColor,
@@ -24834,54 +27355,116 @@ const NColorPicker = defineComponent({
     }), cssVarsRef, props) : void 0;
     function renderPanel() {
       var _a2;
-      const { value: rgba2 } = rgbaRef;
-      const { value: displayedHue } = displayedHueRef;
-      const { internalActions, modes: modes2, actions } = props;
-      const { value: mergedTheme } = themeRef;
-      const { value: mergedClsPrefix } = mergedClsPrefixRef;
-      return h(
-        "div",
-        { class: [
-          `${mergedClsPrefix}-color-picker-panel`,
-          themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass.value
-        ], onDragstart: (e) => {
+      const {
+        value: rgba2
+      } = rgbaRef;
+      const {
+        value: displayedHue
+      } = displayedHueRef;
+      const {
+        internalActions,
+        modes: modes2,
+        actions
+      } = props;
+      const {
+        value: mergedTheme
+      } = themeRef;
+      const {
+        value: mergedClsPrefix
+      } = mergedClsPrefixRef;
+      return h("div", {
+        class: [`${mergedClsPrefix}-color-picker-panel`, themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass.value],
+        onDragstart: (e) => {
           e.preventDefault();
-        }, style: inlineThemeDisabled ? void 0 : cssVarsRef.value },
-        h(
-          "div",
-          { class: `${mergedClsPrefix}-color-picker-control` },
-          h(Pallete, { clsPrefix: mergedClsPrefix, rgba: rgba2, displayedHue, displayedSv: displayedSvRef.value, onUpdateSV: handleUpdateSv, onComplete: handleComplete }),
-          h(
-            "div",
-            { class: `${mergedClsPrefix}-color-picker-preview` },
-            h(
-              "div",
-              { class: `${mergedClsPrefix}-color-picker-preview__sliders` },
-              h(HueSlider, { clsPrefix: mergedClsPrefix, hue: displayedHue, onUpdateHue: handleUpdateHue, onComplete: handleComplete }),
-              props.showAlpha ? h(AlphaSlider, { clsPrefix: mergedClsPrefix, rgba: rgba2, alpha: displayedAlphaRef.value, onUpdateAlpha: handleUpdateAlpha, onComplete: handleComplete }) : null
-            ),
-            props.showPreview ? h(ColorPreview, { clsPrefix: mergedClsPrefix, mode: displayedModeRef.value, color: rgbaRef.value && toHexString(rgbaRef.value), onUpdateColor: (color) => {
-              doUpdateValue(color, "input");
-            } }) : null
-          ),
-          h(ColorInput, { clsPrefix: mergedClsPrefix, showAlpha: props.showAlpha, mode: displayedModeRef.value, modes: modes2, onUpdateMode: handleUpdateDisplayedMode, value: mergedValueRef.value, valueArr: mergedValueArrRef.value, onUpdateValue: handleInputUpdateValue }),
-          ((_a2 = props.swatches) === null || _a2 === void 0 ? void 0 : _a2.length) && h(ColorPickerSwatches, { clsPrefix: mergedClsPrefix, mode: displayedModeRef.value, swatches: props.swatches, onUpdateColor: (color) => {
-            doUpdateValue(color, "input");
-          } })
-        ),
-        (actions === null || actions === void 0 ? void 0 : actions.length) ? h(
-          "div",
-          { class: `${mergedClsPrefix}-color-picker-action` },
-          actions.includes("confirm") && h(NButton, { size: "small", onClick: handleConfirm, theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button }, { default: () => localeRef.value.confirm }),
-          actions.includes("clear") && h(NButton, { size: "small", onClick: handleClear, disabled: !mergedValueRef.value, theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button }, { default: () => localeRef.value.clear })
-        ) : null,
-        slots.action ? h("div", { class: `${mergedClsPrefix}-color-picker-action` }, { default: slots.action }) : internalActions ? h(
-          "div",
-          { class: `${mergedClsPrefix}-color-picker-action` },
-          internalActions.includes("undo") && h(NButton, { size: "small", onClick: undo, disabled: !undoableRef.value, theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button }, { default: () => localeRef.value.undo }),
-          internalActions.includes("redo") && h(NButton, { size: "small", onClick: redo, disabled: !redoableRef.value, theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button }, { default: () => localeRef.value.redo })
-        ) : null
-      );
+        },
+        style: inlineThemeDisabled ? void 0 : cssVarsRef.value
+      }, h("div", {
+        class: `${mergedClsPrefix}-color-picker-control`
+      }, h(Pallete, {
+        clsPrefix: mergedClsPrefix,
+        rgba: rgba2,
+        displayedHue,
+        displayedSv: displayedSvRef.value,
+        onUpdateSV: handleUpdateSv,
+        onComplete: handleComplete
+      }), h("div", {
+        class: `${mergedClsPrefix}-color-picker-preview`
+      }, h("div", {
+        class: `${mergedClsPrefix}-color-picker-preview__sliders`
+      }, h(HueSlider, {
+        clsPrefix: mergedClsPrefix,
+        hue: displayedHue,
+        onUpdateHue: handleUpdateHue,
+        onComplete: handleComplete
+      }), props.showAlpha ? h(AlphaSlider, {
+        clsPrefix: mergedClsPrefix,
+        rgba: rgba2,
+        alpha: displayedAlphaRef.value,
+        onUpdateAlpha: handleUpdateAlpha,
+        onComplete: handleComplete
+      }) : null), props.showPreview ? h(ColorPreview, {
+        clsPrefix: mergedClsPrefix,
+        mode: displayedModeRef.value,
+        color: rgbaRef.value && toHexString(rgbaRef.value),
+        onUpdateColor: (color) => {
+          doUpdateValue(color, "input");
+        }
+      }) : null), h(ColorInput, {
+        clsPrefix: mergedClsPrefix,
+        showAlpha: props.showAlpha,
+        mode: displayedModeRef.value,
+        modes: modes2,
+        onUpdateMode: handleUpdateDisplayedMode,
+        value: mergedValueRef.value,
+        valueArr: mergedValueArrRef.value,
+        onUpdateValue: handleInputUpdateValue
+      }), ((_a2 = props.swatches) === null || _a2 === void 0 ? void 0 : _a2.length) && h(ColorPickerSwatches, {
+        clsPrefix: mergedClsPrefix,
+        mode: displayedModeRef.value,
+        swatches: props.swatches,
+        onUpdateColor: (color) => {
+          doUpdateValue(color, "input");
+        }
+      })), (actions === null || actions === void 0 ? void 0 : actions.length) ? h("div", {
+        class: `${mergedClsPrefix}-color-picker-action`
+      }, actions.includes("confirm") && h(NButton, {
+        size: "small",
+        onClick: handleConfirm,
+        theme: mergedTheme.peers.Button,
+        themeOverrides: mergedTheme.peerOverrides.Button
+      }, {
+        default: () => localeRef.value.confirm
+      }), actions.includes("clear") && h(NButton, {
+        size: "small",
+        onClick: handleClear,
+        disabled: !mergedValueRef.value,
+        theme: mergedTheme.peers.Button,
+        themeOverrides: mergedTheme.peerOverrides.Button
+      }, {
+        default: () => localeRef.value.clear
+      })) : null, slots.action ? h("div", {
+        class: `${mergedClsPrefix}-color-picker-action`
+      }, {
+        default: slots.action
+      }) : internalActions ? h("div", {
+        class: `${mergedClsPrefix}-color-picker-action`
+      }, internalActions.includes("undo") && h(NButton, {
+        size: "small",
+        onClick: undo,
+        disabled: !undoableRef.value,
+        theme: mergedTheme.peers.Button,
+        themeOverrides: mergedTheme.peerOverrides.Button
+      }, {
+        default: () => localeRef.value.undo
+      }), internalActions.includes("redo") && h(NButton, {
+        size: "small",
+        onClick: redo,
+        disabled: !redoableRef.value,
+        theme: mergedTheme.peers.Button,
+        themeOverrides: mergedTheme.peerOverrides.Button
+      }, {
+        default: () => localeRef.value.redo
+      })) : null);
     }
     return {
       mergedClsPrefix: mergedClsPrefixRef,
@@ -24911,33 +27494,44 @@ const NColorPicker = defineComponent({
     };
   },
   render() {
-    const { $slots, mergedClsPrefix, onRender } = this;
+    const {
+      $slots,
+      mergedClsPrefix,
+      onRender
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h(
-      "div",
-      { class: [this.themeClass, `${mergedClsPrefix}-color-picker`], ref: "selfRef", style: this.cssVars },
-      h(VBinder, null, {
-        default: () => [
-          h(VTarget, null, {
-            default: () => h(ColorPickerTrigger, { clsPrefix: mergedClsPrefix, value: this.mergedValue, hsla: this.hsla, disabled: this.mergedDisabled, onClick: this.handleTriggerClick }, {
-              label: $slots.label
-            })
-          }),
-          h(VFollower, { placement: this.placement, show: this.mergedShow, containerClass: this.namespace, teleportDisabled: this.adjustedTo === useAdjustedTo.tdkey, to: this.adjustedTo }, {
-            default: () => h(Transition, { name: "fade-in-scale-up-transition", appear: this.isMounted }, {
-              default: () => this.mergedShow ? withDirectives(this.renderPanel(), [
-                [
-                  clickoutside$1,
-                  this.handleClickOutside,
-                  void 0,
-                  { capture: true }
-                ]
-              ]) : null
-            })
-          })
-        ]
-      })
-    );
+    return h("div", {
+      class: [this.themeClass, `${mergedClsPrefix}-color-picker`],
+      ref: "selfRef",
+      style: this.cssVars
+    }, h(VBinder, null, {
+      default: () => [h(VTarget, null, {
+        default: () => h(ColorPickerTrigger, {
+          clsPrefix: mergedClsPrefix,
+          value: this.mergedValue,
+          hsla: this.hsla,
+          disabled: this.mergedDisabled,
+          onClick: this.handleTriggerClick
+        }, {
+          label: $slots.label
+        })
+      }), h(VFollower, {
+        placement: this.placement,
+        show: this.mergedShow,
+        containerClass: this.namespace,
+        teleportDisabled: this.adjustedTo === useAdjustedTo.tdkey,
+        to: this.adjustedTo
+      }, {
+        default: () => h(Transition, {
+          name: "fade-in-scale-up-transition",
+          appear: this.isMounted
+        }, {
+          default: () => this.mergedShow ? withDirectives(this.renderPanel(), [[clickoutside$1, this.handleClickOutside, void 0, {
+            capture: true
+          }]]) : null
+        })
+      })]
+    }));
   }
 });
 const commonVariables$d = {
@@ -24952,8 +27546,27 @@ const commonVariables$d = {
   closeIconSize: "18px",
   closeSize: "22px"
 };
-const self$X = (vars) => {
-  const { primaryColor, borderRadius, lineHeight: lineHeight2, fontSize: fontSize2, cardColor, textColor2, textColor1, dividerColor, fontWeightStrong, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, modalColor, boxShadow1, popoverColor, actionColor } = vars;
+const self$10 = (vars) => {
+  const {
+    primaryColor,
+    borderRadius,
+    lineHeight: lineHeight2,
+    fontSize: fontSize2,
+    cardColor,
+    textColor2,
+    textColor1,
+    dividerColor,
+    fontWeightStrong,
+    closeIconColor,
+    closeIconColorHover,
+    closeIconColorPressed,
+    closeColorHover,
+    closeColorPressed,
+    modalColor,
+    boxShadow1,
+    popoverColor,
+    actionColor
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$d), {
     lineHeight: lineHeight2,
     color: cardColor,
@@ -24985,15 +27598,19 @@ const self$X = (vars) => {
 const cardLight = {
   name: "Card",
   common: commonLight,
-  self: self$X
+  self: self$10
 };
 const cardLight$1 = cardLight;
 const cardDark = {
   name: "Card",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$X(vars);
-    const { cardColor, modalColor, popoverColor } = vars;
+    const commonSelf = self$10(vars);
+    const {
+      cardColor,
+      modalColor,
+      popoverColor
+    } = vars;
     commonSelf.colorEmbedded = cardColor;
     commonSelf.colorEmbeddedModal = modalColor;
     commonSelf.colorEmbeddedPopover = popoverColor;
@@ -25108,9 +27725,13 @@ const style$k = c$1([cB("card", `
  `)]))]);
 const cardBaseProps = {
   title: String,
+  contentClass: String,
   contentStyle: [Object, String],
+  headerClass: String,
   headerStyle: [Object, String],
+  headerExtraClass: String,
   headerExtraStyle: [Object, String],
+  footerClass: String,
   footerStyle: [Object, String],
   embedded: Boolean,
   segmented: {
@@ -25136,22 +27757,66 @@ const cardBaseProps = {
 };
 const cardBasePropKeys = keysOf(cardBaseProps);
 const cardProps = Object.assign(Object.assign({}, useTheme.props), cardBaseProps);
-const NCard = defineComponent({
+const NCard = /* @__PURE__ */ defineComponent({
   name: "Card",
   props: cardProps,
   setup(props) {
     const handleCloseClick = () => {
-      const { onClose } = props;
+      const {
+        onClose
+      } = props;
       if (onClose)
         call(onClose);
     };
-    const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
+    const {
+      inlineThemeDisabled,
+      mergedClsPrefixRef,
+      mergedRtlRef
+    } = useConfig(props);
     const themeRef = useTheme("Card", "-card", style$k, cardLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Card", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { size: size2 } = props;
-      const { self: { color, colorModal, colorTarget, textColor, titleTextColor, titleFontWeight, borderColor, actionColor, borderRadius, lineHeight: lineHeight2, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, closeBorderRadius, closeIconSize, closeSize, boxShadow, colorPopover, colorEmbedded, colorEmbeddedModal, colorEmbeddedPopover, [createKey("padding", size2)]: padding, [createKey("fontSize", size2)]: fontSize2, [createKey("titleFontSize", size2)]: titleFontSize }, common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 } } = themeRef.value;
-      const { top: paddingTop, left: paddingLeft, bottom: paddingBottom } = getMargin(padding);
+      const {
+        size: size2
+      } = props;
+      const {
+        self: {
+          color,
+          colorModal,
+          colorTarget,
+          textColor,
+          titleTextColor,
+          titleFontWeight,
+          borderColor,
+          actionColor,
+          borderRadius,
+          lineHeight: lineHeight2,
+          closeIconColor,
+          closeIconColorHover,
+          closeIconColorPressed,
+          closeColorHover,
+          closeColorPressed,
+          closeBorderRadius,
+          closeIconSize,
+          closeSize,
+          boxShadow,
+          colorPopover,
+          colorEmbedded,
+          colorEmbeddedModal,
+          colorEmbeddedPopover,
+          [createKey("padding", size2)]: padding,
+          [createKey("fontSize", size2)]: fontSize2,
+          [createKey("titleFontSize", size2)]: titleFontSize
+        },
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        }
+      } = themeRef.value;
+      const {
+        top: paddingTop,
+        left: paddingLeft,
+        bottom: paddingBottom
+      } = getMargin(padding);
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-border-radius": borderRadius,
@@ -25199,42 +27864,63 @@ const NCard = defineComponent({
     };
   },
   render() {
-    const { segmented, bordered, hoverable, mergedClsPrefix, rtlEnabled, onRender, embedded, tag: Component, $slots } = this;
+    const {
+      segmented,
+      bordered,
+      hoverable,
+      mergedClsPrefix,
+      rtlEnabled,
+      onRender,
+      embedded,
+      tag: Component,
+      $slots
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h(
-      Component,
-      { class: [
-        `${mergedClsPrefix}-card`,
-        this.themeClass,
-        embedded && `${mergedClsPrefix}-card--embedded`,
-        {
-          [`${mergedClsPrefix}-card--rtl`]: rtlEnabled,
-          [`${mergedClsPrefix}-card--content${typeof segmented !== "boolean" && segmented.content === "soft" ? "-soft" : ""}-segmented`]: segmented === true || segmented !== false && segmented.content,
-          [`${mergedClsPrefix}-card--footer${typeof segmented !== "boolean" && segmented.footer === "soft" ? "-soft" : ""}-segmented`]: segmented === true || segmented !== false && segmented.footer,
-          [`${mergedClsPrefix}-card--action-segmented`]: segmented === true || segmented !== false && segmented.action,
-          [`${mergedClsPrefix}-card--bordered`]: bordered,
-          [`${mergedClsPrefix}-card--hoverable`]: hoverable
-        }
-      ], style: this.cssVars, role: this.role },
-      resolveWrappedSlot($slots.cover, (children) => children && h("div", { class: `${mergedClsPrefix}-card-cover`, role: "none" }, children)),
-      resolveWrappedSlot($slots.header, (children) => {
-        return children || this.title || this.closable ? h(
-          "div",
-          { class: `${mergedClsPrefix}-card-header`, style: this.headerStyle },
-          h("div", { class: `${mergedClsPrefix}-card-header__main`, role: "heading" }, children || this.title),
-          resolveWrappedSlot($slots["header-extra"], (children2) => children2 && h("div", { class: `${mergedClsPrefix}-card-header__extra`, style: this.headerExtraStyle }, children2)),
-          this.closable ? h(NBaseClose, { clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-card-header__close`, onClick: this.handleCloseClick, absolute: true }) : null
-        ) : null;
-      }),
-      resolveWrappedSlot($slots.default, (children) => children && h("div", { class: `${mergedClsPrefix}-card__content`, style: this.contentStyle, role: "none" }, children)),
-      resolveWrappedSlot($slots.footer, (children) => children && [
-        h("div", { class: `${mergedClsPrefix}-card__footer`, style: this.footerStyle, role: "none" }, children)
-      ]),
-      resolveWrappedSlot($slots.action, (children) => children && h("div", { class: `${mergedClsPrefix}-card__action`, role: "none" }, children))
-    );
+    return h(Component, {
+      class: [`${mergedClsPrefix}-card`, this.themeClass, embedded && `${mergedClsPrefix}-card--embedded`, {
+        [`${mergedClsPrefix}-card--rtl`]: rtlEnabled,
+        [`${mergedClsPrefix}-card--content${typeof segmented !== "boolean" && segmented.content === "soft" ? "-soft" : ""}-segmented`]: segmented === true || segmented !== false && segmented.content,
+        [`${mergedClsPrefix}-card--footer${typeof segmented !== "boolean" && segmented.footer === "soft" ? "-soft" : ""}-segmented`]: segmented === true || segmented !== false && segmented.footer,
+        [`${mergedClsPrefix}-card--action-segmented`]: segmented === true || segmented !== false && segmented.action,
+        [`${mergedClsPrefix}-card--bordered`]: bordered,
+        [`${mergedClsPrefix}-card--hoverable`]: hoverable
+      }],
+      style: this.cssVars,
+      role: this.role
+    }, resolveWrappedSlot($slots.cover, (children) => children && h("div", {
+      class: `${mergedClsPrefix}-card-cover`,
+      role: "none"
+    }, children)), resolveWrappedSlot($slots.header, (children) => {
+      return children || this.title || this.closable ? h("div", {
+        class: [`${mergedClsPrefix}-card-header`, this.headerClass],
+        style: this.headerStyle
+      }, h("div", {
+        class: `${mergedClsPrefix}-card-header__main`,
+        role: "heading"
+      }, children || this.title), resolveWrappedSlot($slots["header-extra"], (children2) => children2 && h("div", {
+        class: [`${mergedClsPrefix}-card-header__extra`, this.headerExtraClass],
+        style: this.headerExtraStyle
+      }, children2)), this.closable ? h(NBaseClose, {
+        clsPrefix: mergedClsPrefix,
+        class: `${mergedClsPrefix}-card-header__close`,
+        onClick: this.handleCloseClick,
+        absolute: true
+      }) : null) : null;
+    }), resolveWrappedSlot($slots.default, (children) => children && h("div", {
+      class: [`${mergedClsPrefix}-card__content`, this.contentClass],
+      style: this.contentStyle,
+      role: "none"
+    }, children)), resolveWrappedSlot($slots.footer, (children) => children && [h("div", {
+      class: [`${mergedClsPrefix}-card__footer`, this.footerClass],
+      style: this.footerStyle,
+      role: "none"
+    }, children)]), resolveWrappedSlot($slots.action, (children) => children && h("div", {
+      class: `${mergedClsPrefix}-card__action`,
+      role: "none"
+    }, children)));
   }
 });
-const self$W = (vars) => {
+const self$$ = (vars) => {
   return {
     dotSize: "8px",
     dotColor: "rgba(255, 255, 255, .3)",
@@ -25248,13 +27934,13 @@ const self$W = (vars) => {
 const carouselLight = {
   name: "Carousel",
   common: commonLight,
-  self: self$W
+  self: self$$
 };
 const carouselLight$1 = carouselLight;
 const carouselDark = {
   name: "Carousel",
   common: commonDark,
-  self: self$W
+  self: self$$
 };
 const carouselDark$1 = carouselDark;
 const commonVariables$c = {
@@ -25264,8 +27950,23 @@ const commonVariables$c = {
   labelPadding: "0 8px",
   labelFontWeight: "400"
 };
-const self$V = (vars) => {
-  const { baseColor, inputColorDisabled, cardColor, modalColor, popoverColor, textColorDisabled, borderColor, primaryColor, textColor2, fontSizeSmall, fontSizeMedium, fontSizeLarge, borderRadiusSmall, lineHeight: lineHeight2 } = vars;
+const self$_ = (vars) => {
+  const {
+    baseColor,
+    inputColorDisabled,
+    cardColor,
+    modalColor,
+    popoverColor,
+    textColorDisabled,
+    borderColor,
+    primaryColor,
+    textColor2,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge,
+    borderRadiusSmall,
+    lineHeight: lineHeight2
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$c), {
     labelLineHeight: lineHeight2,
     fontSizeSmall,
@@ -25287,7 +27988,9 @@ const self$V = (vars) => {
     borderDisabledChecked: `1px solid ${borderColor}`,
     borderChecked: `1px solid ${primaryColor}`,
     borderFocus: `1px solid ${primaryColor}`,
-    boxShadowFocus: `0 0 0 2px ${changeColor(primaryColor, { alpha: 0.3 })}`,
+    boxShadowFocus: `0 0 0 2px ${changeColor(primaryColor, {
+      alpha: 0.3
+    })}`,
     textColor: textColor2,
     textColorDisabled
   });
@@ -25295,23 +27998,37 @@ const self$V = (vars) => {
 const checkboxLight = {
   name: "Checkbox",
   common: commonLight,
-  self: self$V
+  self: self$_
 };
 const checkboxLight$1 = checkboxLight;
 const checkboxDark = {
   name: "Checkbox",
   common: commonDark,
   self(vars) {
-    const { cardColor } = vars;
-    const commonSelf = self$V(vars);
+    const {
+      cardColor
+    } = vars;
+    const commonSelf = self$_(vars);
     commonSelf.color = "#0000";
     commonSelf.checkMarkColor = cardColor;
     return commonSelf;
   }
 };
 const checkboxDark$1 = checkboxDark;
-const self$U = (vars) => {
-  const { borderRadius, boxShadow2, popoverColor, textColor2, textColor3, primaryColor, textColorDisabled, dividerColor, hoverColor, fontSizeMedium, heightMedium } = vars;
+const self$Z = (vars) => {
+  const {
+    borderRadius,
+    boxShadow2,
+    popoverColor,
+    textColor2,
+    textColor3,
+    primaryColor,
+    textColorDisabled,
+    dividerColor,
+    hoverColor,
+    fontSizeMedium,
+    heightMedium
+  } = vars;
   return {
     menuBorderRadius: borderRadius,
     menuColor: popoverColor,
@@ -25340,7 +28057,7 @@ const cascaderLight = createTheme({
     Checkbox: checkboxLight$1,
     Empty: emptyLight$1
   },
-  self: self$U
+  self: self$Z
 });
 const cascaderLight$1 = cascaderLight;
 const cascaderDark = {
@@ -25353,14 +28070,19 @@ const cascaderDark = {
     Checkbox: checkboxDark$1,
     Empty: emptyLight$1
   },
-  self: self$U
+  self: self$Z
 };
 const cascaderDark$1 = cascaderDark;
 const codeDark = {
   name: "Code",
   common: commonDark,
   self(vars) {
-    const { textColor2, fontSize: fontSize2, fontWeightStrong, textColor3 } = vars;
+    const {
+      textColor2,
+      fontSize: fontSize2,
+      fontWeightStrong,
+      textColor3
+    } = vars;
     return {
       textColor: textColor2,
       fontSize: fontSize2,
@@ -25381,8 +28103,13 @@ const codeDark = {
   }
 };
 const codeDark$1 = codeDark;
-const self$T = (vars) => {
-  const { textColor2, fontSize: fontSize2, fontWeightStrong, textColor3 } = vars;
+const self$Y = (vars) => {
+  const {
+    textColor2,
+    fontSize: fontSize2,
+    fontWeightStrong,
+    textColor3
+  } = vars;
   return {
     textColor: textColor2,
     fontSize: fontSize2,
@@ -25404,7 +28131,7 @@ const self$T = (vars) => {
 const codeLight = {
   name: "Code",
   common: commonLight,
-  self: self$T
+  self: self$Y
 };
 const codeLight$1 = codeLight;
 const style$j = c$1([cB("code", `
@@ -25503,16 +28230,27 @@ const codeProps = Object.assign(Object.assign({}, useTheme.props), {
   internalFontSize: Number,
   internalNoHighlight: Boolean
 });
-const NCode = defineComponent({
+const NCode = /* @__PURE__ */ defineComponent({
   name: "Code",
   props: codeProps,
-  setup(props, { slots }) {
-    const { internalNoHighlight } = props;
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig();
+  setup(props, {
+    slots
+  }) {
+    const {
+      internalNoHighlight
+    } = props;
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig();
     const codeRef = ref(null);
-    const hljsRef = internalNoHighlight ? { value: void 0 } : useHljs(props);
+    const hljsRef = internalNoHighlight ? {
+      value: void 0
+    } : useHljs(props);
     const createCodeHtml = (language, code, trim) => {
-      const { value: hljs } = hljsRef;
+      const {
+        value: hljs
+      } = hljsRef;
       if (!hljs) {
         return null;
       }
@@ -25531,10 +28269,14 @@ const NCode = defineComponent({
     const setCode = () => {
       if (slots.default)
         return;
-      const { value: codeEl } = codeRef;
+      const {
+        value: codeEl
+      } = codeRef;
       if (!codeEl)
         return;
-      const { language } = props;
+      const {
+        language
+      } = props;
       const code = props.uri ? window.decodeURIComponent(props.code) : props.code;
       if (language) {
         const html = createCodeHtml(language, code, props.trim);
@@ -25575,23 +28317,31 @@ const NCode = defineComponent({
       watch(hljsRef, setCode);
     const themeRef = useTheme("Code", "-code", style$j, codeLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, fontFamilyMono }, self: {
-        textColor,
-        fontSize: fontSize2,
-        fontWeightStrong,
-        lineNumberTextColor,
-        // extracted from hljs atom-one-light.scss
-        "mono-3": $1,
-        "hue-1": $2,
-        "hue-2": $3,
-        "hue-3": $4,
-        "hue-4": $5,
-        "hue-5": $6,
-        "hue-5-2": $7,
-        "hue-6": $8,
-        "hue-6-2": $9
-      } } = themeRef.value;
-      const { internalFontSize } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2,
+          fontFamilyMono
+        },
+        self: {
+          textColor,
+          fontSize: fontSize2,
+          fontWeightStrong,
+          lineNumberTextColor,
+          // extracted from hljs atom-one-light.scss
+          "mono-3": $1,
+          "hue-1": $2,
+          "hue-2": $3,
+          "hue-3": $4,
+          "hue-4": $5,
+          "hue-5": $6,
+          "hue-5-2": $7,
+          "hue-6": $8,
+          "hue-6-2": $9
+        }
+      } = themeRef.value;
+      const {
+        internalFontSize
+      } = props;
       return {
         "--n-font-size": internalFontSize ? `${internalFontSize}px` : fontSize2,
         "--n-font-family": fontFamilyMono,
@@ -25641,23 +28391,31 @@ const NCode = defineComponent({
   },
   render() {
     var _a2, _b;
-    const { mergedClsPrefix, wordWrap, mergedShowLineNumbers, onRender } = this;
+    const {
+      mergedClsPrefix,
+      wordWrap,
+      mergedShowLineNumbers,
+      onRender
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h(
-      "code",
-      { class: [
-        `${mergedClsPrefix}-code`,
-        this.themeClass,
-        wordWrap && `${mergedClsPrefix}-code--word-wrap`,
-        mergedShowLineNumbers && `${mergedClsPrefix}-code--show-line-numbers`
-      ], style: this.cssVars, ref: "codeRef" },
-      mergedShowLineNumbers ? h("pre", { class: `${mergedClsPrefix}-code__line-numbers` }, this.lineNumbers) : null,
-      (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2)
-    );
+    return h("code", {
+      class: [`${mergedClsPrefix}-code`, this.themeClass, wordWrap && `${mergedClsPrefix}-code--word-wrap`, mergedShowLineNumbers && `${mergedClsPrefix}-code--show-line-numbers`],
+      style: this.cssVars,
+      ref: "codeRef"
+    }, mergedShowLineNumbers ? h("pre", {
+      class: `${mergedClsPrefix}-code__line-numbers`
+    }, this.lineNumbers) : null, (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2));
   }
 });
-const self$S = (vars) => {
-  const { fontWeight, textColor1, textColor2, textColorDisabled, dividerColor, fontSize: fontSize2 } = vars;
+const self$X = (vars) => {
+  const {
+    fontWeight,
+    textColor1,
+    textColor2,
+    textColorDisabled,
+    dividerColor,
+    fontSize: fontSize2
+  } = vars;
   return {
     titleFontSize: fontSize2,
     titleFontWeight: fontWeight,
@@ -25675,13 +28433,13 @@ const self$S = (vars) => {
 const collapseLight = {
   name: "Collapse",
   common: commonLight,
-  self: self$S
+  self: self$X
 };
 const collapseLight$1 = collapseLight;
 const collapseDark = {
   name: "Collapse",
   common: commonDark,
-  self: self$S
+  self: self$X
 };
 const collapseDark$1 = collapseDark;
 const style$i = cB("collapse", "width: 100%;", [cB("collapse-item", `
@@ -25697,7 +28455,7 @@ const style$i = cB("collapse", "width: 100%;", [cB("collapse-item", `
  color: var(--n-arrow-color-disabled);
  `)])]), cB("collapse-item", "margin-left: 32px;"), c$1("&:first-child", "margin-top: 0;"), c$1("&:first-child >", [cE("header", "padding-top: 0;")]), cM("left-arrow-placement", [cE("header", [cB("collapse-item-arrow", "margin-right: 4px;")])]), cM("right-arrow-placement", [cE("header", [cB("collapse-item-arrow", "margin-left: 4px;")])]), cE("content-wrapper", [cE("content-inner", "padding-top: 16px;"), fadeInHeightExpandTransition({
   duration: "0.15s"
-})]), cM("active", [cE("header", [cM("active", [cB("collapse-item-arrow", "transform: rotate(90deg);")])])]), c$1("&:not(:first-child)", "border-top: 1px solid var(--n-divider-color);"), cE("header", `
+})]), cM("active", [cE("header", [cM("active", [cB("collapse-item-arrow", "transform: rotate(90deg);")])])]), c$1("&:not(:first-child)", "border-top: 1px solid var(--n-divider-color);"), cNotM("disabled", [cM("trigger-area-main", [cE("header", [cE("header-main", "cursor: pointer;"), cB("collapse-item-arrow", "cursor: default;")])]), cM("trigger-area-arrow", [cE("header", [cB("collapse-item-arrow", "cursor: pointer;")])]), cM("trigger-area-extra", [cE("header", [cE("header-extra", "cursor: pointer;")])])]), cE("header", `
  font-size: var(--n-title-font-size);
  display: flex;
  flex-wrap: nowrap;
@@ -25706,7 +28464,6 @@ const style$i = cB("collapse", "width: 100%;", [cB("collapse-item", `
  position: relative;
  padding: var(--n-title-padding);
  color: var(--n-title-text-color);
- cursor: pointer;
  `, [cE("header-main", `
  display: flex;
  flex-wrap: nowrap;
@@ -25746,6 +28503,10 @@ const collapseProps = Object.assign(Object.assign({}, useTheme.props), {
     type: String,
     default: "if"
   },
+  triggerAreas: {
+    type: Array,
+    default: () => ["main", "extra", "arrow"]
+  },
   onItemHeaderClick: [Function, Array],
   "onUpdate:expandedNames": [Function, Array],
   onUpdateExpandedNames: [Function, Array],
@@ -25759,17 +28520,27 @@ const collapseProps = Object.assign(Object.assign({}, useTheme.props), {
   }
 });
 const collapseInjectionKey = createInjectionKey("n-collapse");
-const NCollapse = defineComponent({
+const NCollapse = /* @__PURE__ */ defineComponent({
   name: "Collapse",
   props: collapseProps,
-  setup(props, { slots }) {
-    const { mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
+  setup(props, {
+    slots
+  }) {
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig(props);
     const uncontrolledExpandedNamesRef = ref(props.defaultExpandedNames);
     const controlledExpandedNamesRef = computed(() => props.expandedNames);
     const mergedExpandedNamesRef = useMergedState(controlledExpandedNamesRef, uncontrolledExpandedNamesRef);
     const themeRef = useTheme("Collapse", "-collapse", style$i, collapseLight$1, props, mergedClsPrefixRef);
     function doUpdateExpandedNames(names) {
-      const { "onUpdate:expandedNames": _onUpdateExpandedNames, onUpdateExpandedNames, onExpandedNamesChange } = props;
+      const {
+        "onUpdate:expandedNames": _onUpdateExpandedNames,
+        onUpdateExpandedNames,
+        onExpandedNamesChange
+      } = props;
       if (onUpdateExpandedNames) {
         call(onUpdateExpandedNames, names);
       }
@@ -25782,37 +28553,63 @@ const NCollapse = defineComponent({
       uncontrolledExpandedNamesRef.value = names;
     }
     function doItemHeaderClick(info) {
-      const { onItemHeaderClick } = props;
+      const {
+        onItemHeaderClick
+      } = props;
       if (onItemHeaderClick) {
         call(onItemHeaderClick, info);
       }
     }
     function toggleItem(collapse, name, event2) {
-      const { accordion } = props;
-      const { value: expandedNames } = mergedExpandedNamesRef;
+      const {
+        accordion
+      } = props;
+      const {
+        value: expandedNames
+      } = mergedExpandedNamesRef;
       if (accordion) {
         if (collapse) {
           doUpdateExpandedNames([name]);
-          doItemHeaderClick({ name, expanded: true, event: event2 });
+          doItemHeaderClick({
+            name,
+            expanded: true,
+            event: event2
+          });
         } else {
           doUpdateExpandedNames([]);
-          doItemHeaderClick({ name, expanded: false, event: event2 });
+          doItemHeaderClick({
+            name,
+            expanded: false,
+            event: event2
+          });
         }
       } else {
         if (!Array.isArray(expandedNames)) {
           doUpdateExpandedNames([name]);
-          doItemHeaderClick({ name, expanded: true, event: event2 });
+          doItemHeaderClick({
+            name,
+            expanded: true,
+            event: event2
+          });
         } else {
           const activeNames = expandedNames.slice();
           const index2 = activeNames.findIndex((activeName) => name === activeName);
           if (~index2) {
             activeNames.splice(index2, 1);
             doUpdateExpandedNames(activeNames);
-            doItemHeaderClick({ name, expanded: false, event: event2 });
+            doItemHeaderClick({
+              name,
+              expanded: false,
+              event: event2
+            });
           } else {
             activeNames.push(name);
             doUpdateExpandedNames(activeNames);
-            doItemHeaderClick({ name, expanded: true, event: event2 });
+            doItemHeaderClick({
+              name,
+              expanded: true,
+              event: event2
+            });
           }
         }
       }
@@ -25826,7 +28623,24 @@ const NCollapse = defineComponent({
     });
     const rtlEnabledRef = useRtl("Collapse", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { titleFontWeight, dividerColor, titlePadding, titleTextColor, titleTextColorDisabled, textColor, arrowColor, fontSize: fontSize2, titleFontSize, arrowColorDisabled, itemMargin } } = themeRef.value;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          titleFontWeight,
+          dividerColor,
+          titlePadding,
+          titleTextColor,
+          titleTextColorDisabled,
+          textColor,
+          arrowColor,
+          fontSize: fontSize2,
+          titleFontSize,
+          arrowColorDisabled,
+          itemMargin
+        }
+      } = themeRef.value;
       return {
         "--n-font-size": fontSize2,
         "--n-bezier": cubicBezierEaseInOut2,
@@ -25855,14 +28669,13 @@ const NCollapse = defineComponent({
   render() {
     var _a2;
     (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-    return h("div", { class: [
-      `${this.mergedClsPrefix}-collapse`,
-      this.rtlEnabled && `${this.mergedClsPrefix}-collapse--rtl`,
-      this.themeClass
-    ], style: this.cssVars }, this.$slots);
+    return h("div", {
+      class: [`${this.mergedClsPrefix}-collapse`, this.rtlEnabled && `${this.mergedClsPrefix}-collapse--rtl`, this.themeClass],
+      style: this.cssVars
+    }, this.$slots);
   }
 });
-const NCollapseItemContent = defineComponent({
+const NCollapseItemContent = /* @__PURE__ */ defineComponent({
   name: "CollapseItemContent",
   props: {
     displayDirective: {
@@ -25884,13 +28697,18 @@ const NCollapseItemContent = defineComponent({
   render() {
     return h(NFadeInExpandTransition, null, {
       default: () => {
-        const { show, displayDirective, onceTrue, clsPrefix } = this;
+        const {
+          show,
+          displayDirective,
+          onceTrue,
+          clsPrefix
+        } = this;
         const useVShow = displayDirective === "show" && onceTrue;
-        const contentNode = h(
-          "div",
-          { class: `${clsPrefix}-collapse-item__content-wrapper` },
-          h("div", { class: `${clsPrefix}-collapse-item__content-inner` }, this.$slots)
-        );
+        const contentNode = h("div", {
+          class: `${clsPrefix}-collapse-item__content-wrapper`
+        }, h("div", {
+          class: `${clsPrefix}-collapse-item__content-inner`
+        }, this.$slots));
         return useVShow ? withDirectives(contentNode, [[vShow, show]]) : show ? contentNode : null;
       }
     });
@@ -25902,11 +28720,13 @@ const collapseItemProps = {
   disabled: Boolean,
   displayDirective: String
 };
-const NCollapseItem = defineComponent({
+const NCollapseItem = /* @__PURE__ */ defineComponent({
   name: "CollapseItem",
   props: collapseItemProps,
   setup(props) {
-    const { mergedRtlRef } = useConfig(props);
+    const {
+      mergedRtlRef
+    } = useConfig(props);
     const randomName = createId();
     const mergedNameRef = useMemo(() => {
       var _a2;
@@ -25916,14 +28736,25 @@ const NCollapseItem = defineComponent({
     if (!NCollapse2) {
       throwError("collapse-item", "`n-collapse-item` must be placed inside `n-collapse`.");
     }
-    const { expandedNamesRef, props: collapseProps2, mergedClsPrefixRef, slots: collapseSlots } = NCollapse2;
+    const {
+      expandedNamesRef,
+      props: collapseProps2,
+      mergedClsPrefixRef,
+      slots: collapseSlots
+    } = NCollapse2;
     const collapsedRef = computed(() => {
-      const { value: expandedNames } = expandedNamesRef;
+      const {
+        value: expandedNames
+      } = expandedNamesRef;
       if (Array.isArray(expandedNames)) {
-        const { value: name } = mergedNameRef;
+        const {
+          value: name
+        } = mergedNameRef;
         return !~expandedNames.findIndex((expandedName) => expandedName === name);
       } else if (expandedNames) {
-        const { value: name } = mergedNameRef;
+        const {
+          value: name
+        } = mergedNameRef;
         return name !== expandedNames;
       }
       return true;
@@ -25935,8 +28766,11 @@ const NCollapseItem = defineComponent({
       randomName,
       mergedClsPrefix: mergedClsPrefixRef,
       collapsed: collapsedRef,
+      triggerAreas: toRef(collapseProps2, "triggerAreas"),
       mergedDisplayDirective: computed(() => {
-        const { displayDirective } = props;
+        const {
+          displayDirective
+        } = props;
         if (displayDirective) {
           return displayDirective;
         } else {
@@ -25947,6 +28781,14 @@ const NCollapseItem = defineComponent({
         return collapseProps2.arrowPlacement;
       }),
       handleClick(e) {
+        let happensInArea = "main";
+        if (happensIn(e, "arrow"))
+          happensInArea = "arrow";
+        if (happensIn(e, "extra"))
+          happensInArea = "extra";
+        if (!collapseProps2.triggerAreas.includes(happensInArea)) {
+          return;
+        }
         if (NCollapse2 && !props.disabled) {
           NCollapse2.toggleItem(collapsedRef.value, mergedNameRef.value, e);
         }
@@ -25954,46 +28796,60 @@ const NCollapseItem = defineComponent({
     };
   },
   render() {
-    const { collapseSlots, $slots, arrowPlacement, collapsed, mergedDisplayDirective, mergedClsPrefix, disabled } = this;
-    const headerNode = resolveSlotWithProps($slots.header, { collapsed }, () => [this.title]);
+    const {
+      collapseSlots,
+      $slots,
+      arrowPlacement,
+      collapsed,
+      mergedDisplayDirective,
+      mergedClsPrefix,
+      disabled,
+      triggerAreas
+    } = this;
+    const headerNode = resolveSlotWithProps($slots.header, {
+      collapsed
+    }, () => [this.title]);
     const headerExtraSlot = $slots["header-extra"] || collapseSlots["header-extra"];
     const arrowSlot = $slots.arrow || collapseSlots.arrow;
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-collapse-item`,
-        `${mergedClsPrefix}-collapse-item--${arrowPlacement}-arrow-placement`,
-        disabled && `${mergedClsPrefix}-collapse-item--disabled`,
-        !collapsed && `${mergedClsPrefix}-collapse-item--active`
-      ] },
-      h(
-        "div",
-        { class: [
-          `${mergedClsPrefix}-collapse-item__header`,
-          !collapsed && `${mergedClsPrefix}-collapse-item__header--active`
-        ] },
-        h(
-          "div",
-          { class: `${mergedClsPrefix}-collapse-item__header-main`, onClick: this.handleClick },
-          arrowPlacement === "right" && headerNode,
-          h("div", { class: `${mergedClsPrefix}-collapse-item-arrow`, key: this.rtlEnabled ? 0 : 1 }, resolveSlotWithProps(arrowSlot, { collapsed }, () => {
-            var _a2;
-            return [
-              h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
-                default: (_a2 = collapseSlots.expandIcon) !== null && _a2 !== void 0 ? _a2 : () => this.rtlEnabled ? h(ChevronLeftIcon, null) : h(ChevronRightIcon, null)
-              })
-            ];
-          })),
-          arrowPlacement === "left" && headerNode
-        ),
-        resolveWrappedSlotWithProps(headerExtraSlot, { collapsed }, (children) => h("div", { class: `${mergedClsPrefix}-collapse-item__header-extra`, onClick: this.handleClick }, children))
-      ),
-      h(NCollapseItemContent, { clsPrefix: mergedClsPrefix, displayDirective: mergedDisplayDirective, show: !collapsed }, $slots)
-    );
+    return h("div", {
+      class: [`${mergedClsPrefix}-collapse-item`, `${mergedClsPrefix}-collapse-item--${arrowPlacement}-arrow-placement`, disabled && `${mergedClsPrefix}-collapse-item--disabled`, !collapsed && `${mergedClsPrefix}-collapse-item--active`, triggerAreas.map((area) => {
+        return `${mergedClsPrefix}-collapse-item--trigger-area-${area}`;
+      })]
+    }, h("div", {
+      class: [`${mergedClsPrefix}-collapse-item__header`, !collapsed && `${mergedClsPrefix}-collapse-item__header--active`]
+    }, h("div", {
+      class: `${mergedClsPrefix}-collapse-item__header-main`,
+      onClick: this.handleClick
+    }, arrowPlacement === "right" && headerNode, h("div", {
+      class: `${mergedClsPrefix}-collapse-item-arrow`,
+      key: this.rtlEnabled ? 0 : 1,
+      "data-arrow": true
+    }, resolveSlotWithProps(arrowSlot, {
+      collapsed
+    }, () => {
+      var _a2;
+      return [h(NBaseIcon, {
+        clsPrefix: mergedClsPrefix
+      }, {
+        default: (_a2 = collapseSlots.expandIcon) !== null && _a2 !== void 0 ? _a2 : () => this.rtlEnabled ? h(ChevronLeftIcon, null) : h(ChevronRightIcon, null)
+      })];
+    })), arrowPlacement === "left" && headerNode), resolveWrappedSlotWithProps(headerExtraSlot, {
+      collapsed
+    }, (children) => h("div", {
+      class: `${mergedClsPrefix}-collapse-item__header-extra`,
+      onClick: this.handleClick,
+      "data-extra": true
+    }, children))), h(NCollapseItemContent, {
+      clsPrefix: mergedClsPrefix,
+      displayDirective: mergedDisplayDirective,
+      show: !collapsed
+    }, $slots));
   }
 });
-const self$R = (vars) => {
-  const { cubicBezierEaseInOut: cubicBezierEaseInOut2 } = vars;
+const self$W = (vars) => {
+  const {
+    cubicBezierEaseInOut: cubicBezierEaseInOut2
+  } = vars;
   return {
     bezier: cubicBezierEaseInOut2
   };
@@ -26001,13 +28857,13 @@ const self$R = (vars) => {
 const collapseTransitionLight = {
   name: "CollapseTransition",
   common: commonLight,
-  self: self$R
+  self: self$W
 };
 const collapseTransitionLight$1 = collapseTransitionLight;
 const collapseTransitionDark = {
   name: "CollapseTransition",
   common: commonDark,
-  self: self$R
+  self: self$W
 };
 const collapseTransitionDark$1 = collapseTransitionDark;
 const configProviderProps = {
@@ -26016,7 +28872,10 @@ const configProviderProps = {
     type: Boolean,
     default: void 0
   },
-  clsPrefix: { type: String, default: defaultClsPrefix },
+  clsPrefix: {
+    type: String,
+    default: defaultClsPrefix
+  },
   locale: Object,
   dateLocale: Object,
   namespace: String,
@@ -26047,21 +28906,25 @@ const configProviderProps = {
     default: void 0
   }
 };
-const NConfigProvider = defineComponent({
+const NConfigProvider = /* @__PURE__ */ defineComponent({
   name: "ConfigProvider",
   alias: ["App"],
   props: configProviderProps,
   setup(props) {
     const NConfigProvider2 = inject(configProviderInjectionKey, null);
     const mergedThemeRef = computed(() => {
-      const { theme } = props;
+      const {
+        theme
+      } = props;
       if (theme === null)
         return void 0;
       const inheritedTheme = NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedThemeRef.value;
       return theme === void 0 ? inheritedTheme : inheritedTheme === void 0 ? theme : Object.assign({}, inheritedTheme, theme);
     });
     const mergedThemeOverridesRef = computed(() => {
-      const { themeOverrides } = props;
+      const {
+        themeOverrides
+      } = props;
       if (themeOverrides === null)
         return void 0;
       if (themeOverrides === void 0) {
@@ -26076,25 +28939,35 @@ const NConfigProvider = defineComponent({
       }
     });
     const mergedNamespaceRef = useMemo(() => {
-      const { namespace: namespace2 } = props;
+      const {
+        namespace: namespace2
+      } = props;
       return namespace2 === void 0 ? NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedNamespaceRef.value : namespace2;
     });
     const mergedBorderedRef = useMemo(() => {
-      const { bordered } = props;
+      const {
+        bordered
+      } = props;
       return bordered === void 0 ? NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedBorderedRef.value : bordered;
     });
     const mergedIconsRef = computed(() => {
-      const { icons } = props;
+      const {
+        icons
+      } = props;
       return icons === void 0 ? NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedIconsRef.value : icons;
     });
     const mergedComponentPropsRef = computed(() => {
-      const { componentOptions } = props;
+      const {
+        componentOptions
+      } = props;
       if (componentOptions !== void 0)
         return componentOptions;
       return NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedComponentPropsRef.value;
     });
     const mergedClsPrefixRef = computed(() => {
-      const { clsPrefix } = props;
+      const {
+        clsPrefix
+      } = props;
       if (clsPrefix !== void 0)
         return clsPrefix;
       if (NConfigProvider2)
@@ -26103,7 +28976,9 @@ const NConfigProvider = defineComponent({
     });
     const mergedRtlRef = computed(() => {
       var _a2;
-      const { rtl } = props;
+      const {
+        rtl
+      } = props;
       if (rtl === void 0) {
         return NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedRtlRef.value;
       }
@@ -26124,8 +28999,12 @@ const NConfigProvider = defineComponent({
     const inlineThemeDisabled = props.inlineThemeDisabled || (NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.inlineThemeDisabled);
     const preflightStyleDisabled = props.preflightStyleDisabled || (NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.preflightStyleDisabled);
     const mergedThemeHashRef = computed(() => {
-      const { value: theme } = mergedThemeRef;
-      const { value: mergedThemeOverrides } = mergedThemeOverridesRef;
+      const {
+        value: theme
+      } = mergedThemeRef;
+      const {
+        value: mergedThemeOverrides
+      } = mergedThemeOverridesRef;
       const hasThemeOverrides = mergedThemeOverrides && Object.keys(mergedThemeOverrides).length !== 0;
       const themeName = theme === null || theme === void 0 ? void 0 : theme.name;
       if (themeName) {
@@ -26150,23 +29029,31 @@ const NConfigProvider = defineComponent({
       mergedNamespaceRef,
       mergedClsPrefixRef,
       mergedLocaleRef: computed(() => {
-        const { locale: locale2 } = props;
+        const {
+          locale: locale2
+        } = props;
         if (locale2 === null)
           return void 0;
         return locale2 === void 0 ? NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedLocaleRef.value : locale2;
       }),
       mergedDateLocaleRef: computed(() => {
-        const { dateLocale } = props;
+        const {
+          dateLocale
+        } = props;
         if (dateLocale === null)
           return void 0;
         return dateLocale === void 0 ? NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedDateLocaleRef.value : dateLocale;
       }),
       mergedHljsRef: computed(() => {
-        const { hljs } = props;
+        const {
+          hljs
+        } = props;
         return hljs === void 0 ? NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedHljsRef.value : hljs;
       }),
       mergedKatexRef: computed(() => {
-        const { katex } = props;
+        const {
+          katex
+        } = props;
         return katex === void 0 ? NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedKatexRef.value : katex;
       }),
       mergedThemeRef,
@@ -26198,8 +29085,10 @@ const popselect = {
   }
 };
 const popselectDark = popselect;
-function self$Q(vars) {
-  const { boxShadow2 } = vars;
+function self$V(vars) {
+  const {
+    boxShadow2
+  } = vars;
   return {
     menuBoxShadow: boxShadow2
   };
@@ -26211,11 +29100,13 @@ const popselectLight = createTheme({
     Popover: popoverLight$1,
     InternalSelectMenu: internalSelectMenuLight$1
   },
-  self: self$Q
+  self: self$V
 });
 const popselectLight$1 = popselectLight;
-function self$P(vars) {
-  const { boxShadow2 } = vars;
+function self$U(vars) {
+  const {
+    boxShadow2
+  } = vars;
   return {
     menuBoxShadow: boxShadow2
   };
@@ -26227,7 +29118,7 @@ const selectLight = createTheme({
     InternalSelection: internalSelectionLight$1,
     InternalSelectMenu: internalSelectMenuLight$1
   },
-  self: self$P
+  self: self$U
 });
 const selectLight$1 = selectLight;
 const selectDark = {
@@ -26237,7 +29128,7 @@ const selectDark = {
     InternalSelection: internalSelectionDark$1,
     InternalSelectMenu: internalSelectMenuDark$1
   },
-  self: self$P
+  self: self$U
 };
 const selectDark$1 = selectDark;
 const style$h = c$1([cB("select", `
@@ -26310,6 +29201,7 @@ const selectProps = Object.assign(Object.assign({}, useTheme.props), {
     default: true
   },
   maxTagCount: [Number, String],
+  ellipsisTagPopoverProps: Object,
   consistentMenuWidth: {
     type: Boolean,
     default: true
@@ -26336,7 +29228,10 @@ const selectProps = Object.assign(Object.assign({}, useTheme.props), {
   "onUpdate:value": [Function, Array],
   inputProps: Object,
   nodeProps: Function,
-  ignoreComposition: { type: Boolean, default: true },
+  ignoreComposition: {
+    type: Boolean,
+    default: true
+  },
   showOnFocus: Boolean,
   // for jsx
   onUpdateValue: [Function, Array],
@@ -26364,11 +29259,16 @@ const selectProps = Object.assign(Object.assign({}, useTheme.props), {
   onChange: [Function, Array],
   items: Array
 });
-const NSelect = defineComponent({
+const NSelect = /* @__PURE__ */ defineComponent({
   name: "Select",
   props: selectProps,
   setup(props) {
-    const { mergedClsPrefixRef, mergedBorderedRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      mergedBorderedRef,
+      namespaceRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Select", "-select", style$h, selectLight$1, props, mergedClsPrefixRef);
     const uncontrolledValueRef = ref(props.defaultValue);
     const controlledValueRef = toRef(props, "value");
@@ -26376,7 +29276,10 @@ const NSelect = defineComponent({
     const focusedRef = ref(false);
     const patternRef = ref("");
     const treeMateRef = computed(() => {
-      const { valueField, childrenField } = props;
+      const {
+        valueField,
+        childrenField
+      } = props;
       const options = createTmOptions(valueField, childrenField);
       return createTreeMate(filteredOptionsRef.value, options);
     });
@@ -26386,7 +29289,9 @@ const NSelect = defineComponent({
     const triggerRef = ref(null);
     const followerRef = ref(null);
     const menuRef = ref(null);
-    const { localeRef } = useLocale("Select");
+    const {
+      localeRef
+    } = useLocale("Select");
     const localizedPlaceholderRef = computed(() => {
       var _a2;
       return (_a2 = props.placeholder) !== null && _a2 !== void 0 ? _a2 : localeRef.value.placeholder;
@@ -26397,9 +29302,14 @@ const NSelect = defineComponent({
     const beingCreatedOptionsRef = ref([]);
     const memoValOptMapRef = ref(/* @__PURE__ */ new Map());
     const wrappedFallbackOptionRef = computed(() => {
-      const { fallbackOption } = props;
+      const {
+        fallbackOption
+      } = props;
       if (fallbackOption === void 0) {
-        const { labelField, valueField } = props;
+        const {
+          labelField,
+          valueField
+        } = props;
         return (value) => ({
           [labelField]: String(value),
           [valueField]: value
@@ -26417,10 +29327,15 @@ const NSelect = defineComponent({
       return beingCreatedOptionsRef.value.concat(createdOptionsRef.value).concat(compitableOptionsRef.value);
     });
     const resolvedFilterRef = computed(() => {
-      const { filter } = props;
+      const {
+        filter
+      } = props;
       if (filter)
         return filter;
-      const { labelField, valueField } = props;
+      const {
+        labelField,
+        valueField
+      } = props;
       return (pattern, option) => {
         if (!option)
           return false;
@@ -26442,8 +29357,12 @@ const NSelect = defineComponent({
       if (props.remote) {
         return compitableOptionsRef.value;
       } else {
-        const { value: localOptions } = localOptionsRef;
-        const { value: pattern } = patternRef;
+        const {
+          value: localOptions
+        } = localOptionsRef;
+        const {
+          value: pattern
+        } = patternRef;
         if (!pattern.length || !props.filterable) {
           return localOptions;
         } else {
@@ -26453,9 +29372,15 @@ const NSelect = defineComponent({
     });
     function getMergedOptions(values) {
       const remote = props.remote;
-      const { value: memoValOptMap } = memoValOptMapRef;
-      const { value: valOptMap } = valOptMapRef;
-      const { value: wrappedFallbackOption } = wrappedFallbackOptionRef;
+      const {
+        value: memoValOptMap
+      } = memoValOptMapRef;
+      const {
+        value: valOptMap
+      } = valOptMapRef;
+      const {
+        value: wrappedFallbackOption
+      } = wrappedFallbackOptionRef;
       const options = [];
       values.forEach((value) => {
         if (valOptMap.has(value)) {
@@ -26473,7 +29398,9 @@ const NSelect = defineComponent({
     }
     const selectedOptionsRef = computed(() => {
       if (props.multiple) {
-        const { value: values } = mergedValueRef;
+        const {
+          value: values
+        } = mergedValueRef;
         if (!Array.isArray(values))
           return [];
         return getMergedOptions(values);
@@ -26481,7 +29408,9 @@ const NSelect = defineComponent({
       return null;
     });
     const selectedOptionRef = computed(() => {
-      const { value: mergedValue } = mergedValueRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
       if (!props.multiple && !Array.isArray(mergedValue)) {
         if (mergedValue === null)
           return null;
@@ -26490,10 +29419,21 @@ const NSelect = defineComponent({
       return null;
     });
     const formItem = useFormItem(props);
-    const { mergedSizeRef, mergedDisabledRef, mergedStatusRef } = formItem;
+    const {
+      mergedSizeRef,
+      mergedDisabledRef,
+      mergedStatusRef
+    } = formItem;
     function doUpdateValue(value, option) {
-      const { onChange, "onUpdate:value": _onUpdateValue, onUpdateValue } = props;
-      const { nTriggerFormChange, nTriggerFormInput } = formItem;
+      const {
+        onChange,
+        "onUpdate:value": _onUpdateValue,
+        onUpdateValue
+      } = props;
+      const {
+        nTriggerFormChange,
+        nTriggerFormInput
+      } = formItem;
       if (onChange)
         call(onChange, value, option);
       if (onUpdateValue)
@@ -26506,20 +29446,31 @@ const NSelect = defineComponent({
       nTriggerFormInput();
     }
     function doBlur(e) {
-      const { onBlur } = props;
-      const { nTriggerFormBlur } = formItem;
+      const {
+        onBlur
+      } = props;
+      const {
+        nTriggerFormBlur
+      } = formItem;
       if (onBlur)
         call(onBlur, e);
       nTriggerFormBlur();
     }
     function doClear() {
-      const { onClear } = props;
+      const {
+        onClear
+      } = props;
       if (onClear)
         call(onClear);
     }
     function doFocus(e) {
-      const { onFocus, showOnFocus } = props;
-      const { nTriggerFormFocus } = formItem;
+      const {
+        onFocus,
+        showOnFocus
+      } = props;
+      const {
+        nTriggerFormFocus
+      } = formItem;
       if (onFocus)
         call(onFocus, e);
       nTriggerFormFocus();
@@ -26528,22 +29479,33 @@ const NSelect = defineComponent({
       }
     }
     function doSearch(value) {
-      const { onSearch } = props;
+      const {
+        onSearch
+      } = props;
       if (onSearch)
         call(onSearch, value);
     }
     function doScroll(e) {
-      const { onScroll } = props;
+      const {
+        onScroll
+      } = props;
       if (onScroll)
         call(onScroll, e);
     }
     function updateMemorizedOptions() {
       var _a2;
-      const { remote, multiple } = props;
+      const {
+        remote,
+        multiple
+      } = props;
       if (remote) {
-        const { value: memoValOptMap } = memoValOptMapRef;
+        const {
+          value: memoValOptMap
+        } = memoValOptMapRef;
         if (multiple) {
-          const { valueField } = props;
+          const {
+            valueField
+          } = props;
           (_a2 = selectedOptionsRef.value) === null || _a2 === void 0 ? void 0 : _a2.forEach((option) => {
             memoValOptMap.set(option[valueField], option);
           });
@@ -26556,7 +29518,10 @@ const NSelect = defineComponent({
       }
     }
     function doUpdateShow(value) {
-      const { onUpdateShow, "onUpdate:show": _onUpdateShow } = props;
+      const {
+        onUpdateShow,
+        "onUpdate:show": _onUpdateShow
+      } = props;
       if (onUpdateShow)
         call(onUpdateShow, value);
       if (_onUpdateShow)
@@ -26649,10 +29614,16 @@ const NSelect = defineComponent({
       if (wrappedFallbackOptionRef.value) {
         return Array.from(value);
       } else {
-        const { remote } = props;
-        const { value: valOptMap } = valOptMapRef;
+        const {
+          remote
+        } = props;
+        const {
+          value: valOptMap
+        } = valOptMapRef;
         if (remote) {
-          const { value: memoValOptMap } = memoValOptMapRef;
+          const {
+            value: memoValOptMap
+          } = memoValOptMapRef;
           return value.filter((v) => valOptMap.has(v) || memoValOptMap.has(v));
         } else {
           return value.filter((v) => valOptMap.has(v));
@@ -26665,9 +29636,16 @@ const NSelect = defineComponent({
     function handleToggleByOption(option) {
       if (mergedDisabledRef.value)
         return;
-      const { tag, remote, clearFilterAfterSelect, valueField } = props;
+      const {
+        tag,
+        remote,
+        clearFilterAfterSelect,
+        valueField
+      } = props;
       if (tag && !remote) {
-        const { value: beingCreatedOptions } = beingCreatedOptionsRef;
+        const {
+          value: beingCreatedOptions
+        } = beingCreatedOptionsRef;
         const beingCreatedOption = beingCreatedOptions[0] || null;
         if (beingCreatedOption) {
           const createdOptions = createdOptionsRef.value;
@@ -26705,9 +29683,7 @@ const NSelect = defineComponent({
         if (tag && !remote) {
           const createdOptionIndex = getCreatedOptionIndex(option[valueField]);
           if (~createdOptionIndex) {
-            createdOptionsRef.value = [
-              createdOptionsRef.value[createdOptionIndex]
-            ];
+            createdOptionsRef.value = [createdOptionsRef.value[createdOptionIndex]];
           } else {
             createdOptionsRef.value = emptyArray;
           }
@@ -26725,18 +29701,31 @@ const NSelect = defineComponent({
       if (!mergedShowRef.value) {
         openMenu();
       }
-      const { value } = e.target;
+      const {
+        value
+      } = e.target;
       patternRef.value = value;
-      const { tag, remote } = props;
+      const {
+        tag,
+        remote
+      } = props;
       doSearch(value);
       if (tag && !remote) {
         if (!value) {
           beingCreatedOptionsRef.value = emptyArray;
           return;
         }
-        const { onCreate } = props;
-        const optionBeingCreated = onCreate ? onCreate(value) : { [props.labelField]: value, [props.valueField]: value };
-        const { valueField, labelField } = props;
+        const {
+          onCreate
+        } = props;
+        const optionBeingCreated = onCreate ? onCreate(value) : {
+          [props.labelField]: value,
+          [props.valueField]: value
+        };
+        const {
+          valueField,
+          labelField
+        } = props;
         if (compitableOptionsRef.value.some((option) => {
           return option[valueField] === optionBeingCreated[valueField] || option[labelField] === optionBeingCreated[labelField];
         }) || createdOptionsRef.value.some((option) => {
@@ -26750,7 +29739,9 @@ const NSelect = defineComponent({
     }
     function handleClear(e) {
       e.stopPropagation();
-      const { multiple } = props;
+      const {
+        multiple
+      } = props;
       if (!multiple && props.filterable) {
         closeMenu();
       }
@@ -26797,7 +29788,9 @@ const NSelect = defineComponent({
                 const beingCreatedOption = beingCreatedOptionsRef.value[0];
                 if (beingCreatedOption) {
                   const optionValue = beingCreatedOption[props.valueField];
-                  const { value: mergedValue } = mergedValueRef;
+                  const {
+                    value: mergedValue
+                  } = mergedValueRef;
                   if (props.multiple) {
                     if (Array.isArray(mergedValue) && mergedValue.some((value) => value === optionValue))
                       ;
@@ -26875,7 +29868,11 @@ const NSelect = defineComponent({
       }
     };
     const cssVarsRef = computed(() => {
-      const { self: { menuBoxShadow } } = themeRef.value;
+      const {
+        self: {
+          menuBoxShadow
+        }
+      } = themeRef.value;
       return {
         "--n-menu-box-shadow": menuBoxShadow
       };
@@ -26931,62 +29928,129 @@ const NSelect = defineComponent({
     });
   },
   render() {
-    return h(
-      "div",
-      { class: `${this.mergedClsPrefix}-select` },
-      h(VBinder, null, {
-        default: () => [
-          h(VTarget, null, {
-            default: () => h(NInternalSelection, { ref: "triggerRef", inlineThemeDisabled: this.inlineThemeDisabled, status: this.mergedStatus, inputProps: this.inputProps, clsPrefix: this.mergedClsPrefix, showArrow: this.showArrow, maxTagCount: this.maxTagCount, bordered: this.mergedBordered, active: this.activeWithoutMenuOpen || this.mergedShow, pattern: this.pattern, placeholder: this.localizedPlaceholder, selectedOption: this.selectedOption, selectedOptions: this.selectedOptions, multiple: this.multiple, renderTag: this.renderTag, renderLabel: this.renderLabel, filterable: this.filterable, clearable: this.clearable, disabled: this.mergedDisabled, size: this.mergedSize, theme: this.mergedTheme.peers.InternalSelection, labelField: this.labelField, valueField: this.valueField, themeOverrides: this.mergedTheme.peerOverrides.InternalSelection, loading: this.loading, focused: this.focused, onClick: this.handleTriggerClick, onDeleteOption: this.handleDeleteOption, onPatternInput: this.handlePatternInput, onClear: this.handleClear, onBlur: this.handleTriggerBlur, onFocus: this.handleTriggerFocus, onKeydown: this.handleKeydown, onPatternBlur: this.onTriggerInputBlur, onPatternFocus: this.onTriggerInputFocus, onResize: this.handleTriggerOrMenuResize, ignoreComposition: this.ignoreComposition }, {
-              arrow: () => {
-                var _a2, _b;
-                return [(_b = (_a2 = this.$slots).arrow) === null || _b === void 0 ? void 0 : _b.call(_a2)];
+    return h("div", {
+      class: `${this.mergedClsPrefix}-select`
+    }, h(VBinder, null, {
+      default: () => [h(VTarget, null, {
+        default: () => h(NInternalSelection, {
+          ref: "triggerRef",
+          inlineThemeDisabled: this.inlineThemeDisabled,
+          status: this.mergedStatus,
+          inputProps: this.inputProps,
+          clsPrefix: this.mergedClsPrefix,
+          showArrow: this.showArrow,
+          maxTagCount: this.maxTagCount,
+          ellipsisTagPopoverProps: this.ellipsisTagPopoverProps,
+          bordered: this.mergedBordered,
+          active: this.activeWithoutMenuOpen || this.mergedShow,
+          pattern: this.pattern,
+          placeholder: this.localizedPlaceholder,
+          selectedOption: this.selectedOption,
+          selectedOptions: this.selectedOptions,
+          multiple: this.multiple,
+          renderTag: this.renderTag,
+          renderLabel: this.renderLabel,
+          filterable: this.filterable,
+          clearable: this.clearable,
+          disabled: this.mergedDisabled,
+          size: this.mergedSize,
+          theme: this.mergedTheme.peers.InternalSelection,
+          labelField: this.labelField,
+          valueField: this.valueField,
+          themeOverrides: this.mergedTheme.peerOverrides.InternalSelection,
+          loading: this.loading,
+          focused: this.focused,
+          onClick: this.handleTriggerClick,
+          onDeleteOption: this.handleDeleteOption,
+          onPatternInput: this.handlePatternInput,
+          onClear: this.handleClear,
+          onBlur: this.handleTriggerBlur,
+          onFocus: this.handleTriggerFocus,
+          onKeydown: this.handleKeydown,
+          onPatternBlur: this.onTriggerInputBlur,
+          onPatternFocus: this.onTriggerInputFocus,
+          onResize: this.handleTriggerOrMenuResize,
+          ignoreComposition: this.ignoreComposition
+        }, {
+          arrow: () => {
+            var _a2, _b;
+            return [(_b = (_a2 = this.$slots).arrow) === null || _b === void 0 ? void 0 : _b.call(_a2)];
+          }
+        })
+      }), h(VFollower, {
+        ref: "followerRef",
+        show: this.mergedShow,
+        to: this.adjustedTo,
+        teleportDisabled: this.adjustedTo === useAdjustedTo.tdkey,
+        containerClass: this.namespace,
+        width: this.consistentMenuWidth ? "target" : void 0,
+        minWidth: "target",
+        placement: this.placement
+      }, {
+        default: () => h(Transition, {
+          name: "fade-in-scale-up-transition",
+          appear: this.isMounted,
+          onAfterLeave: this.handleMenuAfterLeave
+        }, {
+          default: () => {
+            var _a2, _b, _c;
+            if (!(this.mergedShow || this.displayDirective === "show")) {
+              return null;
+            }
+            (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
+            return withDirectives(h(NInternalSelectMenu, Object.assign({}, this.menuProps, {
+              ref: "menuRef",
+              onResize: this.handleTriggerOrMenuResize,
+              inlineThemeDisabled: this.inlineThemeDisabled,
+              virtualScroll: this.consistentMenuWidth && this.virtualScroll,
+              class: [`${this.mergedClsPrefix}-select-menu`, this.themeClass, (_b = this.menuProps) === null || _b === void 0 ? void 0 : _b.class],
+              clsPrefix: this.mergedClsPrefix,
+              focusable: true,
+              labelField: this.labelField,
+              valueField: this.valueField,
+              autoPending: true,
+              nodeProps: this.nodeProps,
+              theme: this.mergedTheme.peers.InternalSelectMenu,
+              themeOverrides: this.mergedTheme.peerOverrides.InternalSelectMenu,
+              treeMate: this.treeMate,
+              multiple: this.multiple,
+              size: "medium",
+              renderOption: this.renderOption,
+              renderLabel: this.renderLabel,
+              value: this.mergedValue,
+              style: [(_c = this.menuProps) === null || _c === void 0 ? void 0 : _c.style, this.cssVars],
+              onToggle: this.handleToggle,
+              onScroll: this.handleMenuScroll,
+              onFocus: this.handleMenuFocus,
+              onBlur: this.handleMenuBlur,
+              onKeydown: this.handleMenuKeydown,
+              onTabOut: this.handleMenuTabOut,
+              onMousedown: this.handleMenuMousedown,
+              show: this.mergedShow,
+              showCheckmark: this.showCheckmark,
+              resetMenuOnOptionsChange: this.resetMenuOnOptionsChange
+            }), {
+              empty: () => {
+                var _a3, _b2;
+                return [(_b2 = (_a3 = this.$slots).empty) === null || _b2 === void 0 ? void 0 : _b2.call(_a3)];
+              },
+              header: () => {
+                var _a3, _b2;
+                return [(_b2 = (_a3 = this.$slots).header) === null || _b2 === void 0 ? void 0 : _b2.call(_a3)];
+              },
+              action: () => {
+                var _a3, _b2;
+                return [(_b2 = (_a3 = this.$slots).action) === null || _b2 === void 0 ? void 0 : _b2.call(_a3)];
               }
-            })
-          }),
-          h(VFollower, { ref: "followerRef", show: this.mergedShow, to: this.adjustedTo, teleportDisabled: this.adjustedTo === useAdjustedTo.tdkey, containerClass: this.namespace, width: this.consistentMenuWidth ? "target" : void 0, minWidth: "target", placement: this.placement }, {
-            default: () => h(Transition, { name: "fade-in-scale-up-transition", appear: this.isMounted, onAfterLeave: this.handleMenuAfterLeave }, {
-              default: () => {
-                var _a2, _b, _c;
-                if (!(this.mergedShow || this.displayDirective === "show")) {
-                  return null;
-                }
-                (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-                return withDirectives(h(NInternalSelectMenu, Object.assign({}, this.menuProps, { ref: "menuRef", onResize: this.handleTriggerOrMenuResize, inlineThemeDisabled: this.inlineThemeDisabled, virtualScroll: this.consistentMenuWidth && this.virtualScroll, class: [
-                  `${this.mergedClsPrefix}-select-menu`,
-                  this.themeClass,
-                  (_b = this.menuProps) === null || _b === void 0 ? void 0 : _b.class
-                ], clsPrefix: this.mergedClsPrefix, focusable: true, labelField: this.labelField, valueField: this.valueField, autoPending: true, nodeProps: this.nodeProps, theme: this.mergedTheme.peers.InternalSelectMenu, themeOverrides: this.mergedTheme.peerOverrides.InternalSelectMenu, treeMate: this.treeMate, multiple: this.multiple, size: "medium", renderOption: this.renderOption, renderLabel: this.renderLabel, value: this.mergedValue, style: [(_c = this.menuProps) === null || _c === void 0 ? void 0 : _c.style, this.cssVars], onToggle: this.handleToggle, onScroll: this.handleMenuScroll, onFocus: this.handleMenuFocus, onBlur: this.handleMenuBlur, onKeydown: this.handleMenuKeydown, onTabOut: this.handleMenuTabOut, onMousedown: this.handleMenuMousedown, show: this.mergedShow, showCheckmark: this.showCheckmark, resetMenuOnOptionsChange: this.resetMenuOnOptionsChange }), {
-                  empty: () => {
-                    var _a3, _b2;
-                    return [(_b2 = (_a3 = this.$slots).empty) === null || _b2 === void 0 ? void 0 : _b2.call(_a3)];
-                  },
-                  action: () => {
-                    var _a3, _b2;
-                    return [(_b2 = (_a3 = this.$slots).action) === null || _b2 === void 0 ? void 0 : _b2.call(_a3)];
-                  }
-                }), this.displayDirective === "show" ? [
-                  [vShow, this.mergedShow],
-                  [
-                    clickoutside$1,
-                    this.handleMenuClickOutside,
-                    void 0,
-                    { capture: true }
-                  ]
-                ] : [
-                  [
-                    clickoutside$1,
-                    this.handleMenuClickOutside,
-                    void 0,
-                    { capture: true }
-                  ]
-                ]);
-              }
-            })
-          })
-        ]
-      })
-    );
+            }), this.displayDirective === "show" ? [[vShow, this.mergedShow], [clickoutside$1, this.handleMenuClickOutside, void 0, {
+              capture: true
+            }]] : [[clickoutside$1, this.handleMenuClickOutside, void 0, {
+              capture: true
+            }]]);
+          }
+        })
+      })]
+    }));
   }
 });
 const commonVariables$b = {
@@ -27024,7 +30088,7 @@ const commonVariables$b = {
   prefixMarginLarge: "0 8px 0 0",
   suffixMarginLarge: "0 0 0 8px"
 };
-const self$O = (vars) => {
+const self$T = (vars) => {
   const {
     textColor2,
     primaryColor,
@@ -27043,7 +30107,45 @@ const self$O = (vars) => {
     heightSmall,
     heightMedium
   } = vars;
-  return Object.assign(Object.assign({}, commonVariables$b), { buttonColor: "#0000", buttonColorHover: "#0000", buttonColorPressed: "#0000", buttonBorder: `1px solid ${borderColor}`, buttonBorderHover: `1px solid ${borderColor}`, buttonBorderPressed: `1px solid ${borderColor}`, buttonIconColor: textColor2, buttonIconColorHover: textColor2, buttonIconColorPressed: textColor2, itemTextColor: textColor2, itemTextColorHover: primaryColorHover, itemTextColorPressed: primaryColorPressed, itemTextColorActive: primaryColor, itemTextColorDisabled: textColorDisabled, itemColor: "#0000", itemColorHover: "#0000", itemColorPressed: "#0000", itemColorActive: "#0000", itemColorActiveHover: "#0000", itemColorDisabled: inputColorDisabled, itemBorder: "1px solid #0000", itemBorderHover: "1px solid #0000", itemBorderPressed: "1px solid #0000", itemBorderActive: `1px solid ${primaryColor}`, itemBorderDisabled: `1px solid ${borderColor}`, itemBorderRadius: borderRadius, itemSizeSmall: heightTiny, itemSizeMedium: heightSmall, itemSizeLarge: heightMedium, itemFontSizeSmall: fontSizeTiny, itemFontSizeMedium: fontSizeSmall, itemFontSizeLarge: fontSizeMedium, jumperFontSizeSmall: fontSizeTiny, jumperFontSizeMedium: fontSizeSmall, jumperFontSizeLarge: fontSizeMedium, jumperTextColor: textColor2, jumperTextColorDisabled: textColorDisabled });
+  return Object.assign(Object.assign({}, commonVariables$b), {
+    buttonColor: "#0000",
+    buttonColorHover: "#0000",
+    buttonColorPressed: "#0000",
+    buttonBorder: `1px solid ${borderColor}`,
+    buttonBorderHover: `1px solid ${borderColor}`,
+    buttonBorderPressed: `1px solid ${borderColor}`,
+    buttonIconColor: textColor2,
+    buttonIconColorHover: textColor2,
+    buttonIconColorPressed: textColor2,
+    itemTextColor: textColor2,
+    itemTextColorHover: primaryColorHover,
+    itemTextColorPressed: primaryColorPressed,
+    itemTextColorActive: primaryColor,
+    itemTextColorDisabled: textColorDisabled,
+    itemColor: "#0000",
+    itemColorHover: "#0000",
+    itemColorPressed: "#0000",
+    itemColorActive: "#0000",
+    itemColorActiveHover: "#0000",
+    itemColorDisabled: inputColorDisabled,
+    itemBorder: "1px solid #0000",
+    itemBorderHover: "1px solid #0000",
+    itemBorderPressed: "1px solid #0000",
+    itemBorderActive: `1px solid ${primaryColor}`,
+    itemBorderDisabled: `1px solid ${borderColor}`,
+    itemBorderRadius: borderRadius,
+    itemSizeSmall: heightTiny,
+    itemSizeMedium: heightSmall,
+    itemSizeLarge: heightMedium,
+    itemFontSizeSmall: fontSizeTiny,
+    itemFontSizeMedium: fontSizeSmall,
+    itemFontSizeLarge: fontSizeMedium,
+    jumperFontSizeSmall: fontSizeTiny,
+    jumperFontSizeMedium: fontSizeSmall,
+    jumperFontSizeLarge: fontSizeMedium,
+    jumperTextColor: textColor2,
+    jumperTextColorDisabled: textColorDisabled
+  });
 };
 const paginationLight = createTheme({
   name: "Pagination",
@@ -27053,7 +30155,7 @@ const paginationLight = createTheme({
     Input: inputLight$1,
     Popselect: popselectLight$1
   },
-  self: self$O
+  self: self$T
 });
 const paginationLight$1 = paginationLight;
 const paginationDark = {
@@ -27065,18 +30167,21 @@ const paginationDark = {
     Popselect: popselectDark
   },
   self(vars) {
-    const { primaryColor, opacity3 } = vars;
+    const {
+      primaryColor,
+      opacity3
+    } = vars;
     const borderColorActive = changeColor(primaryColor, {
       alpha: Number(opacity3)
     });
-    const commonSelf = self$O(vars);
+    const commonSelf = self$T(vars);
     commonSelf.itemBorderActive = `1px solid ${borderColorActive}`;
     commonSelf.itemBorderDisabled = "1px solid #0000";
     return commonSelf;
   }
 };
 const paginationDark$1 = paginationDark;
-const commonVars$8 = {
+const commonVars$9 = {
   padding: "8px 14px"
 };
 const tooltipDark = {
@@ -27086,14 +30191,33 @@ const tooltipDark = {
     Popover: popoverDark$1
   },
   self(vars) {
-    const { borderRadius, boxShadow2, popoverColor, textColor2 } = vars;
-    return Object.assign(Object.assign({}, commonVars$8), { borderRadius, boxShadow: boxShadow2, color: popoverColor, textColor: textColor2 });
+    const {
+      borderRadius,
+      boxShadow2,
+      popoverColor,
+      textColor2
+    } = vars;
+    return Object.assign(Object.assign({}, commonVars$9), {
+      borderRadius,
+      boxShadow: boxShadow2,
+      color: popoverColor,
+      textColor: textColor2
+    });
   }
 };
 const tooltipDark$1 = tooltipDark;
-const self$N = (vars) => {
-  const { borderRadius, boxShadow2, baseColor } = vars;
-  return Object.assign(Object.assign({}, commonVars$8), { borderRadius, boxShadow: boxShadow2, color: composite(baseColor, "rgba(0, 0, 0, .85)"), textColor: baseColor });
+const self$S = (vars) => {
+  const {
+    borderRadius,
+    boxShadow2,
+    baseColor
+  } = vars;
+  return Object.assign(Object.assign({}, commonVars$9), {
+    borderRadius,
+    boxShadow: boxShadow2,
+    color: composite(baseColor, "rgba(0, 0, 0, .85)"),
+    textColor: baseColor
+  });
 };
 const tooltipLight = createTheme({
   name: "Tooltip",
@@ -27101,7 +30225,7 @@ const tooltipLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$N
+  self: self$S
 });
 const tooltipLight$1 = tooltipLight;
 const ellipsisDark = {
@@ -27131,7 +30255,23 @@ const radioDark = {
   name: "Radio",
   common: commonDark,
   self(vars) {
-    const { borderColor, primaryColor, baseColor, textColorDisabled, inputColorDisabled, textColor2, opacityDisabled, borderRadius, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightSmall, heightMedium, heightLarge, lineHeight: lineHeight2 } = vars;
+    const {
+      borderColor,
+      primaryColor,
+      baseColor,
+      textColorDisabled,
+      inputColorDisabled,
+      textColor2,
+      opacityDisabled,
+      borderRadius,
+      fontSizeSmall,
+      fontSizeMedium,
+      fontSizeLarge,
+      heightSmall,
+      heightMedium,
+      heightLarge,
+      lineHeight: lineHeight2
+    } = vars;
     return Object.assign(Object.assign({}, commonVariables$a), {
       labelLineHeight: lineHeight2,
       buttonHeightSmall: heightSmall,
@@ -27142,7 +30282,9 @@ const radioDark = {
       fontSizeLarge,
       boxShadow: `inset 0 0 0 1px ${borderColor}`,
       boxShadowActive: `inset 0 0 0 1px ${primaryColor}`,
-      boxShadowFocus: `inset 0 0 0 1px ${primaryColor}, 0 0 0 2px ${changeColor(primaryColor, { alpha: 0.3 })}`,
+      boxShadowFocus: `inset 0 0 0 1px ${primaryColor}, 0 0 0 2px ${changeColor(primaryColor, {
+        alpha: 0.3
+      })}`,
       boxShadowHover: `inset 0 0 0 1px ${primaryColor}`,
       boxShadowDisabled: `inset 0 0 0 1px ${borderColor}`,
       color: "#0000",
@@ -27161,7 +30303,9 @@ const radioDark = {
       buttonTextColorActive: baseColor,
       buttonTextColorHover: primaryColor,
       opacityDisabled,
-      buttonBoxShadowFocus: `inset 0 0 0 1px ${primaryColor}, 0 0 0 2px ${changeColor(primaryColor, { alpha: 0.3 })}`,
+      buttonBoxShadowFocus: `inset 0 0 0 1px ${primaryColor}, 0 0 0 2px ${changeColor(primaryColor, {
+        alpha: 0.3
+      })}`,
       buttonBoxShadowHover: `inset 0 0 0 1px ${primaryColor}`,
       buttonBoxShadow: "inset 0 0 0 1px #0000",
       buttonBorderRadius: borderRadius
@@ -27169,8 +30313,24 @@ const radioDark = {
   }
 };
 const radioDark$1 = radioDark;
-const self$M = (vars) => {
-  const { borderColor, primaryColor, baseColor, textColorDisabled, inputColorDisabled, textColor2, opacityDisabled, borderRadius, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightSmall, heightMedium, heightLarge, lineHeight: lineHeight2 } = vars;
+const self$R = (vars) => {
+  const {
+    borderColor,
+    primaryColor,
+    baseColor,
+    textColorDisabled,
+    inputColorDisabled,
+    textColor2,
+    opacityDisabled,
+    borderRadius,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge,
+    heightSmall,
+    heightMedium,
+    heightLarge,
+    lineHeight: lineHeight2
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$a), {
     labelLineHeight: lineHeight2,
     buttonHeightSmall: heightSmall,
@@ -27181,7 +30341,9 @@ const self$M = (vars) => {
     fontSizeLarge,
     boxShadow: `inset 0 0 0 1px ${borderColor}`,
     boxShadowActive: `inset 0 0 0 1px ${primaryColor}`,
-    boxShadowFocus: `inset 0 0 0 1px ${primaryColor}, 0 0 0 2px ${changeColor(primaryColor, { alpha: 0.2 })}`,
+    boxShadowFocus: `inset 0 0 0 1px ${primaryColor}, 0 0 0 2px ${changeColor(primaryColor, {
+      alpha: 0.2
+    })}`,
     boxShadowHover: `inset 0 0 0 1px ${primaryColor}`,
     boxShadowDisabled: `inset 0 0 0 1px ${borderColor}`,
     color: baseColor,
@@ -27200,7 +30362,9 @@ const self$M = (vars) => {
     buttonTextColorActive: primaryColor,
     buttonTextColorHover: primaryColor,
     opacityDisabled,
-    buttonBoxShadowFocus: `inset 0 0 0 1px ${primaryColor}, 0 0 0 2px ${changeColor(primaryColor, { alpha: 0.3 })}`,
+    buttonBoxShadowFocus: `inset 0 0 0 1px ${primaryColor}, 0 0 0 2px ${changeColor(primaryColor, {
+      alpha: 0.3
+    })}`,
     buttonBoxShadowHover: "inset 0 0 0 1px #0000",
     buttonBoxShadow: "inset 0 0 0 1px #0000",
     buttonBorderRadius: borderRadius
@@ -27209,7 +30373,7 @@ const self$M = (vars) => {
 const radioLight = {
   name: "Radio",
   common: commonLight,
-  self: self$M
+  self: self$R
 };
 const radioLight$1 = radioLight;
 const commonVariables$9 = {
@@ -27235,8 +30399,26 @@ const commonVariables$9 = {
   optionIconPrefixWidthLarge: "40px",
   optionIconPrefixWidthHuge: "40px"
 };
-const self$L = (vars) => {
-  const { primaryColor, textColor2, dividerColor, hoverColor, popoverColor, invertedColor, borderRadius, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge, heightSmall, heightMedium, heightLarge, heightHuge, textColor3, opacityDisabled } = vars;
+const self$Q = (vars) => {
+  const {
+    primaryColor,
+    textColor2,
+    dividerColor,
+    hoverColor,
+    popoverColor,
+    invertedColor,
+    borderRadius,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge,
+    fontSizeHuge,
+    heightSmall,
+    heightMedium,
+    heightLarge,
+    heightHuge,
+    textColor3,
+    opacityDisabled
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$9), {
     optionHeightSmall: heightSmall,
     optionHeightMedium: heightMedium,
@@ -27257,7 +30439,9 @@ const self$L = (vars) => {
     suffixColor: textColor2,
     prefixColor: textColor2,
     optionColorHover: hoverColor,
-    optionColorActive: changeColor(primaryColor, { alpha: 0.1 }),
+    optionColorActive: changeColor(primaryColor, {
+      alpha: 0.1
+    }),
     groupHeaderTextColor: textColor3,
     // inverted
     optionTextColorInverted: "#BBB",
@@ -27280,7 +30464,7 @@ const dropdownLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$L
+  self: self$Q
 });
 const dropdownLight$1 = dropdownLight;
 const dropdownDark = {
@@ -27290,10 +30474,16 @@ const dropdownDark = {
     Popover: popoverDark$1
   },
   self(vars) {
-    const { primaryColorSuppl, primaryColor, popoverColor } = vars;
-    const commonSelf = self$L(vars);
+    const {
+      primaryColorSuppl,
+      primaryColor,
+      popoverColor
+    } = vars;
+    const commonSelf = self$Q(vars);
     commonSelf.colorInverted = popoverColor;
-    commonSelf.optionColorActive = changeColor(primaryColor, { alpha: 0.15 });
+    commonSelf.optionColorActive = changeColor(primaryColor, {
+      alpha: 0.15
+    });
     commonSelf.optionColorActiveInverted = primaryColorSuppl;
     commonSelf.optionColorHoverInverted = primaryColorSuppl;
     return commonSelf;
@@ -27316,8 +30506,28 @@ const commonVariables$8 = {
   actionPadding: "8px 12px",
   actionButtonMargin: "0 8px 0 0"
 };
-const self$K = (vars) => {
-  const { cardColor, modalColor, popoverColor, textColor2, textColor1, tableHeaderColor, tableColorHover, iconColor, primaryColor, fontWeightStrong, borderRadius, lineHeight: lineHeight2, fontSizeSmall, fontSizeMedium, fontSizeLarge, dividerColor, heightSmall, opacityDisabled, tableColorStriped } = vars;
+const self$P = (vars) => {
+  const {
+    cardColor,
+    modalColor,
+    popoverColor,
+    textColor2,
+    textColor1,
+    tableHeaderColor,
+    tableColorHover,
+    iconColor,
+    primaryColor,
+    fontWeightStrong,
+    borderRadius,
+    lineHeight: lineHeight2,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge,
+    dividerColor,
+    heightSmall,
+    opacityDisabled,
+    tableColorStriped
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$8), {
     actionDividerColor: dividerColor,
     lineHeight: lineHeight2,
@@ -27373,7 +30583,7 @@ const dataTableLight = createTheme({
     Ellipsis: ellipsisLight$1,
     Dropdown: dropdownLight$1
   },
-  self: self$K
+  self: self$P
 });
 const dataTableLight$1 = dataTableLight;
 const dataTableDark = {
@@ -27391,7 +30601,7 @@ const dataTableDark = {
     Dropdown: dropdownDark$1
   },
   self(vars) {
-    const commonSelf = self$K(vars);
+    const commonSelf = self$P(vars);
     commonSelf.boxShadowAfter = "inset 12px 0 8px -12px rgba(0, 0, 0, .36)";
     commonSelf.boxShadowBefore = "inset -12px 0 8px -12px rgba(0, 0, 0, .36)";
     return commonSelf;
@@ -27399,12 +30609,14 @@ const dataTableDark = {
 };
 const dataTableDark$1 = dataTableDark;
 const tooltipProps = Object.assign(Object.assign({}, popoverBaseProps), useTheme.props);
-const NTooltip = defineComponent({
+const NTooltip = /* @__PURE__ */ defineComponent({
   name: "Tooltip",
   props: tooltipProps,
   __popover__: true,
   setup(props) {
-    const { mergedClsPrefixRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef
+    } = useConfig(props);
     const themeRef = useTheme("Tooltip", "-tooltip", void 0, tooltipLight$1, props, mergedClsPrefixRef);
     const popoverRef = ref(null);
     const tooltipExposedMethod = {
@@ -27415,16 +30627,29 @@ const NTooltip = defineComponent({
         popoverRef.value.setShow(show);
       }
     };
-    return Object.assign(Object.assign({}, tooltipExposedMethod), { popoverRef, mergedTheme: themeRef, popoverThemeOverrides: computed(() => {
-      return themeRef.value.self;
-    }) });
+    return Object.assign(Object.assign({}, tooltipExposedMethod), {
+      popoverRef,
+      mergedTheme: themeRef,
+      popoverThemeOverrides: computed(() => {
+        return themeRef.value.self;
+      })
+    });
   },
   render() {
-    const { mergedTheme, internalExtraClass } = this;
-    return h(NPopover, Object.assign(Object.assign({}, this.$props), { theme: mergedTheme.peers.Popover, themeOverrides: mergedTheme.peerOverrides.Popover, builtinThemeOverrides: this.popoverThemeOverrides, internalExtraClass: internalExtraClass.concat("tooltip"), ref: "popoverRef" }), this.$slots);
+    const {
+      mergedTheme,
+      internalExtraClass
+    } = this;
+    return h(NPopover, Object.assign(Object.assign({}, this.$props), {
+      theme: mergedTheme.peers.Popover,
+      themeOverrides: mergedTheme.peerOverrides.Popover,
+      builtinThemeOverrides: this.popoverThemeOverrides,
+      internalExtraClass: internalExtraClass.concat("tooltip"),
+      ref: "popoverRef"
+    }), this.$slots);
   }
 });
-const NDropdownDivider = defineComponent({
+const NDropdownDivider = /* @__PURE__ */ defineComponent({
   name: "DropdownDivider",
   props: {
     clsPrefix: {
@@ -27433,11 +30658,20 @@ const NDropdownDivider = defineComponent({
     }
   },
   render() {
-    return h("div", { class: `${this.clsPrefix}-dropdown-divider` });
+    return h("div", {
+      class: `${this.clsPrefix}-dropdown-divider`
+    });
   }
 });
-const self$J = (vars) => {
-  const { textColorBase, opacity1, opacity2, opacity3, opacity4, opacity5 } = vars;
+const self$O = (vars) => {
+  const {
+    textColorBase,
+    opacity1,
+    opacity2,
+    opacity3,
+    opacity4,
+    opacity5
+  } = vars;
   return {
     color: textColorBase,
     opacity1Depth: opacity1,
@@ -27450,13 +30684,13 @@ const self$J = (vars) => {
 const iconLight = {
   name: "Icon",
   common: commonLight,
-  self: self$J
+  self: self$O
 };
 const iconLight$1 = iconLight;
 const iconDark$1 = {
   name: "Icon",
   common: commonDark,
-  self: self$J
+  self: self$O
 };
 const iconDark$2 = iconDark$1;
 const style$g = cB("icon", `
@@ -27479,20 +30713,38 @@ const style$g = cB("icon", `
   height: "1em",
   width: "1em"
 })]);
-const iconProps = Object.assign(Object.assign({}, useTheme.props), { depth: [String, Number], size: [Number, String], color: String, component: Object });
-const NIcon = defineComponent({
+const iconProps = Object.assign(Object.assign({}, useTheme.props), {
+  depth: [String, Number],
+  size: [Number, String],
+  color: String,
+  component: Object
+});
+const NIcon = /* @__PURE__ */ defineComponent({
   _n_icon__: true,
   name: "Icon",
   inheritAttrs: false,
   props: iconProps,
   setup(props) {
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Icon", "-icon", style$g, iconLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { depth } = props;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
+      const {
+        depth
+      } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: self2
+      } = themeRef.value;
       if (depth !== void 0) {
-        const { color, [`opacity${depth}Depth`]: opacity } = self2;
+        const {
+          color,
+          [`opacity${depth}Depth`]: opacity
+        } = self2;
         return {
           "--n-bezier": cubicBezierEaseInOut2,
           "--n-color": color,
@@ -27509,7 +30761,10 @@ const NIcon = defineComponent({
     return {
       mergedClsPrefix: mergedClsPrefixRef,
       mergedStyle: computed(() => {
-        const { size: size2, color } = props;
+        const {
+          size: size2,
+          color
+        } = props;
         return {
           fontSize: formatLength(size2),
           color
@@ -27522,21 +30777,24 @@ const NIcon = defineComponent({
   },
   render() {
     var _a2;
-    const { $parent, depth, mergedClsPrefix, component, onRender, themeClass } = this;
+    const {
+      $parent,
+      depth,
+      mergedClsPrefix,
+      component,
+      onRender,
+      themeClass
+    } = this;
     if ((_a2 = $parent === null || $parent === void 0 ? void 0 : $parent.$options) === null || _a2 === void 0 ? void 0 : _a2._n_icon__) {
       warn$2("icon", "don't wrap `n-icon` inside `n-icon`");
     }
     onRender === null || onRender === void 0 ? void 0 : onRender();
     return h("i", mergeProps(this.$attrs, {
       role: "img",
-      class: [
-        `${mergedClsPrefix}-icon`,
-        themeClass,
-        {
-          [`${mergedClsPrefix}-icon--depth`]: depth,
-          [`${mergedClsPrefix}-icon--color-transition`]: depth !== void 0
-        }
-      ],
+      class: [`${mergedClsPrefix}-icon`, themeClass, {
+        [`${mergedClsPrefix}-icon--depth`]: depth,
+        [`${mergedClsPrefix}-icon--color-transition`]: depth !== void 0
+      }],
       style: [this.cssVars, this.mergedStyle]
     }), component ? h(component) : this.$slots);
   }
@@ -27556,7 +30814,7 @@ function isDividerNode$1(rawNode) {
 function isRenderNode(rawNode) {
   return rawNode.type === "render";
 }
-const NDropdownOption = defineComponent({
+const NDropdownOption = /* @__PURE__ */ defineComponent({
   name: "DropdownOption",
   props: {
     clsPrefix: {
@@ -27580,29 +30838,59 @@ const NDropdownOption = defineComponent({
   },
   setup(props) {
     const NDropdown2 = inject(dropdownInjectionKey);
-    const { hoverKeyRef, keyboardKeyRef, lastToggledSubmenuKeyRef, pendingKeyPathRef, activeKeyPathRef, animatedRef, mergedShowRef, renderLabelRef, renderIconRef, labelFieldRef, childrenFieldRef, renderOptionRef, nodePropsRef, menuPropsRef } = NDropdown2;
+    const {
+      hoverKeyRef,
+      keyboardKeyRef,
+      lastToggledSubmenuKeyRef,
+      pendingKeyPathRef,
+      activeKeyPathRef,
+      animatedRef,
+      mergedShowRef,
+      renderLabelRef,
+      renderIconRef,
+      labelFieldRef,
+      childrenFieldRef,
+      renderOptionRef,
+      nodePropsRef,
+      menuPropsRef
+    } = NDropdown2;
     const NDropdownOption2 = inject(dropdownOptionInjectionKey, null);
     const NDropdownMenu2 = inject(dropdownMenuInjectionKey);
     const NPopoverBody2 = inject(popoverBodyInjectionKey);
     const rawNodeRef = computed(() => props.tmNode.rawNode);
     const hasSubmenuRef = computed(() => {
-      const { value: childrenField } = childrenFieldRef;
+      const {
+        value: childrenField
+      } = childrenFieldRef;
       return isSubmenuNode(props.tmNode.rawNode, childrenField);
     });
     const mergedDisabledRef = computed(() => {
-      const { disabled } = props.tmNode;
+      const {
+        disabled
+      } = props.tmNode;
       return disabled;
     });
     const showSubmenuRef = computed(() => {
       if (!hasSubmenuRef.value)
         return false;
-      const { key, disabled } = props.tmNode;
+      const {
+        key,
+        disabled
+      } = props.tmNode;
       if (disabled)
         return false;
-      const { value: hoverKey } = hoverKeyRef;
-      const { value: keyboardKey } = keyboardKeyRef;
-      const { value: lastToggledSubmenuKey } = lastToggledSubmenuKeyRef;
-      const { value: pendingKeyPath } = pendingKeyPathRef;
+      const {
+        value: hoverKey
+      } = hoverKeyRef;
+      const {
+        value: keyboardKey
+      } = keyboardKeyRef;
+      const {
+        value: lastToggledSubmenuKey
+      } = lastToggledSubmenuKeyRef;
+      const {
+        value: pendingKeyPath
+      } = pendingKeyPathRef;
       if (hoverKey !== null)
         return pendingKeyPath.includes(key);
       if (keyboardKey !== null) {
@@ -27630,7 +30918,10 @@ const NDropdownOption = defineComponent({
       enteringSubmenuRef.value = false;
     }
     function handleMouseEnter() {
-      const { parentKey, tmNode } = props;
+      const {
+        parentKey,
+        tmNode
+      } = props;
       if (tmNode.disabled)
         return;
       if (!mergedShowRef.value)
@@ -27640,7 +30931,9 @@ const NDropdownOption = defineComponent({
       hoverKeyRef.value = tmNode.key;
     }
     function handleMouseMove() {
-      const { tmNode } = props;
+      const {
+        tmNode
+      } = props;
       if (tmNode.disabled)
         return;
       if (!mergedShowRef.value)
@@ -27654,14 +30947,24 @@ const NDropdownOption = defineComponent({
         return;
       if (!mergedShowRef.value)
         return;
-      const { relatedTarget } = e;
-      if (relatedTarget && !happensIn({ target: relatedTarget }, "dropdownOption") && !happensIn({ target: relatedTarget }, "scrollbarRail")) {
+      const {
+        relatedTarget
+      } = e;
+      if (relatedTarget && !happensIn({
+        target: relatedTarget
+      }, "dropdownOption") && !happensIn({
+        target: relatedTarget
+      }, "scrollbarRail")) {
         hoverKeyRef.value = null;
       }
     }
     function handleClick2() {
-      const { value: hasSubmenu } = hasSubmenuRef;
-      const { tmNode } = props;
+      const {
+        value: hasSubmenu
+      } = hasSubmenuRef;
+      const {
+        tmNode
+      } = props;
       if (!mergedShowRef.value)
         return;
       if (!hasSubmenu && !tmNode.disabled) {
@@ -27684,21 +30987,33 @@ const NDropdownOption = defineComponent({
       rawNode: rawNodeRef,
       hasSubmenu: hasSubmenuRef,
       pending: useMemo(() => {
-        const { value: pendingKeyPath } = pendingKeyPathRef;
-        const { key } = props.tmNode;
+        const {
+          value: pendingKeyPath
+        } = pendingKeyPathRef;
+        const {
+          key
+        } = props.tmNode;
         return pendingKeyPath.includes(key);
       }),
       childActive: useMemo(() => {
-        const { value: activeKeyPath } = activeKeyPathRef;
-        const { key } = props.tmNode;
+        const {
+          value: activeKeyPath
+        } = activeKeyPathRef;
+        const {
+          key
+        } = props.tmNode;
         const index2 = activeKeyPath.findIndex((k) => key === k);
         if (index2 === -1)
           return false;
         return index2 < activeKeyPath.length - 1;
       }),
       active: useMemo(() => {
-        const { value: activeKeyPath } = activeKeyPathRef;
-        const { key } = props.tmNode;
+        const {
+          value: activeKeyPath
+        } = activeKeyPathRef;
+        const {
+          key
+        } = props.tmNode;
         const index2 = activeKeyPath.findIndex((k) => key === k);
         if (index2 === -1)
           return false;
@@ -27717,72 +31032,86 @@ const NDropdownOption = defineComponent({
   },
   render() {
     var _a2, _b;
-    const { animated, rawNode, mergedShowSubmenu, clsPrefix, siblingHasIcon, siblingHasSubmenu, renderLabel, renderIcon, renderOption, nodeProps, props, scrollable } = this;
+    const {
+      animated,
+      rawNode,
+      mergedShowSubmenu,
+      clsPrefix,
+      siblingHasIcon,
+      siblingHasSubmenu,
+      renderLabel,
+      renderIcon,
+      renderOption,
+      nodeProps,
+      props,
+      scrollable
+    } = this;
     let submenuVNode = null;
     if (mergedShowSubmenu) {
-      const submenuNodeProps = (_a2 = this.menuProps) === null || _a2 === void 0 ? void 0 : _a2.call(
-        this,
-        rawNode,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        rawNode.children
-      );
-      submenuVNode = h(NDropdownMenu, Object.assign({}, submenuNodeProps, { clsPrefix, scrollable: this.scrollable, tmNodes: this.tmNode.children, parentKey: this.tmNode.key }));
+      const submenuNodeProps = (_a2 = this.menuProps) === null || _a2 === void 0 ? void 0 : _a2.call(this, rawNode, rawNode.children);
+      submenuVNode = h(NDropdownMenu, Object.assign({}, submenuNodeProps, {
+        clsPrefix,
+        scrollable: this.scrollable,
+        tmNodes: this.tmNode.children,
+        parentKey: this.tmNode.key
+      }));
     }
     const builtinProps = {
-      class: [
-        `${clsPrefix}-dropdown-option-body`,
-        this.pending && `${clsPrefix}-dropdown-option-body--pending`,
-        this.active && `${clsPrefix}-dropdown-option-body--active`,
-        this.childActive && `${clsPrefix}-dropdown-option-body--child-active`,
-        this.mergedDisabled && `${clsPrefix}-dropdown-option-body--disabled`
-      ],
+      class: [`${clsPrefix}-dropdown-option-body`, this.pending && `${clsPrefix}-dropdown-option-body--pending`, this.active && `${clsPrefix}-dropdown-option-body--active`, this.childActive && `${clsPrefix}-dropdown-option-body--child-active`, this.mergedDisabled && `${clsPrefix}-dropdown-option-body--disabled`],
       onMousemove: this.handleMouseMove,
       onMouseenter: this.handleMouseEnter,
       onMouseleave: this.handleMouseLeave,
       onClick: this.handleClick
     };
     const optionNodeProps = nodeProps === null || nodeProps === void 0 ? void 0 : nodeProps(rawNode);
-    const node = h(
-      "div",
-      Object.assign({ class: [`${clsPrefix}-dropdown-option`, optionNodeProps === null || optionNodeProps === void 0 ? void 0 : optionNodeProps.class], "data-dropdown-option": true }, optionNodeProps),
-      h("div", mergeProps(builtinProps, props), [
-        h("div", { class: [
-          `${clsPrefix}-dropdown-option-body__prefix`,
-          siblingHasIcon && `${clsPrefix}-dropdown-option-body__prefix--show-icon`
-        ] }, [renderIcon ? renderIcon(rawNode) : render$1(rawNode.icon)]),
-        h("div", { "data-dropdown-option": true, class: `${clsPrefix}-dropdown-option-body__label` }, renderLabel ? renderLabel(rawNode) : render$1((_b = rawNode[this.labelField]) !== null && _b !== void 0 ? _b : rawNode.title)),
-        h("div", { "data-dropdown-option": true, class: [
-          `${clsPrefix}-dropdown-option-body__suffix`,
-          siblingHasSubmenu && `${clsPrefix}-dropdown-option-body__suffix--has-submenu`
-        ] }, this.hasSubmenu ? h(NIcon, null, {
-          default: () => h(ChevronRightIcon, null)
-        }) : null)
-      ]),
-      this.hasSubmenu ? h(VBinder, null, {
-        default: () => [
-          h(VTarget, null, {
-            default: () => h(
-              "div",
-              { class: `${clsPrefix}-dropdown-offset-container` },
-              h(VFollower, { show: this.mergedShowSubmenu, placement: this.placement, to: scrollable ? this.popoverBody || void 0 : void 0, teleportDisabled: !scrollable }, {
-                default: () => {
-                  return h("div", { class: `${clsPrefix}-dropdown-menu-wrapper` }, animated ? h(Transition, { onBeforeEnter: this.handleSubmenuBeforeEnter, onAfterEnter: this.handleSubmenuAfterEnter, name: "fade-in-scale-up-transition", appear: true }, {
-                    default: () => submenuVNode
-                  }) : submenuVNode);
-                }
-              })
-            )
-          })
-        ]
-      }) : null
-    );
+    const node = h("div", Object.assign({
+      class: [`${clsPrefix}-dropdown-option`, optionNodeProps === null || optionNodeProps === void 0 ? void 0 : optionNodeProps.class],
+      "data-dropdown-option": true
+    }, optionNodeProps), h("div", mergeProps(builtinProps, props), [h("div", {
+      class: [`${clsPrefix}-dropdown-option-body__prefix`, siblingHasIcon && `${clsPrefix}-dropdown-option-body__prefix--show-icon`]
+    }, [renderIcon ? renderIcon(rawNode) : render$1(rawNode.icon)]), h("div", {
+      "data-dropdown-option": true,
+      class: `${clsPrefix}-dropdown-option-body__label`
+    }, renderLabel ? renderLabel(rawNode) : render$1((_b = rawNode[this.labelField]) !== null && _b !== void 0 ? _b : rawNode.title)), h("div", {
+      "data-dropdown-option": true,
+      class: [`${clsPrefix}-dropdown-option-body__suffix`, siblingHasSubmenu && `${clsPrefix}-dropdown-option-body__suffix--has-submenu`]
+    }, this.hasSubmenu ? h(NIcon, null, {
+      default: () => h(ChevronRightIcon, null)
+    }) : null)]), this.hasSubmenu ? h(VBinder, null, {
+      default: () => [h(VTarget, null, {
+        default: () => h("div", {
+          class: `${clsPrefix}-dropdown-offset-container`
+        }, h(VFollower, {
+          show: this.mergedShowSubmenu,
+          placement: this.placement,
+          to: scrollable ? this.popoverBody || void 0 : void 0,
+          teleportDisabled: !scrollable
+        }, {
+          default: () => {
+            return h("div", {
+              class: `${clsPrefix}-dropdown-menu-wrapper`
+            }, animated ? h(Transition, {
+              onBeforeEnter: this.handleSubmenuBeforeEnter,
+              onAfterEnter: this.handleSubmenuAfterEnter,
+              name: "fade-in-scale-up-transition",
+              appear: true
+            }, {
+              default: () => submenuVNode
+            }) : submenuVNode);
+          }
+        }))
+      })]
+    }) : null);
     if (renderOption) {
-      return renderOption({ node, option: rawNode });
+      return renderOption({
+        node,
+        option: rawNode
+      });
     }
     return node;
   }
 });
-const NDropdownGroupHeader = defineComponent({
+const NDropdownGroupHeader = /* @__PURE__ */ defineComponent({
   name: "DropdownGroupHeader",
   props: {
     clsPrefix: {
@@ -27800,7 +31129,12 @@ const NDropdownGroupHeader = defineComponent({
       hasSubmenuRef
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dropdownMenuInjectionKey);
-    const { renderLabelRef, labelFieldRef, nodePropsRef, renderOptionRef } = (
+    const {
+      renderLabelRef,
+      labelFieldRef,
+      nodePropsRef,
+      renderOptionRef
+    } = (
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(dropdownInjectionKey)
     );
@@ -27815,32 +31149,41 @@ const NDropdownGroupHeader = defineComponent({
   },
   render() {
     var _a2;
-    const { clsPrefix, hasSubmenu, showIcon, nodeProps, renderLabel, renderOption } = this;
-    const { rawNode } = this.tmNode;
-    const node = h(
-      "div",
-      Object.assign({ class: `${clsPrefix}-dropdown-option` }, nodeProps === null || nodeProps === void 0 ? void 0 : nodeProps(rawNode)),
-      h(
-        "div",
-        { class: `${clsPrefix}-dropdown-option-body ${clsPrefix}-dropdown-option-body--group` },
-        h("div", { "data-dropdown-option": true, class: [
-          `${clsPrefix}-dropdown-option-body__prefix`,
-          showIcon && `${clsPrefix}-dropdown-option-body__prefix--show-icon`
-        ] }, render$1(rawNode.icon)),
-        h("div", { class: `${clsPrefix}-dropdown-option-body__label`, "data-dropdown-option": true }, renderLabel ? renderLabel(rawNode) : render$1((_a2 = rawNode.title) !== null && _a2 !== void 0 ? _a2 : rawNode[this.labelField])),
-        h("div", { class: [
-          `${clsPrefix}-dropdown-option-body__suffix`,
-          hasSubmenu && `${clsPrefix}-dropdown-option-body__suffix--has-submenu`
-        ], "data-dropdown-option": true })
-      )
-    );
+    const {
+      clsPrefix,
+      hasSubmenu,
+      showIcon,
+      nodeProps,
+      renderLabel,
+      renderOption
+    } = this;
+    const {
+      rawNode
+    } = this.tmNode;
+    const node = h("div", Object.assign({
+      class: `${clsPrefix}-dropdown-option`
+    }, nodeProps === null || nodeProps === void 0 ? void 0 : nodeProps(rawNode)), h("div", {
+      class: `${clsPrefix}-dropdown-option-body ${clsPrefix}-dropdown-option-body--group`
+    }, h("div", {
+      "data-dropdown-option": true,
+      class: [`${clsPrefix}-dropdown-option-body__prefix`, showIcon && `${clsPrefix}-dropdown-option-body__prefix--show-icon`]
+    }, render$1(rawNode.icon)), h("div", {
+      class: `${clsPrefix}-dropdown-option-body__label`,
+      "data-dropdown-option": true
+    }, renderLabel ? renderLabel(rawNode) : render$1((_a2 = rawNode.title) !== null && _a2 !== void 0 ? _a2 : rawNode[this.labelField])), h("div", {
+      class: [`${clsPrefix}-dropdown-option-body__suffix`, hasSubmenu && `${clsPrefix}-dropdown-option-body__suffix--has-submenu`],
+      "data-dropdown-option": true
+    })));
     if (renderOption) {
-      return renderOption({ node, option: rawNode });
+      return renderOption({
+        node,
+        option: rawNode
+      });
     }
     return node;
   }
 });
-const NDropdownGroup = defineComponent({
+const NDropdownGroup = /* @__PURE__ */ defineComponent({
   name: "NDropdownGroup",
   props: {
     clsPrefix: {
@@ -27857,32 +31200,44 @@ const NDropdownGroup = defineComponent({
     }
   },
   render() {
-    const { tmNode, parentKey, clsPrefix } = this;
-    const { children } = tmNode;
-    return h(
-      Fragment,
-      null,
-      h(NDropdownGroupHeader, { clsPrefix, tmNode, key: tmNode.key }),
-      children === null || children === void 0 ? void 0 : children.map((child) => {
-        const { rawNode } = child;
-        if (rawNode.show === false)
-          return null;
-        if (isDividerNode$1(rawNode)) {
-          return h(NDropdownDivider, {
-            clsPrefix,
-            key: child.key
-          });
-        }
-        if (child.isGroup) {
-          warn$2("dropdown", "`group` node is not allowed to be put in `group` node.");
-          return null;
-        }
-        return h(NDropdownOption, { clsPrefix, tmNode: child, parentKey, key: child.key });
-      })
-    );
+    const {
+      tmNode,
+      parentKey,
+      clsPrefix
+    } = this;
+    const {
+      children
+    } = tmNode;
+    return h(Fragment, null, h(NDropdownGroupHeader, {
+      clsPrefix,
+      tmNode,
+      key: tmNode.key
+    }), children === null || children === void 0 ? void 0 : children.map((child) => {
+      const {
+        rawNode
+      } = child;
+      if (rawNode.show === false)
+        return null;
+      if (isDividerNode$1(rawNode)) {
+        return h(NDropdownDivider, {
+          clsPrefix,
+          key: child.key
+        });
+      }
+      if (child.isGroup) {
+        warn$2("dropdown", "`group` node is not allowed to be put in `group` node.");
+        return null;
+      }
+      return h(NDropdownOption, {
+        clsPrefix,
+        tmNode: child,
+        parentKey,
+        key: child.key
+      });
+    }));
   }
 });
-const NDropdownRenderOption = defineComponent({
+const NDropdownRenderOption = /* @__PURE__ */ defineComponent({
   name: "DropdownRenderOption",
   props: {
     tmNode: {
@@ -27891,11 +31246,16 @@ const NDropdownRenderOption = defineComponent({
     }
   },
   render() {
-    const { rawNode: { render: render17, props } } = this.tmNode;
+    const {
+      rawNode: {
+        render: render17,
+        props
+      }
+    } = this.tmNode;
     return h("div", props, [render17 === null || render17 === void 0 ? void 0 : render17()]);
   }
 });
-const NDropdownMenu = defineComponent({
+const NDropdownMenu = /* @__PURE__ */ defineComponent({
   name: "DropdownMenu",
   props: {
     scrollable: Boolean,
@@ -27915,27 +31275,40 @@ const NDropdownMenu = defineComponent({
     }
   },
   setup(props) {
-    const { renderIconRef, childrenFieldRef } = inject(dropdownInjectionKey);
+    const {
+      renderIconRef,
+      childrenFieldRef
+    } = inject(dropdownInjectionKey);
     provide(dropdownMenuInjectionKey, {
       showIconRef: computed(() => {
         const renderIcon = renderIconRef.value;
         return props.tmNodes.some((tmNode) => {
           var _a2;
           if (tmNode.isGroup) {
-            return (_a2 = tmNode.children) === null || _a2 === void 0 ? void 0 : _a2.some(({ rawNode: rawChild }) => renderIcon ? renderIcon(rawChild) : rawChild.icon);
+            return (_a2 = tmNode.children) === null || _a2 === void 0 ? void 0 : _a2.some(({
+              rawNode: rawChild
+            }) => renderIcon ? renderIcon(rawChild) : rawChild.icon);
           }
-          const { rawNode } = tmNode;
+          const {
+            rawNode
+          } = tmNode;
           return renderIcon ? renderIcon(rawNode) : rawNode.icon;
         });
       }),
       hasSubmenuRef: computed(() => {
-        const { value: childrenField } = childrenFieldRef;
+        const {
+          value: childrenField
+        } = childrenFieldRef;
         return props.tmNodes.some((tmNode) => {
           var _a2;
           if (tmNode.isGroup) {
-            return (_a2 = tmNode.children) === null || _a2 === void 0 ? void 0 : _a2.some(({ rawNode: rawChild }) => isSubmenuNode(rawChild, childrenField));
+            return (_a2 = tmNode.children) === null || _a2 === void 0 ? void 0 : _a2.some(({
+              rawNode: rawChild
+            }) => isSubmenuNode(rawChild, childrenField));
           }
-          const { rawNode } = tmNode;
+          const {
+            rawNode
+          } = tmNode;
           return isSubmenuNode(rawNode, childrenField);
         });
       })
@@ -27949,36 +31322,60 @@ const NDropdownMenu = defineComponent({
     };
   },
   render() {
-    const { parentKey, clsPrefix, scrollable } = this;
+    const {
+      parentKey,
+      clsPrefix,
+      scrollable
+    } = this;
     const menuOptionsNode = this.tmNodes.map((tmNode) => {
-      const { rawNode } = tmNode;
+      const {
+        rawNode
+      } = tmNode;
       if (rawNode.show === false)
         return null;
       if (isRenderNode(rawNode)) {
-        return h(NDropdownRenderOption, { tmNode, key: tmNode.key });
+        return h(NDropdownRenderOption, {
+          tmNode,
+          key: tmNode.key
+        });
       }
       if (isDividerNode$1(rawNode)) {
-        return h(NDropdownDivider, { clsPrefix, key: tmNode.key });
+        return h(NDropdownDivider, {
+          clsPrefix,
+          key: tmNode.key
+        });
       }
       if (isGroupNode(rawNode)) {
-        return h(NDropdownGroup, { clsPrefix, tmNode, parentKey, key: tmNode.key });
+        return h(NDropdownGroup, {
+          clsPrefix,
+          tmNode,
+          parentKey,
+          key: tmNode.key
+        });
       }
-      return h(NDropdownOption, { clsPrefix, tmNode, parentKey, key: tmNode.key, props: rawNode.props, scrollable });
-    });
-    return h(
-      "div",
-      { class: [
-        `${clsPrefix}-dropdown-menu`,
-        scrollable && `${clsPrefix}-dropdown-menu--scrollable`
-      ], ref: "bodyRef" },
-      scrollable ? h(XScrollbar, { contentClass: `${clsPrefix}-dropdown-menu__content` }, {
-        default: () => menuOptionsNode
-      }) : menuOptionsNode,
-      this.showArrow ? renderArrow({
+      return h(NDropdownOption, {
         clsPrefix,
-        arrowStyle: this.arrowStyle
-      }) : null
-    );
+        tmNode,
+        parentKey,
+        key: tmNode.key,
+        props: rawNode.props,
+        scrollable
+      });
+    });
+    return h("div", {
+      class: [`${clsPrefix}-dropdown-menu`, scrollable && `${clsPrefix}-dropdown-menu--scrollable`],
+      ref: "bodyRef"
+    }, scrollable ? h(XScrollbar, {
+      contentClass: `${clsPrefix}-dropdown-menu__content`
+    }, {
+      default: () => menuOptionsNode
+    }) : menuOptionsNode, this.showArrow ? renderArrow({
+      clsPrefix,
+      arrowStyle: this.arrowStyle,
+      arrowClass: void 0,
+      arrowWrapperClass: void 0,
+      arrowWrapperStyle: void 0
+    }) : null);
   }
 });
 const style$f = cB("dropdown-menu", `
@@ -28144,7 +31541,7 @@ const dropdownBaseProps = {
 };
 const popoverPropKeys = Object.keys(popoverBaseProps);
 const dropdownProps = Object.assign(Object.assign(Object.assign({}, popoverBaseProps), dropdownBaseProps), useTheme.props);
-const NDropdown = defineComponent({
+const NDropdown = /* @__PURE__ */ defineComponent({
   name: "Dropdown",
   inheritAttrs: false,
   props: dropdownProps,
@@ -28152,7 +31549,10 @@ const NDropdown = defineComponent({
     const uncontrolledShowRef = ref(false);
     const mergedShowRef = useMergedState(toRef(props, "show"), uncontrolledShowRef);
     const treemateRef = computed(() => {
-      const { keyField, childrenField } = props;
+      const {
+        keyField,
+        childrenField
+      } = props;
       return createTreeMate(props.options, {
         getKey(node) {
           return node[keyField];
@@ -28208,7 +31608,10 @@ const NDropdown = defineComponent({
         Escape: handleKeydownEsc
       }
     }, keyboardEnabledRef);
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Dropdown", "-dropdown", style$f, dropdownLight$1, props, mergedClsPrefixRef);
     provide(dropdownInjectionKey, {
       labelFieldRef: toRef(props, "labelField"),
@@ -28234,12 +31637,17 @@ const NDropdown = defineComponent({
       }
     });
     function doSelect(key, node) {
-      const { onSelect } = props;
+      const {
+        onSelect
+      } = props;
       if (onSelect)
         call(onSelect, key, node);
     }
     function doUpdateShow(value) {
-      const { "onUpdate:show": _onUpdateShow, onUpdateShow } = props;
+      const {
+        "onUpdate:show": _onUpdateShow,
+        onUpdateShow
+      } = props;
       if (_onUpdateShow)
         call(_onUpdateShow, value);
       if (onUpdateShow)
@@ -28275,15 +31683,25 @@ const NDropdown = defineComponent({
     }
     function getPendingNode() {
       var _a2;
-      const { value: treeMate } = treemateRef;
-      const { value: pendingKey } = pendingKeyRef;
+      const {
+        value: treeMate
+      } = treemateRef;
+      const {
+        value: pendingKey
+      } = pendingKeyRef;
       if (!treeMate || pendingKey === null)
         return null;
       return (_a2 = treeMate.getNode(pendingKey)) !== null && _a2 !== void 0 ? _a2 : null;
     }
     function handleKeydown(direction) {
-      const { value: pendingKey } = pendingKeyRef;
-      const { value: { getFirstAvailableNode: getFirstAvailableNode2 } } = treemateRef;
+      const {
+        value: pendingKey
+      } = pendingKeyRef;
+      const {
+        value: {
+          getFirstAvailableNode: getFirstAvailableNode2
+        }
+      } = treemateRef;
       let nextKeyboardKey = null;
       if (pendingKey === null) {
         const firstNode = getFirstAvailableNode2();
@@ -28318,9 +31736,29 @@ const NDropdown = defineComponent({
       }
     }
     const cssVarsRef = computed(() => {
-      const { size: size2, inverted } = props;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
-      const { padding, dividerColor, borderRadius, optionOpacityDisabled, [createKey("optionIconSuffixWidth", size2)]: optionIconSuffixWidth, [createKey("optionSuffixWidth", size2)]: optionSuffixWidth, [createKey("optionIconPrefixWidth", size2)]: optionIconPrefixWidth, [createKey("optionPrefixWidth", size2)]: optionPrefixWidth, [createKey("fontSize", size2)]: fontSize2, [createKey("optionHeight", size2)]: optionHeight, [createKey("optionIconSize", size2)]: optionIconSize } = self2;
+      const {
+        size: size2,
+        inverted
+      } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: self2
+      } = themeRef.value;
+      const {
+        padding,
+        dividerColor,
+        borderRadius,
+        optionOpacityDisabled,
+        [createKey("optionIconSuffixWidth", size2)]: optionIconSuffixWidth,
+        [createKey("optionSuffixWidth", size2)]: optionSuffixWidth,
+        [createKey("optionIconPrefixWidth", size2)]: optionIconPrefixWidth,
+        [createKey("optionPrefixWidth", size2)]: optionPrefixWidth,
+        [createKey("fontSize", size2)]: fontSize2,
+        [createKey("optionHeight", size2)]: optionHeight,
+        [createKey("optionIconSize", size2)]: optionIconSize
+      } = self2;
       const vars = {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-font-size": fontSize2,
@@ -28383,7 +31821,10 @@ const NDropdown = defineComponent({
   render() {
     const renderPopoverBody = (className, ref2, style2, onMouseenter, onMouseleave) => {
       var _a2;
-      const { mergedClsPrefix, menuProps: menuProps2 } = this;
+      const {
+        mergedClsPrefix,
+        menuProps: menuProps2
+      } = this;
       (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
       const menuNodeProps = (menuProps2 === null || menuProps2 === void 0 ? void 0 : menuProps2(void 0, this.tmNodes.map((v) => v.rawNode))) || {};
       const dropdownProps2 = {
@@ -28391,7 +31832,7 @@ const NDropdown = defineComponent({
         class: [className, `${mergedClsPrefix}-dropdown`, this.themeClass],
         clsPrefix: mergedClsPrefix,
         tmNodes: this.tmNodes,
-        style: [style2, this.cssVars],
+        style: [...style2, this.cssVars],
         showArrow: this.showArrow,
         arrowStyle: this.arrowStyle,
         scrollable: this.scrollable,
@@ -28400,7 +31841,9 @@ const NDropdown = defineComponent({
       };
       return h(NDropdownMenu, mergeProps(this.$attrs, dropdownProps2, menuNodeProps));
     };
-    const { mergedTheme } = this;
+    const {
+      mergedTheme
+    } = this;
     const popoverProps2 = {
       show: this.mergedShow,
       theme: mergedTheme.peers.Popover,
@@ -28418,15 +31861,26 @@ const NDropdown = defineComponent({
     });
   }
 });
-const commonVars$7 = {
+const commonVars$8 = {
   itemFontSize: "12px",
   itemHeight: "36px",
   itemWidth: "52px",
   panelActionPadding: "8px 0"
 };
-const self$I = (vars) => {
-  const { popoverColor, textColor2, primaryColor, hoverColor, dividerColor, opacityDisabled, boxShadow2, borderRadius, iconColor, iconColorDisabled } = vars;
-  return Object.assign(Object.assign({}, commonVars$7), {
+const self$N = (vars) => {
+  const {
+    popoverColor,
+    textColor2,
+    primaryColor,
+    hoverColor,
+    dividerColor,
+    opacityDisabled,
+    boxShadow2,
+    borderRadius,
+    iconColor,
+    iconColorDisabled
+  } = vars;
+  return Object.assign(Object.assign({}, commonVars$8), {
     panelColor: popoverColor,
     panelBoxShadow: boxShadow2,
     panelDividerColor: dividerColor,
@@ -28448,7 +31902,7 @@ const timePickerLight = createTheme({
     Button: buttonLight$1,
     Input: inputLight$1
   },
-  self: self$I
+  self: self$N
 });
 const timePickerLight$1 = timePickerLight;
 const timePickerDark = {
@@ -28459,10 +31913,10 @@ const timePickerDark = {
     Button: buttonDark$1,
     Input: inputDark$1
   },
-  self: self$I
+  self: self$N
 };
 const timePickerDark$1 = timePickerDark;
-const commonVars$6 = {
+const commonVars$7 = {
   itemSize: "24px",
   itemCellWidth: "38px",
   itemCellHeight: "32px",
@@ -28482,11 +31936,13 @@ const commonVars$6 = {
   calendarLeftPaddingDaterange: "6px 12px 4px 12px",
   calendarLeftPaddingDatetimerange: "4px 12px",
   calendarLeftPaddingMonth: "0",
+  // TODO: make it actually effective
   calendarLeftPaddingYear: "0",
   calendarLeftPaddingQuarter: "0",
   calendarLeftPaddingMonthrange: "0",
   calendarLeftPaddingQuarterrange: "0",
   calendarLeftPaddingYearrange: "0",
+  calendarLeftPaddingWeek: "6px 12px 4px 12px",
   calendarRightPaddingDate: "6px 12px 4px 12px",
   calendarRightPaddingDatetime: "4px 12px",
   calendarRightPaddingDaterange: "6px 12px 4px 12px",
@@ -28496,11 +31952,27 @@ const commonVars$6 = {
   calendarRightPaddingQuarter: "0",
   calendarRightPaddingMonthrange: "0",
   calendarRightPaddingQuarterrange: "0",
-  calendarRightPaddingYearrange: "0"
+  calendarRightPaddingYearrange: "0",
+  calendarRightPaddingWeek: "0"
 };
-const self$H = (vars) => {
-  const { hoverColor, fontSize: fontSize2, textColor2, textColorDisabled, popoverColor, primaryColor, borderRadiusSmall, iconColor, iconColorDisabled, textColor1, dividerColor, boxShadow2, borderRadius, fontWeightStrong } = vars;
-  return Object.assign(Object.assign({}, commonVars$6), {
+const self$M = (vars) => {
+  const {
+    hoverColor,
+    fontSize: fontSize2,
+    textColor2,
+    textColorDisabled,
+    popoverColor,
+    primaryColor,
+    borderRadiusSmall,
+    iconColor,
+    iconColorDisabled,
+    textColor1,
+    dividerColor,
+    boxShadow2,
+    borderRadius,
+    fontWeightStrong
+  } = vars;
+  return Object.assign(Object.assign({}, commonVars$7), {
     itemFontSize: fontSize2,
     calendarDaysFontSize: fontSize2,
     calendarTitleFontSize: fontSize2,
@@ -28508,7 +31980,9 @@ const self$H = (vars) => {
     itemTextColorDisabled: textColorDisabled,
     itemTextColorActive: popoverColor,
     itemTextColorCurrent: primaryColor,
-    itemColorIncluded: changeColor(primaryColor, { alpha: 0.1 }),
+    itemColorIncluded: changeColor(primaryColor, {
+      alpha: 0.1
+    }),
     itemColorHover: hoverColor,
     itemColorDisabled: hoverColor,
     itemColorActive: primaryColor,
@@ -28540,7 +32014,7 @@ const datePickerLight = createTheme({
     TimePicker: timePickerLight$1,
     Scrollbar: scrollbarLight$1
   },
-  self: self$H
+  self: self$M
 });
 const datePickerLight$1 = datePickerLight;
 const datePickerDark = {
@@ -28553,10 +32027,16 @@ const datePickerDark = {
     Scrollbar: scrollbarDark$1
   },
   self(vars) {
-    const { popoverColor, hoverColor, primaryColor } = vars;
-    const commonSelf = self$H(vars);
+    const {
+      popoverColor,
+      hoverColor,
+      primaryColor
+    } = vars;
+    const commonSelf = self$M(vars);
     commonSelf.itemColorDisabled = composite(popoverColor, hoverColor);
-    commonSelf.itemColorIncluded = changeColor(primaryColor, { alpha: 0.15 });
+    commonSelf.itemColorIncluded = changeColor(primaryColor, {
+      alpha: 0.15
+    });
     commonSelf.itemColorHover = composite(popoverColor, hoverColor);
     return commonSelf;
   }
@@ -28576,8 +32056,22 @@ const commonVariables$7 = {
   tdPaddingMedium: "0 0 12px 0",
   tdPaddingLarge: "0 0 16px 0"
 };
-const self$G = (vars) => {
-  const { tableHeaderColor, textColor2, textColor1, cardColor, modalColor, popoverColor, dividerColor, borderRadius, fontWeightStrong, lineHeight: lineHeight2, fontSizeSmall, fontSizeMedium, fontSizeLarge } = vars;
+const self$L = (vars) => {
+  const {
+    tableHeaderColor,
+    textColor2,
+    textColor1,
+    cardColor,
+    modalColor,
+    popoverColor,
+    dividerColor,
+    borderRadius,
+    fontWeightStrong,
+    lineHeight: lineHeight2,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$7), {
     lineHeight: lineHeight2,
     fontSizeSmall,
@@ -28602,16 +32096,16 @@ const self$G = (vars) => {
 const descriptionsLight = {
   name: "Descriptions",
   common: commonLight,
-  self: self$G
+  self: self$L
 };
 const descriptionsLight$1 = descriptionsLight;
 const descriptionsDark = {
   name: "Descriptions",
   common: commonDark,
-  self: self$G
+  self: self$L
 };
 const descriptionsDark$1 = descriptionsDark;
-const commonVars$5 = {
+const commonVars$6 = {
   titleFontSize: "18px",
   padding: "16px 28px 20px 28px",
   iconSize: "28px",
@@ -28624,9 +32118,28 @@ const commonVars$5 = {
   closeMargin: "20px 26px 0 0",
   closeMarginIconTop: "10px 16px 0 0"
 };
-const self$F = (vars) => {
-  const { textColor1, textColor2, modalColor, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, infoColor, successColor, warningColor, errorColor, primaryColor, dividerColor, borderRadius, fontWeightStrong, lineHeight: lineHeight2, fontSize: fontSize2 } = vars;
-  return Object.assign(Object.assign({}, commonVars$5), {
+const self$K = (vars) => {
+  const {
+    textColor1,
+    textColor2,
+    modalColor,
+    closeIconColor,
+    closeIconColorHover,
+    closeIconColorPressed,
+    closeColorHover,
+    closeColorPressed,
+    infoColor,
+    successColor,
+    warningColor,
+    errorColor,
+    primaryColor,
+    dividerColor,
+    borderRadius,
+    fontWeightStrong,
+    lineHeight: lineHeight2,
+    fontSize: fontSize2
+  } = vars;
+  return Object.assign(Object.assign({}, commonVars$6), {
     fontSize: fontSize2,
     lineHeight: lineHeight2,
     border: `1px solid ${dividerColor}`,
@@ -28654,7 +32167,7 @@ const dialogLight = createTheme({
   peers: {
     Button: buttonLight$1
   },
-  self: self$F
+  self: self$K
 });
 const dialogLight$1 = dialogLight;
 const dialogDark = {
@@ -28663,7 +32176,7 @@ const dialogDark = {
   peers: {
     Button: buttonDark$1
   },
-  self: self$F
+  self: self$K
 };
 const dialogDark$1 = dialogDark;
 const dialogProps = {
@@ -28696,6 +32209,7 @@ const dialogProps = {
 };
 const dialogPropKeys = keysOf(dialogProps);
 const style$e = c$1([cB("dialog", `
+ --n-icon-margin: var(--n-icon-margin-top) var(--n-icon-margin-right) var(--n-icon-margin-bottom) var(--n-icon-margin-left);
  word-break: break-word;
  line-height: var(--n-line-height);
  position: relative;
@@ -28744,22 +32258,22 @@ const style$e = c$1([cB("dialog", `
  `, [cM("last", "margin-bottom: 0;")]), cE("action", `
  display: flex;
  justify-content: flex-end;
- `, [c$1("> *:not(:last-child)", {
-  marginRight: "var(--n-action-space)"
-})]), cE("icon", {
-  fontSize: "var(--n-icon-size)",
-  transition: "color .3s var(--n-bezier)"
-}), cE("title", `
+ `, [c$1("> *:not(:last-child)", `
+ margin-right: var(--n-action-space);
+ `)]), cE("icon", `
+ font-size: var(--n-icon-size);
+ transition: color .3s var(--n-bezier);
+ `), cE("title", `
  transition: color .3s var(--n-bezier);
  display: flex;
  align-items: center;
  font-size: var(--n-title-font-size);
  font-weight: var(--n-title-font-weight);
  color: var(--n-title-text-color);
- `), cB("dialog-icon-container", {
-  display: "flex",
-  justifyContent: "center"
-})]), insideModal(cB("dialog", `
+ `), cB("dialog-icon-container", `
+ display: flex;
+ justify-content: center;
+ `)]), insideModal(cB("dialog", `
  width: 446px;
  max-width: calc(100vw - 32px);
  `)), cB("dialog", [asModal(`
@@ -28773,47 +32287,98 @@ const iconRenderMap$2 = {
   warning: () => h(WarningIcon, null),
   error: () => h(ErrorIcon, null)
 };
-const NDialog = defineComponent({
+const NDialog = /* @__PURE__ */ defineComponent({
   name: "Dialog",
   alias: [
     "NimbusConfirmCard",
+    // deprecated
     "Confirm"
     // deprecated
   ],
   props: Object.assign(Object.assign({}, useTheme.props), dialogProps),
   setup(props) {
-    const { mergedComponentPropsRef, mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedComponentPropsRef,
+      mergedClsPrefixRef,
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig(props);
+    const rtlEnabledRef = useRtl("Dialog", mergedRtlRef, mergedClsPrefixRef);
     const mergedIconPlacementRef = computed(() => {
       var _a2, _b;
-      const { iconPlacement } = props;
+      const {
+        iconPlacement
+      } = props;
       return iconPlacement || ((_b = (_a2 = mergedComponentPropsRef === null || mergedComponentPropsRef === void 0 ? void 0 : mergedComponentPropsRef.value) === null || _a2 === void 0 ? void 0 : _a2.Dialog) === null || _b === void 0 ? void 0 : _b.iconPlacement) || "left";
     });
     function handlePositiveClick(e) {
-      const { onPositiveClick } = props;
+      const {
+        onPositiveClick
+      } = props;
       if (onPositiveClick)
         onPositiveClick(e);
     }
     function handleNegativeClick(e) {
-      const { onNegativeClick } = props;
+      const {
+        onNegativeClick
+      } = props;
       if (onNegativeClick)
         onNegativeClick(e);
     }
     function handleCloseClick() {
-      const { onClose } = props;
+      const {
+        onClose
+      } = props;
       if (onClose)
         onClose();
     }
     const themeRef = useTheme("Dialog", "-dialog", style$e, dialogLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { type } = props;
+      const {
+        type
+      } = props;
       const iconPlacement = mergedIconPlacementRef.value;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { fontSize: fontSize2, lineHeight: lineHeight2, border, titleTextColor, textColor, color, closeBorderRadius, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, closeIconSize, borderRadius, titleFontWeight, titleFontSize, padding, iconSize, actionSpace, contentMargin, closeSize, [iconPlacement === "top" ? "iconMarginIconTop" : "iconMargin"]: iconMargin, [iconPlacement === "top" ? "closeMarginIconTop" : "closeMargin"]: closeMargin, [createKey("iconColor", type)]: iconColor } } = themeRef.value;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          fontSize: fontSize2,
+          lineHeight: lineHeight2,
+          border,
+          titleTextColor,
+          textColor,
+          color,
+          closeBorderRadius,
+          closeColorHover,
+          closeColorPressed,
+          closeIconColor,
+          closeIconColorHover,
+          closeIconColorPressed,
+          closeIconSize,
+          borderRadius,
+          titleFontWeight,
+          titleFontSize,
+          padding,
+          iconSize,
+          actionSpace,
+          contentMargin,
+          closeSize,
+          [iconPlacement === "top" ? "iconMarginIconTop" : "iconMargin"]: iconMargin,
+          [iconPlacement === "top" ? "closeMarginIconTop" : "closeMargin"]: closeMargin,
+          [createKey("iconColor", type)]: iconColor
+        }
+      } = themeRef.value;
+      const iconMarginDiscrete = getMargin(iconMargin);
       return {
         "--n-font-size": fontSize2,
         "--n-icon-color": iconColor,
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-close-margin": closeMargin,
-        "--n-icon-margin": iconMargin,
+        "--n-icon-margin-top": iconMarginDiscrete.top,
+        "--n-icon-margin-right": iconMarginDiscrete.right,
+        "--n-icon-margin-bottom": iconMarginDiscrete.bottom,
+        "--n-icon-margin-left": iconMarginDiscrete.left,
         "--n-icon-size": iconSize,
         "--n-close-size": closeSize,
         "--n-close-icon-size": closeIconSize,
@@ -28839,6 +32404,7 @@ const NDialog = defineComponent({
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("dialog", computed(() => `${props.type[0]}${mergedIconPlacementRef.value[0]}`), cssVarsRef, props) : void 0;
     return {
       mergedClsPrefix: mergedClsPrefixRef,
+      rtlEnabled: rtlEnabledRef,
       mergedIconPlacement: mergedIconPlacementRef,
       mergedTheme: themeRef,
       handlePositiveClick,
@@ -28851,47 +32417,83 @@ const NDialog = defineComponent({
   },
   render() {
     var _a2;
-    const { bordered, mergedIconPlacement, cssVars, closable, showIcon, title, content, action, negativeText, positiveText, positiveButtonProps, negativeButtonProps, handlePositiveClick, handleNegativeClick, mergedTheme, loading, type, mergedClsPrefix } = this;
+    const {
+      bordered,
+      mergedIconPlacement,
+      cssVars,
+      closable,
+      showIcon,
+      title,
+      content,
+      action,
+      negativeText,
+      positiveText,
+      positiveButtonProps,
+      negativeButtonProps,
+      handlePositiveClick,
+      handleNegativeClick,
+      mergedTheme,
+      loading,
+      type,
+      mergedClsPrefix
+    } = this;
     (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-    const icon = showIcon ? h(NBaseIcon, { clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-dialog__icon` }, {
+    const icon = showIcon ? h(NBaseIcon, {
+      clsPrefix: mergedClsPrefix,
+      class: `${mergedClsPrefix}-dialog__icon`
+    }, {
       default: () => resolveWrappedSlot(this.$slots.icon, (children) => children || (this.icon ? render$1(this.icon) : iconRenderMap$2[this.type]()))
     }) : null;
-    const actionNode = resolveWrappedSlot(this.$slots.action, (children) => children || positiveText || negativeText || action ? h("div", { class: `${mergedClsPrefix}-dialog__action` }, children || (action ? [render$1(action)] : [
-      this.negativeText && h(NButton, Object.assign({ theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button, ghost: true, size: "small", onClick: handleNegativeClick }, negativeButtonProps), {
-        default: () => render$1(this.negativeText)
-      }),
-      this.positiveText && h(NButton, Object.assign({ theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button, size: "small", type: type === "default" ? "primary" : type, disabled: loading, loading, onClick: handlePositiveClick }, positiveButtonProps), {
-        default: () => render$1(this.positiveText)
-      })
-    ])) : null);
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-dialog`,
-        this.themeClass,
-        this.closable && `${mergedClsPrefix}-dialog--closable`,
-        `${mergedClsPrefix}-dialog--icon-${mergedIconPlacement}`,
-        bordered && `${mergedClsPrefix}-dialog--bordered`
-      ], style: cssVars, role: "dialog" },
-      closable ? h(NBaseClose, { clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-dialog__close`, onClick: this.handleCloseClick }) : null,
-      showIcon && mergedIconPlacement === "top" ? h("div", { class: `${mergedClsPrefix}-dialog-icon-container` }, icon) : null,
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-dialog__title` },
-        showIcon && mergedIconPlacement === "left" ? icon : null,
-        resolveSlot(this.$slots.header, () => [render$1(title)])
-      ),
-      h("div", { class: [
-        `${mergedClsPrefix}-dialog__content`,
-        actionNode ? "" : `${mergedClsPrefix}-dialog__content--last`
-      ] }, resolveSlot(this.$slots.default, () => [render$1(content)])),
-      actionNode
-    );
+    const actionNode = resolveWrappedSlot(this.$slots.action, (children) => children || positiveText || negativeText || action ? h("div", {
+      class: `${mergedClsPrefix}-dialog__action`
+    }, children || (action ? [render$1(action)] : [this.negativeText && h(NButton, Object.assign({
+      theme: mergedTheme.peers.Button,
+      themeOverrides: mergedTheme.peerOverrides.Button,
+      ghost: true,
+      size: "small",
+      onClick: handleNegativeClick
+    }, negativeButtonProps), {
+      default: () => render$1(this.negativeText)
+    }), this.positiveText && h(NButton, Object.assign({
+      theme: mergedTheme.peers.Button,
+      themeOverrides: mergedTheme.peerOverrides.Button,
+      size: "small",
+      type: type === "default" ? "primary" : type,
+      disabled: loading,
+      loading,
+      onClick: handlePositiveClick
+    }, positiveButtonProps), {
+      default: () => render$1(this.positiveText)
+    })])) : null);
+    return h("div", {
+      class: [`${mergedClsPrefix}-dialog`, this.themeClass, this.closable && `${mergedClsPrefix}-dialog--closable`, `${mergedClsPrefix}-dialog--icon-${mergedIconPlacement}`, bordered && `${mergedClsPrefix}-dialog--bordered`, this.rtlEnabled && `${mergedClsPrefix}-dialog--rtl`],
+      style: cssVars,
+      role: "dialog"
+    }, closable ? resolveWrappedSlot(this.$slots.close, (node) => {
+      const classNames = [`${mergedClsPrefix}-dialog__close`, this.rtlEnabled && `${mergedClsPrefix}-dialog--rtl`];
+      return node ? h("div", {
+        class: classNames
+      }, node) : h(NBaseClose, {
+        clsPrefix: mergedClsPrefix,
+        class: classNames,
+        onClick: this.handleCloseClick
+      });
+    }) : null, showIcon && mergedIconPlacement === "top" ? h("div", {
+      class: `${mergedClsPrefix}-dialog-icon-container`
+    }, icon) : null, h("div", {
+      class: `${mergedClsPrefix}-dialog__title`
+    }, showIcon && mergedIconPlacement === "left" ? icon : null, resolveSlot(this.$slots.header, () => [render$1(title)])), h("div", {
+      class: [`${mergedClsPrefix}-dialog__content`, actionNode ? "" : `${mergedClsPrefix}-dialog__content--last`]
+    }, resolveSlot(this.$slots.default, () => [render$1(content)])), actionNode);
   }
 });
 const dialogProviderInjectionKey = createInjectionKey("n-dialog-provider");
-const self$E = (vars) => {
-  const { modalColor, textColor2, boxShadow3 } = vars;
+const self$J = (vars) => {
+  const {
+    modalColor,
+    textColor2,
+    boxShadow3
+  } = vars;
   return {
     color: modalColor,
     textColor: textColor2,
@@ -28906,7 +32508,7 @@ const modalLight = createTheme({
     Dialog: dialogLight$1,
     Card: cardLight$1
   },
-  self: self$E
+  self: self$J
 });
 const modalLight$1 = modalLight;
 const modalDark = {
@@ -28917,27 +32519,34 @@ const modalDark = {
     Dialog: dialogDark$1,
     Card: cardDark$1
   },
-  self: self$E
+  self: self$J
 };
 const modalDark$1 = modalDark;
 const presetProps = Object.assign(Object.assign({}, cardBaseProps), dialogProps);
 const presetPropsKeys = keysOf(presetProps);
-const NModalBodyWrapper = defineComponent({
+const NModalBodyWrapper = /* @__PURE__ */ defineComponent({
   name: "ModalBody",
   inheritAttrs: false,
-  props: Object.assign(Object.assign({ show: {
-    type: Boolean,
-    required: true
-  }, preset: String, displayDirective: {
-    type: String,
-    required: true
-  }, trapFocus: {
-    type: Boolean,
-    default: true
-  }, autoFocus: {
-    type: Boolean,
-    default: true
-  }, blockScroll: Boolean }, presetProps), {
+  props: Object.assign(Object.assign({
+    show: {
+      type: Boolean,
+      required: true
+    },
+    preset: String,
+    displayDirective: {
+      type: String,
+      required: true
+    },
+    trapFocus: {
+      type: Boolean,
+      default: true
+    },
+    autoFocus: {
+      type: Boolean,
+      default: true
+    },
+    blockScroll: Boolean
+  }, presetProps), {
     renderMask: Function,
     // events
     onClickoutside: Function,
@@ -28980,8 +32589,12 @@ const NModalBodyWrapper = defineComponent({
       if (NModal2.transformOriginRef.value === "center") {
         return "";
       }
-      const { value: transformOriginX } = transformOriginXRef;
-      const { value: transformOriginY } = transformOriginYRef;
+      const {
+        value: transformOriginX
+      } = transformOriginXRef;
+      const {
+        value: transformOriginY
+      } = transformOriginYRef;
       if (transformOriginX === null || transformOriginY === null) {
         return "";
       } else if (scrollbarRef.value) {
@@ -29001,7 +32614,10 @@ const NModalBodyWrapper = defineComponent({
       if (!scrollbarRef.value)
         return;
       const scrollTop = scrollbarRef.value.containerScrollTop;
-      const { offsetLeft, offsetTop } = el;
+      const {
+        offsetLeft,
+        offsetTop
+      } = el;
       if (mousePosition) {
         const top = mousePosition.y;
         const left = mousePosition.x;
@@ -29026,7 +32642,9 @@ const NModalBodyWrapper = defineComponent({
       props.onAfterLeave();
     }
     function handleCloseClick() {
-      const { onClose } = props;
+      const {
+        onClose
+      } = props;
       if (onClose) {
         onClose();
       }
@@ -29069,7 +32687,15 @@ const NModalBodyWrapper = defineComponent({
     };
   },
   render() {
-    const { $slots, $attrs, handleEnter, handleAfterLeave, handleBeforeLeave, preset, mergedClsPrefix } = this;
+    const {
+      $slots,
+      $attrs,
+      handleEnter,
+      handleAfterLeave,
+      handleBeforeLeave,
+      preset,
+      mergedClsPrefix
+    } = this;
     let childNode = null;
     if (!preset) {
       childNode = getFirstSlotVNode($slots);
@@ -29082,51 +32708,65 @@ const NModalBodyWrapper = defineComponent({
         class: `${mergedClsPrefix}-modal`
       }, $attrs, childNode.props || {});
     }
-    return this.displayDirective === "show" || this.displayed || this.show ? withDirectives(h(
-      "div",
-      { role: "none", class: `${mergedClsPrefix}-modal-body-wrapper` },
-      h(NScrollbar$1, { ref: "scrollbarRef", theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar, contentClass: `${mergedClsPrefix}-modal-scroll-content` }, {
-        default: () => {
-          var _a2;
-          return [
-            (_a2 = this.renderMask) === null || _a2 === void 0 ? void 0 : _a2.call(this),
-            h(FocusTrap, { disabled: !this.trapFocus, active: this.show, onEsc: this.onEsc, autoFocus: this.autoFocus }, {
+    return this.displayDirective === "show" || this.displayed || this.show ? withDirectives(h("div", {
+      role: "none",
+      class: `${mergedClsPrefix}-modal-body-wrapper`
+    }, h(NScrollbar$1, {
+      ref: "scrollbarRef",
+      theme: this.mergedTheme.peers.Scrollbar,
+      themeOverrides: this.mergedTheme.peerOverrides.Scrollbar,
+      contentClass: `${mergedClsPrefix}-modal-scroll-content`
+    }, {
+      default: () => {
+        var _a2;
+        return [(_a2 = this.renderMask) === null || _a2 === void 0 ? void 0 : _a2.call(this), h(FocusTrap, {
+          disabled: !this.trapFocus,
+          active: this.show,
+          onEsc: this.onEsc,
+          autoFocus: this.autoFocus
+        }, {
+          default: () => {
+            var _a3;
+            return h(Transition, {
+              name: "fade-in-scale-up-transition",
+              appear: (_a3 = this.appear) !== null && _a3 !== void 0 ? _a3 : this.isMounted,
+              onEnter: handleEnter,
+              onAfterEnter: this.onAfterEnter,
+              onAfterLeave: handleAfterLeave,
+              onBeforeLeave: handleBeforeLeave
+            }, {
               default: () => {
-                var _a3;
-                return h(Transition, { name: "fade-in-scale-up-transition", appear: (_a3 = this.appear) !== null && _a3 !== void 0 ? _a3 : this.isMounted, onEnter: handleEnter, onAfterEnter: this.onAfterEnter, onAfterLeave: handleAfterLeave, onBeforeLeave: handleBeforeLeave }, {
-                  default: () => {
-                    const dirs = [
-                      [vShow, this.show]
-                    ];
-                    const { onClickoutside } = this;
-                    if (onClickoutside) {
-                      dirs.push([
-                        clickoutside$1,
-                        this.onClickoutside,
-                        void 0,
-                        { capture: true }
-                      ]);
-                    }
-                    return withDirectives(this.preset === "confirm" || this.preset === "dialog" ? h(NDialog, Object.assign({}, this.$attrs, { class: [
-                      `${mergedClsPrefix}-modal`,
-                      this.$attrs.class
-                    ], ref: "bodyRef", theme: this.mergedTheme.peers.Dialog, themeOverrides: this.mergedTheme.peerOverrides.Dialog }, keep(this.$props, dialogPropKeys), { "aria-modal": "true" }), $slots) : this.preset === "card" ? h(NCard, Object.assign({}, this.$attrs, { ref: "bodyRef", class: [
-                      `${mergedClsPrefix}-modal`,
-                      this.$attrs.class
-                    ], theme: this.mergedTheme.peers.Card, themeOverrides: this.mergedTheme.peerOverrides.Card }, keep(this.$props, cardBasePropKeys), { "aria-modal": "true", role: "dialog" }), $slots) : this.childNodeRef = childNode, dirs);
-                  }
-                });
+                const dirs = [[vShow, this.show]];
+                const {
+                  onClickoutside
+                } = this;
+                if (onClickoutside) {
+                  dirs.push([clickoutside$1, this.onClickoutside, void 0, {
+                    capture: true
+                  }]);
+                }
+                return withDirectives(this.preset === "confirm" || this.preset === "dialog" ? h(NDialog, Object.assign({}, this.$attrs, {
+                  class: [`${mergedClsPrefix}-modal`, this.$attrs.class],
+                  ref: "bodyRef",
+                  theme: this.mergedTheme.peers.Dialog,
+                  themeOverrides: this.mergedTheme.peerOverrides.Dialog
+                }, keep(this.$props, dialogPropKeys), {
+                  "aria-modal": "true"
+                }), $slots) : this.preset === "card" ? h(NCard, Object.assign({}, this.$attrs, {
+                  ref: "bodyRef",
+                  class: [`${mergedClsPrefix}-modal`, this.$attrs.class],
+                  theme: this.mergedTheme.peers.Card,
+                  themeOverrides: this.mergedTheme.peerOverrides.Card
+                }, keep(this.$props, cardBasePropKeys), {
+                  "aria-modal": "true",
+                  role: "dialog"
+                }), $slots) : this.childNodeRef = childNode, dirs);
               }
-            })
-          ];
-        }
-      })
-    ), [
-      [
-        vShow,
-        this.displayDirective === "if" || this.displayed || this.show
-      ]
-    ]) : null;
+            });
+          }
+        })];
+      }
+    })), [[vShow, this.displayDirective === "if" || this.displayed || this.show]]) : null;
   }
 });
 const style$d = c$1([cB("modal-container", `
@@ -29169,28 +32809,44 @@ const style$d = c$1([cB("modal-container", `
   duration: ".25s",
   enterScale: ".5"
 })])]);
-const modalProps = Object.assign(Object.assign(Object.assign(Object.assign({}, useTheme.props), { show: Boolean, unstableShowMask: {
-  type: Boolean,
-  default: true
-}, maskClosable: {
-  type: Boolean,
-  default: true
-}, preset: String, to: [String, Object], displayDirective: {
-  type: String,
-  default: "if"
-}, transformOrigin: {
-  type: String,
-  default: "mouse"
-}, zIndex: Number, autoFocus: {
-  type: Boolean,
-  default: true
-}, trapFocus: {
-  type: Boolean,
-  default: true
-}, closeOnEsc: {
-  type: Boolean,
-  default: true
-}, blockScroll: { type: Boolean, default: true } }), presetProps), {
+const modalProps = Object.assign(Object.assign(Object.assign(Object.assign({}, useTheme.props), {
+  show: Boolean,
+  unstableShowMask: {
+    type: Boolean,
+    default: true
+  },
+  maskClosable: {
+    type: Boolean,
+    default: true
+  },
+  preset: String,
+  to: [String, Object],
+  displayDirective: {
+    type: String,
+    default: "if"
+  },
+  transformOrigin: {
+    type: String,
+    default: "mouse"
+  },
+  zIndex: Number,
+  autoFocus: {
+    type: Boolean,
+    default: true
+  },
+  trapFocus: {
+    type: Boolean,
+    default: true
+  },
+  closeOnEsc: {
+    type: Boolean,
+    default: true
+  },
+  blockScroll: {
+    type: Boolean,
+    default: true
+  }
+}), presetProps), {
   // events
   onEsc: Function,
   "onUpdate:show": [Function, Array],
@@ -29204,6 +32860,7 @@ const modalProps = Object.assign(Object.assign(Object.assign(Object.assign({}, u
   onMaskClick: Function,
   // private
   internalDialog: Boolean,
+  internalModal: Boolean,
   internalAppear: {
     type: Boolean,
     default: void 0
@@ -29214,21 +32871,30 @@ const modalProps = Object.assign(Object.assign(Object.assign(Object.assign({}, u
   onAfterHide: Function,
   onHide: Function
 });
-const NModal = defineComponent({
+const NModal = /* @__PURE__ */ defineComponent({
   name: "Modal",
   inheritAttrs: false,
   props: modalProps,
   setup(props) {
     const containerRef = ref(null);
-    const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      namespaceRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Modal", "-modal", style$d, modalLight$1, props, mergedClsPrefixRef);
     const clickedRef = useClicked(64);
     const clickedPositionRef = useClickPosition();
     const isMountedRef = isMounted();
     const NDialogProvider = props.internalDialog ? inject(dialogProviderInjectionKey, null) : null;
+    const NModalProvider = props.internalModal ? inject(modalProviderInjectionKey, null) : null;
     const isComposingRef2 = useIsComposing();
     function doUpdateShow(show) {
-      const { onUpdateShow, "onUpdate:show": _onUpdateShow, onHide } = props;
+      const {
+        onUpdateShow,
+        "onUpdate:show": _onUpdateShow,
+        onHide
+      } = props;
       if (onUpdateShow)
         call(onUpdateShow, show);
       if (_onUpdateShow)
@@ -29237,7 +32903,9 @@ const NModal = defineComponent({
         onHide(show);
     }
     function handleCloseClick() {
-      const { onClose } = props;
+      const {
+        onClose
+      } = props;
       if (onClose) {
         void Promise.resolve(onClose()).then((value) => {
           if (value === false)
@@ -29249,7 +32917,9 @@ const NModal = defineComponent({
       }
     }
     function handlePositiveClick() {
-      const { onPositiveClick } = props;
+      const {
+        onPositiveClick
+      } = props;
       if (onPositiveClick) {
         void Promise.resolve(onPositiveClick()).then((value) => {
           if (value === false)
@@ -29261,7 +32931,9 @@ const NModal = defineComponent({
       }
     }
     function handleNegativeClick() {
-      const { onNegativeClick } = props;
+      const {
+        onNegativeClick
+      } = props;
       if (onNegativeClick) {
         void Promise.resolve(onNegativeClick()).then((value) => {
           if (value === false)
@@ -29273,14 +32945,20 @@ const NModal = defineComponent({
       }
     }
     function handleBeforeLeave() {
-      const { onBeforeLeave, onBeforeHide } = props;
+      const {
+        onBeforeLeave,
+        onBeforeHide
+      } = props;
       if (onBeforeLeave)
         call(onBeforeLeave);
       if (onBeforeHide)
         onBeforeHide();
     }
     function handleAfterLeave() {
-      const { onAfterLeave, onAfterHide } = props;
+      const {
+        onAfterLeave,
+        onAfterHide
+      } = props;
       if (onAfterLeave)
         call(onAfterLeave);
       if (onAfterHide)
@@ -29288,7 +32966,9 @@ const NModal = defineComponent({
     }
     function handleClickoutside(e) {
       var _a2;
-      const { onMaskClick } = props;
+      const {
+        onMaskClick
+      } = props;
       if (onMaskClick) {
         onMaskClick(e);
       }
@@ -29307,10 +32987,14 @@ const NModal = defineComponent({
     }
     provide(modalInjectionKey, {
       getMousePosition: () => {
-        if (NDialogProvider) {
-          const { clickedRef: clickedRef2, clickPositionRef } = NDialogProvider;
-          if (clickedRef2.value && clickPositionRef.value) {
-            return clickPositionRef.value;
+        const mergedProvider = NDialogProvider || NModalProvider;
+        if (mergedProvider) {
+          const {
+            clickedRef: clickedRef2,
+            clickedPositionRef: clickedPositionRef2
+          } = mergedProvider;
+          if (clickedRef2.value && clickedPositionRef2.value) {
+            return clickedPositionRef2.value;
           }
         }
         if (clickedRef.value) {
@@ -29325,7 +33009,16 @@ const NModal = defineComponent({
       transformOriginRef: toRef(props, "transformOrigin")
     });
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseOut: cubicBezierEaseOut2 }, self: { boxShadow, color, textColor } } = themeRef.value;
+      const {
+        common: {
+          cubicBezierEaseOut: cubicBezierEaseOut2
+        },
+        self: {
+          boxShadow,
+          color,
+          textColor
+        }
+      } = themeRef.value;
       return {
         "--n-bezier-ease-out": cubicBezierEaseOut2,
         "--n-box-shadow": boxShadow,
@@ -29357,42 +33050,74 @@ const NModal = defineComponent({
     };
   },
   render() {
-    const { mergedClsPrefix } = this;
-    return h(LazyTeleport, { to: this.to, show: this.show }, {
+    const {
+      mergedClsPrefix
+    } = this;
+    return h(LazyTeleport, {
+      to: this.to,
+      show: this.show
+    }, {
       default: () => {
         var _a2;
         (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-        const { unstableShowMask } = this;
-        return withDirectives(h(
-          "div",
-          { role: "none", ref: "containerRef", class: [
-            `${mergedClsPrefix}-modal-container`,
-            this.themeClass,
-            this.namespace
-          ], style: this.cssVars },
-          h(NModalBodyWrapper, Object.assign({ style: this.overlayStyle }, this.$attrs, { ref: "bodyWrapper", displayDirective: this.displayDirective, show: this.show, preset: this.preset, autoFocus: this.autoFocus, trapFocus: this.trapFocus, blockScroll: this.blockScroll }, this.presetProps, { onEsc: this.handleEsc, onClose: this.handleCloseClick, onNegativeClick: this.handleNegativeClick, onPositiveClick: this.handlePositiveClick, onBeforeLeave: this.handleBeforeLeave, onAfterEnter: this.onAfterEnter, onAfterLeave: this.handleAfterLeave, onClickoutside: unstableShowMask ? void 0 : this.handleClickoutside, renderMask: unstableShowMask ? () => {
+        const {
+          unstableShowMask
+        } = this;
+        return withDirectives(h("div", {
+          role: "none",
+          ref: "containerRef",
+          class: [`${mergedClsPrefix}-modal-container`, this.themeClass, this.namespace],
+          style: this.cssVars
+        }, h(NModalBodyWrapper, Object.assign({
+          style: this.overlayStyle
+        }, this.$attrs, {
+          ref: "bodyWrapper",
+          displayDirective: this.displayDirective,
+          show: this.show,
+          preset: this.preset,
+          autoFocus: this.autoFocus,
+          trapFocus: this.trapFocus,
+          blockScroll: this.blockScroll
+        }, this.presetProps, {
+          onEsc: this.handleEsc,
+          onClose: this.handleCloseClick,
+          onNegativeClick: this.handleNegativeClick,
+          onPositiveClick: this.handlePositiveClick,
+          onBeforeLeave: this.handleBeforeLeave,
+          onAfterEnter: this.onAfterEnter,
+          onAfterLeave: this.handleAfterLeave,
+          onClickoutside: unstableShowMask ? void 0 : this.handleClickoutside,
+          renderMask: unstableShowMask ? () => {
             var _a3;
-            return h(Transition, { name: "fade-in-transition", key: "mask", appear: (_a3 = this.internalAppear) !== null && _a3 !== void 0 ? _a3 : this.isMounted }, {
+            return h(Transition, {
+              name: "fade-in-transition",
+              key: "mask",
+              appear: (_a3 = this.internalAppear) !== null && _a3 !== void 0 ? _a3 : this.isMounted
+            }, {
               default: () => {
-                return this.show ? h("div", { "aria-hidden": true, ref: "containerRef", class: `${mergedClsPrefix}-modal-mask`, onClick: this.handleClickoutside }) : null;
+                return this.show ? h("div", {
+                  "aria-hidden": true,
+                  ref: "containerRef",
+                  class: `${mergedClsPrefix}-modal-mask`,
+                  onClick: this.handleClickoutside
+                }) : null;
               }
             });
-          } : void 0 }), this.$slots)
-        ), [
-          [
-            zindexable$1,
-            {
-              zIndex: this.zIndex,
-              enabled: this.show
-            }
-          ]
-        ]);
+          } : void 0
+        }), this.$slots)), [[zindexable$1, {
+          zIndex: this.zIndex,
+          enabled: this.show
+        }]]);
       }
     });
   }
 });
-const self$D = (vars) => {
-  const { textColor1, dividerColor, fontWeightStrong } = vars;
+const self$I = (vars) => {
+  const {
+    textColor1,
+    dividerColor,
+    fontWeightStrong
+  } = vars;
   return {
     textColor: textColor1,
     color: dividerColor,
@@ -29402,13 +33127,13 @@ const self$D = (vars) => {
 const dividerLight = {
   name: "Divider",
   common: commonLight,
-  self: self$D
+  self: self$I
 };
 const dividerLight$1 = dividerLight;
 const dividerDark = {
   name: "Divider",
   common: commonDark,
-  self: self$D
+  self: self$I
 };
 const dividerDark$1 = dividerDark;
 const style$c = cB("divider", `
@@ -29463,18 +33188,34 @@ const style$c = cB("divider", `
 })]), cM("vertical", {
   backgroundColor: "var(--n-color)"
 })]);
-const dividerProps = Object.assign(Object.assign({}, useTheme.props), { titlePlacement: {
-  type: String,
-  default: "center"
-}, dashed: Boolean, vertical: Boolean });
-const NDivider = defineComponent({
+const dividerProps = Object.assign(Object.assign({}, useTheme.props), {
+  titlePlacement: {
+    type: String,
+    default: "center"
+  },
+  dashed: Boolean,
+  vertical: Boolean
+});
+const NDivider = /* @__PURE__ */ defineComponent({
   name: "Divider",
   props: dividerProps,
   setup(props) {
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Divider", "-divider", style$c, dividerLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { color, textColor, fontWeight } } = themeRef.value;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          color,
+          textColor,
+          fontWeight
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-color": color,
@@ -29492,34 +33233,53 @@ const NDivider = defineComponent({
   },
   render() {
     var _a2;
-    const { $slots, titlePlacement, vertical, dashed, cssVars, mergedClsPrefix } = this;
+    const {
+      $slots,
+      titlePlacement,
+      vertical,
+      dashed,
+      cssVars,
+      mergedClsPrefix
+    } = this;
     (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-    return h(
-      "div",
-      { role: "separator", class: [
-        `${mergedClsPrefix}-divider`,
-        this.themeClass,
-        {
-          [`${mergedClsPrefix}-divider--vertical`]: vertical,
-          [`${mergedClsPrefix}-divider--no-title`]: !$slots.default,
-          [`${mergedClsPrefix}-divider--dashed`]: dashed,
-          [`${mergedClsPrefix}-divider--title-position-${titlePlacement}`]: $slots.default && titlePlacement
-        }
-      ], style: cssVars },
-      !vertical ? h("div", { class: `${mergedClsPrefix}-divider__line ${mergedClsPrefix}-divider__line--left` }) : null,
-      !vertical && $slots.default ? h(
-        Fragment,
-        null,
-        h("div", { class: `${mergedClsPrefix}-divider__title` }, this.$slots),
-        h("div", { class: `${mergedClsPrefix}-divider__line ${mergedClsPrefix}-divider__line--right` })
-      ) : null
-    );
+    return h("div", {
+      role: "separator",
+      class: [`${mergedClsPrefix}-divider`, this.themeClass, {
+        [`${mergedClsPrefix}-divider--vertical`]: vertical,
+        [`${mergedClsPrefix}-divider--no-title`]: !$slots.default,
+        [`${mergedClsPrefix}-divider--dashed`]: dashed,
+        [`${mergedClsPrefix}-divider--title-position-${titlePlacement}`]: $slots.default && titlePlacement
+      }],
+      style: cssVars
+    }, !vertical ? h("div", {
+      class: `${mergedClsPrefix}-divider__line ${mergedClsPrefix}-divider__line--left`
+    }) : null, !vertical && $slots.default ? h(Fragment, null, h("div", {
+      class: `${mergedClsPrefix}-divider__title`
+    }, this.$slots), h("div", {
+      class: `${mergedClsPrefix}-divider__line ${mergedClsPrefix}-divider__line--right`
+    })) : null);
   }
 });
-const self$C = (vars) => {
-  const { modalColor, textColor1, textColor2, boxShadow3, lineHeight: lineHeight2, fontWeightStrong, dividerColor, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, borderRadius, primaryColorHover } = vars;
+const self$H = (vars) => {
+  const {
+    modalColor,
+    textColor1,
+    textColor2,
+    boxShadow3,
+    lineHeight: lineHeight2,
+    fontWeightStrong,
+    dividerColor,
+    closeColorHover,
+    closeColorPressed,
+    closeIconColor,
+    closeIconColorHover,
+    closeIconColorPressed,
+    borderRadius,
+    primaryColorHover
+  } = vars;
   return {
     bodyPadding: "16px 24px",
+    borderRadius,
     headerPadding: "16px 24px",
     footerPadding: "16px 24px",
     color: modalColor,
@@ -29548,7 +33308,7 @@ const drawerLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$C
+  self: self$H
 });
 const drawerLight$1 = drawerLight;
 const drawerDark = {
@@ -29557,10 +33317,10 @@ const drawerDark = {
   peers: {
     Scrollbar: scrollbarDark$1
   },
-  self: self$C
+  self: self$H
 };
 const drawerDark$1 = drawerDark;
-const NDrawerBodyWrapper = defineComponent({
+const NDrawerBodyWrapper = /* @__PURE__ */ defineComponent({
   name: "NDrawerContent",
   inheritAttrs: false,
   props: {
@@ -29577,6 +33337,7 @@ const NDrawerBodyWrapper = defineComponent({
       type: String,
       required: true
     },
+    contentClass: String,
     contentStyle: [Object, String],
     nativeScrollbar: {
       type: Boolean,
@@ -29617,7 +33378,10 @@ const NDrawerBodyWrapper = defineComponent({
     const isVertical = computed(() => {
       return props.placement === "top" || props.placement === "bottom";
     });
-    const { mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      mergedRtlRef
+    } = useConfig(props);
     const rtlEnabledRef = useRtl("Drawer", mergedRtlRef, mergedClsPrefixRef);
     const handleMousedownResizeTrigger = (e) => {
       isDraggingRef.value = true;
@@ -29648,21 +33412,32 @@ const NDrawerBodyWrapper = defineComponent({
       }
       isHoverOnResizeTriggerRef.value = false;
     };
-    const { doUpdateHeight, doUpdateWidth } = NDrawer2;
+    const {
+      doUpdateHeight,
+      doUpdateWidth
+    } = NDrawer2;
     const regulateWidth = (size2) => {
-      const { maxWidth } = props;
+      const {
+        maxWidth
+      } = props;
       if (maxWidth && size2 > maxWidth)
         return maxWidth;
-      const { minWidth } = props;
+      const {
+        minWidth
+      } = props;
       if (minWidth && size2 < minWidth)
         return minWidth;
       return size2;
     };
     const regulateHeight = (size2) => {
-      const { maxHeight } = props;
+      const {
+        maxHeight
+      } = props;
       if (maxHeight && size2 > maxHeight)
         return maxHeight;
-      const { minHeight } = props;
+      const {
+        minHeight
+      } = props;
       if (minHeight && size2 < minHeight)
         return minHeight;
       return size2;
@@ -29711,15 +33486,14 @@ const NDrawerBodyWrapper = defineComponent({
       handleBodyMouseup();
     });
     const bodyDirectivesRef = computed(() => {
-      const { show } = props;
+      const {
+        show
+      } = props;
       const directives = [[vShow, show]];
       if (!props.showMask) {
-        directives.push([
-          clickoutside$1,
-          props.onClickoutside,
-          void 0,
-          { capture: true }
-        ]);
+        directives.push([clickoutside$1, props.onClickoutside, void 0, {
+          capture: true
+        }]);
       }
       return directives;
     });
@@ -29757,140 +33531,154 @@ const NDrawerBodyWrapper = defineComponent({
     };
   },
   render() {
-    const { $slots, mergedClsPrefix } = this;
+    const {
+      $slots,
+      mergedClsPrefix
+    } = this;
     return this.displayDirective === "show" || this.displayed || this.show ? withDirectives(
       /* Keep the wrapper dom. Make sure the drawer has a host.
       Nor the detached content will disappear without transition */
-      h(
-        "div",
-        { role: "none" },
-        h(FocusTrap, { disabled: !this.showMask || !this.trapFocus, active: this.show, autoFocus: this.autoFocus, onEsc: this.onEsc }, {
-          default: () => h(Transition, { name: this.transitionName, appear: this.isMounted, onAfterEnter: this.onAfterEnter, onAfterLeave: this.handleAfterLeave }, {
-            default: () => withDirectives(h("div", mergeProps(this.$attrs, {
-              role: "dialog",
-              ref: "bodyRef",
-              "aria-modal": "true",
-              class: [
-                `${mergedClsPrefix}-drawer`,
-                this.rtlEnabled && `${mergedClsPrefix}-drawer--rtl`,
-                `${mergedClsPrefix}-drawer--${this.placement}-placement`,
-                /**
-                 * When the mouse is pressed to resize the drawer,
-                 * disable text selection
-                 */
-                this.isDragging && `${mergedClsPrefix}-drawer--unselectable`,
-                this.nativeScrollbar && `${mergedClsPrefix}-drawer--native-scrollbar`
-              ]
-            }), [
-              this.resizable ? h("div", { class: [
-                `${mergedClsPrefix}-drawer__resize-trigger`,
-                (this.isDragging || this.isHoverOnResizeTrigger) && `${mergedClsPrefix}-drawer__resize-trigger--hover`
-              ], onMouseenter: this.handleMouseenterResizeTrigger, onMouseleave: this.handleMouseleaveResizeTrigger, onMousedown: this.handleMousedownResizeTrigger }) : null,
-              this.nativeScrollbar ? h("div", { class: `${mergedClsPrefix}-drawer-content-wrapper`, style: this.contentStyle, role: "none" }, $slots) : h(NScrollbar$1, Object.assign({}, this.scrollbarProps, { contentStyle: this.contentStyle, contentClass: `${mergedClsPrefix}-drawer-content-wrapper`, theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar }), $slots)
-            ]), this.bodyDirectives)
-          })
+      h("div", {
+        role: "none"
+      }, h(FocusTrap, {
+        disabled: !this.showMask || !this.trapFocus,
+        active: this.show,
+        autoFocus: this.autoFocus,
+        onEsc: this.onEsc
+      }, {
+        default: () => h(Transition, {
+          name: this.transitionName,
+          appear: this.isMounted,
+          onAfterEnter: this.onAfterEnter,
+          onAfterLeave: this.handleAfterLeave
+        }, {
+          default: () => withDirectives(h("div", mergeProps(this.$attrs, {
+            role: "dialog",
+            ref: "bodyRef",
+            "aria-modal": "true",
+            class: [
+              `${mergedClsPrefix}-drawer`,
+              this.rtlEnabled && `${mergedClsPrefix}-drawer--rtl`,
+              `${mergedClsPrefix}-drawer--${this.placement}-placement`,
+              /**
+               * When the mouse is pressed to resize the drawer,
+               * disable text selection
+               */
+              this.isDragging && `${mergedClsPrefix}-drawer--unselectable`,
+              this.nativeScrollbar && `${mergedClsPrefix}-drawer--native-scrollbar`
+            ]
+          }), [this.resizable ? h("div", {
+            class: [`${mergedClsPrefix}-drawer__resize-trigger`, (this.isDragging || this.isHoverOnResizeTrigger) && `${mergedClsPrefix}-drawer__resize-trigger--hover`],
+            onMouseenter: this.handleMouseenterResizeTrigger,
+            onMouseleave: this.handleMouseleaveResizeTrigger,
+            onMousedown: this.handleMousedownResizeTrigger
+          }) : null, this.nativeScrollbar ? h("div", {
+            class: [`${mergedClsPrefix}-drawer-content-wrapper`, this.contentClass],
+            style: this.contentStyle,
+            role: "none"
+          }, $slots) : h(NScrollbar$1, Object.assign({}, this.scrollbarProps, {
+            contentStyle: this.contentStyle,
+            contentClass: [`${mergedClsPrefix}-drawer-content-wrapper`, this.contentClass],
+            theme: this.mergedTheme.peers.Scrollbar,
+            themeOverrides: this.mergedTheme.peerOverrides.Scrollbar
+          }), $slots)]), this.bodyDirectives)
         })
-      ),
-      [
-        [
-          vShow,
-          this.displayDirective === "if" || this.displayed || this.show
-        ]
-      ]
+      })),
+      [[vShow, this.displayDirective === "if" || this.displayed || this.show]]
     ) : null;
   }
 });
-const { cubicBezierEaseIn: cubicBezierEaseIn$3, cubicBezierEaseOut: cubicBezierEaseOut$3 } = commonVariables$m;
-function slideInFromRightTransition({ duration = "0.3s", leaveDuration = "0.2s", name = "slide-in-from-right" } = {}) {
-  return [
-    c$1(`&.${name}-transition-leave-active`, {
-      transition: `transform ${leaveDuration} ${cubicBezierEaseIn$3}`
-    }),
-    c$1(`&.${name}-transition-enter-active`, {
-      transition: `transform ${duration} ${cubicBezierEaseOut$3}`
-    }),
-    c$1(`&.${name}-transition-enter-to`, {
-      transform: "translateX(0)"
-    }),
-    c$1(`&.${name}-transition-enter-from`, {
-      transform: "translateX(100%)"
-    }),
-    c$1(`&.${name}-transition-leave-from`, {
-      transform: "translateX(0)"
-    }),
-    c$1(`&.${name}-transition-leave-to`, {
-      transform: "translateX(100%)"
-    })
-  ];
+const {
+  cubicBezierEaseIn: cubicBezierEaseIn$3,
+  cubicBezierEaseOut: cubicBezierEaseOut$3
+} = commonVariables$m;
+function slideInFromRightTransition({
+  duration: duration2 = "0.3s",
+  leaveDuration = "0.2s",
+  name = "slide-in-from-right"
+} = {}) {
+  return [c$1(`&.${name}-transition-leave-active`, {
+    transition: `transform ${leaveDuration} ${cubicBezierEaseIn$3}`
+  }), c$1(`&.${name}-transition-enter-active`, {
+    transition: `transform ${duration2} ${cubicBezierEaseOut$3}`
+  }), c$1(`&.${name}-transition-enter-to`, {
+    transform: "translateX(0)"
+  }), c$1(`&.${name}-transition-enter-from`, {
+    transform: "translateX(100%)"
+  }), c$1(`&.${name}-transition-leave-from`, {
+    transform: "translateX(0)"
+  }), c$1(`&.${name}-transition-leave-to`, {
+    transform: "translateX(100%)"
+  })];
 }
-const { cubicBezierEaseIn: cubicBezierEaseIn$2, cubicBezierEaseOut: cubicBezierEaseOut$2 } = commonVariables$m;
-function slideInFromLeftTransition({ duration = "0.3s", leaveDuration = "0.2s", name = "slide-in-from-left" } = {}) {
-  return [
-    c$1(`&.${name}-transition-leave-active`, {
-      transition: `transform ${leaveDuration} ${cubicBezierEaseIn$2}`
-    }),
-    c$1(`&.${name}-transition-enter-active`, {
-      transition: `transform ${duration} ${cubicBezierEaseOut$2}`
-    }),
-    c$1(`&.${name}-transition-enter-to`, {
-      transform: "translateX(0)"
-    }),
-    c$1(`&.${name}-transition-enter-from`, {
-      transform: "translateX(-100%)"
-    }),
-    c$1(`&.${name}-transition-leave-from`, {
-      transform: "translateX(0)"
-    }),
-    c$1(`&.${name}-transition-leave-to`, {
-      transform: "translateX(-100%)"
-    })
-  ];
+const {
+  cubicBezierEaseIn: cubicBezierEaseIn$2,
+  cubicBezierEaseOut: cubicBezierEaseOut$2
+} = commonVariables$m;
+function slideInFromLeftTransition({
+  duration: duration2 = "0.3s",
+  leaveDuration = "0.2s",
+  name = "slide-in-from-left"
+} = {}) {
+  return [c$1(`&.${name}-transition-leave-active`, {
+    transition: `transform ${leaveDuration} ${cubicBezierEaseIn$2}`
+  }), c$1(`&.${name}-transition-enter-active`, {
+    transition: `transform ${duration2} ${cubicBezierEaseOut$2}`
+  }), c$1(`&.${name}-transition-enter-to`, {
+    transform: "translateX(0)"
+  }), c$1(`&.${name}-transition-enter-from`, {
+    transform: "translateX(-100%)"
+  }), c$1(`&.${name}-transition-leave-from`, {
+    transform: "translateX(0)"
+  }), c$1(`&.${name}-transition-leave-to`, {
+    transform: "translateX(-100%)"
+  })];
 }
-const { cubicBezierEaseIn: cubicBezierEaseIn$1, cubicBezierEaseOut: cubicBezierEaseOut$1 } = commonVariables$m;
-function slideInFromTopTransition({ duration = "0.3s", leaveDuration = "0.2s", name = "slide-in-from-top" } = {}) {
-  return [
-    c$1(`&.${name}-transition-leave-active`, {
-      transition: `transform ${leaveDuration} ${cubicBezierEaseIn$1}`
-    }),
-    c$1(`&.${name}-transition-enter-active`, {
-      transition: `transform ${duration} ${cubicBezierEaseOut$1}`
-    }),
-    c$1(`&.${name}-transition-enter-to`, {
-      transform: "translateY(0)"
-    }),
-    c$1(`&.${name}-transition-enter-from`, {
-      transform: "translateY(-100%)"
-    }),
-    c$1(`&.${name}-transition-leave-from`, {
-      transform: "translateY(0)"
-    }),
-    c$1(`&.${name}-transition-leave-to`, {
-      transform: "translateY(-100%)"
-    })
-  ];
+const {
+  cubicBezierEaseIn: cubicBezierEaseIn$1,
+  cubicBezierEaseOut: cubicBezierEaseOut$1
+} = commonVariables$m;
+function slideInFromTopTransition({
+  duration: duration2 = "0.3s",
+  leaveDuration = "0.2s",
+  name = "slide-in-from-top"
+} = {}) {
+  return [c$1(`&.${name}-transition-leave-active`, {
+    transition: `transform ${leaveDuration} ${cubicBezierEaseIn$1}`
+  }), c$1(`&.${name}-transition-enter-active`, {
+    transition: `transform ${duration2} ${cubicBezierEaseOut$1}`
+  }), c$1(`&.${name}-transition-enter-to`, {
+    transform: "translateY(0)"
+  }), c$1(`&.${name}-transition-enter-from`, {
+    transform: "translateY(-100%)"
+  }), c$1(`&.${name}-transition-leave-from`, {
+    transform: "translateY(0)"
+  }), c$1(`&.${name}-transition-leave-to`, {
+    transform: "translateY(-100%)"
+  })];
 }
-const { cubicBezierEaseIn, cubicBezierEaseOut } = commonVariables$m;
-function slideInFromBottomTransition({ duration = "0.3s", leaveDuration = "0.2s", name = "slide-in-from-bottom" } = {}) {
-  return [
-    c$1(`&.${name}-transition-leave-active`, {
-      transition: `transform ${leaveDuration} ${cubicBezierEaseIn}`
-    }),
-    c$1(`&.${name}-transition-enter-active`, {
-      transition: `transform ${duration} ${cubicBezierEaseOut}`
-    }),
-    c$1(`&.${name}-transition-enter-to`, {
-      transform: "translateY(0)"
-    }),
-    c$1(`&.${name}-transition-enter-from`, {
-      transform: "translateY(100%)"
-    }),
-    c$1(`&.${name}-transition-leave-from`, {
-      transform: "translateY(0)"
-    }),
-    c$1(`&.${name}-transition-leave-to`, {
-      transform: "translateY(100%)"
-    })
-  ];
+const {
+  cubicBezierEaseIn,
+  cubicBezierEaseOut
+} = commonVariables$m;
+function slideInFromBottomTransition({
+  duration: duration2 = "0.3s",
+  leaveDuration = "0.2s",
+  name = "slide-in-from-bottom"
+} = {}) {
+  return [c$1(`&.${name}-transition-leave-active`, {
+    transition: `transform ${leaveDuration} ${cubicBezierEaseIn}`
+  }), c$1(`&.${name}-transition-enter-active`, {
+    transition: `transform ${duration2} ${cubicBezierEaseOut}`
+  }), c$1(`&.${name}-transition-enter-to`, {
+    transform: "translateY(0)"
+  }), c$1(`&.${name}-transition-enter-from`, {
+    transform: "translateY(100%)"
+  }), c$1(`&.${name}-transition-leave-from`, {
+    transform: "translateY(0)"
+  }), c$1(`&.${name}-transition-leave-to`, {
+    transform: "translateY(100%)"
+  })];
 }
 const style$b = c$1([cB("drawer", `
  word-break: break-word;
@@ -29958,6 +33746,8 @@ const style$b = c$1([cB("drawer", `
  top: 0;
  bottom: 0;
  right: 0;
+ border-top-left-radius: var(--n-border-radius);
+ border-bottom-left-radius: var(--n-border-radius);
  `, [cE("resize-trigger", `
  width: 3px;
  height: 100%;
@@ -29969,6 +33759,8 @@ const style$b = c$1([cB("drawer", `
  top: 0;
  bottom: 0;
  left: 0;
+ border-top-right-radius: var(--n-border-radius);
+ border-bottom-right-radius: var(--n-border-radius);
  `, [cE("resize-trigger", `
  width: 3px;
  height: 100%;
@@ -29980,6 +33772,8 @@ const style$b = c$1([cB("drawer", `
  top: 0;
  left: 0;
  right: 0;
+ border-bottom-left-radius: var(--n-border-radius);
+ border-bottom-right-radius: var(--n-border-radius);
  `, [cE("resize-trigger", `
  width: 100%;
  height: 3px;
@@ -29991,6 +33785,8 @@ const style$b = c$1([cB("drawer", `
  left: 0;
  bottom: 0;
  right: 0;
+ border-top-left-radius: var(--n-border-radius);
+ border-top-right-radius: var(--n-border-radius);
  `, [cE("resize-trigger", `
  width: 100%;
  height: 3px;
@@ -29998,9 +33794,9 @@ const style$b = c$1([cB("drawer", `
  left: 0;
  transform: translateY(-1.5px);
  cursor: ns-resize;
- `)])]), c$1("body", [c$1(">", [cB("drawer-container", {
-  position: "fixed"
-})])]), cB("drawer-container", `
+ `)])]), c$1("body", [c$1(">", [cB("drawer-container", `
+ position: fixed;
+ `)])]), cB("drawer-container", `
  position: relative;
  position: absolute;
  left: 0;
@@ -30008,9 +33804,9 @@ const style$b = c$1([cB("drawer", `
  top: 0;
  bottom: 0;
  pointer-events: none;
- `, [c$1("> *", {
-  pointerEvents: "all"
-})]), cB("drawer-mask", `
+ `, [c$1("> *", `
+ pointer-events: all;
+ `)]), cB("drawer-mask", `
  background-color: rgba(0, 0, 0, .3);
  position: absolute;
  left: 0;
@@ -30053,6 +33849,7 @@ const drawerProps = Object.assign(Object.assign({}, useTheme.props), {
   zIndex: Number,
   onMaskClick: Function,
   scrollbarProps: Object,
+  contentClass: String,
   contentStyle: [Object, String],
   trapFocus: {
     type: Boolean,
@@ -30099,12 +33896,16 @@ const drawerProps = Object.assign(Object.assign({}, useTheme.props), {
   onShow: Function,
   onHide: Function
 });
-const NDrawer = defineComponent({
+const NDrawer = /* @__PURE__ */ defineComponent({
   name: "Drawer",
   inheritAttrs: false,
   props: drawerProps,
   setup(props) {
-    const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      namespaceRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const isMountedRef = isMounted();
     const themeRef = useTheme("Drawer", "-drawer", style$b, drawerLight$1, props, mergedClsPrefixRef);
     const uncontrolledWidthRef = ref(props.defaultWidth);
@@ -30112,19 +33913,26 @@ const NDrawer = defineComponent({
     const mergedWidthRef = useMergedState(toRef(props, "width"), uncontrolledWidthRef);
     const mergedHeightRef = useMergedState(toRef(props, "height"), uncontrolledHeightRef);
     const styleWidthRef = computed(() => {
-      const { placement } = props;
+      const {
+        placement
+      } = props;
       if (placement === "top" || placement === "bottom")
         return "";
       return formatLength(mergedWidthRef.value);
     });
     const styleHeightRef = computed(() => {
-      const { placement } = props;
+      const {
+        placement
+      } = props;
       if (placement === "left" || placement === "right")
         return "";
       return formatLength(mergedHeightRef.value);
     });
     const doUpdateWidth = (value) => {
-      const { onUpdateWidth, "onUpdate:width": _onUpdateWidth } = props;
+      const {
+        onUpdateWidth,
+        "onUpdate:width": _onUpdateWidth
+      } = props;
       if (onUpdateWidth)
         call(onUpdateWidth, value);
       if (_onUpdateWidth)
@@ -30132,7 +33940,10 @@ const NDrawer = defineComponent({
       uncontrolledWidthRef.value = value;
     };
     const doUpdateHeight = (value) => {
-      const { onUpdateHeight, "onUpdate:width": _onUpdateHeight } = props;
+      const {
+        onUpdateHeight,
+        "onUpdate:width": _onUpdateHeight
+      } = props;
       if (onUpdateHeight)
         call(onUpdateHeight, value);
       if (_onUpdateHeight)
@@ -30140,21 +33951,24 @@ const NDrawer = defineComponent({
       uncontrolledHeightRef.value = value;
     };
     const mergedBodyStyleRef = computed(() => {
-      return [
-        {
-          width: styleWidthRef.value,
-          height: styleHeightRef.value
-        },
-        props.drawerStyle || ""
-      ];
+      return [{
+        width: styleWidthRef.value,
+        height: styleHeightRef.value
+      }, props.drawerStyle || ""];
     });
     function handleMaskClick(e) {
-      const { onMaskClick, maskClosable } = props;
+      const {
+        onMaskClick,
+        maskClosable
+      } = props;
       if (maskClosable) {
         doUpdateShow(false);
       }
       if (onMaskClick)
         onMaskClick(e);
+    }
+    function handleOutsideClick(e) {
+      handleMaskClick(e);
     }
     const isComposingRef2 = useIsComposing();
     function handleEsc(e) {
@@ -30165,7 +33979,11 @@ const NDrawer = defineComponent({
       }
     }
     function doUpdateShow(show) {
-      const { onHide, onUpdateShow, "onUpdate:show": _onUpdateShow } = props;
+      const {
+        onHide,
+        onUpdateShow,
+        "onUpdate:show": _onUpdateShow
+      } = props;
       if (onUpdateShow)
         call(onUpdateShow, show);
       if (_onUpdateShow)
@@ -30182,10 +34000,41 @@ const NDrawer = defineComponent({
       doUpdateWidth
     });
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, cubicBezierEaseIn: cubicBezierEaseIn2, cubicBezierEaseOut: cubicBezierEaseOut2 }, self: { color, textColor, boxShadow, lineHeight: lineHeight2, headerPadding, footerPadding, bodyPadding, titleFontSize, titleTextColor, titleFontWeight, headerBorderBottom, footerBorderTop, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, closeIconSize, closeSize, closeBorderRadius, resizableTriggerColorHover } } = themeRef.value;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2,
+          cubicBezierEaseIn: cubicBezierEaseIn2,
+          cubicBezierEaseOut: cubicBezierEaseOut2
+        },
+        self: {
+          color,
+          textColor,
+          boxShadow,
+          lineHeight: lineHeight2,
+          headerPadding,
+          footerPadding,
+          borderRadius,
+          bodyPadding,
+          titleFontSize,
+          titleTextColor,
+          titleFontWeight,
+          headerBorderBottom,
+          footerBorderTop,
+          closeIconColor,
+          closeIconColorHover,
+          closeIconColorPressed,
+          closeColorHover,
+          closeColorPressed,
+          closeIconSize,
+          closeSize,
+          closeBorderRadius,
+          resizableTriggerColorHover
+        }
+      } = themeRef.value;
       return {
         "--n-line-height": lineHeight2,
         "--n-color": color,
+        "--n-border-radius": borderRadius,
         "--n-text-color": textColor,
         "--n-box-shadow": boxShadow,
         "--n-bezier": cubicBezierEaseInOut2,
@@ -30215,6 +34064,7 @@ const NDrawer = defineComponent({
       mergedClsPrefix: mergedClsPrefixRef,
       namespace: namespaceRef,
       mergedBodyStyle: mergedBodyStyleRef,
+      handleOutsideClick,
       handleMaskClick,
       handleEsc,
       mergedTheme: themeRef,
@@ -30225,43 +34075,78 @@ const NDrawer = defineComponent({
     };
   },
   render() {
-    const { mergedClsPrefix } = this;
-    return h(LazyTeleport, { to: this.to, show: this.show }, {
+    const {
+      mergedClsPrefix
+    } = this;
+    return h(LazyTeleport, {
+      to: this.to,
+      show: this.show
+    }, {
       default: () => {
         var _a2;
         (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-        return withDirectives(h(
-          "div",
-          { class: [
-            `${mergedClsPrefix}-drawer-container`,
-            this.namespace,
-            this.themeClass
-          ], style: this.cssVars, role: "none" },
-          this.showMask ? h(Transition, { name: "fade-in-transition", appear: this.isMounted }, {
-            default: () => this.show ? h("div", { "aria-hidden": true, class: [
-              `${mergedClsPrefix}-drawer-mask`,
-              this.showMask === "transparent" && `${mergedClsPrefix}-drawer-mask--invisible`
-            ], onClick: this.handleMaskClick }) : null
-          }) : null,
-          h(NDrawerBodyWrapper, Object.assign({}, this.$attrs, { class: [this.drawerClass, this.$attrs.class], style: [this.mergedBodyStyle, this.$attrs.style], blockScroll: this.blockScroll, contentStyle: this.contentStyle, placement: this.placement, scrollbarProps: this.scrollbarProps, show: this.show, displayDirective: this.displayDirective, nativeScrollbar: this.nativeScrollbar, onAfterEnter: this.onAfterEnter, onAfterLeave: this.onAfterLeave, trapFocus: this.trapFocus, autoFocus: this.autoFocus, resizable: this.resizable, maxHeight: this.maxHeight, minHeight: this.minHeight, maxWidth: this.maxWidth, minWidth: this.minWidth, showMask: this.showMask, onEsc: this.handleEsc, onClickoutside: this.handleMaskClick }), this.$slots)
-        ), [[zindexable$1, { zIndex: this.zIndex, enabled: this.show }]]);
+        return withDirectives(h("div", {
+          class: [`${mergedClsPrefix}-drawer-container`, this.namespace, this.themeClass],
+          style: this.cssVars,
+          role: "none"
+        }, this.showMask ? h(Transition, {
+          name: "fade-in-transition",
+          appear: this.isMounted
+        }, {
+          default: () => this.show ? h("div", {
+            "aria-hidden": true,
+            class: [`${mergedClsPrefix}-drawer-mask`, this.showMask === "transparent" && `${mergedClsPrefix}-drawer-mask--invisible`],
+            onClick: this.handleMaskClick
+          }) : null
+        }) : null, h(NDrawerBodyWrapper, Object.assign({}, this.$attrs, {
+          class: [this.drawerClass, this.$attrs.class],
+          style: [this.mergedBodyStyle, this.$attrs.style],
+          blockScroll: this.blockScroll,
+          contentStyle: this.contentStyle,
+          contentClass: this.contentClass,
+          placement: this.placement,
+          scrollbarProps: this.scrollbarProps,
+          show: this.show,
+          displayDirective: this.displayDirective,
+          nativeScrollbar: this.nativeScrollbar,
+          onAfterEnter: this.onAfterEnter,
+          onAfterLeave: this.onAfterLeave,
+          trapFocus: this.trapFocus,
+          autoFocus: this.autoFocus,
+          resizable: this.resizable,
+          maxHeight: this.maxHeight,
+          minHeight: this.minHeight,
+          maxWidth: this.maxWidth,
+          minWidth: this.minWidth,
+          showMask: this.showMask,
+          onEsc: this.handleEsc,
+          onClickoutside: this.handleOutsideClick
+        }), this.$slots)), [[zindexable$1, {
+          zIndex: this.zIndex,
+          enabled: this.show
+        }]]);
       }
     });
   }
 });
 const drawerContentProps = {
-  title: {
-    type: String
-  },
+  title: String,
+  headerClass: String,
   headerStyle: [Object, String],
+  footerClass: String,
   footerStyle: [Object, String],
+  bodyClass: String,
   bodyStyle: [Object, String],
+  bodyContentClass: String,
   bodyContentStyle: [Object, String],
-  nativeScrollbar: { type: Boolean, default: true },
+  nativeScrollbar: {
+    type: Boolean,
+    default: true
+  },
   scrollbarProps: Object,
   closable: Boolean
 };
-const NDrawerContent = defineComponent({
+const NDrawerContent = /* @__PURE__ */ defineComponent({
   name: "DrawerContent",
   props: drawerContentProps,
   setup() {
@@ -30269,7 +34154,9 @@ const NDrawerContent = defineComponent({
     if (!NDrawer2) {
       throwError("drawer-content", "`n-drawer-content` must be placed inside `n-drawer`.");
     }
-    const { doUpdateShow } = NDrawer2;
+    const {
+      doUpdateShow
+    } = NDrawer2;
     function handleCloseClick() {
       doUpdateShow(false);
     }
@@ -30280,26 +34167,59 @@ const NDrawerContent = defineComponent({
     };
   },
   render() {
-    const { title, mergedClsPrefix, nativeScrollbar, mergedTheme, bodyStyle, bodyContentStyle, headerStyle, footerStyle, scrollbarProps: scrollbarProps2, closable, $slots } = this;
-    return h(
-      "div",
-      { role: "none", class: [
-        `${mergedClsPrefix}-drawer-content`,
-        nativeScrollbar && `${mergedClsPrefix}-drawer-content--native-scrollbar`
-      ] },
-      $slots.header || title || closable ? h(
-        "div",
-        { class: `${mergedClsPrefix}-drawer-header`, style: headerStyle, role: "none" },
-        h("div", { class: `${mergedClsPrefix}-drawer-header__main`, role: "heading", "aria-level": "1" }, $slots.header !== void 0 ? $slots.header() : title),
-        closable && h(NBaseClose, { onClick: this.handleCloseClick, clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-drawer-header__close`, absolute: true })
-      ) : null,
-      nativeScrollbar ? h(
-        "div",
-        { class: `${mergedClsPrefix}-drawer-body`, style: bodyStyle, role: "none" },
-        h("div", { class: `${mergedClsPrefix}-drawer-body-content-wrapper`, style: bodyContentStyle, role: "none" }, $slots)
-      ) : h(NScrollbar$1, Object.assign({ themeOverrides: mergedTheme.peerOverrides.Scrollbar, theme: mergedTheme.peers.Scrollbar }, scrollbarProps2, { class: `${mergedClsPrefix}-drawer-body`, contentClass: `${mergedClsPrefix}-drawer-body-content-wrapper`, contentStyle: bodyContentStyle }), $slots),
-      $slots.footer ? h("div", { class: `${mergedClsPrefix}-drawer-footer`, style: footerStyle, role: "none" }, $slots.footer()) : null
-    );
+    const {
+      title,
+      mergedClsPrefix,
+      nativeScrollbar,
+      mergedTheme,
+      bodyClass,
+      bodyStyle,
+      bodyContentClass,
+      bodyContentStyle,
+      headerClass,
+      headerStyle,
+      footerClass,
+      footerStyle,
+      scrollbarProps: scrollbarProps2,
+      closable,
+      $slots
+    } = this;
+    return h("div", {
+      role: "none",
+      class: [`${mergedClsPrefix}-drawer-content`, nativeScrollbar && `${mergedClsPrefix}-drawer-content--native-scrollbar`]
+    }, $slots.header || title || closable ? h("div", {
+      class: [`${mergedClsPrefix}-drawer-header`, headerClass],
+      style: headerStyle,
+      role: "none"
+    }, h("div", {
+      class: `${mergedClsPrefix}-drawer-header__main`,
+      role: "heading",
+      "aria-level": "1"
+    }, $slots.header !== void 0 ? $slots.header() : title), closable && h(NBaseClose, {
+      onClick: this.handleCloseClick,
+      clsPrefix: mergedClsPrefix,
+      class: `${mergedClsPrefix}-drawer-header__close`,
+      absolute: true
+    })) : null, nativeScrollbar ? h("div", {
+      class: [`${mergedClsPrefix}-drawer-body`, bodyClass],
+      style: bodyStyle,
+      role: "none"
+    }, h("div", {
+      class: [`${mergedClsPrefix}-drawer-body-content-wrapper`, bodyContentClass],
+      style: bodyContentStyle,
+      role: "none"
+    }, $slots)) : h(NScrollbar$1, Object.assign({
+      themeOverrides: mergedTheme.peerOverrides.Scrollbar,
+      theme: mergedTheme.peers.Scrollbar
+    }, scrollbarProps2, {
+      class: `${mergedClsPrefix}-drawer-body`,
+      contentClass: [`${mergedClsPrefix}-drawer-body-content-wrapper`, bodyContentClass],
+      contentStyle: bodyContentStyle
+    }), $slots), $slots.footer ? h("div", {
+      class: [`${mergedClsPrefix}-drawer-footer`, footerClass],
+      style: footerStyle,
+      role: "none"
+    }, $slots.footer()) : null);
   }
 });
 const commonVariables$6 = {
@@ -30318,7 +34238,7 @@ const dynamicInputDark = {
   }
 };
 const dynamicInputDark$1 = dynamicInputDark;
-const self$B = () => {
+const self$G = () => {
   return commonVariables$6;
 };
 const dynamicInputLight = createTheme({
@@ -30328,10 +34248,10 @@ const dynamicInputLight = createTheme({
     Input: inputLight$1,
     Button: buttonLight$1
   },
-  self: self$B
+  self: self$G
 });
 const dynamicInputLight$1 = dynamicInputLight;
-const commonVars$4 = {
+const commonVars$5 = {
   gapSmall: "4px 8px",
   gapMedium: "8px 12px",
   gapLarge: "12px 16px"
@@ -30339,16 +34259,16 @@ const commonVars$4 = {
 const spaceDark = {
   name: "Space",
   self() {
-    return commonVars$4;
+    return commonVars$5;
   }
 };
 const spaceDark$1 = spaceDark;
-const self$A = () => {
-  return commonVars$4;
+const self$F = () => {
+  return commonVars$5;
 };
 const spaceLight = {
   name: "Space",
-  self: self$A
+  self: self$F
 };
 const spaceLight$1 = spaceLight;
 let supportFlexGap;
@@ -30377,6 +34297,7 @@ const spaceProps = Object.assign(Object.assign({}, useTheme.props), {
   },
   inline: Boolean,
   vertical: Boolean,
+  reverse: Boolean,
   size: {
     type: [String, Number, Array],
     default: "medium"
@@ -30385,6 +34306,7 @@ const spaceProps = Object.assign(Object.assign({}, useTheme.props), {
     type: Boolean,
     default: true
   },
+  itemClass: String,
   itemStyle: [String, Object],
   wrap: {
     type: Boolean,
@@ -30396,11 +34318,14 @@ const spaceProps = Object.assign(Object.assign({}, useTheme.props), {
     default: void 0
   }
 });
-const NSpace = defineComponent({
+const NSpace = /* @__PURE__ */ defineComponent({
   name: "Space",
   props: spaceProps,
   setup(props) {
-    const { mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      mergedRtlRef
+    } = useConfig(props);
     const themeRef = useTheme("Space", "-space", void 0, spaceLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Space", mergedRtlRef, mergedClsPrefixRef);
     return {
@@ -30408,7 +34333,9 @@ const NSpace = defineComponent({
       rtlEnabled: rtlEnabledRef,
       mergedClsPrefix: mergedClsPrefixRef,
       margin: computed(() => {
-        const { size: size2 } = props;
+        const {
+          size: size2
+        } = props;
         if (Array.isArray(size2)) {
           return {
             horizontal: size2[0],
@@ -30421,8 +34348,15 @@ const NSpace = defineComponent({
             vertical: size2
           };
         }
-        const { self: { [createKey("gap", size2)]: gap } } = themeRef.value;
-        const { row, col } = getGap(gap);
+        const {
+          self: {
+            [createKey("gap", size2)]: gap
+          }
+        } = themeRef.value;
+        const {
+          row,
+          col
+        } = getGap(gap);
         return {
           horizontal: depx(col),
           vertical: depx(row)
@@ -30431,8 +34365,23 @@ const NSpace = defineComponent({
     };
   },
   render() {
-    const { vertical, align, inline, justify, itemStyle, margin, wrap, mergedClsPrefix, rtlEnabled, useGap, wrapItem, internalUseGap } = this;
-    const children = flatten$2(getSlot$1(this));
+    const {
+      vertical,
+      reverse,
+      align,
+      inline,
+      justify,
+      itemClass,
+      itemStyle,
+      margin,
+      wrap,
+      mergedClsPrefix,
+      rtlEnabled,
+      useGap,
+      wrapItem,
+      internalUseGap
+    } = this;
+    const children = flatten$2(getSlot$1(this), false);
     if (!children.length)
       return null;
     const horizontalMargin = `${margin.horizontal}px`;
@@ -30441,24 +34390,34 @@ const NSpace = defineComponent({
     const semiVerticalMargin = `${margin.vertical / 2}px`;
     const lastIndex = children.length - 1;
     const isJustifySpace = justify.startsWith("space-");
-    return h("div", { role: "none", class: [
-      `${mergedClsPrefix}-space`,
-      rtlEnabled && `${mergedClsPrefix}-space--rtl`
-    ], style: {
-      display: inline ? "inline-flex" : "flex",
-      flexDirection: vertical ? "column" : "row",
-      justifyContent: ["start", "end"].includes(justify) ? "flex-" + justify : justify,
-      flexWrap: !wrap || vertical ? "nowrap" : "wrap",
-      marginTop: useGap || vertical ? "" : `-${semiVerticalMargin}`,
-      marginBottom: useGap || vertical ? "" : `-${semiVerticalMargin}`,
-      alignItems: align,
-      gap: useGap ? `${margin.vertical}px ${margin.horizontal}px` : ""
-    } }, !wrapItem && (useGap || internalUseGap) ? children : children.map((child, index2) => h("div", { role: "none", style: [
-      itemStyle,
-      {
+    return h("div", {
+      role: "none",
+      class: [`${mergedClsPrefix}-space`, rtlEnabled && `${mergedClsPrefix}-space--rtl`],
+      style: {
+        display: inline ? "inline-flex" : "flex",
+        flexDirection: (() => {
+          if (vertical && !reverse)
+            return "column";
+          if (vertical && reverse)
+            return "column-reverse";
+          if (!vertical && reverse)
+            return "row-reverse";
+          else
+            return "row";
+        })(),
+        justifyContent: ["start", "end"].includes(justify) ? "flex-" + justify : justify,
+        flexWrap: !wrap || vertical ? "nowrap" : "wrap",
+        marginTop: useGap || vertical ? "" : `-${semiVerticalMargin}`,
+        marginBottom: useGap || vertical ? "" : `-${semiVerticalMargin}`,
+        alignItems: align,
+        gap: useGap ? `${margin.vertical}px ${margin.horizontal}px` : ""
+      }
+    }, !wrapItem && (useGap || internalUseGap) ? children : children.map((child, index2) => child.type === Comment ? child : h("div", {
+      role: "none",
+      class: itemClass,
+      style: [itemStyle, {
         maxWidth: "100%"
-      },
-      useGap ? "" : vertical ? {
+      }, useGap ? "" : vertical ? {
         marginBottom: index2 !== lastIndex ? verticalMargin : ""
       } : rtlEnabled ? {
         marginLeft: isJustifySpace ? justify === "space-between" && index2 === lastIndex ? "" : semiHorizontalMargin : index2 !== lastIndex ? horizontalMargin : "",
@@ -30470,8 +34429,8 @@ const NSpace = defineComponent({
         marginLeft: isJustifySpace ? justify === "space-between" && index2 === 0 ? "" : semiHorizontalMargin : "",
         paddingTop: semiVerticalMargin,
         paddingBottom: semiVerticalMargin
-      }
-    ] }, child)));
+      }]
+    }, child)));
   }
 });
 const dynamicTagsDark = {
@@ -30516,19 +34475,26 @@ const elementLight = {
   common: commonLight
 };
 const elementLight$1 = elementLight;
-const elementProps = Object.assign(Object.assign({}, useTheme.props), { tag: {
-  type: String,
-  default: "div"
-} });
-const NElement = defineComponent({
+const elementProps = Object.assign(Object.assign({}, useTheme.props), {
+  tag: {
+    type: String,
+    default: "div"
+  }
+});
+const NElement = /* @__PURE__ */ defineComponent({
   name: "Element",
   alias: ["El"],
   props: elementProps,
   setup(props) {
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Element", "-element", void 0, elementLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { common: common2 } = themeRef.value;
+      const {
+        common: common2
+      } = themeRef.value;
       return Object.keys(common2).reduce((prevValue, key) => {
         prevValue[`--${kebabCase$1(key)}`] = common2[key];
         return prevValue;
@@ -30544,7 +34510,14 @@ const NElement = defineComponent({
   },
   render() {
     var _a2;
-    const { tag, mergedClsPrefix, cssVars, themeClass, onRender, $slots } = this;
+    const {
+      tag,
+      mergedClsPrefix,
+      cssVars,
+      themeClass,
+      onRender,
+      $slots
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
     return h(tag, {
       role: "none",
@@ -30553,6 +34526,26 @@ const NElement = defineComponent({
     }, (_a2 = $slots.default) === null || _a2 === void 0 ? void 0 : _a2.call($slots));
   }
 });
+const commonVars$4 = {
+  gapSmall: "4px 8px",
+  gapMedium: "8px 12px",
+  gapLarge: "12px 16px"
+};
+const flexDark = {
+  name: "Flex",
+  self() {
+    return commonVars$4;
+  }
+};
+const flexDark$1 = flexDark;
+const self$E = () => {
+  return commonVars$4;
+};
+const flexLight = {
+  name: "Flex",
+  self: self$E
+};
+const flexLight$1 = flexLight;
 const commonVariables$5 = {
   feedbackPadding: "4px 0 0 2px",
   feedbackHeightSmall: "24px",
@@ -30576,20 +34569,39 @@ const commonVariables$5 = {
   labelTextAlignHorizontal: "right",
   labelFontWeight: "400"
 };
-const self$z = (vars) => {
-  const { heightSmall, heightMedium, heightLarge, textColor1, errorColor, warningColor, lineHeight: lineHeight2, textColor3 } = vars;
-  return Object.assign(Object.assign({}, commonVariables$5), { blankHeightSmall: heightSmall, blankHeightMedium: heightMedium, blankHeightLarge: heightLarge, lineHeight: lineHeight2, labelTextColor: textColor1, asteriskColor: errorColor, feedbackTextColorError: errorColor, feedbackTextColorWarning: warningColor, feedbackTextColor: textColor3 });
+const self$D = (vars) => {
+  const {
+    heightSmall,
+    heightMedium,
+    heightLarge,
+    textColor1,
+    errorColor,
+    warningColor,
+    lineHeight: lineHeight2,
+    textColor3
+  } = vars;
+  return Object.assign(Object.assign({}, commonVariables$5), {
+    blankHeightSmall: heightSmall,
+    blankHeightMedium: heightMedium,
+    blankHeightLarge: heightLarge,
+    lineHeight: lineHeight2,
+    labelTextColor: textColor1,
+    asteriskColor: errorColor,
+    feedbackTextColorError: errorColor,
+    feedbackTextColorWarning: warningColor,
+    feedbackTextColor: textColor3
+  });
 };
 const formLight = {
   name: "Form",
   common: commonLight,
-  self: self$z
+  self: self$D
 };
 const formLight$1 = formLight;
 const formItemDark = {
   name: "Form",
   common: commonDark,
-  self: self$z
+  self: self$D
 };
 const formDark = formItemDark;
 const defaultSpan$1 = 1;
@@ -30614,7 +34626,7 @@ const gridItemProps = {
     default: true
   }
 };
-const NGi = defineComponent({
+const NGi = /* @__PURE__ */ defineComponent({
   __GRID_ITEM__: true,
   name: "GridItem",
   alias: ["Gi"],
@@ -30645,7 +34657,9 @@ const NGi = defineComponent({
           privateOffset = 0
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         } = self2.vnode.props;
-        const { value: xGap } = xGapRef;
+        const {
+          value: xGap
+        } = xGapRef;
         const mergedXGap = pxfy(xGap || 0);
         return {
           display: !privateShow ? "none" : "",
@@ -30658,332 +34672,24 @@ const NGi = defineComponent({
   render() {
     var _a2, _b;
     if (this.layoutShiftDisabled) {
-      const { span, offset, mergedXGap } = this;
-      return h("div", { style: {
-        gridColumn: `span ${span} / span ${span}`,
-        marginLeft: offset ? `calc((100% - (${span} - 1) * ${mergedXGap}) / ${span} * ${offset} + ${mergedXGap} * ${offset})` : ""
-      } }, this.$slots);
+      const {
+        span,
+        offset,
+        mergedXGap
+      } = this;
+      return h("div", {
+        style: {
+          gridColumn: `span ${span} / span ${span}`,
+          marginLeft: offset ? `calc((100% - (${span} - 1) * ${mergedXGap}) / ${span} * ${offset} + ${mergedXGap} * ${offset})` : ""
+        }
+      }, this.$slots);
     }
-    return h("div", { style: [this.itemStyle, this.deriveStyle()] }, (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2, { overflow: this.overflow }));
+    return h("div", {
+      style: [this.itemStyle, this.deriveStyle()]
+    }, (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2, {
+      overflow: this.overflow
+    }));
   }
-});
-const gradientTextDark = {
-  name: "GradientText",
-  common: commonDark,
-  self(vars) {
-    const { primaryColor, successColor, warningColor, errorColor, infoColor, primaryColorSuppl, successColorSuppl, warningColorSuppl, errorColorSuppl, infoColorSuppl, fontWeightStrong } = vars;
-    return {
-      fontWeight: fontWeightStrong,
-      rotate: "252deg",
-      colorStartPrimary: primaryColor,
-      colorEndPrimary: primaryColorSuppl,
-      colorStartInfo: infoColor,
-      colorEndInfo: infoColorSuppl,
-      colorStartWarning: warningColor,
-      colorEndWarning: warningColorSuppl,
-      colorStartError: errorColor,
-      colorEndError: errorColorSuppl,
-      colorStartSuccess: successColor,
-      colorEndSuccess: successColorSuppl
-    };
-  }
-};
-const gradientTextDark$1 = gradientTextDark;
-const self$y = (vars) => {
-  const { primaryColor, successColor, warningColor, errorColor, infoColor, fontWeightStrong } = vars;
-  return {
-    fontWeight: fontWeightStrong,
-    rotate: "252deg",
-    colorStartPrimary: changeColor(primaryColor, { alpha: 0.6 }),
-    colorEndPrimary: primaryColor,
-    colorStartInfo: changeColor(infoColor, { alpha: 0.6 }),
-    colorEndInfo: infoColor,
-    colorStartWarning: changeColor(warningColor, { alpha: 0.6 }),
-    colorEndWarning: warningColor,
-    colorStartError: changeColor(errorColor, { alpha: 0.6 }),
-    colorEndError: errorColor,
-    colorStartSuccess: changeColor(successColor, { alpha: 0.6 }),
-    colorEndSuccess: successColor
-  };
-};
-const gradientTextLight = {
-  name: "GradientText",
-  common: commonLight,
-  self: self$y
-};
-const gradientTextLight$1 = gradientTextLight;
-const defaultBreakpoints = {
-  xs: 0,
-  s: 640,
-  m: 1024,
-  l: 1280,
-  xl: 1536,
-  xxl: 1920
-  // normal desktop display
-};
-const defaultCols = 24;
-const SSR_ATTR_NAME = "__ssr__";
-const gridProps = {
-  layoutShiftDisabled: Boolean,
-  responsive: {
-    type: [String, Boolean],
-    default: "self"
-  },
-  cols: {
-    type: [Number, String],
-    default: defaultCols
-  },
-  itemResponsive: Boolean,
-  collapsed: Boolean,
-  // may create grid rows < collapsedRows since a item may take all the row
-  collapsedRows: {
-    type: Number,
-    default: 1
-  },
-  itemStyle: [Object, String],
-  xGap: {
-    type: [Number, String],
-    default: 0
-  },
-  yGap: {
-    type: [Number, String],
-    default: 0
-  }
-};
-const NGrid = defineComponent({
-  name: "Grid",
-  inheritAttrs: false,
-  props: gridProps,
-  setup(props) {
-    const { mergedClsPrefixRef, mergedBreakpointsRef } = useConfig(props);
-    const numRegex = /^\d+$/;
-    const widthRef = ref(void 0);
-    const breakpointsRef = useBreakpoints((mergedBreakpointsRef === null || mergedBreakpointsRef === void 0 ? void 0 : mergedBreakpointsRef.value) || defaultBreakpoints);
-    const isResponsiveRef = useMemo(() => {
-      if (props.itemResponsive)
-        return true;
-      if (!numRegex.test(props.cols.toString()))
-        return true;
-      if (!numRegex.test(props.xGap.toString()))
-        return true;
-      if (!numRegex.test(props.yGap.toString()))
-        return true;
-      return false;
-    });
-    const responsiveQueryRef = computed(() => {
-      if (!isResponsiveRef.value)
-        return void 0;
-      return props.responsive === "self" ? widthRef.value : breakpointsRef.value;
-    });
-    const responsiveColsRef = useMemo(() => {
-      var _a2;
-      return (_a2 = Number(parseResponsivePropValue(props.cols.toString(), responsiveQueryRef.value))) !== null && _a2 !== void 0 ? _a2 : defaultCols;
-    });
-    const responsiveXGapRef = useMemo(() => parseResponsivePropValue(props.xGap.toString(), responsiveQueryRef.value));
-    const responsiveYGapRef = useMemo(() => parseResponsivePropValue(props.yGap.toString(), responsiveQueryRef.value));
-    const handleResize = (entry) => {
-      widthRef.value = entry.contentRect.width;
-    };
-    const handleResizeRaf = (entry) => {
-      beforeNextFrameOnce(handleResize, entry);
-    };
-    const overflowRef = ref(false);
-    const handleResizeRef = computed(() => {
-      if (props.responsive === "self") {
-        return handleResizeRaf;
-      }
-      return void 0;
-    });
-    const isSsrRef = ref(false);
-    const contentElRef = ref();
-    onMounted(() => {
-      const { value: contentEl } = contentElRef;
-      if (contentEl) {
-        if (contentEl.hasAttribute(SSR_ATTR_NAME)) {
-          contentEl.removeAttribute(SSR_ATTR_NAME);
-          isSsrRef.value = true;
-        }
-      }
-    });
-    provide(gridInjectionKey, {
-      layoutShiftDisabledRef: toRef(props, "layoutShiftDisabled"),
-      isSsrRef,
-      itemStyleRef: toRef(props, "itemStyle"),
-      xGapRef: responsiveXGapRef,
-      overflowRef
-    });
-    return {
-      isSsr: !isBrowser$3,
-      contentEl: contentElRef,
-      mergedClsPrefix: mergedClsPrefixRef,
-      style: computed(() => {
-        if (props.layoutShiftDisabled) {
-          return {
-            width: "100%",
-            display: "grid",
-            gridTemplateColumns: `repeat(${props.cols}, minmax(0, 1fr))`,
-            columnGap: pxfy(props.xGap),
-            rowGap: pxfy(props.yGap)
-          };
-        }
-        return {
-          width: "100%",
-          display: "grid",
-          gridTemplateColumns: `repeat(${responsiveColsRef.value}, minmax(0, 1fr))`,
-          columnGap: pxfy(responsiveXGapRef.value),
-          rowGap: pxfy(responsiveYGapRef.value)
-        };
-      }),
-      isResponsive: isResponsiveRef,
-      responsiveQuery: responsiveQueryRef,
-      responsiveCols: responsiveColsRef,
-      handleResize: handleResizeRef,
-      overflow: overflowRef
-    };
-  },
-  render() {
-    if (this.layoutShiftDisabled) {
-      return h("div", mergeProps({
-        ref: "contentEl",
-        class: `${this.mergedClsPrefix}-grid`,
-        style: this.style
-      }, this.$attrs), this.$slots);
-    }
-    const renderContent = () => {
-      var _a2, _b, _c, _d, _e, _f, _g;
-      this.overflow = false;
-      const rawChildren = flatten$2(getSlot$1(this));
-      const childrenAndRawSpan = [];
-      const { collapsed, collapsedRows, responsiveCols, responsiveQuery } = this;
-      rawChildren.forEach((child) => {
-        var _a3, _b2, _c2, _d2, _e2;
-        if (((_a3 = child === null || child === void 0 ? void 0 : child.type) === null || _a3 === void 0 ? void 0 : _a3.__GRID_ITEM__) !== true)
-          return;
-        if (isNodeVShowFalse(child)) {
-          const clonedNode = cloneVNode(child);
-          if (clonedNode.props) {
-            clonedNode.props.privateShow = false;
-          } else {
-            clonedNode.props = { privateShow: false };
-          }
-          childrenAndRawSpan.push({
-            child: clonedNode,
-            rawChildSpan: 0
-          });
-          return;
-        }
-        child.dirs = ((_b2 = child.dirs) === null || _b2 === void 0 ? void 0 : _b2.filter(({ dir }) => dir !== vShow)) || null;
-        if (((_c2 = child.dirs) === null || _c2 === void 0 ? void 0 : _c2.length) === 0) {
-          child.dirs = null;
-        }
-        const clonedChild = cloneVNode(child);
-        const rawChildSpan = Number((_e2 = parseResponsivePropValue((_d2 = clonedChild.props) === null || _d2 === void 0 ? void 0 : _d2.span, responsiveQuery)) !== null && _e2 !== void 0 ? _e2 : defaultSpan$1);
-        if (rawChildSpan === 0)
-          return;
-        childrenAndRawSpan.push({
-          child: clonedChild,
-          rawChildSpan
-        });
-      });
-      let suffixSpan = 0;
-      const maybeSuffixNode = (_a2 = childrenAndRawSpan[childrenAndRawSpan.length - 1]) === null || _a2 === void 0 ? void 0 : _a2.child;
-      if (maybeSuffixNode === null || maybeSuffixNode === void 0 ? void 0 : maybeSuffixNode.props) {
-        const suffixPropValue = (_b = maybeSuffixNode.props) === null || _b === void 0 ? void 0 : _b.suffix;
-        if (suffixPropValue !== void 0 && suffixPropValue !== false) {
-          suffixSpan = Number((_d = parseResponsivePropValue((_c = maybeSuffixNode.props) === null || _c === void 0 ? void 0 : _c.span, responsiveQuery)) !== null && _d !== void 0 ? _d : defaultSpan$1);
-          maybeSuffixNode.props.privateSpan = suffixSpan;
-          maybeSuffixNode.props.privateColStart = responsiveCols + 1 - suffixSpan;
-          maybeSuffixNode.props.privateShow = (_e = maybeSuffixNode.props.privateShow) !== null && _e !== void 0 ? _e : true;
-        }
-      }
-      let spanCounter = 0;
-      let done = false;
-      for (const { child, rawChildSpan } of childrenAndRawSpan) {
-        if (done) {
-          this.overflow = true;
-        }
-        if (!done) {
-          const childOffset = Number((_g = parseResponsivePropValue((_f = child.props) === null || _f === void 0 ? void 0 : _f.offset, responsiveQuery)) !== null && _g !== void 0 ? _g : 0);
-          const childSpan = Math.min(rawChildSpan + childOffset, responsiveCols);
-          if (!child.props) {
-            child.props = {
-              privateSpan: childSpan,
-              privateOffset: childOffset
-            };
-          } else {
-            child.props.privateSpan = childSpan;
-            child.props.privateOffset = childOffset;
-          }
-          if (collapsed) {
-            const remainder = spanCounter % responsiveCols;
-            if (childSpan + remainder > responsiveCols) {
-              spanCounter += responsiveCols - remainder;
-            }
-            if (childSpan + spanCounter + suffixSpan > collapsedRows * responsiveCols) {
-              done = true;
-            } else {
-              spanCounter += childSpan;
-            }
-          }
-        }
-        if (done) {
-          if (child.props) {
-            if (child.props.privateShow !== true) {
-              child.props.privateShow = false;
-            }
-          } else {
-            child.props = {
-              privateShow: false
-            };
-          }
-        }
-      }
-      return h("div", mergeProps({
-        ref: "contentEl",
-        class: `${this.mergedClsPrefix}-grid`,
-        style: this.style,
-        [SSR_ATTR_NAME]: this.isSsr || void 0
-      }, this.$attrs), childrenAndRawSpan.map(({ child }) => child));
-    };
-    return this.isResponsive && this.responsive === "self" ? h(VResizeObserver, { onResize: this.handleResize }, {
-      default: renderContent
-    }) : renderContent();
-  }
-});
-const self$x = (vars) => {
-  const { primaryColor, baseColor } = vars;
-  return {
-    color: primaryColor,
-    iconColor: baseColor
-  };
-};
-const iconWrapperLight = {
-  name: "IconWrapper",
-  common: commonLight,
-  self: self$x
-};
-const iconWrapperLight$1 = iconWrapperLight;
-const iconDark = {
-  name: "IconWrapper",
-  common: commonDark,
-  self: self$x
-};
-const iconWrapperDark = iconDark;
-function self$w() {
-  return {
-    toolbarIconColor: "rgba(255, 255, 255, .9)",
-    toolbarColor: "rgba(0, 0, 0, .35)",
-    toolbarBoxShadow: "none",
-    toolbarBorderRadius: "24px"
-  };
-}
-const imageLight = createTheme({
-  name: "Image",
-  common: commonLight,
-  peers: {
-    Tooltip: tooltipLight$1
-  },
-  self: self$w
 });
 const commonVars$3 = {
   closeMargin: "16px 12px",
@@ -30995,8 +34701,27 @@ const commonVars$3 = {
   metaFontSize: "12px",
   descriptionFontSize: "12px"
 };
-const self$v = (vars) => {
-  const { textColor2, successColor, infoColor, warningColor, errorColor, popoverColor, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, textColor1, textColor3, borderRadius, fontWeightStrong, boxShadow2, lineHeight: lineHeight2, fontSize: fontSize2 } = vars;
+const self$C = (vars) => {
+  const {
+    textColor2,
+    successColor,
+    infoColor,
+    warningColor,
+    errorColor,
+    popoverColor,
+    closeIconColor,
+    closeIconColorHover,
+    closeIconColorPressed,
+    closeColorHover,
+    closeColorPressed,
+    textColor1,
+    textColor3,
+    borderRadius,
+    fontWeightStrong,
+    boxShadow2,
+    lineHeight: lineHeight2,
+    fontSize: fontSize2
+  } = vars;
   return Object.assign(Object.assign({}, commonVars$3), {
     borderRadius,
     lineHeight: lineHeight2,
@@ -31027,7 +34752,7 @@ const notificationLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$v
+  self: self$C
 });
 const notificationLight$1 = notificationLight;
 const notificationDark = {
@@ -31036,7 +34761,7 @@ const notificationDark = {
   peers: {
     Scrollbar: scrollbarDark$1
   },
-  self: self$v
+  self: self$C
 };
 const notificationDark$1 = notificationDark;
 const commonVariables$4 = {
@@ -31051,8 +34776,24 @@ const commonVariables$4 = {
   iconSize: "20px",
   fontSize: "14px"
 };
-const self$u = (vars) => {
-  const { textColor2, closeIconColor, closeIconColorHover, closeIconColorPressed, infoColor, successColor, errorColor, warningColor, popoverColor, boxShadow2, primaryColor, lineHeight: lineHeight2, borderRadius, closeColorHover, closeColorPressed } = vars;
+const self$B = (vars) => {
+  const {
+    textColor2,
+    closeIconColor,
+    closeIconColorHover,
+    closeIconColorPressed,
+    infoColor,
+    successColor,
+    errorColor,
+    warningColor,
+    popoverColor,
+    boxShadow2,
+    primaryColor,
+    lineHeight: lineHeight2,
+    borderRadius,
+    closeColorHover,
+    closeColorPressed
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$4), {
     closeBorderRadius: borderRadius,
     textColor: textColor2,
@@ -31117,13 +34858,13 @@ const self$u = (vars) => {
 const messageLight = {
   name: "Message",
   common: commonLight,
-  self: self$u
+  self: self$B
 };
 const messageLight$1 = messageLight;
 const messageDark = {
   name: "Message",
   common: commonDark,
-  self: self$u
+  self: self$B
 };
 const messageDark$1 = messageDark;
 const buttonGroupDark = {
@@ -31136,6 +34877,80 @@ const buttonGroupLight = {
   common: commonLight
 };
 const buttonGroupLight$1 = buttonGroupLight;
+const gradientTextDark = {
+  name: "GradientText",
+  common: commonDark,
+  self(vars) {
+    const {
+      primaryColor,
+      successColor,
+      warningColor,
+      errorColor,
+      infoColor,
+      primaryColorSuppl,
+      successColorSuppl,
+      warningColorSuppl,
+      errorColorSuppl,
+      infoColorSuppl,
+      fontWeightStrong
+    } = vars;
+    return {
+      fontWeight: fontWeightStrong,
+      rotate: "252deg",
+      colorStartPrimary: primaryColor,
+      colorEndPrimary: primaryColorSuppl,
+      colorStartInfo: infoColor,
+      colorEndInfo: infoColorSuppl,
+      colorStartWarning: warningColor,
+      colorEndWarning: warningColorSuppl,
+      colorStartError: errorColor,
+      colorEndError: errorColorSuppl,
+      colorStartSuccess: successColor,
+      colorEndSuccess: successColorSuppl
+    };
+  }
+};
+const gradientTextDark$1 = gradientTextDark;
+const self$A = (vars) => {
+  const {
+    primaryColor,
+    successColor,
+    warningColor,
+    errorColor,
+    infoColor,
+    fontWeightStrong
+  } = vars;
+  return {
+    fontWeight: fontWeightStrong,
+    rotate: "252deg",
+    colorStartPrimary: changeColor(primaryColor, {
+      alpha: 0.6
+    }),
+    colorEndPrimary: primaryColor,
+    colorStartInfo: changeColor(infoColor, {
+      alpha: 0.6
+    }),
+    colorEndInfo: infoColor,
+    colorStartWarning: changeColor(warningColor, {
+      alpha: 0.6
+    }),
+    colorEndWarning: warningColor,
+    colorStartError: changeColor(errorColor, {
+      alpha: 0.6
+    }),
+    colorEndError: errorColor,
+    colorStartSuccess: changeColor(successColor, {
+      alpha: 0.6
+    }),
+    colorEndSuccess: successColor
+  };
+};
+const gradientTextLight = {
+  name: "GradientText",
+  common: commonLight,
+  self: self$A
+};
+const gradientTextLight$1 = gradientTextLight;
 const inputNumberDark = {
   name: "InputNumber",
   common: commonDark,
@@ -31144,15 +34959,19 @@ const inputNumberDark = {
     Input: inputDark$1
   },
   self(vars) {
-    const { textColorDisabled } = vars;
+    const {
+      textColorDisabled
+    } = vars;
     return {
       iconColorDisabled: textColorDisabled
     };
   }
 };
 const inputNumberDark$1 = inputNumberDark;
-const self$t = (vars) => {
-  const { textColorDisabled } = vars;
+const self$z = (vars) => {
+  const {
+    textColorDisabled
+  } = vars;
   return {
     iconColorDisabled: textColorDisabled
   };
@@ -31164,7 +34983,7 @@ const inputNumberLight = createTheme({
     Button: buttonLight$1,
     Input: inputLight$1
   },
-  self: self$t
+  self: self$z
 });
 const inputNumberLight$1 = inputNumberLight;
 const layoutDark = {
@@ -31174,7 +34993,15 @@ const layoutDark = {
     Scrollbar: scrollbarDark$1
   },
   self(vars) {
-    const { textColor2, bodyColor, popoverColor, cardColor, dividerColor, scrollbarColor, scrollbarColorHover } = vars;
+    const {
+      textColor2,
+      bodyColor,
+      popoverColor,
+      cardColor,
+      dividerColor,
+      scrollbarColor,
+      scrollbarColorHover
+    } = vars;
     return {
       textColor: textColor2,
       textColorInverted: textColor2,
@@ -31203,8 +35030,18 @@ const layoutDark = {
   }
 };
 const layoutDark$1 = layoutDark;
-const self$s = (vars) => {
-  const { baseColor, textColor2, bodyColor, cardColor, dividerColor, actionColor, scrollbarColor, scrollbarColorHover, invertedColor } = vars;
+const self$y = (vars) => {
+  const {
+    baseColor,
+    textColor2,
+    bodyColor,
+    cardColor,
+    dividerColor,
+    actionColor,
+    scrollbarColor,
+    scrollbarColorHover,
+    invertedColor
+  } = vars;
   return {
     textColor: textColor2,
     textColorInverted: "#FFF",
@@ -31238,11 +35075,20 @@ const layoutLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$s
+  self: self$y
 });
 const layoutLight$1 = layoutLight;
-const self$r = (vars) => {
-  const { textColor2, cardColor, modalColor, popoverColor, dividerColor, borderRadius, fontSize: fontSize2, hoverColor } = vars;
+const self$x = (vars) => {
+  const {
+    textColor2,
+    cardColor,
+    modalColor,
+    popoverColor,
+    dividerColor,
+    borderRadius,
+    fontSize: fontSize2,
+    hoverColor
+  } = vars;
   return {
     textColor: textColor2,
     color: cardColor,
@@ -31261,20 +35107,22 @@ const self$r = (vars) => {
 const listLight = {
   name: "List",
   common: commonLight,
-  self: self$r
+  self: self$x
 };
 const listLight$1 = listLight;
 const listDark$1 = {
   name: "List",
   common: commonDark,
-  self: self$r
+  self: self$x
 };
 const listDark$2 = listDark$1;
 const loadingBarDark = {
   name: "LoadingBar",
   common: commonDark,
   self(vars) {
-    const { primaryColor } = vars;
+    const {
+      primaryColor
+    } = vars;
     return {
       colorError: "red",
       colorLoading: primaryColor,
@@ -31283,8 +35131,11 @@ const loadingBarDark = {
   }
 };
 const loadingBarDark$1 = loadingBarDark;
-const self$q = (vars) => {
-  const { primaryColor, errorColor } = vars;
+const self$w = (vars) => {
+  const {
+    primaryColor,
+    errorColor
+  } = vars;
   return {
     colorError: errorColor,
     colorLoading: primaryColor,
@@ -31294,7 +35145,7 @@ const self$q = (vars) => {
 const loadingBarLight = {
   name: "LoadingBar",
   common: commonLight,
-  self: self$q
+  self: self$w
 };
 const loadingBarLight$1 = loadingBarLight;
 const logDark = {
@@ -31305,7 +35156,12 @@ const logDark = {
     Code: codeDark$1
   },
   self(vars) {
-    const { textColor2, inputColor, fontSize: fontSize2, primaryColor } = vars;
+    const {
+      textColor2,
+      inputColor,
+      fontSize: fontSize2,
+      primaryColor
+    } = vars;
     return {
       loaderFontSize: fontSize2,
       loaderTextColor: textColor2,
@@ -31316,8 +35172,14 @@ const logDark = {
   }
 };
 const logDark$1 = logDark;
-const self$p = (vars) => {
-  const { textColor2, modalColor, borderColor, fontSize: fontSize2, primaryColor } = vars;
+const self$v = (vars) => {
+  const {
+    textColor2,
+    modalColor,
+    borderColor,
+    fontSize: fontSize2,
+    primaryColor
+  } = vars;
   return {
     loaderFontSize: fontSize2,
     loaderTextColor: textColor2,
@@ -31333,7 +35195,7 @@ const logLight = createTheme({
     Scrollbar: scrollbarLight$1,
     Code: codeLight$1
   },
-  self: self$p
+  self: self$v
 });
 const logLight$1 = logLight;
 const listDark = {
@@ -31344,15 +35206,19 @@ const listDark = {
     Input: inputDark$1
   },
   self(vars) {
-    const { boxShadow2 } = vars;
+    const {
+      boxShadow2
+    } = vars;
     return {
       menuBoxShadow: boxShadow2
     };
   }
 };
 const mentionDark = listDark;
-const self$o = (vars) => {
-  const { boxShadow2 } = vars;
+const self$u = (vars) => {
+  const {
+    boxShadow2
+  } = vars;
   return {
     menuBoxShadow: boxShadow2
   };
@@ -31364,7 +35230,7 @@ const mentionLight = createTheme({
     InternalSelectMenu: internalSelectMenuLight$1,
     Input: inputLight$1
   },
-  self: self$o
+  self: self$u
 });
 const mentionLight$1 = mentionLight;
 function createPartialInvertedVars(color, activeItemColor, activeTextColor, groupTextColor) {
@@ -31407,16 +35273,32 @@ function createPartialInvertedVars(color, activeItemColor, activeTextColor, grou
     groupTextColorInverted: groupTextColor
   };
 }
-const self$n = (vars) => {
-  const { borderRadius, textColor3, primaryColor, textColor2, textColor1, fontSize: fontSize2, dividerColor, hoverColor, primaryColorHover } = vars;
+const self$t = (vars) => {
+  const {
+    borderRadius,
+    textColor3,
+    primaryColor,
+    textColor2,
+    textColor1,
+    fontSize: fontSize2,
+    dividerColor,
+    hoverColor,
+    primaryColorHover
+  } = vars;
   return Object.assign({
     borderRadius,
     color: "#0000",
     groupTextColor: textColor3,
     itemColorHover: hoverColor,
-    itemColorActive: changeColor(primaryColor, { alpha: 0.1 }),
-    itemColorActiveHover: changeColor(primaryColor, { alpha: 0.1 }),
-    itemColorActiveCollapsed: changeColor(primaryColor, { alpha: 0.1 }),
+    itemColorActive: changeColor(primaryColor, {
+      alpha: 0.1
+    }),
+    itemColorActiveHover: changeColor(primaryColor, {
+      alpha: 0.1
+    }),
+    itemColorActiveCollapsed: changeColor(primaryColor, {
+      alpha: 0.1
+    }),
     itemTextColor: textColor2,
     itemTextColorHover: textColor2,
     itemTextColorActive: primaryColor,
@@ -31462,7 +35344,7 @@ const menuLight = createTheme({
     Tooltip: tooltipLight$1,
     Dropdown: dropdownLight$1
   },
-  self: self$n
+  self: self$t
 });
 const menuLight$1 = menuLight;
 const menuDark = {
@@ -31473,10 +35355,17 @@ const menuDark = {
     Dropdown: dropdownDark$1
   },
   self(vars) {
-    const { primaryColor, primaryColorSuppl } = vars;
-    const commonSelf = self$n(vars);
-    commonSelf.itemColorActive = changeColor(primaryColor, { alpha: 0.15 });
-    commonSelf.itemColorActiveHover = changeColor(primaryColor, { alpha: 0.15 });
+    const {
+      primaryColor,
+      primaryColorSuppl
+    } = vars;
+    const commonSelf = self$t(vars);
+    commonSelf.itemColorActive = changeColor(primaryColor, {
+      alpha: 0.15
+    });
+    commonSelf.itemColorActiveHover = changeColor(primaryColor, {
+      alpha: 0.15
+    });
     commonSelf.itemColorActiveCollapsed = changeColor(primaryColor, {
       alpha: 0.15
     });
@@ -31491,26 +35380,48 @@ const common = {
   titleFontSize: "18px",
   backSize: "22px"
 };
-function self$m(vars) {
-  const { textColor1, textColor2, textColor3, fontSize: fontSize2, fontWeightStrong, primaryColorHover, primaryColorPressed } = vars;
-  return Object.assign(Object.assign({}, common), { titleFontWeight: fontWeightStrong, fontSize: fontSize2, titleTextColor: textColor1, backColor: textColor2, backColorHover: primaryColorHover, backColorPressed: primaryColorPressed, subtitleTextColor: textColor3 });
+function self$s(vars) {
+  const {
+    textColor1,
+    textColor2,
+    textColor3,
+    fontSize: fontSize2,
+    fontWeightStrong,
+    primaryColorHover,
+    primaryColorPressed
+  } = vars;
+  return Object.assign(Object.assign({}, common), {
+    titleFontWeight: fontWeightStrong,
+    fontSize: fontSize2,
+    titleTextColor: textColor1,
+    backColor: textColor2,
+    backColorHover: primaryColorHover,
+    backColorPressed: primaryColorPressed,
+    subtitleTextColor: textColor3
+  });
 }
 const pageHeaderLight = createTheme({
   name: "PageHeader",
   common: commonLight,
-  self: self$m
+  self: self$s
 });
 const pageHeaderDark = {
   name: "PageHeader",
   common: commonDark,
-  self: self$m
+  self: self$s
 };
 const commonVars$2 = {
   iconSize: "22px"
 };
-const self$l = (vars) => {
-  const { fontSize: fontSize2, warningColor } = vars;
-  return Object.assign(Object.assign({}, commonVars$2), { fontSize: fontSize2, iconColor: warningColor });
+const self$r = (vars) => {
+  const {
+    fontSize: fontSize2,
+    warningColor
+  } = vars;
+  return Object.assign(Object.assign({}, commonVars$2), {
+    fontSize: fontSize2,
+    iconColor: warningColor
+  });
 };
 const popconfirmLight = createTheme({
   name: "Popconfirm",
@@ -31519,7 +35430,7 @@ const popconfirmLight = createTheme({
     Button: buttonLight$1,
     Popover: popoverLight$1
   },
-  self: self$l
+  self: self$r
 });
 const popconfirmLight$1 = popconfirmLight;
 const popconfirmDark = {
@@ -31529,11 +35440,20 @@ const popconfirmDark = {
     Button: buttonDark$1,
     Popover: popoverDark$1
   },
-  self: self$l
+  self: self$r
 };
 const popconfirmDark$1 = popconfirmDark;
-const self$k = (vars) => {
-  const { infoColor, successColor, warningColor, errorColor, textColor2, progressRailColor, fontSize: fontSize2, fontWeight } = vars;
+const self$q = (vars) => {
+  const {
+    infoColor,
+    successColor,
+    warningColor,
+    errorColor,
+    textColor2,
+    progressRailColor,
+    fontSize: fontSize2,
+    fontWeight
+  } = vars;
   return {
     fontSize: fontSize2,
     fontSizeCircle: "28px",
@@ -31561,14 +35481,14 @@ const self$k = (vars) => {
 const progressLight = {
   name: "Progress",
   common: commonLight,
-  self: self$k
+  self: self$q
 };
 const progressLight$1 = progressLight;
 const progressDark = {
   name: "Progress",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$k(vars);
+    const commonSelf = self$q(vars);
     commonSelf.textColorLineInner = "rgb(0, 0, 0)";
     commonSelf.lineBgProcessing = "linear-gradient(90deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .5) 100%)";
     return commonSelf;
@@ -31579,7 +35499,9 @@ const rateDark = {
   name: "Rate",
   common: commonDark,
   self(vars) {
-    const { railColor } = vars;
+    const {
+      railColor
+    } = vars;
     return {
       itemColor: railColor,
       itemColorActive: "#CCAA33",
@@ -31591,8 +35513,10 @@ const rateDark = {
   }
 };
 const rateDark$1 = rateDark;
-const self$j = (vars) => {
-  const { railColor } = vars;
+const self$p = (vars) => {
+  const {
+    railColor
+  } = vars;
   return {
     itemColor: railColor,
     itemColorActive: "#FFCC33",
@@ -31601,12 +35525,12 @@ const self$j = (vars) => {
     sizeLarge: "24px"
   };
 };
-const themeLight = {
+const themeLight$4 = {
   name: "Rate",
   common: commonLight,
-  self: self$j
+  self: self$p
 };
-const rateLight = themeLight;
+const rateLight = themeLight$4;
 const commonVariables$3 = {
   titleFontSizeSmall: "26px",
   titleFontSizeMedium: "32px",
@@ -31625,20 +35549,38 @@ const commonVariables$3 = {
   iconColor403: void 0,
   iconColor500: void 0
 };
-const self$i = (vars) => {
-  const { textColor2, textColor1, errorColor, successColor, infoColor, warningColor, lineHeight: lineHeight2, fontWeightStrong } = vars;
-  return Object.assign(Object.assign({}, commonVariables$3), { lineHeight: lineHeight2, titleFontWeight: fontWeightStrong, titleTextColor: textColor1, textColor: textColor2, iconColorError: errorColor, iconColorSuccess: successColor, iconColorInfo: infoColor, iconColorWarning: warningColor });
+const self$o = (vars) => {
+  const {
+    textColor2,
+    textColor1,
+    errorColor,
+    successColor,
+    infoColor,
+    warningColor,
+    lineHeight: lineHeight2,
+    fontWeightStrong
+  } = vars;
+  return Object.assign(Object.assign({}, commonVariables$3), {
+    lineHeight: lineHeight2,
+    titleFontWeight: fontWeightStrong,
+    titleTextColor: textColor1,
+    textColor: textColor2,
+    iconColorError: errorColor,
+    iconColorSuccess: successColor,
+    iconColorInfo: infoColor,
+    iconColorWarning: warningColor
+  });
 };
 const resultLight = {
   name: "Result",
   common: commonLight,
-  self: self$i
+  self: self$o
 };
 const resultLight$1 = resultLight;
 const resultDark = {
   name: "Result",
   common: commonDark,
-  self: self$i
+  self: self$o
 };
 const resultDark$1 = resultDark;
 const sizeVariables$3 = {
@@ -31654,25 +35596,100 @@ const sliderDark = {
   common: commonDark,
   self(vars) {
     const boxShadow = "0 2px 8px 0 rgba(0, 0, 0, 0.12)";
-    const { railColor, modalColor, primaryColorSuppl, popoverColor, textColor2, cardColor, borderRadius, fontSize: fontSize2, opacityDisabled } = vars;
-    return Object.assign(Object.assign({}, sizeVariables$3), { fontSize: fontSize2, markFontSize: fontSize2, railColor, railColorHover: railColor, fillColor: primaryColorSuppl, fillColorHover: primaryColorSuppl, opacityDisabled, handleColor: "#FFF", dotColor: cardColor, dotColorModal: modalColor, dotColorPopover: popoverColor, handleBoxShadow: "0px 2px 4px 0 rgba(0, 0, 0, 0.4)", handleBoxShadowHover: "0px 2px 4px 0 rgba(0, 0, 0, 0.4)", handleBoxShadowActive: "0px 2px 4px 0 rgba(0, 0, 0, 0.4)", handleBoxShadowFocus: "0px 2px 4px 0 rgba(0, 0, 0, 0.4)", indicatorColor: popoverColor, indicatorBoxShadow: boxShadow, indicatorTextColor: textColor2, indicatorBorderRadius: borderRadius, dotBorder: `2px solid ${railColor}`, dotBorderActive: `2px solid ${primaryColorSuppl}`, dotBoxShadow: "" });
+    const {
+      railColor,
+      modalColor,
+      primaryColorSuppl,
+      popoverColor,
+      textColor2,
+      cardColor,
+      borderRadius,
+      fontSize: fontSize2,
+      opacityDisabled
+    } = vars;
+    return Object.assign(Object.assign({}, sizeVariables$3), {
+      fontSize: fontSize2,
+      markFontSize: fontSize2,
+      railColor,
+      railColorHover: railColor,
+      fillColor: primaryColorSuppl,
+      fillColorHover: primaryColorSuppl,
+      opacityDisabled,
+      handleColor: "#FFF",
+      dotColor: cardColor,
+      dotColorModal: modalColor,
+      dotColorPopover: popoverColor,
+      handleBoxShadow: "0px 2px 4px 0 rgba(0, 0, 0, 0.4)",
+      handleBoxShadowHover: "0px 2px 4px 0 rgba(0, 0, 0, 0.4)",
+      handleBoxShadowActive: "0px 2px 4px 0 rgba(0, 0, 0, 0.4)",
+      handleBoxShadowFocus: "0px 2px 4px 0 rgba(0, 0, 0, 0.4)",
+      indicatorColor: popoverColor,
+      indicatorBoxShadow: boxShadow,
+      indicatorTextColor: textColor2,
+      indicatorBorderRadius: borderRadius,
+      dotBorder: `2px solid ${railColor}`,
+      dotBorderActive: `2px solid ${primaryColorSuppl}`,
+      dotBoxShadow: ""
+    });
   }
 };
 const sliderDark$1 = sliderDark;
-const self$h = (vars) => {
+const self$n = (vars) => {
   const indicatorColor = "rgba(0, 0, 0, .85)";
   const boxShadow = "0 2px 8px 0 rgba(0, 0, 0, 0.12)";
-  const { railColor, primaryColor, baseColor, cardColor, modalColor, popoverColor, borderRadius, fontSize: fontSize2, opacityDisabled } = vars;
-  return Object.assign(Object.assign({}, sizeVariables$3), { fontSize: fontSize2, markFontSize: fontSize2, railColor, railColorHover: railColor, fillColor: primaryColor, fillColorHover: primaryColor, opacityDisabled, handleColor: "#FFF", dotColor: cardColor, dotColorModal: modalColor, dotColorPopover: popoverColor, handleBoxShadow: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", handleBoxShadowHover: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", handleBoxShadowActive: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", handleBoxShadowFocus: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", indicatorColor, indicatorBoxShadow: boxShadow, indicatorTextColor: baseColor, indicatorBorderRadius: borderRadius, dotBorder: `2px solid ${railColor}`, dotBorderActive: `2px solid ${primaryColor}`, dotBoxShadow: "" });
+  const {
+    railColor,
+    primaryColor,
+    baseColor,
+    cardColor,
+    modalColor,
+    popoverColor,
+    borderRadius,
+    fontSize: fontSize2,
+    opacityDisabled
+  } = vars;
+  return Object.assign(Object.assign({}, sizeVariables$3), {
+    fontSize: fontSize2,
+    markFontSize: fontSize2,
+    railColor,
+    railColorHover: railColor,
+    fillColor: primaryColor,
+    fillColorHover: primaryColor,
+    opacityDisabled,
+    handleColor: "#FFF",
+    dotColor: cardColor,
+    dotColorModal: modalColor,
+    dotColorPopover: popoverColor,
+    handleBoxShadow: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)",
+    handleBoxShadowHover: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)",
+    handleBoxShadowActive: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)",
+    handleBoxShadowFocus: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)",
+    indicatorColor,
+    indicatorBoxShadow: boxShadow,
+    indicatorTextColor: baseColor,
+    indicatorBorderRadius: borderRadius,
+    dotBorder: `2px solid ${railColor}`,
+    dotBorderActive: `2px solid ${primaryColor}`,
+    dotBoxShadow: ""
+  });
 };
 const sliderLight = {
   name: "Slider",
   common: commonLight,
-  self: self$h
+  self: self$n
 };
 const sliderLight$1 = sliderLight;
-const self$g = (vars) => {
-  const { opacityDisabled, heightTiny, heightSmall, heightMedium, heightLarge, heightHuge, primaryColor, fontSize: fontSize2 } = vars;
+const self$m = (vars) => {
+  const {
+    opacityDisabled,
+    heightTiny,
+    heightSmall,
+    heightMedium,
+    heightLarge,
+    heightHuge,
+    primaryColor,
+    fontSize: fontSize2
+  } = vars;
   return {
     fontSize: fontSize2,
     textColor: primaryColor,
@@ -31688,17 +35705,22 @@ const self$g = (vars) => {
 const spinLight = {
   name: "Spin",
   common: commonLight,
-  self: self$g
+  self: self$m
 };
 const spinLight$1 = spinLight;
 const spinDark = {
   name: "Spin",
   common: commonDark,
-  self: self$g
+  self: self$m
 };
 const spinDark$1 = spinDark;
-const self$f = (vars) => {
-  const { textColor2, textColor3, fontSize: fontSize2, fontWeight } = vars;
+const self$l = (vars) => {
+  const {
+    textColor2,
+    textColor3,
+    fontSize: fontSize2,
+    fontWeight
+  } = vars;
   return {
     labelFontSize: fontSize2,
     labelFontWeight: fontWeight,
@@ -31713,13 +35735,13 @@ const self$f = (vars) => {
 const statisticLight = {
   name: "Statistic",
   common: commonLight,
-  self: self$f
+  self: self$l
 };
 const statisticLight$1 = statisticLight;
 const statisticDark = {
   name: "Statistic",
   common: commonDark,
-  self: self$f
+  self: self$l
 };
 const statisticDark$1 = statisticDark;
 const commonVariables$2 = {
@@ -31732,20 +35754,54 @@ const commonVariables$2 = {
   indicatorIconSizeSmall: "14px",
   indicatorIconSizeMedium: "18px"
 };
-const self$e = (vars) => {
-  const { fontWeightStrong, baseColor, textColorDisabled, primaryColor, errorColor, textColor1, textColor2 } = vars;
-  return Object.assign(Object.assign({}, commonVariables$2), { stepHeaderFontWeight: fontWeightStrong, indicatorTextColorProcess: baseColor, indicatorTextColorWait: textColorDisabled, indicatorTextColorFinish: primaryColor, indicatorTextColorError: errorColor, indicatorBorderColorProcess: primaryColor, indicatorBorderColorWait: textColorDisabled, indicatorBorderColorFinish: primaryColor, indicatorBorderColorError: errorColor, indicatorColorProcess: primaryColor, indicatorColorWait: "#0000", indicatorColorFinish: "#0000", indicatorColorError: "#0000", splitorColorProcess: textColorDisabled, splitorColorWait: textColorDisabled, splitorColorFinish: primaryColor, splitorColorError: textColorDisabled, headerTextColorProcess: textColor1, headerTextColorWait: textColorDisabled, headerTextColorFinish: textColorDisabled, headerTextColorError: errorColor, descriptionTextColorProcess: textColor2, descriptionTextColorWait: textColorDisabled, descriptionTextColorFinish: textColorDisabled, descriptionTextColorError: errorColor });
+const self$k = (vars) => {
+  const {
+    fontWeightStrong,
+    baseColor,
+    textColorDisabled,
+    primaryColor,
+    errorColor,
+    textColor1,
+    textColor2
+  } = vars;
+  return Object.assign(Object.assign({}, commonVariables$2), {
+    stepHeaderFontWeight: fontWeightStrong,
+    indicatorTextColorProcess: baseColor,
+    indicatorTextColorWait: textColorDisabled,
+    indicatorTextColorFinish: primaryColor,
+    indicatorTextColorError: errorColor,
+    indicatorBorderColorProcess: primaryColor,
+    indicatorBorderColorWait: textColorDisabled,
+    indicatorBorderColorFinish: primaryColor,
+    indicatorBorderColorError: errorColor,
+    indicatorColorProcess: primaryColor,
+    indicatorColorWait: "#0000",
+    indicatorColorFinish: "#0000",
+    indicatorColorError: "#0000",
+    splitorColorProcess: textColorDisabled,
+    splitorColorWait: textColorDisabled,
+    splitorColorFinish: primaryColor,
+    splitorColorError: textColorDisabled,
+    headerTextColorProcess: textColor1,
+    headerTextColorWait: textColorDisabled,
+    headerTextColorFinish: textColorDisabled,
+    headerTextColorError: errorColor,
+    descriptionTextColorProcess: textColor2,
+    descriptionTextColorWait: textColorDisabled,
+    descriptionTextColorFinish: textColorDisabled,
+    descriptionTextColorError: errorColor
+  });
 };
 const stepsLight = {
   name: "Steps",
   common: commonLight,
-  self: self$e
+  self: self$k
 };
 const stepsLight$1 = stepsLight;
 const stepsDark = {
   name: "Steps",
   common: commonDark,
-  self: self$e
+  self: self$k
 };
 const stepsDark$1 = stepsDark;
 const commonVars$1 = {
@@ -31769,21 +35825,69 @@ const switchDark = {
   name: "Switch",
   common: commonDark,
   self(vars) {
-    const { primaryColorSuppl, opacityDisabled, borderRadius, primaryColor, textColor2, baseColor } = vars;
+    const {
+      primaryColorSuppl,
+      opacityDisabled,
+      borderRadius,
+      primaryColor,
+      textColor2,
+      baseColor
+    } = vars;
     const railOverlayColor = "rgba(255, 255, 255, .20)";
-    return Object.assign(Object.assign({}, commonVars$1), { iconColor: baseColor, textColor: textColor2, loadingColor: primaryColorSuppl, opacityDisabled, railColor: railOverlayColor, railColorActive: primaryColorSuppl, buttonBoxShadow: "0px 2px 4px 0 rgba(0, 0, 0, 0.4)", buttonColor: "#FFF", railBorderRadiusSmall: borderRadius, railBorderRadiusMedium: borderRadius, railBorderRadiusLarge: borderRadius, buttonBorderRadiusSmall: borderRadius, buttonBorderRadiusMedium: borderRadius, buttonBorderRadiusLarge: borderRadius, boxShadowFocus: `0 0 8px 0 ${changeColor(primaryColor, { alpha: 0.3 })}` });
+    return Object.assign(Object.assign({}, commonVars$1), {
+      iconColor: baseColor,
+      textColor: textColor2,
+      loadingColor: primaryColorSuppl,
+      opacityDisabled,
+      railColor: railOverlayColor,
+      railColorActive: primaryColorSuppl,
+      buttonBoxShadow: "0px 2px 4px 0 rgba(0, 0, 0, 0.4)",
+      buttonColor: "#FFF",
+      railBorderRadiusSmall: borderRadius,
+      railBorderRadiusMedium: borderRadius,
+      railBorderRadiusLarge: borderRadius,
+      buttonBorderRadiusSmall: borderRadius,
+      buttonBorderRadiusMedium: borderRadius,
+      buttonBorderRadiusLarge: borderRadius,
+      boxShadowFocus: `0 0 8px 0 ${changeColor(primaryColor, {
+        alpha: 0.3
+      })}`
+    });
   }
 };
 const switchDark$1 = switchDark;
-const self$d = (vars) => {
-  const { primaryColor, opacityDisabled, borderRadius, textColor3 } = vars;
+const self$j = (vars) => {
+  const {
+    primaryColor,
+    opacityDisabled,
+    borderRadius,
+    textColor3
+  } = vars;
   const railOverlayColor = "rgba(0, 0, 0, .14)";
-  return Object.assign(Object.assign({}, commonVars$1), { iconColor: textColor3, textColor: "white", loadingColor: primaryColor, opacityDisabled, railColor: railOverlayColor, railColorActive: primaryColor, buttonBoxShadow: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", buttonColor: "#FFF", railBorderRadiusSmall: borderRadius, railBorderRadiusMedium: borderRadius, railBorderRadiusLarge: borderRadius, buttonBorderRadiusSmall: borderRadius, buttonBorderRadiusMedium: borderRadius, buttonBorderRadiusLarge: borderRadius, boxShadowFocus: `0 0 0 2px ${changeColor(primaryColor, { alpha: 0.2 })}` });
+  return Object.assign(Object.assign({}, commonVars$1), {
+    iconColor: textColor3,
+    textColor: "white",
+    loadingColor: primaryColor,
+    opacityDisabled,
+    railColor: railOverlayColor,
+    railColorActive: primaryColor,
+    buttonBoxShadow: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)",
+    buttonColor: "#FFF",
+    railBorderRadiusSmall: borderRadius,
+    railBorderRadiusMedium: borderRadius,
+    railBorderRadiusLarge: borderRadius,
+    buttonBorderRadiusSmall: borderRadius,
+    buttonBorderRadiusMedium: borderRadius,
+    buttonBorderRadiusLarge: borderRadius,
+    boxShadowFocus: `0 0 0 2px ${changeColor(primaryColor, {
+      alpha: 0.2
+    })}`
+  });
 };
 const switchLight = {
   name: "Switch",
   common: commonLight,
-  self: self$d
+  self: self$j
 };
 const switchLight$1 = switchLight;
 const sizeVariables$2 = {
@@ -31794,8 +35898,23 @@ const sizeVariables$2 = {
   tdPaddingMedium: "12px",
   tdPaddingLarge: "12px"
 };
-const self$c = (vars) => {
-  const { dividerColor, cardColor, modalColor, popoverColor, tableHeaderColor, tableColorStriped, textColor1, textColor2, borderRadius, fontWeightStrong, lineHeight: lineHeight2, fontSizeSmall, fontSizeMedium, fontSizeLarge } = vars;
+const self$i = (vars) => {
+  const {
+    dividerColor,
+    cardColor,
+    modalColor,
+    popoverColor,
+    tableHeaderColor,
+    tableColorStriped,
+    textColor1,
+    textColor2,
+    borderRadius,
+    fontWeightStrong,
+    lineHeight: lineHeight2,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge
+  } = vars;
   return Object.assign(Object.assign({}, sizeVariables$2), {
     fontSizeSmall,
     fontSizeMedium,
@@ -31822,13 +35941,13 @@ const self$c = (vars) => {
 const tableLight = {
   name: "Table",
   common: commonLight,
-  self: self$c
+  self: self$i
 };
 const tableLight$1 = tableLight;
 const tableDark = {
   name: "Table",
   common: commonDark,
-  self: self$c
+  self: self$i
 };
 const tableDark$1 = tableDark;
 const sizeVariables$1 = {
@@ -31889,8 +36008,25 @@ const sizeVariables$1 = {
   closeSize: "18px",
   closeIconSize: "14px"
 };
-const self$b = (vars) => {
-  const { textColor2, primaryColor, textColorDisabled, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, tabColor, baseColor, dividerColor, fontWeight, textColor1, borderRadius, fontSize: fontSize2, fontWeightStrong } = vars;
+const self$h = (vars) => {
+  const {
+    textColor2,
+    primaryColor,
+    textColorDisabled,
+    closeIconColor,
+    closeIconColorHover,
+    closeIconColorPressed,
+    closeColorHover,
+    closeColorPressed,
+    tabColor,
+    baseColor,
+    dividerColor,
+    fontWeight,
+    textColor1,
+    borderRadius,
+    fontSize: fontSize2,
+    fontWeightStrong
+  } = vars;
   return Object.assign(Object.assign({}, sizeVariables$1), {
     colorSegment: tabColor,
     tabFontSizeCard: fontSize2,
@@ -31930,23 +36066,30 @@ const self$b = (vars) => {
 const tabsLight = {
   name: "Tabs",
   common: commonLight,
-  self: self$b
+  self: self$h
 };
 const tabsLight$1 = tabsLight;
 const tabsDark = {
   name: "Tabs",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$b(vars);
-    const { inputColor } = vars;
+    const commonSelf = self$h(vars);
+    const {
+      inputColor
+    } = vars;
     commonSelf.colorSegment = inputColor;
     commonSelf.tabColorSegment = inputColor;
     return commonSelf;
   }
 };
 const tabsDark$1 = tabsDark;
-const self$a = (vars) => {
-  const { textColor1, textColor2, fontWeightStrong, fontSize: fontSize2 } = vars;
+const self$g = (vars) => {
+  const {
+    textColor1,
+    textColor2,
+    fontWeightStrong,
+    fontSize: fontSize2
+  } = vars;
   return {
     fontSize: fontSize2,
     titleTextColor: textColor1,
@@ -31957,13 +36100,13 @@ const self$a = (vars) => {
 const thingLight = {
   name: "Thing",
   common: commonLight,
-  self: self$a
+  self: self$g
 };
 const thingLight$1 = thingLight;
 const thingDark = {
   name: "Thing",
   common: commonDark,
-  self: self$a
+  self: self$g
 };
 const thingDark$1 = thingDark;
 const sizeVariables = {
@@ -31978,19 +36121,75 @@ const timelineDark = {
   name: "Timeline",
   common: commonDark,
   self(vars) {
-    const { textColor3, infoColorSuppl, errorColorSuppl, successColorSuppl, warningColorSuppl, textColor1, textColor2, railColor, fontWeightStrong, fontSize: fontSize2 } = vars;
-    return Object.assign(Object.assign({}, sizeVariables), { contentFontSize: fontSize2, titleFontWeight: fontWeightStrong, circleBorder: `2px solid ${textColor3}`, circleBorderInfo: `2px solid ${infoColorSuppl}`, circleBorderError: `2px solid ${errorColorSuppl}`, circleBorderSuccess: `2px solid ${successColorSuppl}`, circleBorderWarning: `2px solid ${warningColorSuppl}`, iconColor: textColor3, iconColorInfo: infoColorSuppl, iconColorError: errorColorSuppl, iconColorSuccess: successColorSuppl, iconColorWarning: warningColorSuppl, titleTextColor: textColor1, contentTextColor: textColor2, metaTextColor: textColor3, lineColor: railColor });
+    const {
+      textColor3,
+      infoColorSuppl,
+      errorColorSuppl,
+      successColorSuppl,
+      warningColorSuppl,
+      textColor1,
+      textColor2,
+      railColor,
+      fontWeightStrong,
+      fontSize: fontSize2
+    } = vars;
+    return Object.assign(Object.assign({}, sizeVariables), {
+      contentFontSize: fontSize2,
+      titleFontWeight: fontWeightStrong,
+      circleBorder: `2px solid ${textColor3}`,
+      circleBorderInfo: `2px solid ${infoColorSuppl}`,
+      circleBorderError: `2px solid ${errorColorSuppl}`,
+      circleBorderSuccess: `2px solid ${successColorSuppl}`,
+      circleBorderWarning: `2px solid ${warningColorSuppl}`,
+      iconColor: textColor3,
+      iconColorInfo: infoColorSuppl,
+      iconColorError: errorColorSuppl,
+      iconColorSuccess: successColorSuppl,
+      iconColorWarning: warningColorSuppl,
+      titleTextColor: textColor1,
+      contentTextColor: textColor2,
+      metaTextColor: textColor3,
+      lineColor: railColor
+    });
   }
 };
 const timelineDark$1 = timelineDark;
-const self$9 = (vars) => {
-  const { textColor3, infoColor, errorColor, successColor, warningColor, textColor1, textColor2, railColor, fontWeightStrong, fontSize: fontSize2 } = vars;
-  return Object.assign(Object.assign({}, sizeVariables), { contentFontSize: fontSize2, titleFontWeight: fontWeightStrong, circleBorder: `2px solid ${textColor3}`, circleBorderInfo: `2px solid ${infoColor}`, circleBorderError: `2px solid ${errorColor}`, circleBorderSuccess: `2px solid ${successColor}`, circleBorderWarning: `2px solid ${warningColor}`, iconColor: textColor3, iconColorInfo: infoColor, iconColorError: errorColor, iconColorSuccess: successColor, iconColorWarning: warningColor, titleTextColor: textColor1, contentTextColor: textColor2, metaTextColor: textColor3, lineColor: railColor });
+const self$f = (vars) => {
+  const {
+    textColor3,
+    infoColor,
+    errorColor,
+    successColor,
+    warningColor,
+    textColor1,
+    textColor2,
+    railColor,
+    fontWeightStrong,
+    fontSize: fontSize2
+  } = vars;
+  return Object.assign(Object.assign({}, sizeVariables), {
+    contentFontSize: fontSize2,
+    titleFontWeight: fontWeightStrong,
+    circleBorder: `2px solid ${textColor3}`,
+    circleBorderInfo: `2px solid ${infoColor}`,
+    circleBorderError: `2px solid ${errorColor}`,
+    circleBorderSuccess: `2px solid ${successColor}`,
+    circleBorderWarning: `2px solid ${warningColor}`,
+    iconColor: textColor3,
+    iconColorInfo: infoColor,
+    iconColorError: errorColor,
+    iconColorSuccess: successColor,
+    iconColorWarning: warningColor,
+    titleTextColor: textColor1,
+    contentTextColor: textColor2,
+    metaTextColor: textColor3,
+    lineColor: railColor
+  });
 };
 const timelineLight = {
   name: "Timeline",
   common: commonLight,
-  self: self$9
+  self: self$f
 };
 const timelineLight$1 = timelineLight;
 const commonVariables$1 = {
@@ -32017,7 +36216,28 @@ const transferDark$1 = {
     Button: buttonDark$1
   },
   self(vars) {
-    const { fontWeight, fontSizeLarge, fontSizeMedium, fontSizeSmall, heightLarge, heightMedium, borderRadius, inputColor, tableHeaderColor, textColor1, textColorDisabled, textColor2, textColor3, hoverColor, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, dividerColor } = vars;
+    const {
+      fontWeight,
+      fontSizeLarge,
+      fontSizeMedium,
+      fontSizeSmall,
+      heightLarge,
+      heightMedium,
+      borderRadius,
+      inputColor,
+      tableHeaderColor,
+      textColor1,
+      textColorDisabled,
+      textColor2,
+      textColor3,
+      hoverColor,
+      closeColorHover,
+      closeColorPressed,
+      closeIconColor,
+      closeIconColorHover,
+      closeIconColorPressed,
+      dividerColor
+    } = vars;
     return Object.assign(Object.assign({}, commonVariables$1), {
       itemHeightSmall: heightMedium,
       itemHeightMedium: heightMedium,
@@ -32047,8 +36267,29 @@ const transferDark$1 = {
   }
 };
 const transferDark$2 = transferDark$1;
-const self$8 = (vars) => {
-  const { fontWeight, fontSizeLarge, fontSizeMedium, fontSizeSmall, heightLarge, heightMedium, borderRadius, cardColor, tableHeaderColor, textColor1, textColorDisabled, textColor2, textColor3, borderColor, hoverColor, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed } = vars;
+const self$e = (vars) => {
+  const {
+    fontWeight,
+    fontSizeLarge,
+    fontSizeMedium,
+    fontSizeSmall,
+    heightLarge,
+    heightMedium,
+    borderRadius,
+    cardColor,
+    tableHeaderColor,
+    textColor1,
+    textColorDisabled,
+    textColor2,
+    textColor3,
+    borderColor,
+    hoverColor,
+    closeColorHover,
+    closeColorPressed,
+    closeIconColor,
+    closeIconColorHover,
+    closeIconColorPressed
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables$1), {
     itemHeightSmall: heightMedium,
     itemHeightMedium: heightMedium,
@@ -32086,11 +36327,21 @@ const transferLight$1 = createTheme({
     Empty: emptyLight$1,
     Button: buttonLight$1
   },
-  self: self$8
+  self: self$e
 });
 const transferLight$2 = transferLight$1;
-const self$7 = (vars) => {
-  const { borderRadiusSmall, hoverColor, pressedColor, primaryColor, textColor3, textColor2, textColorDisabled, fontSize: fontSize2 } = vars;
+const self$d = (vars) => {
+  const {
+    borderRadiusSmall,
+    dividerColor,
+    hoverColor,
+    pressedColor,
+    primaryColor,
+    textColor3,
+    textColor2,
+    textColorDisabled,
+    fontSize: fontSize2
+  } = vars;
   return {
     fontSize: fontSize2,
     lineHeight: "1.5",
@@ -32099,12 +36350,15 @@ const self$7 = (vars) => {
     nodeBorderRadius: borderRadiusSmall,
     nodeColorHover: hoverColor,
     nodeColorPressed: pressedColor,
-    nodeColorActive: changeColor(primaryColor, { alpha: 0.1 }),
+    nodeColorActive: changeColor(primaryColor, {
+      alpha: 0.1
+    }),
     arrowColor: textColor3,
     nodeTextColor: textColor2,
     nodeTextColorDisabled: textColorDisabled,
     loadingColor: primaryColor,
-    dropMarkColor: primaryColor
+    dropMarkColor: primaryColor,
+    lineColor: dividerColor
   };
 };
 const treeLight = createTheme({
@@ -32115,7 +36369,7 @@ const treeLight = createTheme({
     Scrollbar: scrollbarLight$1,
     Empty: emptyLight$1
   },
-  self: self$7
+  self: self$d
 });
 const treeLight$1 = treeLight;
 const treeDark = {
@@ -32127,9 +36381,13 @@ const treeDark = {
     Empty: emptyDark$1
   },
   self(vars) {
-    const { primaryColor } = vars;
-    const commonSelf = self$7(vars);
-    commonSelf.nodeColorActive = changeColor(primaryColor, { alpha: 0.15 });
+    const {
+      primaryColor
+    } = vars;
+    const commonSelf = self$d(vars);
+    commonSelf.nodeColorActive = changeColor(primaryColor, {
+      alpha: 0.15
+    });
     return commonSelf;
   }
 };
@@ -32144,8 +36402,15 @@ const treeSelectDark = {
   }
 };
 const treeSelectDark$1 = treeSelectDark;
-const self$6 = (vars) => {
-  const { popoverColor, boxShadow2, borderRadius, heightMedium, dividerColor, textColor2 } = vars;
+const self$c = (vars) => {
+  const {
+    popoverColor,
+    boxShadow2,
+    borderRadius,
+    heightMedium,
+    dividerColor,
+    textColor2
+  } = vars;
   return {
     menuPadding: "4px",
     menuColor: popoverColor,
@@ -32165,7 +36430,7 @@ const treeSelectLight = createTheme({
     Empty: emptyLight$1,
     InternalSelection: internalSelectionLight$1
   },
-  self: self$6
+  self: self$c
 });
 const treeSelectLight$1 = treeSelectLight;
 const commonVars = {
@@ -32198,24 +36463,90 @@ const commonVars = {
   olPadding: "0 0 0 2em",
   ulPadding: "0 0 0 2em"
 };
-const self$5 = (vars) => {
-  const { primaryColor, textColor2, borderColor, lineHeight: lineHeight2, fontSize: fontSize2, borderRadiusSmall, dividerColor, fontWeightStrong, textColor1, textColor3, infoColor, warningColor, errorColor, successColor, codeColor } = vars;
-  return Object.assign(Object.assign({}, commonVars), { aTextColor: primaryColor, blockquoteTextColor: textColor2, blockquotePrefixColor: borderColor, blockquoteLineHeight: lineHeight2, blockquoteFontSize: fontSize2, codeBorderRadius: borderRadiusSmall, liTextColor: textColor2, liLineHeight: lineHeight2, liFontSize: fontSize2, hrColor: dividerColor, headerFontWeight: fontWeightStrong, headerTextColor: textColor1, pTextColor: textColor2, pTextColor1Depth: textColor1, pTextColor2Depth: textColor2, pTextColor3Depth: textColor3, pLineHeight: lineHeight2, pFontSize: fontSize2, headerBarColor: primaryColor, headerBarColorPrimary: primaryColor, headerBarColorInfo: infoColor, headerBarColorError: errorColor, headerBarColorWarning: warningColor, headerBarColorSuccess: successColor, textColor: textColor2, textColor1Depth: textColor1, textColor2Depth: textColor2, textColor3Depth: textColor3, textColorPrimary: primaryColor, textColorInfo: infoColor, textColorSuccess: successColor, textColorWarning: warningColor, textColorError: errorColor, codeTextColor: textColor2, codeColor, codeBorder: "1px solid #0000" });
+const self$b = (vars) => {
+  const {
+    primaryColor,
+    textColor2,
+    borderColor,
+    lineHeight: lineHeight2,
+    fontSize: fontSize2,
+    borderRadiusSmall,
+    dividerColor,
+    fontWeightStrong,
+    textColor1,
+    textColor3,
+    infoColor,
+    warningColor,
+    errorColor,
+    successColor,
+    codeColor
+  } = vars;
+  return Object.assign(Object.assign({}, commonVars), {
+    aTextColor: primaryColor,
+    blockquoteTextColor: textColor2,
+    blockquotePrefixColor: borderColor,
+    blockquoteLineHeight: lineHeight2,
+    blockquoteFontSize: fontSize2,
+    codeBorderRadius: borderRadiusSmall,
+    liTextColor: textColor2,
+    liLineHeight: lineHeight2,
+    liFontSize: fontSize2,
+    hrColor: dividerColor,
+    headerFontWeight: fontWeightStrong,
+    headerTextColor: textColor1,
+    pTextColor: textColor2,
+    pTextColor1Depth: textColor1,
+    pTextColor2Depth: textColor2,
+    pTextColor3Depth: textColor3,
+    pLineHeight: lineHeight2,
+    pFontSize: fontSize2,
+    headerBarColor: primaryColor,
+    headerBarColorPrimary: primaryColor,
+    headerBarColorInfo: infoColor,
+    headerBarColorError: errorColor,
+    headerBarColorWarning: warningColor,
+    headerBarColorSuccess: successColor,
+    textColor: textColor2,
+    textColor1Depth: textColor1,
+    textColor2Depth: textColor2,
+    textColor3Depth: textColor3,
+    textColorPrimary: primaryColor,
+    textColorInfo: infoColor,
+    textColorSuccess: successColor,
+    textColorWarning: warningColor,
+    textColorError: errorColor,
+    codeTextColor: textColor2,
+    codeColor,
+    codeBorder: "1px solid #0000"
+  });
 };
 const typographyLight = {
   name: "Typography",
   common: commonLight,
-  self: self$5
+  self: self$b
 };
 const typographyLight$1 = typographyLight;
 const typographyDark = {
   name: "Typography",
   common: commonDark,
-  self: self$5
+  self: self$b
 };
 const typographyDark$1 = typographyDark;
-const self$4 = (vars) => {
-  const { iconColor, primaryColor, errorColor, textColor2, successColor, opacityDisabled, actionColor, borderColor, hoverColor, lineHeight: lineHeight2, borderRadius, fontSize: fontSize2 } = vars;
+const self$a = (vars) => {
+  const {
+    iconColor,
+    primaryColor,
+    errorColor,
+    textColor2,
+    successColor,
+    opacityDisabled,
+    actionColor,
+    borderColor,
+    hoverColor,
+    lineHeight: lineHeight2,
+    borderRadius,
+    fontSize: fontSize2
+  } = vars;
   return {
     fontSize: fontSize2,
     lineHeight: lineHeight2,
@@ -32243,7 +36574,7 @@ const uploadLight = createTheme({
     Button: buttonLight$1,
     Progress: progressLight$1
   },
-  self: self$4
+  self: self$a
 });
 const uploadLight$1 = uploadLight;
 const uploadDark = {
@@ -32254,8 +36585,10 @@ const uploadDark = {
     Progress: progressDark$1
   },
   self(vars) {
-    const { errorColor } = vars;
-    const commonSelf = self$4(vars);
+    const {
+      errorColor
+    } = vars;
+    const commonSelf = self$a(vars);
     commonSelf.itemColorHoverError = changeColor(errorColor, {
       alpha: 0.09
     });
@@ -32267,7 +36600,9 @@ const watermarkDark = {
   name: "Watermark",
   common: commonDark,
   self(vars) {
-    const { fontFamily: fontFamily2 } = vars;
+    const {
+      fontFamily: fontFamily2
+    } = vars;
     return {
       fontFamily: fontFamily2
     };
@@ -32278,7 +36613,9 @@ const watermarkLight = createTheme({
   name: "Watermark",
   common: commonLight,
   self(vars) {
-    const { fontFamily: fontFamily2 } = vars;
+    const {
+      fontFamily: fontFamily2
+    } = vars;
     return {
       fontFamily: fontFamily2
     };
@@ -32295,6 +36632,391 @@ const rowDark = {
   common: commonDark
 };
 const rowDark$1 = rowDark;
+const self$9 = (vars) => {
+  const {
+    popoverColor,
+    dividerColor,
+    borderRadius
+  } = vars;
+  return {
+    color: popoverColor,
+    buttonBorderColor: dividerColor,
+    borderRadiusSquare: borderRadius,
+    boxShadow: "0 2px 8px 0px rgba(0, 0, 0, .12)"
+  };
+};
+const themeLight$3 = {
+  name: "FloatButtonGroup",
+  common: commonLight,
+  self: self$9
+};
+const floatButtonGroupLight = themeLight$3;
+const floatButtonDark = {
+  name: "FloatButton",
+  common: commonDark,
+  self(vars) {
+    const {
+      popoverColor,
+      textColor2,
+      buttonColor2Hover,
+      buttonColor2Pressed,
+      primaryColor,
+      primaryColorHover,
+      primaryColorPressed,
+      baseColor,
+      borderRadius
+    } = vars;
+    return {
+      color: popoverColor,
+      textColor: textColor2,
+      boxShadow: "0 2px 8px 0px rgba(0, 0, 0, .12)",
+      boxShadowHover: "0 2px 12px 0px rgba(0, 0, 0, .18)",
+      boxShadowPressed: "0 2px 12px 0px rgba(0, 0, 0, .18)",
+      colorHover: buttonColor2Hover,
+      colorPressed: buttonColor2Pressed,
+      colorPrimary: primaryColor,
+      colorPrimaryHover: primaryColorHover,
+      colorPrimaryPressed: primaryColorPressed,
+      textColorPrimary: baseColor,
+      borderRadiusSquare: borderRadius
+    };
+  }
+};
+const floatButtonDark$1 = floatButtonDark;
+const self$8 = (vars) => {
+  const {
+    popoverColor,
+    textColor2,
+    buttonColor2Hover,
+    buttonColor2Pressed,
+    primaryColor,
+    primaryColorHover,
+    primaryColorPressed,
+    borderRadius
+  } = vars;
+  return {
+    color: popoverColor,
+    colorHover: buttonColor2Hover,
+    colorPressed: buttonColor2Pressed,
+    colorPrimary: primaryColor,
+    colorPrimaryHover: primaryColorHover,
+    colorPrimaryPressed: primaryColorPressed,
+    textColor: textColor2,
+    boxShadow: "0 2px 8px 0px rgba(0, 0, 0, .16)",
+    boxShadowHover: "0 2px 12px 0px rgba(0, 0, 0, .24)",
+    boxShadowPressed: "0 2px 12px 0px rgba(0, 0, 0, .24)",
+    textColorPrimary: "#fff",
+    borderRadiusSquare: borderRadius
+  };
+};
+const themeLight$2 = {
+  name: "FloatButton",
+  common: commonLight,
+  self: self$8
+};
+const floatButtonLight = themeLight$2;
+const defaultBreakpoints = {
+  xs: 0,
+  // mobile
+  s: 640,
+  // tablet
+  m: 1024,
+  // laptop s
+  l: 1280,
+  // laptop
+  xl: 1536,
+  // laptop l
+  xxl: 1920
+  // normal desktop display
+};
+const defaultCols = 24;
+const SSR_ATTR_NAME = "__ssr__";
+const gridProps = {
+  layoutShiftDisabled: Boolean,
+  responsive: {
+    type: [String, Boolean],
+    default: "self"
+  },
+  cols: {
+    type: [Number, String],
+    default: defaultCols
+  },
+  itemResponsive: Boolean,
+  collapsed: Boolean,
+  // may create grid rows < collapsedRows since a item may take all the row
+  collapsedRows: {
+    type: Number,
+    default: 1
+  },
+  itemStyle: [Object, String],
+  xGap: {
+    type: [Number, String],
+    default: 0
+  },
+  yGap: {
+    type: [Number, String],
+    default: 0
+  }
+};
+const NGrid = /* @__PURE__ */ defineComponent({
+  name: "Grid",
+  inheritAttrs: false,
+  props: gridProps,
+  setup(props) {
+    const {
+      mergedClsPrefixRef,
+      mergedBreakpointsRef
+    } = useConfig(props);
+    const numRegex = /^\d+$/;
+    const widthRef = ref(void 0);
+    const breakpointsRef = useBreakpoints((mergedBreakpointsRef === null || mergedBreakpointsRef === void 0 ? void 0 : mergedBreakpointsRef.value) || defaultBreakpoints);
+    const isResponsiveRef = useMemo(() => {
+      if (props.itemResponsive)
+        return true;
+      if (!numRegex.test(props.cols.toString()))
+        return true;
+      if (!numRegex.test(props.xGap.toString()))
+        return true;
+      if (!numRegex.test(props.yGap.toString()))
+        return true;
+      return false;
+    });
+    const responsiveQueryRef = computed(() => {
+      if (!isResponsiveRef.value)
+        return void 0;
+      return props.responsive === "self" ? widthRef.value : breakpointsRef.value;
+    });
+    const responsiveColsRef = useMemo(() => {
+      var _a2;
+      return (_a2 = Number(parseResponsivePropValue(props.cols.toString(), responsiveQueryRef.value))) !== null && _a2 !== void 0 ? _a2 : defaultCols;
+    });
+    const responsiveXGapRef = useMemo(() => parseResponsivePropValue(props.xGap.toString(), responsiveQueryRef.value));
+    const responsiveYGapRef = useMemo(() => parseResponsivePropValue(props.yGap.toString(), responsiveQueryRef.value));
+    const handleResize = (entry) => {
+      widthRef.value = entry.contentRect.width;
+    };
+    const handleResizeRaf = (entry) => {
+      beforeNextFrameOnce(handleResize, entry);
+    };
+    const overflowRef = ref(false);
+    const handleResizeRef = computed(() => {
+      if (props.responsive === "self") {
+        return handleResizeRaf;
+      }
+      return void 0;
+    });
+    const isSsrRef = ref(false);
+    const contentElRef = ref();
+    onMounted(() => {
+      const {
+        value: contentEl
+      } = contentElRef;
+      if (contentEl) {
+        if (contentEl.hasAttribute(SSR_ATTR_NAME)) {
+          contentEl.removeAttribute(SSR_ATTR_NAME);
+          isSsrRef.value = true;
+        }
+      }
+    });
+    provide(gridInjectionKey, {
+      layoutShiftDisabledRef: toRef(props, "layoutShiftDisabled"),
+      isSsrRef,
+      itemStyleRef: toRef(props, "itemStyle"),
+      xGapRef: responsiveXGapRef,
+      overflowRef
+    });
+    return {
+      isSsr: !isBrowser$3,
+      contentEl: contentElRef,
+      mergedClsPrefix: mergedClsPrefixRef,
+      style: computed(() => {
+        if (props.layoutShiftDisabled) {
+          return {
+            width: "100%",
+            display: "grid",
+            gridTemplateColumns: `repeat(${props.cols}, minmax(0, 1fr))`,
+            columnGap: pxfy(props.xGap),
+            rowGap: pxfy(props.yGap)
+          };
+        }
+        return {
+          width: "100%",
+          display: "grid",
+          gridTemplateColumns: `repeat(${responsiveColsRef.value}, minmax(0, 1fr))`,
+          columnGap: pxfy(responsiveXGapRef.value),
+          rowGap: pxfy(responsiveYGapRef.value)
+        };
+      }),
+      isResponsive: isResponsiveRef,
+      responsiveQuery: responsiveQueryRef,
+      responsiveCols: responsiveColsRef,
+      handleResize: handleResizeRef,
+      overflow: overflowRef
+    };
+  },
+  render() {
+    if (this.layoutShiftDisabled) {
+      return h("div", mergeProps({
+        ref: "contentEl",
+        class: `${this.mergedClsPrefix}-grid`,
+        style: this.style
+      }, this.$attrs), this.$slots);
+    }
+    const renderContent = () => {
+      var _a2, _b, _c, _d, _e, _f, _g;
+      this.overflow = false;
+      const rawChildren = flatten$2(getSlot$1(this));
+      const childrenAndRawSpan = [];
+      const {
+        collapsed,
+        collapsedRows,
+        responsiveCols,
+        responsiveQuery
+      } = this;
+      rawChildren.forEach((child) => {
+        var _a3, _b2, _c2, _d2, _e2;
+        if (((_a3 = child === null || child === void 0 ? void 0 : child.type) === null || _a3 === void 0 ? void 0 : _a3.__GRID_ITEM__) !== true)
+          return;
+        if (isNodeVShowFalse(child)) {
+          const clonedNode = cloneVNode(child);
+          if (clonedNode.props) {
+            clonedNode.props.privateShow = false;
+          } else {
+            clonedNode.props = {
+              privateShow: false
+            };
+          }
+          childrenAndRawSpan.push({
+            child: clonedNode,
+            rawChildSpan: 0
+          });
+          return;
+        }
+        child.dirs = ((_b2 = child.dirs) === null || _b2 === void 0 ? void 0 : _b2.filter(({
+          dir
+        }) => dir !== vShow)) || null;
+        if (((_c2 = child.dirs) === null || _c2 === void 0 ? void 0 : _c2.length) === 0) {
+          child.dirs = null;
+        }
+        const clonedChild = cloneVNode(child);
+        const rawChildSpan = Number((_e2 = parseResponsivePropValue((_d2 = clonedChild.props) === null || _d2 === void 0 ? void 0 : _d2.span, responsiveQuery)) !== null && _e2 !== void 0 ? _e2 : defaultSpan$1);
+        if (rawChildSpan === 0)
+          return;
+        childrenAndRawSpan.push({
+          child: clonedChild,
+          rawChildSpan
+        });
+      });
+      let suffixSpan = 0;
+      const maybeSuffixNode = (_a2 = childrenAndRawSpan[childrenAndRawSpan.length - 1]) === null || _a2 === void 0 ? void 0 : _a2.child;
+      if (maybeSuffixNode === null || maybeSuffixNode === void 0 ? void 0 : maybeSuffixNode.props) {
+        const suffixPropValue = (_b = maybeSuffixNode.props) === null || _b === void 0 ? void 0 : _b.suffix;
+        if (suffixPropValue !== void 0 && suffixPropValue !== false) {
+          suffixSpan = Number((_d = parseResponsivePropValue((_c = maybeSuffixNode.props) === null || _c === void 0 ? void 0 : _c.span, responsiveQuery)) !== null && _d !== void 0 ? _d : defaultSpan$1);
+          maybeSuffixNode.props.privateSpan = suffixSpan;
+          maybeSuffixNode.props.privateColStart = responsiveCols + 1 - suffixSpan;
+          maybeSuffixNode.props.privateShow = (_e = maybeSuffixNode.props.privateShow) !== null && _e !== void 0 ? _e : true;
+        }
+      }
+      let spanCounter = 0;
+      let done = false;
+      for (const {
+        child,
+        rawChildSpan
+      } of childrenAndRawSpan) {
+        if (done) {
+          this.overflow = true;
+        }
+        if (!done) {
+          const childOffset = Number((_g = parseResponsivePropValue((_f = child.props) === null || _f === void 0 ? void 0 : _f.offset, responsiveQuery)) !== null && _g !== void 0 ? _g : 0);
+          const childSpan = Math.min(rawChildSpan + childOffset, responsiveCols);
+          if (!child.props) {
+            child.props = {
+              privateSpan: childSpan,
+              privateOffset: childOffset
+            };
+          } else {
+            child.props.privateSpan = childSpan;
+            child.props.privateOffset = childOffset;
+          }
+          if (collapsed) {
+            const remainder = spanCounter % responsiveCols;
+            if (childSpan + remainder > responsiveCols) {
+              spanCounter += responsiveCols - remainder;
+            }
+            if (childSpan + spanCounter + suffixSpan > collapsedRows * responsiveCols) {
+              done = true;
+            } else {
+              spanCounter += childSpan;
+            }
+          }
+        }
+        if (done) {
+          if (child.props) {
+            if (child.props.privateShow !== true) {
+              child.props.privateShow = false;
+            }
+          } else {
+            child.props = {
+              privateShow: false
+            };
+          }
+        }
+      }
+      return h("div", mergeProps({
+        ref: "contentEl",
+        class: `${this.mergedClsPrefix}-grid`,
+        style: this.style,
+        [SSR_ATTR_NAME]: this.isSsr || void 0
+      }, this.$attrs), childrenAndRawSpan.map(({
+        child
+      }) => child));
+    };
+    return this.isResponsive && this.responsive === "self" ? h(VResizeObserver, {
+      onResize: this.handleResize
+    }, {
+      default: renderContent
+    }) : renderContent();
+  }
+});
+const self$7 = (vars) => {
+  const {
+    primaryColor,
+    baseColor
+  } = vars;
+  return {
+    color: primaryColor,
+    iconColor: baseColor
+  };
+};
+const iconWrapperLight = {
+  name: "IconWrapper",
+  common: commonLight,
+  self: self$7
+};
+const iconWrapperLight$1 = iconWrapperLight;
+const iconDark = {
+  name: "IconWrapper",
+  common: commonDark,
+  self: self$7
+};
+const iconWrapperDark = iconDark;
+function self$6() {
+  return {
+    toolbarIconColor: "rgba(255, 255, 255, .9)",
+    toolbarColor: "rgba(0, 0, 0, .35)",
+    toolbarBoxShadow: "none",
+    toolbarBorderRadius: "24px"
+  };
+}
+const imageLight = createTheme({
+  name: "Image",
+  common: commonLight,
+  peers: {
+    Tooltip: tooltipLight$1
+  },
+  self: self$6
+});
 const imageDark = {
   name: "Image",
   common: commonDark,
@@ -32302,7 +37024,9 @@ const imageDark = {
     Tooltip: tooltipDark$1
   },
   self: (vars) => {
-    const { textColor2 } = vars;
+    const {
+      textColor2
+    } = vars;
     return {
       toolbarIconColor: textColor2,
       toolbarColor: "rgba(0, 0, 0, .35)",
@@ -32348,6 +37072,7 @@ const layoutProps = {
   },
   scrollbarProps: Object,
   onScroll: Function,
+  contentClass: String,
   contentStyle: {
     type: [String, Object],
     default: ""
@@ -32360,17 +37085,22 @@ const layoutProps = {
 };
 const layoutInjectionKey = createInjectionKey("n-layout");
 function createLayoutComponent(isContent) {
-  return defineComponent({
+  return /* @__PURE__ */ defineComponent({
     name: isContent ? "LayoutContent" : "Layout",
     props: Object.assign(Object.assign({}, useTheme.props), layoutProps),
     setup(props) {
       const scrollableElRef = ref(null);
       const scrollbarInstRef = ref(null);
-      const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+      const {
+        mergedClsPrefixRef,
+        inlineThemeDisabled
+      } = useConfig(props);
       const themeRef = useTheme("Layout", "-layout", style$a, layoutLight$1, props, mergedClsPrefixRef);
       function scrollTo(options, y) {
         if (props.nativeScrollbar) {
-          const { value: scrollableEl } = scrollableElRef;
+          const {
+            value: scrollableEl
+          } = scrollableElRef;
           if (scrollableEl) {
             if (y === void 0) {
               scrollableEl.scrollTo(options);
@@ -32379,7 +37109,9 @@ function createLayoutComponent(isContent) {
             }
           }
         } else {
-          const { value: scrollbarInst } = scrollbarInstRef;
+          const {
+            value: scrollbarInst
+          } = scrollbarInstRef;
           if (scrollbarInst) {
             scrollbarInst.scrollTo(options, y);
           }
@@ -32414,7 +37146,12 @@ function createLayoutComponent(isContent) {
         scrollTo
       };
       const cssVarsRef = computed(() => {
-        const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
+        const {
+          common: {
+            cubicBezierEaseInOut: cubicBezierEaseInOut2
+          },
+          self: self2
+        } = themeRef.value;
         return {
           "--n-bezier": cubicBezierEaseInOut2,
           "--n-color": props.embedded ? self2.colorEmbedded : self2.color,
@@ -32438,16 +37175,29 @@ function createLayoutComponent(isContent) {
     },
     render() {
       var _a2;
-      const { mergedClsPrefix, hasSider } = this;
+      const {
+        mergedClsPrefix,
+        hasSider
+      } = this;
       (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
       const hasSiderStyle = hasSider ? this.hasSiderStyle : void 0;
-      const layoutClass = [
-        this.themeClass,
-        isContent && `${mergedClsPrefix}-layout-content`,
-        `${mergedClsPrefix}-layout`,
-        `${mergedClsPrefix}-layout--${this.position}-positioned`
-      ];
-      return h("div", { class: layoutClass, style: this.cssVars }, this.nativeScrollbar ? h("div", { ref: "scrollableElRef", class: `${mergedClsPrefix}-layout-scroll-container`, style: [this.contentStyle, hasSiderStyle], onScroll: this.handleNativeElScroll }, this.$slots) : h(NScrollbar$1, Object.assign({}, this.scrollbarProps, { onScroll: this.onScroll, ref: "scrollbarInstRef", theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar, contentStyle: [this.contentStyle, hasSiderStyle] }), this.$slots));
+      const layoutClass = [this.themeClass, isContent && `${mergedClsPrefix}-layout-content`, `${mergedClsPrefix}-layout`, `${mergedClsPrefix}-layout--${this.position}-positioned`];
+      return h("div", {
+        class: layoutClass,
+        style: this.cssVars
+      }, this.nativeScrollbar ? h("div", {
+        ref: "scrollableElRef",
+        class: [`${mergedClsPrefix}-layout-scroll-container`, this.contentClass],
+        style: [this.contentStyle, hasSiderStyle],
+        onScroll: this.handleNativeElScroll
+      }, this.$slots) : h(NScrollbar$1, Object.assign({}, this.scrollbarProps, {
+        onScroll: this.onScroll,
+        ref: "scrollbarInstRef",
+        theme: this.mergedTheme.peers.Scrollbar,
+        themeOverrides: this.mergedTheme.peerOverrides.Scrollbar,
+        contentClass: this.contentClass,
+        contentStyle: [this.contentStyle, hasSiderStyle]
+      }), this.$slots));
     }
   });
 }
@@ -32583,7 +37333,7 @@ const style$9 = cB("layout-sider", `
  top: 0;
  bottom: 0;
  `)]);
-const ToggleButton = defineComponent({
+const ToggleButton = /* @__PURE__ */ defineComponent({
   name: "LayoutToggleButton",
   props: {
     clsPrefix: {
@@ -32593,17 +37343,20 @@ const ToggleButton = defineComponent({
     onClick: Function
   },
   render() {
-    const { clsPrefix } = this;
-    return h(
-      "div",
-      { class: `${clsPrefix}-layout-toggle-button`, onClick: this.onClick },
-      h(NBaseIcon, { clsPrefix }, {
-        default: () => h(ChevronRightIcon, null)
-      })
-    );
+    const {
+      clsPrefix
+    } = this;
+    return h("div", {
+      class: `${clsPrefix}-layout-toggle-button`,
+      onClick: this.onClick
+    }, h(NBaseIcon, {
+      clsPrefix
+    }, {
+      default: () => h(ChevronRightIcon, null)
+    }));
   }
 });
-const ToggleBar = defineComponent({
+const ToggleBar = /* @__PURE__ */ defineComponent({
   props: {
     clsPrefix: {
       type: String,
@@ -32612,13 +37365,17 @@ const ToggleBar = defineComponent({
     onClick: Function
   },
   render() {
-    const { clsPrefix } = this;
-    return h(
-      "div",
-      { onClick: this.onClick, class: `${clsPrefix}-layout-toggle-bar` },
-      h("div", { class: `${clsPrefix}-layout-toggle-bar__top` }),
-      h("div", { class: `${clsPrefix}-layout-toggle-bar__bottom` })
-    );
+    const {
+      clsPrefix
+    } = this;
+    return h("div", {
+      onClick: this.onClick,
+      class: `${clsPrefix}-layout-toggle-bar`
+    }, h("div", {
+      class: `${clsPrefix}-layout-toggle-bar__top`
+    }), h("div", {
+      class: `${clsPrefix}-layout-toggle-bar__bottom`
+    }));
   }
 });
 const layoutSiderProps = {
@@ -32632,6 +37389,7 @@ const layoutSiderProps = {
     type: [Number, String],
     default: 272
   },
+  contentClass: String,
   contentStyle: {
     type: [String, Object],
     default: ""
@@ -32659,7 +37417,9 @@ const layoutSiderProps = {
   },
   inverted: Boolean,
   scrollbarProps: Object,
+  triggerClass: String,
   triggerStyle: [String, Object],
+  collapsedTriggerClass: String,
   collapsedTriggerStyle: [String, Object],
   "onUpdate:collapsed": [Function, Array],
   onUpdateCollapsed: [Function, Array],
@@ -32670,7 +37430,7 @@ const layoutSiderProps = {
   onCollapse: [Function, Array],
   onScroll: Function
 };
-const NLayoutSider = defineComponent({
+const NLayoutSider = /* @__PURE__ */ defineComponent({
   name: "LayoutSider",
   props: Object.assign(Object.assign({}, useTheme.props), layoutSiderProps),
   setup(props) {
@@ -32694,7 +37454,9 @@ const NLayoutSider = defineComponent({
     const mergedCollapsedRef = useMergedState(toRef(props, "collapsed"), uncontrolledCollapsedRef);
     function scrollTo(options, y) {
       if (props.nativeScrollbar) {
-        const { value: scrollableEl } = scrollableElRef;
+        const {
+          value: scrollableEl
+        } = scrollableElRef;
         if (scrollableEl) {
           if (y === void 0) {
             scrollableEl.scrollTo(options);
@@ -32703,7 +37465,9 @@ const NLayoutSider = defineComponent({
           }
         }
       } else {
-        const { value: scrollbarInst } = scrollbarInstRef;
+        const {
+          value: scrollbarInst
+        } = scrollbarInstRef;
         if (scrollbarInst) {
           scrollbarInst.scrollTo(options, y);
         }
@@ -32717,7 +37481,9 @@ const NLayoutSider = defineComponent({
         onExpand,
         onCollapse
       } = props;
-      const { value: collapsed } = mergedCollapsedRef;
+      const {
+        value: collapsed
+      } = mergedCollapsedRef;
       if (onUpdateCollapsed) {
         call(onUpdateCollapsed, !collapsed);
       }
@@ -32755,7 +37521,10 @@ const NLayoutSider = defineComponent({
       collapsedRef: mergedCollapsedRef,
       collapseModeRef: toRef(props, "collapseMode")
     });
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Layout", "-layout-sider", style$9, layoutLight$1, props, mergedClsPrefixRef);
     function handleTransitionend(e) {
       var _a2, _b;
@@ -32771,8 +37540,18 @@ const NLayoutSider = defineComponent({
       scrollTo
     };
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
-      const { siderToggleButtonColor, siderToggleButtonBorder, siderToggleBarColor, siderToggleBarColorHover } = self2;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: self2
+      } = themeRef.value;
+      const {
+        siderToggleButtonColor,
+        siderToggleButtonBorder,
+        siderToggleBarColor,
+        siderToggleBarColorHover
+      } = self2;
       const vars = {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-toggle-button-color": siderToggleButtonColor,
@@ -32815,48 +37594,53 @@ const NLayoutSider = defineComponent({
   },
   render() {
     var _a2;
-    const { mergedClsPrefix, mergedCollapsed, showTrigger } = this;
+    const {
+      mergedClsPrefix,
+      mergedCollapsed,
+      showTrigger
+    } = this;
     (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-    return h(
-      "aside",
-      { class: [
-        `${mergedClsPrefix}-layout-sider`,
-        this.themeClass,
-        `${mergedClsPrefix}-layout-sider--${this.position}-positioned`,
-        `${mergedClsPrefix}-layout-sider--${this.siderPlacement}-placement`,
-        this.bordered && `${mergedClsPrefix}-layout-sider--bordered`,
-        mergedCollapsed && `${mergedClsPrefix}-layout-sider--collapsed`,
-        (!mergedCollapsed || this.showCollapsedContent) && `${mergedClsPrefix}-layout-sider--show-content`
-      ], onTransitionend: this.handleTransitionend, style: [
-        this.inlineThemeDisabled ? void 0 : this.cssVars,
-        {
-          maxWidth: this.styleMaxWidth,
-          width: formatLength(this.width)
-        }
-      ] },
-      !this.nativeScrollbar ? h(NScrollbar$1, Object.assign({}, this.scrollbarProps, {
-        onScroll: this.onScroll,
-        ref: "scrollbarInstRef",
-        style: this.scrollContainerStyle,
-        contentStyle: this.contentStyle,
-        theme: this.mergedTheme.peers.Scrollbar,
-        themeOverrides: this.mergedTheme.peerOverrides.Scrollbar,
-        // here is a hack, since in light theme the scrollbar color is dark,
-        // we need to invert it in light color...
-        builtinThemeOverrides: this.inverted && this.cssVars.__invertScrollbar === "true" ? {
-          colorHover: "rgba(255, 255, 255, .4)",
-          color: "rgba(255, 255, 255, .3)"
-        } : void 0
-      }), this.$slots) : h("div", { class: `${mergedClsPrefix}-layout-sider-scroll-container`, onScroll: this.handleNativeElScroll, style: [
-        this.scrollContainerStyle,
-        {
-          overflow: "auto"
-        },
-        this.contentStyle
-      ], ref: "scrollableElRef" }, this.$slots),
-      showTrigger ? showTrigger === "bar" ? h(ToggleBar, { clsPrefix: mergedClsPrefix, style: mergedCollapsed ? this.collapsedTriggerStyle : this.triggerStyle, onClick: this.handleTriggerClick }) : h(ToggleButton, { clsPrefix: mergedClsPrefix, style: mergedCollapsed ? this.collapsedTriggerStyle : this.triggerStyle, onClick: this.handleTriggerClick }) : null,
-      this.bordered ? h("div", { class: `${mergedClsPrefix}-layout-sider__border` }) : null
-    );
+    return h("aside", {
+      class: [`${mergedClsPrefix}-layout-sider`, this.themeClass, `${mergedClsPrefix}-layout-sider--${this.position}-positioned`, `${mergedClsPrefix}-layout-sider--${this.siderPlacement}-placement`, this.bordered && `${mergedClsPrefix}-layout-sider--bordered`, mergedCollapsed && `${mergedClsPrefix}-layout-sider--collapsed`, (!mergedCollapsed || this.showCollapsedContent) && `${mergedClsPrefix}-layout-sider--show-content`],
+      onTransitionend: this.handleTransitionend,
+      style: [this.inlineThemeDisabled ? void 0 : this.cssVars, {
+        maxWidth: this.styleMaxWidth,
+        width: formatLength(this.width)
+      }]
+    }, !this.nativeScrollbar ? h(NScrollbar$1, Object.assign({}, this.scrollbarProps, {
+      onScroll: this.onScroll,
+      ref: "scrollbarInstRef",
+      style: this.scrollContainerStyle,
+      contentStyle: this.contentStyle,
+      contentClass: this.contentClass,
+      theme: this.mergedTheme.peers.Scrollbar,
+      themeOverrides: this.mergedTheme.peerOverrides.Scrollbar,
+      // here is a hack, since in light theme the scrollbar color is dark,
+      // we need to invert it in light color...
+      builtinThemeOverrides: this.inverted && this.cssVars.__invertScrollbar === "true" ? {
+        colorHover: "rgba(255, 255, 255, .4)",
+        color: "rgba(255, 255, 255, .3)"
+      } : void 0
+    }), this.$slots) : h("div", {
+      class: [`${mergedClsPrefix}-layout-sider-scroll-container`, this.contentClass],
+      onScroll: this.handleNativeElScroll,
+      style: [this.scrollContainerStyle, {
+        overflow: "auto"
+      }, this.contentStyle],
+      ref: "scrollableElRef"
+    }, this.$slots), showTrigger ? showTrigger === "bar" ? h(ToggleBar, {
+      clsPrefix: mergedClsPrefix,
+      class: mergedCollapsed ? this.collapsedTriggerClass : this.triggerClass,
+      style: mergedCollapsed ? this.collapsedTriggerStyle : this.triggerStyle,
+      onClick: this.handleTriggerClick
+    }) : h(ToggleButton, {
+      clsPrefix: mergedClsPrefix,
+      class: mergedCollapsed ? this.collapsedTriggerClass : this.triggerClass,
+      style: mergedCollapsed ? this.collapsedTriggerStyle : this.triggerStyle,
+      onClick: this.handleTriggerClick
+    }) : null, this.bordered ? h("div", {
+      class: `${mergedClsPrefix}-layout-sider__border`
+    }) : null);
   }
 });
 const commonVariables = {
@@ -32874,7 +37658,24 @@ const transferDark = {
     Button: buttonDark$1
   },
   self(vars) {
-    const { iconColorDisabled, iconColor, fontWeight, fontSizeLarge, fontSizeMedium, fontSizeSmall, heightLarge, heightMedium, heightSmall, borderRadius, inputColor, tableHeaderColor, textColor1, textColorDisabled, textColor2, hoverColor } = vars;
+    const {
+      iconColorDisabled,
+      iconColor,
+      fontWeight,
+      fontSizeLarge,
+      fontSizeMedium,
+      fontSizeSmall,
+      heightLarge,
+      heightMedium,
+      heightSmall,
+      borderRadius,
+      inputColor,
+      tableHeaderColor,
+      textColor1,
+      textColorDisabled,
+      textColor2,
+      hoverColor
+    } = vars;
     return Object.assign(Object.assign({}, commonVariables), {
       itemHeightSmall: heightSmall,
       itemHeightMedium: heightMedium,
@@ -32900,8 +37701,26 @@ const transferDark = {
   }
 };
 const legacyTransferDark = transferDark;
-const self$3 = (vars) => {
-  const { fontWeight, iconColorDisabled, iconColor, fontSizeLarge, fontSizeMedium, fontSizeSmall, heightLarge, heightMedium, heightSmall, borderRadius, cardColor, tableHeaderColor, textColor1, textColorDisabled, textColor2, borderColor, hoverColor } = vars;
+const self$5 = (vars) => {
+  const {
+    fontWeight,
+    iconColorDisabled,
+    iconColor,
+    fontSizeLarge,
+    fontSizeMedium,
+    fontSizeSmall,
+    heightLarge,
+    heightMedium,
+    heightSmall,
+    borderRadius,
+    cardColor,
+    tableHeaderColor,
+    textColor1,
+    textColorDisabled,
+    textColor2,
+    borderColor,
+    hoverColor
+  } = vars;
   return Object.assign(Object.assign({}, commonVariables), {
     itemHeightSmall: heightSmall,
     itemHeightMedium: heightMedium,
@@ -32935,7 +37754,7 @@ const transferLight = createTheme({
     Empty: emptyLight$1,
     Button: buttonLight$1
   },
-  self: self$3
+  self: self$5
 });
 const legacyTransferLight = transferLight;
 const loadingBarProviderInjectionKey = createInjectionKey("n-loading-bar");
@@ -32999,13 +37818,16 @@ var __awaiter = globalThis && globalThis.__awaiter || function(thisArg, _argumen
 function createClassName(status, clsPrefix) {
   return `${clsPrefix}-loading-bar ${clsPrefix}-loading-bar--${status}`;
 }
-const NLoadingBar = defineComponent({
+const NLoadingBar = /* @__PURE__ */ defineComponent({
   name: "LoadingBar",
   props: {
+    containerClass: String,
     containerStyle: [String, Object]
   },
   setup() {
-    const { inlineThemeDisabled } = useConfig();
+    const {
+      inlineThemeDisabled
+    } = useConfig();
     const {
       props: providerProps,
       mergedClsPrefixRef
@@ -33019,7 +37841,9 @@ const NLoadingBar = defineComponent({
     let finishing = false;
     const erroringRef = ref(false);
     const mergedLoadingBarStyle = computed(() => {
-      const { loadingBarStyle } = providerProps;
+      const {
+        loadingBarStyle
+      } = providerProps;
       if (!loadingBarStyle)
         return "";
       return loadingBarStyle[erroringRef.value ? "error" : "loading"];
@@ -33108,7 +37932,13 @@ const NLoadingBar = defineComponent({
     }
     const themeRef = useTheme("LoadingBar", "-loading-bar", style$8, loadingBarLight$1, providerProps, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { self: { height, colorError, colorLoading } } = themeRef.value;
+      const {
+        self: {
+          height,
+          colorError,
+          colorLoading
+        }
+      } = themeRef.value;
       return {
         "--n-height": height,
         "--n-color-loading": colorLoading,
@@ -33138,7 +37968,9 @@ const NLoadingBar = defineComponent({
   render() {
     if (!this.started)
       return null;
-    const { mergedClsPrefix } = this;
+    const {
+      mergedClsPrefix
+    } = this;
     return h(Transition, {
       name: "fade-in-transition",
       appear: true,
@@ -33151,28 +37983,30 @@ const NLoadingBar = defineComponent({
       default: () => {
         var _a2;
         (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-        return withDirectives(h(
-          "div",
-          { class: [
-            `${mergedClsPrefix}-loading-bar-container`,
-            this.themeClass
-          ], style: this.containerStyle },
-          h("div", { ref: "loadingBarRef", class: [`${mergedClsPrefix}-loading-bar`], style: [
-            this.cssVars,
-            this.mergedLoadingBarStyle
-          ] })
-        ), [[vShow, this.loading || !this.loading && this.entering]]);
+        return withDirectives(h("div", {
+          class: [`${mergedClsPrefix}-loading-bar-container`, this.themeClass, this.containerClass],
+          style: this.containerStyle
+        }, h("div", {
+          ref: "loadingBarRef",
+          class: [`${mergedClsPrefix}-loading-bar`],
+          style: [this.cssVars, this.mergedLoadingBarStyle]
+        })), [[vShow, this.loading || !this.loading && this.entering]]);
       }
     });
   }
 });
-const loadingBarProviderProps = Object.assign(Object.assign({}, useTheme.props), { to: {
-  type: [String, Object, Boolean],
-  default: void 0
-}, containerStyle: [String, Object], loadingBarStyle: {
-  type: Object
-} });
-const NLoadingBarProvider = defineComponent({
+const loadingBarProviderProps = Object.assign(Object.assign({}, useTheme.props), {
+  to: {
+    type: [String, Object, Boolean],
+    default: void 0
+  },
+  containerClass: String,
+  containerStyle: [String, Object],
+  loadingBarStyle: {
+    type: Object
+  }
+});
+const NLoadingBarProvider = /* @__PURE__ */ defineComponent({
   name: "LoadingBarProvider",
   props: loadingBarProviderProps,
   setup(props) {
@@ -33213,7 +38047,9 @@ const NLoadingBarProvider = defineComponent({
         }
       }
     };
-    const { mergedClsPrefixRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef
+    } = useConfig(props);
     provide(loadingBarApiInjectionKey, methods);
     provide(loadingBarProviderInjectionKey, {
       props,
@@ -33225,19 +38061,17 @@ const NLoadingBarProvider = defineComponent({
   },
   render() {
     var _a2, _b;
-    return h(
-      Fragment,
-      null,
-      h(
-        Teleport,
-        { disabled: this.to === false, to: this.to || "body" },
-        h(NLoadingBar, { ref: "loadingBarRef", containerStyle: this.containerStyle })
-      ),
-      (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2)
-    );
+    return h(Fragment, null, h(Teleport, {
+      disabled: this.to === false,
+      to: this.to || "body"
+    }, h(NLoadingBar, {
+      ref: "loadingBarRef",
+      containerStyle: this.containerStyle,
+      containerClass: this.containerClass
+    })), (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2));
   }
 });
-const NLogLoader = defineComponent({
+const NLogLoader = /* @__PURE__ */ defineComponent({
   name: "LogLoader",
   props: {
     clsPrefix: {
@@ -33251,17 +38085,22 @@ const NLogLoader = defineComponent({
     };
   },
   render() {
-    const { clsPrefix } = this;
-    return h(
-      "div",
-      { class: `${clsPrefix}-log-loader` },
-      h(NBaseLoading, { clsPrefix, strokeWidth: 24, scale: 0.85 }),
-      h("span", { class: `${clsPrefix}-log-loader__content` }, this.locale.loading)
-    );
+    const {
+      clsPrefix
+    } = this;
+    return h("div", {
+      class: `${clsPrefix}-log-loader`
+    }, h(NBaseLoading, {
+      clsPrefix,
+      strokeWidth: 24,
+      scale: 0.85
+    }), h("span", {
+      class: `${clsPrefix}-log-loader__content`
+    }, this.locale.loading));
   }
 });
 const logInjectionKey = createInjectionKey("n-log");
-const NLogLine = defineComponent({
+const NLogLine = /* @__PURE__ */ defineComponent({
   props: {
     line: {
       type: String,
@@ -33269,7 +38108,12 @@ const NLogLine = defineComponent({
     }
   },
   setup(props) {
-    const { trimRef, highlightRef, languageRef, mergedHljsRef } = (
+    const {
+      trimRef,
+      highlightRef,
+      languageRef,
+      mergedHljsRef
+    } = (
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(logInjectionKey)
     );
@@ -33283,10 +38127,14 @@ const NLogLine = defineComponent({
       }
     }
     function generateCodeHTML(language, code) {
-      const { value: hljs } = mergedHljsRef;
+      const {
+        value: hljs
+      } = mergedHljsRef;
       if (hljs) {
         if (language && hljs.getLanguage(language)) {
-          return hljs.highlight(code, { language }).value;
+          return hljs.highlight(code, {
+            language
+          }).value;
         }
       }
       return code;
@@ -33308,8 +38156,13 @@ const NLogLine = defineComponent({
     };
   },
   render() {
-    const { highlight, maybeTrimmedLines } = this;
-    return h("pre", { ref: "selfRef" }, highlight ? null : maybeTrimmedLines);
+    const {
+      highlight,
+      maybeTrimmedLines
+    } = this;
+    return h("pre", {
+      ref: "selfRef"
+    }, highlight ? null : maybeTrimmedLines);
   }
 });
 const style$7 = cB("log", `
@@ -33355,30 +38208,48 @@ const style$7 = cB("log", `
  height: 20px;
  display: inline-block;
  `)])]);
-const logProps = Object.assign(Object.assign({}, useTheme.props), { loading: Boolean, trim: Boolean, log: String, fontSize: {
-  type: Number,
-  default: 14
-}, lines: {
-  type: Array,
-  default: () => []
-}, lineHeight: {
-  type: Number,
-  default: 1.25
-}, language: String, rows: {
-  type: Number,
-  default: 15
-}, offsetTop: {
-  type: Number,
-  default: 0
-}, offsetBottom: {
-  type: Number,
-  default: 0
-}, hljs: Object, onReachTop: Function, onReachBottom: Function, onRequireMore: Function });
-const NLog = defineComponent({
+const logProps = Object.assign(Object.assign({}, useTheme.props), {
+  loading: Boolean,
+  trim: Boolean,
+  log: String,
+  fontSize: {
+    type: Number,
+    default: 14
+  },
+  lines: {
+    type: Array,
+    default: () => []
+  },
+  lineHeight: {
+    type: Number,
+    default: 1.25
+  },
+  language: String,
+  rows: {
+    type: Number,
+    default: 15
+  },
+  offsetTop: {
+    type: Number,
+    default: 0
+  },
+  offsetBottom: {
+    type: Number,
+    default: 0
+  },
+  hljs: Object,
+  onReachTop: Function,
+  onReachBottom: Function,
+  onRequireMore: Function
+});
+const NLog = /* @__PURE__ */ defineComponent({
   name: "Log",
   props: logProps,
   setup(props) {
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const silentRef = ref(false);
     const highlightRef = computed(() => {
       return props.language !== void 0;
@@ -33387,7 +38258,9 @@ const NLog = defineComponent({
       return `calc(${Math.round(props.rows * props.lineHeight * props.fontSize)}px)`;
     });
     const mergedLinesRef = computed(() => {
-      const { log } = props;
+      const {
+        log
+      } = props;
       if (log) {
         return log.split("\n");
       }
@@ -33410,14 +38283,20 @@ const NLog = defineComponent({
       const scrollTop = containerScrollTop;
       const scrollBottom = contentHeight - containerScrollTop - containerHeight;
       if (scrollTop <= props.offsetTop) {
-        const { onReachTop, onRequireMore } = props;
+        const {
+          onReachTop,
+          onRequireMore
+        } = props;
         if (onRequireMore)
           onRequireMore("top");
         if (onReachTop)
           onReachTop();
       }
       if (scrollBottom <= props.offsetBottom) {
-        const { onReachBottom, onRequireMore } = props;
+        const {
+          onReachBottom,
+          onRequireMore
+        } = props;
         if (onRequireMore)
           onRequireMore("bottom");
         if (onReachBottom)
@@ -33433,7 +38312,10 @@ const NLog = defineComponent({
         return;
       }
       if (scrollbarRef.value) {
-        const { containerRef, contentRef } = scrollbarRef.value;
+        const {
+          containerRef,
+          contentRef
+        } = scrollbarRef.value;
         if (containerRef && contentRef) {
           const containerHeight = containerRef.offsetHeight;
           const containerScrollTop = containerRef.scrollTop;
@@ -33442,12 +38324,16 @@ const NLog = defineComponent({
           const scrollBottom = contentHeight - containerScrollTop - containerHeight;
           const deltaY = e.deltaY;
           if (scrollTop === 0 && deltaY < 0) {
-            const { onRequireMore } = props;
+            const {
+              onRequireMore
+            } = props;
             if (onRequireMore)
               onRequireMore("top");
           }
           if (scrollBottom <= 0 && deltaY > 0) {
-            const { onRequireMore } = props;
+            const {
+              onRequireMore
+            } = props;
             if (onRequireMore)
               onRequireMore("bottom");
           }
@@ -33455,17 +38341,28 @@ const NLog = defineComponent({
       }
     }
     function scrollTo(options) {
-      const { value: scrollbarInst } = scrollbarRef;
+      const {
+        value: scrollbarInst
+      } = scrollbarRef;
       if (!scrollbarInst)
         return;
-      const { silent, top, position } = options;
+      const {
+        silent,
+        top,
+        position
+      } = options;
       if (silent) {
         silentRef.value = true;
       }
       if (top !== void 0) {
-        scrollbarInst.scrollTo({ left: 0, top });
+        scrollbarInst.scrollTo({
+          left: 0,
+          top
+        });
       } else if (position === "bottom" || position === "top") {
-        scrollbarInst.scrollTo({ position });
+        scrollbarInst.scrollTo({
+          position
+        });
       }
     }
     function scrollToTop(silent = false) {
@@ -33492,7 +38389,18 @@ const NLog = defineComponent({
       scrollTo
     };
     const cssVarsRef = computed(() => {
-      const { self: { loaderFontSize, loaderTextColor, loaderColor, loaderBorder, loadingColor }, common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 } } = themeRef.value;
+      const {
+        self: {
+          loaderFontSize,
+          loaderTextColor,
+          loaderColor,
+          loaderBorder,
+          loadingColor
+        },
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-loader-font-size": loaderFontSize,
@@ -33519,30 +38427,45 @@ const NLog = defineComponent({
     });
   },
   render() {
-    const { mergedClsPrefix, mergedTheme, onRender } = this;
+    const {
+      mergedClsPrefix,
+      mergedTheme,
+      onRender
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
     return h("div", {
       class: [`${mergedClsPrefix}-log`, this.themeClass],
-      style: [
-        {
-          lineHeight: this.lineHeight,
-          height: this.styleHeight
-        },
-        this.cssVars
-      ],
+      style: [{
+        lineHeight: this.lineHeight,
+        height: this.styleHeight
+      }, this.cssVars],
       onWheelPassive: this.handleWheel
-    }, [
-      h(NScrollbar$1, { ref: "scrollbarRef", theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, onScroll: this.handleScroll }, {
-        default: () => h(NCode, { internalNoHighlight: true, internalFontSize: this.fontSize, theme: mergedTheme.peers.Code, themeOverrides: mergedTheme.peerOverrides.Code }, {
-          default: () => this.mergedLines.map((line, index2) => {
-            return h(NLogLine, { key: index2, line });
-          })
+    }, [h(NScrollbar$1, {
+      ref: "scrollbarRef",
+      theme: mergedTheme.peers.Scrollbar,
+      themeOverrides: mergedTheme.peerOverrides.Scrollbar,
+      onScroll: this.handleScroll
+    }, {
+      default: () => h(NCode, {
+        internalNoHighlight: true,
+        internalFontSize: this.fontSize,
+        theme: mergedTheme.peers.Code,
+        themeOverrides: mergedTheme.peerOverrides.Code
+      }, {
+        default: () => this.mergedLines.map((line, index2) => {
+          return h(NLogLine, {
+            key: index2,
+            line
+          });
         })
-      }),
-      h(Transition, { name: "fade-in-scale-up-transition" }, {
-        default: () => this.loading ? h(NLogLoader, { clsPrefix: mergedClsPrefix }) : null
       })
-    ]);
+    }), h(Transition, {
+      name: "fade-in-scale-up-transition"
+    }, {
+      default: () => this.loading ? h(NLogLoader, {
+        clsPrefix: mergedClsPrefix
+      }) : null
+    })]);
   }
 });
 const menuInjectionKey = createInjectionKey("n-menu");
@@ -33551,7 +38474,10 @@ const menuItemGroupInjectionKey = createInjectionKey("n-menu-item-group");
 const ICON_MARGIN_RIGHT = 8;
 function useMenuChild(props) {
   const NMenu2 = inject(menuInjectionKey);
-  const { props: menuProps2, mergedCollapsedRef } = NMenu2;
+  const {
+    props: menuProps2,
+    mergedCollapsedRef
+  } = NMenu2;
   const NSubmenu2 = inject(submenuInjectionKey, null);
   const NMenuOptionGroup2 = inject(menuItemGroupInjectionKey, null);
   const horizontalRef = computed(() => {
@@ -33580,8 +38506,17 @@ function useMenuChild(props) {
   const paddingLeftRef = computed(() => {
     if (horizontalRef.value)
       return void 0;
-    const { collapsedWidth, indent, rootIndent } = menuProps2;
-    const { root: root2, isGroup: isGroup2 } = props;
+    const {
+      collapsedWidth,
+      indent: propsIdent,
+      rootIndent: propsRootIdent
+    } = menuProps2;
+    const {
+      root: root2,
+      isGroup: isGroup2
+    } = props;
+    const indent = propsIdent + 8;
+    const rootIndent = propsRootIdent === void 0 ? void 0 : propsRootIdent + 8;
     const mergedRootIndent = rootIndent === void 0 ? indent : rootIndent;
     if (root2) {
       if (mergedCollapsedRef.value) {
@@ -33589,18 +38524,26 @@ function useMenuChild(props) {
       }
       return mergedRootIndent;
     }
-    if (NMenuOptionGroup2) {
+    if (NMenuOptionGroup2 && typeof NMenuOptionGroup2.paddingLeftRef.value === "number") {
       return indent / 2 + NMenuOptionGroup2.paddingLeftRef.value;
     }
-    if (NSubmenu2) {
+    if (NSubmenu2 && typeof NSubmenu2.paddingLeftRef.value === "number") {
       return (isGroup2 ? indent / 2 : indent) + NSubmenu2.paddingLeftRef.value;
     }
-    return void 0;
+    return 8;
   });
   const iconMarginRightRef = computed(() => {
-    const { collapsedWidth, indent, rootIndent } = menuProps2;
-    const { value: maxIconSize } = maxIconSizeRef;
-    const { root: root2 } = props;
+    const {
+      collapsedWidth,
+      indent,
+      rootIndent
+    } = menuProps2;
+    const {
+      value: maxIconSize
+    } = maxIconSizeRef;
+    const {
+      root: root2
+    } = props;
     if (horizontalRef.value)
       return ICON_MARGIN_RIGHT;
     if (!root2)
@@ -33634,14 +38577,17 @@ const useMenuChildProps = {
   title: [String, Function],
   extra: [String, Function]
 };
-const menuItemGroupProps = Object.assign(Object.assign({}, useMenuChildProps), { tmNode: {
-  type: Object,
-  required: true
-}, tmNodes: {
-  type: Array,
-  required: true
-} });
-const NMenuOptionGroup = defineComponent({
+const menuItemGroupProps = Object.assign(Object.assign({}, useMenuChildProps), {
+  tmNode: {
+    type: Object,
+    required: true
+  },
+  tmNodes: {
+    type: Array,
+    required: true
+  }
+});
+const NMenuOptionGroup = /* @__PURE__ */ defineComponent({
   name: "MenuOptionGroup",
   props: menuItemGroupProps,
   setup(props) {
@@ -33650,35 +38596,30 @@ const NMenuOptionGroup = defineComponent({
     provide(menuItemGroupInjectionKey, {
       paddingLeftRef: MenuChild.paddingLeft
     });
-    const { mergedClsPrefixRef, props: menuProps2 } = inject(menuInjectionKey);
+    const {
+      mergedClsPrefixRef,
+      props: menuProps2
+    } = inject(menuInjectionKey);
     return function() {
-      const { value: mergedClsPrefix } = mergedClsPrefixRef;
+      const {
+        value: mergedClsPrefix
+      } = mergedClsPrefixRef;
       const paddingLeft = MenuChild.paddingLeft.value;
-      const { nodeProps } = menuProps2;
+      const {
+        nodeProps
+      } = menuProps2;
       const attrs = nodeProps === null || nodeProps === void 0 ? void 0 : nodeProps(props.tmNode.rawNode);
-      return h(
-        "div",
-        { class: `${mergedClsPrefix}-menu-item-group`, role: "group" },
-        h(
-          "div",
-          Object.assign({}, attrs, { class: [`${mergedClsPrefix}-menu-item-group-title`, attrs === null || attrs === void 0 ? void 0 : attrs.class], style: [
-            (attrs === null || attrs === void 0 ? void 0 : attrs.style) || "",
-            paddingLeft !== void 0 ? `padding-left: ${paddingLeft}px;` : ""
-          ] }),
-          render$1(props.title),
-          props.extra ? h(
-            Fragment,
-            null,
-            " ",
-            render$1(props.extra)
-          ) : null
-        ),
-        h("div", null, props.tmNodes.map((tmNode) => itemRenderer(tmNode, menuProps2)))
-      );
+      return h("div", {
+        class: `${mergedClsPrefix}-menu-item-group`,
+        role: "group"
+      }, h("div", Object.assign({}, attrs, {
+        class: [`${mergedClsPrefix}-menu-item-group-title`, attrs === null || attrs === void 0 ? void 0 : attrs.class],
+        style: [(attrs === null || attrs === void 0 ? void 0 : attrs.style) || "", paddingLeft !== void 0 ? `padding-left: ${paddingLeft}px;` : ""]
+      }), render$1(props.title), props.extra ? h(Fragment, null, " ", render$1(props.extra)) : null), h("div", null, props.tmNodes.map((tmNode) => itemRenderer(tmNode, menuProps2))));
     };
   }
 });
-const NMenuOptionContent = defineComponent({
+const NMenuOptionContent = /* @__PURE__ */ defineComponent({
   name: "MenuOptionContent",
   props: {
     collapsed: Boolean,
@@ -33711,18 +38652,29 @@ const NMenuOptionContent = defineComponent({
     tmNode: {
       type: Object,
       required: true
-    }
+    },
+    isEllipsisPlaceholder: Boolean
   },
   setup(props) {
-    const { props: menuProps2 } = inject(menuInjectionKey);
+    const {
+      props: menuProps2
+    } = inject(menuInjectionKey);
     return {
       menuProps: menuProps2,
       style: computed(() => {
-        const { paddingLeft } = props;
-        return { paddingLeft: paddingLeft && `${paddingLeft}px` };
+        const {
+          paddingLeft
+        } = props;
+        return {
+          paddingLeft: paddingLeft && `${paddingLeft}px`
+        };
       }),
       iconStyle: computed(() => {
-        const { maxIconSize, activeIconSize, iconMarginRight } = props;
+        const {
+          maxIconSize,
+          activeIconSize,
+          iconMarginRight
+        } = props;
         return {
           width: `${maxIconSize}px`,
           height: `${maxIconSize}px`,
@@ -33733,63 +38685,90 @@ const NMenuOptionContent = defineComponent({
     };
   },
   render() {
-    const { clsPrefix, tmNode, menuProps: { renderIcon, renderLabel, renderExtra, expandIcon } } = this;
+    const {
+      clsPrefix,
+      tmNode,
+      menuProps: {
+        renderIcon,
+        renderLabel,
+        renderExtra,
+        expandIcon
+      }
+    } = this;
     const icon = renderIcon ? renderIcon(tmNode.rawNode) : render$1(this.icon);
-    return h(
-      "div",
-      { onClick: (e) => {
+    return h("div", {
+      onClick: (e) => {
         var _a2;
         (_a2 = this.onClick) === null || _a2 === void 0 ? void 0 : _a2.call(this, e);
-      }, role: "none", class: [
-        `${clsPrefix}-menu-item-content`,
-        {
-          [`${clsPrefix}-menu-item-content--selected`]: this.selected,
-          [`${clsPrefix}-menu-item-content--collapsed`]: this.collapsed,
-          [`${clsPrefix}-menu-item-content--child-active`]: this.childActive,
-          [`${clsPrefix}-menu-item-content--disabled`]: this.disabled,
-          [`${clsPrefix}-menu-item-content--hover`]: this.hover
-        }
-      ], style: this.style },
-      icon && h("div", { class: `${clsPrefix}-menu-item-content__icon`, style: this.iconStyle, role: "none" }, [icon]),
-      h(
-        "div",
-        { class: `${clsPrefix}-menu-item-content-header`, role: "none" },
-        renderLabel ? renderLabel(tmNode.rawNode) : render$1(this.title),
-        this.extra || renderExtra ? h(
-          "span",
-          { class: `${clsPrefix}-menu-item-content-header__extra` },
-          " ",
-          renderExtra ? renderExtra(tmNode.rawNode) : render$1(this.extra)
-        ) : null
-      ),
-      this.showArrow ? h(NBaseIcon, { ariaHidden: true, class: `${clsPrefix}-menu-item-content__arrow`, clsPrefix }, {
-        default: () => expandIcon ? expandIcon(tmNode.rawNode) : h(ChevronDownFilledIcon, null)
-      }) : null
-    );
+      },
+      role: "none",
+      class: [`${clsPrefix}-menu-item-content`, {
+        [`${clsPrefix}-menu-item-content--selected`]: this.selected,
+        [`${clsPrefix}-menu-item-content--collapsed`]: this.collapsed,
+        [`${clsPrefix}-menu-item-content--child-active`]: this.childActive,
+        [`${clsPrefix}-menu-item-content--disabled`]: this.disabled,
+        [`${clsPrefix}-menu-item-content--hover`]: this.hover
+      }],
+      style: this.style
+    }, icon && h("div", {
+      class: `${clsPrefix}-menu-item-content__icon`,
+      style: this.iconStyle,
+      role: "none"
+    }, [icon]), h("div", {
+      class: `${clsPrefix}-menu-item-content-header`,
+      role: "none"
+    }, this.isEllipsisPlaceholder ? this.title : renderLabel ? renderLabel(tmNode.rawNode) : render$1(this.title), this.extra || renderExtra ? h("span", {
+      class: `${clsPrefix}-menu-item-content-header__extra`
+    }, " ", renderExtra ? renderExtra(tmNode.rawNode) : render$1(this.extra)) : null), this.showArrow ? h(NBaseIcon, {
+      ariaHidden: true,
+      class: `${clsPrefix}-menu-item-content__arrow`,
+      clsPrefix
+    }, {
+      default: () => expandIcon ? expandIcon(tmNode.rawNode) : h(ChevronDownFilledIcon, null)
+    }) : null);
   }
 });
-const submenuProps = Object.assign(Object.assign({}, useMenuChildProps), { rawNodes: {
-  type: Array,
-  default: () => []
-}, tmNodes: {
-  type: Array,
-  default: () => []
-}, tmNode: {
-  type: Object,
-  required: true
-}, disabled: {
-  type: Boolean,
-  default: false
-}, icon: Function, onClick: Function });
-const NSubmenu = defineComponent({
+const submenuProps = Object.assign(Object.assign({}, useMenuChildProps), {
+  rawNodes: {
+    type: Array,
+    default: () => []
+  },
+  tmNodes: {
+    type: Array,
+    default: () => []
+  },
+  tmNode: {
+    type: Object,
+    required: true
+  },
+  disabled: Boolean,
+  icon: Function,
+  onClick: Function,
+  domId: String,
+  virtualChildActive: {
+    type: Boolean,
+    default: void 0
+  },
+  isEllipsisPlaceholder: Boolean
+});
+const NSubmenu = /* @__PURE__ */ defineComponent({
   name: "Submenu",
   props: submenuProps,
   setup(props) {
     const MenuChild = useMenuChild(props);
-    const { NMenu: NMenu2, NSubmenu: NSubmenu2 } = MenuChild;
-    const { props: menuProps2, mergedCollapsedRef, mergedThemeRef } = NMenu2;
+    const {
+      NMenu: NMenu2,
+      NSubmenu: NSubmenu2
+    } = MenuChild;
+    const {
+      props: menuProps2,
+      mergedCollapsedRef,
+      mergedThemeRef
+    } = NMenu2;
     const mergedDisabledRef = computed(() => {
-      const { disabled } = props;
+      const {
+        disabled
+      } = props;
       if (NSubmenu2 === null || NSubmenu2 === void 0 ? void 0 : NSubmenu2.mergedDisabledRef.value)
         return true;
       if (menuProps2.disabled)
@@ -33803,7 +38782,9 @@ const NSubmenu = defineComponent({
     });
     provide(menuItemGroupInjectionKey, null);
     function doClick() {
-      const { onClick } = props;
+      const {
+        onClick
+      } = props;
       if (onClick)
         onClick();
     }
@@ -33834,7 +38815,8 @@ const NSubmenu = defineComponent({
       mergedDisabled: mergedDisabledRef,
       mergedValue: NMenu2.mergedValueRef,
       childActive: useMemo(() => {
-        return NMenu2.activePathRef.value.includes(props.internalKey);
+        var _a2;
+        return (_a2 = props.virtualChildActive) !== null && _a2 !== void 0 ? _a2 : NMenu2.activePathRef.value.includes(props.internalKey);
       }),
       collapsed: computed(() => {
         if (menuProps2.mode === "horizontal")
@@ -33853,59 +38835,142 @@ const NSubmenu = defineComponent({
   },
   render() {
     var _a2;
-    const { mergedClsPrefix, menuProps: { renderIcon, renderLabel } } = this;
+    const {
+      mergedClsPrefix,
+      menuProps: {
+        renderIcon,
+        renderLabel
+      }
+    } = this;
     const createSubmenuItem = () => {
-      const { isHorizontal, paddingLeft, collapsed, mergedDisabled, maxIconSize, activeIconSize, title, childActive, icon, handleClick: handleClick2, menuProps: { nodeProps }, dropdownShow, iconMarginRight, tmNode, mergedClsPrefix: mergedClsPrefix2 } = this;
+      const {
+        isHorizontal,
+        paddingLeft,
+        collapsed,
+        mergedDisabled,
+        maxIconSize,
+        activeIconSize,
+        title,
+        childActive,
+        icon,
+        handleClick: handleClick2,
+        menuProps: {
+          nodeProps
+        },
+        dropdownShow,
+        iconMarginRight,
+        tmNode,
+        mergedClsPrefix: mergedClsPrefix2,
+        isEllipsisPlaceholder,
+        extra
+      } = this;
       const attrs = nodeProps === null || nodeProps === void 0 ? void 0 : nodeProps(tmNode.rawNode);
-      return h(
-        "div",
-        Object.assign({}, attrs, { class: [`${mergedClsPrefix2}-menu-item`, attrs === null || attrs === void 0 ? void 0 : attrs.class], role: "menuitem" }),
-        h(NMenuOptionContent, { tmNode, paddingLeft, collapsed, disabled: mergedDisabled, iconMarginRight, maxIconSize, activeIconSize, title, extra: this.extra, showArrow: !isHorizontal, childActive, clsPrefix: mergedClsPrefix2, icon, hover: dropdownShow, onClick: handleClick2 })
-      );
+      return h("div", Object.assign({}, attrs, {
+        class: [`${mergedClsPrefix2}-menu-item`, attrs === null || attrs === void 0 ? void 0 : attrs.class],
+        role: "menuitem"
+      }), h(NMenuOptionContent, {
+        tmNode,
+        paddingLeft,
+        collapsed,
+        disabled: mergedDisabled,
+        iconMarginRight,
+        maxIconSize,
+        activeIconSize,
+        title,
+        extra,
+        showArrow: !isHorizontal,
+        childActive,
+        clsPrefix: mergedClsPrefix2,
+        icon,
+        hover: dropdownShow,
+        onClick: handleClick2,
+        isEllipsisPlaceholder
+      }));
     };
     const createSubmenuChildren = () => {
       return h(NFadeInExpandTransition, null, {
         default: () => {
-          const { tmNodes, collapsed } = this;
-          return !collapsed ? h("div", { class: `${mergedClsPrefix}-submenu-children`, role: "menu" }, tmNodes.map((item) => itemRenderer(item, this.menuProps))) : null;
+          const {
+            tmNodes,
+            collapsed
+          } = this;
+          return !collapsed ? h("div", {
+            class: `${mergedClsPrefix}-submenu-children`,
+            role: "menu"
+          }, tmNodes.map((item) => itemRenderer(item, this.menuProps))) : null;
         }
       });
     };
-    return this.root ? h(NDropdown, Object.assign({ size: "large", trigger: "hover" }, (_a2 = this.menuProps) === null || _a2 === void 0 ? void 0 : _a2.dropdownProps, { themeOverrides: this.mergedTheme.peerOverrides.Dropdown, theme: this.mergedTheme.peers.Dropdown, builtinThemeOverrides: {
-      fontSizeLarge: "14px",
-      optionIconSizeLarge: "18px"
-    }, value: this.mergedValue, disabled: !this.dropdownEnabled, placement: this.dropdownPlacement, keyField: this.menuProps.keyField, labelField: this.menuProps.labelField, childrenField: this.menuProps.childrenField, onUpdateShow: this.handlePopoverShowChange, options: this.rawNodes, onSelect: this.doSelect, inverted: this.inverted, renderIcon, renderLabel }), {
-      default: () => h(
-        "div",
-        { class: `${mergedClsPrefix}-submenu`, role: "menuitem", "aria-expanded": !this.collapsed },
-        createSubmenuItem(),
-        this.isHorizontal ? null : createSubmenuChildren()
-      )
-    }) : h(
-      "div",
-      { class: `${mergedClsPrefix}-submenu`, role: "menuitem", "aria-expanded": !this.collapsed },
-      createSubmenuItem(),
-      createSubmenuChildren()
-    );
+    return this.root ? h(NDropdown, Object.assign({
+      size: "large",
+      trigger: "hover"
+    }, (_a2 = this.menuProps) === null || _a2 === void 0 ? void 0 : _a2.dropdownProps, {
+      themeOverrides: this.mergedTheme.peerOverrides.Dropdown,
+      theme: this.mergedTheme.peers.Dropdown,
+      builtinThemeOverrides: {
+        fontSizeLarge: "14px",
+        optionIconSizeLarge: "18px"
+      },
+      value: this.mergedValue,
+      disabled: !this.dropdownEnabled,
+      placement: this.dropdownPlacement,
+      keyField: this.menuProps.keyField,
+      labelField: this.menuProps.labelField,
+      childrenField: this.menuProps.childrenField,
+      onUpdateShow: this.handlePopoverShowChange,
+      options: this.rawNodes,
+      onSelect: this.doSelect,
+      inverted: this.inverted,
+      renderIcon,
+      renderLabel
+    }), {
+      default: () => h("div", {
+        class: `${mergedClsPrefix}-submenu`,
+        role: "menuitem",
+        "aria-expanded": !this.collapsed,
+        id: this.domId
+      }, createSubmenuItem(), this.isHorizontal ? null : createSubmenuChildren())
+    }) : h("div", {
+      class: `${mergedClsPrefix}-submenu`,
+      role: "menuitem",
+      "aria-expanded": !this.collapsed,
+      id: this.domId
+    }, createSubmenuItem(), createSubmenuChildren());
   }
 });
-const menuItemProps = Object.assign(Object.assign({}, useMenuChildProps), { tmNode: {
-  type: Object,
-  required: true
-}, disabled: Boolean, icon: Function, onClick: Function });
-const NMenuOption = defineComponent({
+const menuItemProps = Object.assign(Object.assign({}, useMenuChildProps), {
+  tmNode: {
+    type: Object,
+    required: true
+  },
+  disabled: Boolean,
+  icon: Function,
+  onClick: Function
+});
+const NMenuOption = /* @__PURE__ */ defineComponent({
   name: "MenuOption",
   props: menuItemProps,
   setup(props) {
     const MenuChild = useMenuChild(props);
-    const { NSubmenu: NSubmenu2, NMenu: NMenu2 } = MenuChild;
-    const { props: menuProps2, mergedClsPrefixRef, mergedCollapsedRef } = NMenu2;
-    const submenuDisabledRef = NSubmenu2 ? NSubmenu2.mergedDisabledRef : { value: false };
+    const {
+      NSubmenu: NSubmenu2,
+      NMenu: NMenu2
+    } = MenuChild;
+    const {
+      props: menuProps2,
+      mergedClsPrefixRef,
+      mergedCollapsedRef
+    } = NMenu2;
+    const submenuDisabledRef = NSubmenu2 ? NSubmenu2.mergedDisabledRef : {
+      value: false
+    };
     const mergedDisabledRef = computed(() => {
       return submenuDisabledRef.value || props.disabled;
     });
     function doClick(e) {
-      const { onClick } = props;
+      const {
+        onClick
+      } = props;
       if (onClick)
         onClick(e);
     }
@@ -33937,24 +39002,56 @@ const NMenuOption = defineComponent({
     };
   },
   render() {
-    const { mergedClsPrefix, mergedTheme, tmNode, menuProps: { renderLabel, nodeProps } } = this;
+    const {
+      mergedClsPrefix,
+      mergedTheme,
+      tmNode,
+      menuProps: {
+        renderLabel,
+        nodeProps
+      }
+    } = this;
     const attrs = nodeProps === null || nodeProps === void 0 ? void 0 : nodeProps(tmNode.rawNode);
-    return h(
-      "div",
-      Object.assign({}, attrs, { role: "menuitem", class: [`${mergedClsPrefix}-menu-item`, attrs === null || attrs === void 0 ? void 0 : attrs.class] }),
-      h(NTooltip, { theme: mergedTheme.peers.Tooltip, themeOverrides: mergedTheme.peerOverrides.Tooltip, trigger: "hover", placement: this.dropdownPlacement, disabled: !this.dropdownEnabled || this.title === void 0, internalExtraClass: ["menu-tooltip"] }, {
-        default: () => renderLabel ? renderLabel(tmNode.rawNode) : render$1(this.title),
-        trigger: () => h(NMenuOptionContent, { tmNode, clsPrefix: mergedClsPrefix, paddingLeft: this.paddingLeft, iconMarginRight: this.iconMarginRight, maxIconSize: this.maxIconSize, activeIconSize: this.activeIconSize, selected: this.selected, title: this.title, extra: this.extra, disabled: this.mergedDisabled, icon: this.icon, onClick: this.handleClick })
+    return h("div", Object.assign({}, attrs, {
+      role: "menuitem",
+      class: [`${mergedClsPrefix}-menu-item`, attrs === null || attrs === void 0 ? void 0 : attrs.class]
+    }), h(NTooltip, {
+      theme: mergedTheme.peers.Tooltip,
+      themeOverrides: mergedTheme.peerOverrides.Tooltip,
+      trigger: "hover",
+      placement: this.dropdownPlacement,
+      disabled: !this.dropdownEnabled || this.title === void 0,
+      internalExtraClass: ["menu-tooltip"]
+    }, {
+      default: () => renderLabel ? renderLabel(tmNode.rawNode) : render$1(this.title),
+      trigger: () => h(NMenuOptionContent, {
+        tmNode,
+        clsPrefix: mergedClsPrefix,
+        paddingLeft: this.paddingLeft,
+        iconMarginRight: this.iconMarginRight,
+        maxIconSize: this.maxIconSize,
+        activeIconSize: this.activeIconSize,
+        selected: this.selected,
+        title: this.title,
+        extra: this.extra,
+        disabled: this.mergedDisabled,
+        icon: this.icon,
+        onClick: this.handleClick
       })
-    );
+    }));
   }
 });
-const NMenuDivider = defineComponent({
+const NMenuDivider = /* @__PURE__ */ defineComponent({
   name: "MenuDivider",
   setup() {
     const NMenu2 = inject(menuInjectionKey);
-    const { mergedClsPrefixRef, isHorizontalRef } = NMenu2;
-    return () => isHorizontalRef.value ? null : h("div", { class: `${mergedClsPrefixRef.value}-menu-divider` });
+    const {
+      mergedClsPrefixRef,
+      isHorizontalRef
+    } = NMenu2;
+    return () => isHorizontalRef.value ? null : h("div", {
+      class: `${mergedClsPrefixRef.value}-menu-divider`
+    });
   }
 });
 const groupPropKeys = keysOf(menuItemGroupProps);
@@ -33967,19 +39064,31 @@ function isDividerNode(rawNode) {
   return rawNode.type === "divider";
 }
 function itemRenderer(tmNode, menuProps2) {
-  const { rawNode } = tmNode;
-  const { show } = rawNode;
+  const {
+    rawNode
+  } = tmNode;
+  const {
+    show
+  } = rawNode;
   if (show === false) {
     return null;
   }
   if (isIgnoredNode(rawNode)) {
     if (isDividerNode(rawNode)) {
-      return h(NMenuDivider, Object.assign({ key: tmNode.key }, rawNode.props));
+      return h(NMenuDivider, Object.assign({
+        key: tmNode.key
+      }, rawNode.props));
     }
     return null;
   }
-  const { labelField } = menuProps2;
-  const { key, level, isGroup: isGroup2 } = tmNode;
+  const {
+    labelField
+  } = menuProps2;
+  const {
+    key,
+    level,
+    isGroup: isGroup2
+  } = tmNode;
   const props = Object.assign(Object.assign({}, rawNode), {
     title: rawNode.title || rawNode[labelField],
     extra: rawNode.titleExtra || rawNode.extra,
@@ -33992,7 +39101,11 @@ function itemRenderer(tmNode, menuProps2) {
   });
   if (tmNode.children) {
     if (tmNode.isGroup) {
-      return h(NMenuOptionGroup, keep(props, groupPropKeys, { tmNode, tmNodes: tmNode.children, key }));
+      return h(NMenuOptionGroup, keep(props, groupPropKeys, {
+        tmNode,
+        tmNodes: tmNode.children,
+        key
+      }));
     }
     return h(NSubmenu, keep(props, submenuPropKeys, {
       key,
@@ -34036,7 +39149,10 @@ const style$6 = c$1([cB("menu", `
  font-size: var(--n-font-size);
  padding-bottom: 6px;
  `, [cM("horizontal", `
- display: inline-flex;
+ max-width: 100%;
+ width: 100%;
+ display: flex;
+ overflow: hidden;
  padding-bottom: 0;
  `, [cB("submenu", "margin: 0;"), cB("menu-item", "margin: 0;"), cB("menu-item-content", `
  padding: 0 20px;
@@ -34057,7 +39173,10 @@ const style$6 = c$1([cB("menu", `
  color: var(--n-item-text-color-active-hover-horizontal);
  `, [c$1("a", "color: var(--n-item-text-color-active-hover-horizontal);"), cE("extra", "color: var(--n-item-text-color-active-hover-horizontal);")])])]), cM("child-active", [hoverStyle(null, [cE("icon", "color: var(--n-item-icon-color-child-active-hover-horizontal);"), cB("menu-item-content-header", `
  color: var(--n-item-text-color-child-active-hover-horizontal);
- `, [c$1("a", "color: var(--n-item-text-color-child-active-hover-horizontal);"), cE("extra", "color: var(--n-item-text-color-child-active-hover-horizontal);")])])]), hoverStyle("border-bottom: 2px solid var(--n-border-color-horizontal);", horizontalHoverStyleChildren)]), cB("menu-item-content-header", [c$1("a", "color: var(--n-item-text-color-horizontal);")])])]), cM("collapsed", [cB("menu-item-content", [cM("selected", [c$1("&::before", `
+ `, [c$1("a", "color: var(--n-item-text-color-child-active-hover-horizontal);"), cE("extra", "color: var(--n-item-text-color-child-active-hover-horizontal);")])])]), hoverStyle("border-bottom: 2px solid var(--n-border-color-horizontal);", horizontalHoverStyleChildren)]), cB("menu-item-content-header", [c$1("a", "color: var(--n-item-text-color-horizontal);")])])]), cNotM("responsive", [cB("menu-item-content-header", `
+ overflow: hidden;
+ text-overflow: ellipsis;
+ `)]), cM("collapsed", [cB("menu-item-content", [cM("selected", [c$1("&::before", `
  background-color: var(--n-item-color-active-collapsed) !important;
  `)]), cB("menu-item-content-header", "opacity: 0;"), cE("arrow", "opacity: 0;"), cE("icon", "color: var(--n-item-icon-color-collapsed);")])]), cB("menu-item", `
  height: var(--n-item-height);
@@ -34137,8 +39256,6 @@ const style$6 = c$1([cB("menu", `
  opacity .3s var(--n-bezier);
  opacity: 1;
  white-space: nowrap;
- overflow: hidden;
- text-overflow: ellipsis;
  color: var(--n-item-text-color);
  `, [c$1("a", `
  outline: none;
@@ -34265,32 +39382,41 @@ const menuProps = Object.assign(Object.assign({}, useTheme.props), {
   dropdownProps: Object,
   accordion: Boolean,
   nodeProps: Function,
+  dropdownPlacement: {
+    type: String,
+    default: "bottom"
+  },
+  responsive: Boolean,
   // deprecated
   items: Array,
   onOpenNamesChange: [Function, Array],
   onSelect: [Function, Array],
   onExpandedNamesChange: [Function, Array],
   expandedNames: Array,
-  defaultExpandedNames: Array,
-  dropdownPlacement: {
-    type: String,
-    default: "bottom"
-  }
+  defaultExpandedNames: Array
 });
-const NMenu = defineComponent({
+const NMenu = /* @__PURE__ */ defineComponent({
   name: "Menu",
   props: menuProps,
   setup(props) {
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Menu", "-menu", style$6, menuLight$1, props, mergedClsPrefixRef);
     const layoutSider = inject(layoutSiderInjectionKey, null);
     const mergedCollapsedRef = computed(() => {
       var _a2;
-      const { collapsed } = props;
+      const {
+        collapsed
+      } = props;
       if (collapsed !== void 0)
         return collapsed;
       if (layoutSider) {
-        const { collapseModeRef, collapsedRef } = layoutSider;
+        const {
+          collapseModeRef,
+          collapsedRef
+        } = layoutSider;
         if (collapseModeRef.value === "width") {
           return (_a2 = collapsedRef.value) !== null && _a2 !== void 0 ? _a2 : false;
         }
@@ -34298,7 +39424,11 @@ const NMenu = defineComponent({
       return false;
     });
     const treeMateRef = computed(() => {
-      const { keyField, childrenField, disabledField } = props;
+      const {
+        keyField,
+        childrenField,
+        disabledField
+      } = props;
       return createTreeMate(props.items || props.options, {
         getIgnored(node) {
           return isIgnoredNode(node);
@@ -34316,7 +39446,9 @@ const NMenu = defineComponent({
       });
     });
     const treeKeysLevelOneRef = computed(() => new Set(treeMateRef.value.treeNodes.map((e) => e.key)));
-    const { watchProps } = props;
+    const {
+      watchProps
+    } = props;
     const uncontrolledValueRef = ref(null);
     if (watchProps === null || watchProps === void 0 ? void 0 : watchProps.includes("defaultValue")) {
       watchEffect(() => {
@@ -34338,10 +39470,7 @@ const NMenu = defineComponent({
     } else {
       initUncontrolledExpandedKeys();
     }
-    const controlledExpandedKeysRef = useCompitable(props, [
-      "expandedNames",
-      "expandedKeys"
-    ]);
+    const controlledExpandedKeysRef = useCompitable(props, ["expandedNames", "expandedKeys"]);
     const mergedExpandedKeysRef = useMergedState(controlledExpandedKeysRef, uncontrolledExpandedKeysRef);
     const tmNodesRef = computed(() => treeMateRef.value.treeNodes);
     const activePathRef = computed(() => {
@@ -34361,7 +39490,11 @@ const NMenu = defineComponent({
       toggleExpand
     });
     function doSelect(value, item) {
-      const { "onUpdate:value": _onUpdateValue, onUpdateValue, onSelect } = props;
+      const {
+        "onUpdate:value": _onUpdateValue,
+        onUpdateValue,
+        onSelect
+      } = props;
       if (onUpdateValue) {
         call(onUpdateValue, value, item);
       }
@@ -34374,7 +39507,12 @@ const NMenu = defineComponent({
       uncontrolledValueRef.value = value;
     }
     function doUpdateExpandedKeys(value) {
-      const { "onUpdate:expandedKeys": _onUpdateExpandedKeys, onUpdateExpandedKeys, onExpandedNamesChange, onOpenNamesChange } = props;
+      const {
+        "onUpdate:expandedKeys": _onUpdateExpandedKeys,
+        onUpdateExpandedKeys,
+        onExpandedNamesChange,
+        onOpenNamesChange
+      } = props;
       if (_onUpdateExpandedKeys) {
         call(_onUpdateExpandedKeys, value);
       }
@@ -34414,10 +39552,7 @@ const NMenu = defineComponent({
       if (!selectedKeyPath.length)
         return;
       const currentExpandedKeys = Array.from(mergedExpandedKeysRef.value);
-      const nextExpandedKeys = /* @__PURE__ */ new Set([
-        ...currentExpandedKeys,
-        ...selectedKeyPath
-      ]);
+      const nextExpandedKeys = /* @__PURE__ */ new Set([...currentExpandedKeys, ...selectedKeyPath]);
       if (props.accordion) {
         treeKeysLevelOneRef.value.forEach((firstLevelKey) => {
           if (nextExpandedKeys.has(firstLevelKey) && !selectedKeyPath.includes(firstLevelKey)) {
@@ -34428,9 +39563,22 @@ const NMenu = defineComponent({
       doUpdateExpandedKeys(Array.from(nextExpandedKeys));
     };
     const cssVarsRef = computed(() => {
-      const { inverted } = props;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
-      const { borderRadius, borderColorHorizontal, fontSize: fontSize2, itemHeight, dividerColor } = self2;
+      const {
+        inverted
+      } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: self2
+      } = themeRef.value;
+      const {
+        borderRadius,
+        borderColorHorizontal,
+        fontSize: fontSize2,
+        itemHeight,
+        dividerColor
+      } = self2;
       const vars = {
         "--n-divider-color": dividerColor,
         "--n-bezier": cubicBezierEaseInOut2,
@@ -34519,6 +39667,97 @@ const NMenu = defineComponent({
       return vars;
     });
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("menu", computed(() => props.inverted ? "a" : "b"), cssVarsRef, props) : void 0;
+    const ellipsisNodeId = createId();
+    const overflowRef = ref(null);
+    const counterRef = ref(null);
+    let isFirstResize = true;
+    const onResize = () => {
+      var _a2;
+      if (isFirstResize) {
+        isFirstResize = false;
+      } else {
+        (_a2 = overflowRef.value) === null || _a2 === void 0 ? void 0 : _a2.sync({
+          showAllItemsBeforeCalculate: true
+        });
+      }
+    };
+    function getCounter() {
+      return document.getElementById(ellipsisNodeId);
+    }
+    const ellipsisFromIndexRef = ref(-1);
+    function onUpdateCount(count) {
+      ellipsisFromIndexRef.value = props.options.length - count;
+    }
+    function onUpdateOverflow(overflow) {
+      if (!overflow) {
+        ellipsisFromIndexRef.value = -1;
+      }
+    }
+    const ellipsisOptionRef = computed(() => {
+      const ellipsisFromIndex = ellipsisFromIndexRef.value;
+      const option = {
+        children: ellipsisFromIndex === -1 ? [] : props.options.slice(ellipsisFromIndex)
+      };
+      return option;
+    });
+    const ellipsisTreeMateRef = computed(() => {
+      const {
+        childrenField,
+        disabledField,
+        keyField
+      } = props;
+      return createTreeMate([ellipsisOptionRef.value], {
+        getIgnored(node) {
+          return isIgnoredNode(node);
+        },
+        getChildren(node) {
+          return node[childrenField];
+        },
+        getDisabled(node) {
+          return node[disabledField];
+        },
+        getKey(node) {
+          var _a2;
+          return (_a2 = node[keyField]) !== null && _a2 !== void 0 ? _a2 : node.name;
+        }
+      });
+    });
+    const emptyTmNodeRef = computed(() => {
+      return createTreeMate([{}]).treeNodes[0];
+    });
+    function renderCounter() {
+      var _a2;
+      if (ellipsisFromIndexRef.value === -1) {
+        return h(NSubmenu, {
+          root: true,
+          level: 0,
+          key: "__ellpisisGroupPlaceholder__",
+          internalKey: "__ellpisisGroupPlaceholder__",
+          title: "···",
+          tmNode: emptyTmNodeRef.value,
+          domId: ellipsisNodeId,
+          isEllipsisPlaceholder: true
+        });
+      }
+      const tmNode = ellipsisTreeMateRef.value.treeNodes[0];
+      const activePath = activePathRef.value;
+      const childActive = !!((_a2 = tmNode.children) === null || _a2 === void 0 ? void 0 : _a2.some((tmNode2) => {
+        return activePath.includes(tmNode2.key);
+      }));
+      return h(NSubmenu, {
+        level: 0,
+        root: true,
+        key: "__ellpisisGroup__",
+        internalKey: "__ellpisisGroup__",
+        title: "···",
+        virtualChildActive: childActive,
+        tmNode,
+        domId: ellipsisNodeId,
+        rawNodes: tmNode.rawNode.children || [],
+        tmNodes: tmNode.children || [],
+        isEllipsisPlaceholder: true
+      });
+    }
     return {
       mergedClsPrefix: mergedClsPrefixRef,
       controlledExpandedKeys: controlledExpandedKeysRef,
@@ -34532,19 +39771,55 @@ const NMenu = defineComponent({
       mergedCollapsed: mergedCollapsedRef,
       cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
       themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      overflowRef,
+      counterRef,
+      updateCounter: () => {
+      },
+      onResize,
+      onUpdateOverflow,
+      onUpdateCount,
+      renderCounter,
+      getCounter,
       onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender,
-      showOption
+      showOption,
+      deriveResponsiveState: onResize
     };
   },
   render() {
-    const { mergedClsPrefix, mode, themeClass, onRender } = this;
-    onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h("div", { role: mode === "horizontal" ? "menubar" : "menu", class: [
-      `${mergedClsPrefix}-menu`,
+    const {
+      mergedClsPrefix,
+      mode,
       themeClass,
-      `${mergedClsPrefix}-menu--${mode}`,
-      this.mergedCollapsed && `${mergedClsPrefix}-menu--collapsed`
-    ], style: this.cssVars }, this.tmNodes.map((tmNode) => itemRenderer(tmNode, this.$props)));
+      onRender
+    } = this;
+    onRender === null || onRender === void 0 ? void 0 : onRender();
+    const renderMenuItemNodes = () => this.tmNodes.map((tmNode) => itemRenderer(tmNode, this.$props));
+    const horizontal = mode === "horizontal";
+    const finalResponsive = horizontal && this.responsive;
+    const renderMainNode = () => h("div", {
+      role: mode === "horizontal" ? "menubar" : "menu",
+      class: [`${mergedClsPrefix}-menu`, themeClass, `${mergedClsPrefix}-menu--${mode}`, finalResponsive && `${mergedClsPrefix}-menu--responsive`, this.mergedCollapsed && `${mergedClsPrefix}-menu--collapsed`],
+      style: this.cssVars
+    }, finalResponsive ? h(VOverflow, {
+      ref: "overflowRef",
+      onUpdateOverflow: this.onUpdateOverflow,
+      getCounter: this.getCounter,
+      onUpdateCount: this.onUpdateCount,
+      updateCounter: this.updateCounter,
+      style: {
+        width: "100%",
+        display: "flex",
+        overflow: "hidden"
+      }
+    }, {
+      default: renderMenuItemNodes,
+      counter: this.renderCounter
+    }) : renderMenuItemNodes());
+    return finalResponsive ? h(VResizeObserver, {
+      onResize: this.onResize
+    }, {
+      default: renderMainNode
+    }) : renderMainNode();
   }
 });
 const messageProps = {
@@ -34676,11 +39951,16 @@ const iconRenderMap$1 = {
   error: () => h(ErrorIcon, null),
   default: () => null
 };
-const NMessage = defineComponent({
+const NMessage = /* @__PURE__ */ defineComponent({
   name: "Message",
-  props: Object.assign(Object.assign({}, messageProps), { render: Function }),
+  props: Object.assign(Object.assign({}, messageProps), {
+    render: Function
+  }),
   setup(props) {
-    const { inlineThemeDisabled, mergedRtlRef } = useConfig(props);
+    const {
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig(props);
     const {
       props: messageProviderProps2,
       mergedClsPrefixRef
@@ -34689,8 +39969,41 @@ const NMessage = defineComponent({
     const rtlEnabledRef = useRtl("Message", mergedRtlRef, mergedClsPrefixRef);
     const themeRef = useTheme("Message", "-message", style$5, messageLight$1, messageProviderProps2, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { type } = props;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { padding, margin, maxWidth, iconMargin, closeMargin, closeSize, iconSize, fontSize: fontSize2, lineHeight: lineHeight2, borderRadius, iconColorInfo, iconColorSuccess, iconColorWarning, iconColorError, iconColorLoading, closeIconSize, closeBorderRadius, [createKey("textColor", type)]: textColor, [createKey("boxShadow", type)]: boxShadow, [createKey("color", type)]: color, [createKey("closeColorHover", type)]: closeColorHover, [createKey("closeColorPressed", type)]: closeColorPressed, [createKey("closeIconColor", type)]: closeIconColor, [createKey("closeIconColorPressed", type)]: closeIconColorPressed, [createKey("closeIconColorHover", type)]: closeIconColorHover } } = themeRef.value;
+      const {
+        type
+      } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          padding,
+          margin,
+          maxWidth,
+          iconMargin,
+          closeMargin,
+          closeSize,
+          iconSize,
+          fontSize: fontSize2,
+          lineHeight: lineHeight2,
+          borderRadius,
+          iconColorInfo,
+          iconColorSuccess,
+          iconColorWarning,
+          iconColorError,
+          iconColorLoading,
+          closeIconSize,
+          closeBorderRadius,
+          [createKey("textColor", type)]: textColor,
+          [createKey("boxShadow", type)]: boxShadow,
+          [createKey("color", type)]: color,
+          [createKey("closeColorHover", type)]: closeColorHover,
+          [createKey("closeColorPressed", type)]: closeColorPressed,
+          [createKey("closeIconColor", type)]: closeIconColor,
+          [createKey("closeIconColorPressed", type)]: closeIconColorPressed,
+          [createKey("closeIconColorHover", type)]: closeIconColorHover
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-margin": margin,
@@ -34736,45 +40049,64 @@ const NMessage = defineComponent({
     };
   },
   render() {
-    const { render: renderMessage, type, closable, content, mergedClsPrefix, cssVars, themeClass, onRender, icon, handleClose, showIcon } = this;
+    const {
+      render: renderMessage,
+      type,
+      closable,
+      content,
+      mergedClsPrefix,
+      cssVars,
+      themeClass,
+      onRender,
+      icon,
+      handleClose,
+      showIcon
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
     let iconNode;
-    return h("div", { class: [`${mergedClsPrefix}-message-wrapper`, themeClass], onMouseenter: this.onMouseenter, onMouseleave: this.onMouseleave, style: [
-      {
+    return h("div", {
+      class: [`${mergedClsPrefix}-message-wrapper`, themeClass],
+      onMouseenter: this.onMouseenter,
+      onMouseleave: this.onMouseleave,
+      style: [{
         alignItems: this.placement.startsWith("top") ? "flex-start" : "flex-end"
-      },
-      cssVars
-    ] }, renderMessage ? renderMessage(this.$props) : h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-message ${mergedClsPrefix}-message--${type}-type`,
-        this.rtlEnabled && `${mergedClsPrefix}-message--rtl`
-      ] },
-      (iconNode = createIconVNode(icon, type, mergedClsPrefix)) && showIcon ? h(
-        "div",
-        { class: `${mergedClsPrefix}-message__icon ${mergedClsPrefix}-message__icon--${type}-type` },
-        h(NIconSwitchTransition, null, {
-          default: () => iconNode
-        })
-      ) : null,
-      h("div", { class: `${mergedClsPrefix}-message__content` }, render$1(content)),
-      closable ? h(NBaseClose, { clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-message__close`, onClick: handleClose, absolute: true }) : null
-    ));
+      }, cssVars]
+    }, renderMessage ? renderMessage(this.$props) : h("div", {
+      class: [`${mergedClsPrefix}-message ${mergedClsPrefix}-message--${type}-type`, this.rtlEnabled && `${mergedClsPrefix}-message--rtl`]
+    }, (iconNode = createIconVNode(icon, type, mergedClsPrefix)) && showIcon ? h("div", {
+      class: `${mergedClsPrefix}-message__icon ${mergedClsPrefix}-message__icon--${type}-type`
+    }, h(NIconSwitchTransition, null, {
+      default: () => iconNode
+    })) : null, h("div", {
+      class: `${mergedClsPrefix}-message__content`
+    }, render$1(content)), closable ? h(NBaseClose, {
+      clsPrefix: mergedClsPrefix,
+      class: `${mergedClsPrefix}-message__close`,
+      onClick: handleClose,
+      absolute: true
+    }) : null));
   }
 });
 function createIconVNode(icon, type, clsPrefix) {
   if (typeof icon === "function") {
     return icon();
   } else {
-    const innerIcon = type === "loading" ? h(NBaseLoading, { clsPrefix, strokeWidth: 24, scale: 0.85 }) : iconRenderMap$1[type]();
+    const innerIcon = type === "loading" ? h(NBaseLoading, {
+      clsPrefix,
+      strokeWidth: 24,
+      scale: 0.85
+    }) : iconRenderMap$1[type]();
     if (!innerIcon)
       return null;
-    return h(NBaseIcon, { clsPrefix, key: type }, {
+    return h(NBaseIcon, {
+      clsPrefix,
+      key: type
+    }, {
       default: () => innerIcon
     });
   }
 }
-const MessageEnvironment = defineComponent({
+const MessageEnvironment = /* @__PURE__ */ defineComponent({
   name: "MessageEnvironment",
   props: Object.assign(Object.assign({}, messageProps), {
     duration: {
@@ -34800,9 +40132,11 @@ const MessageEnvironment = defineComponent({
       setHideTimeout();
     });
     function setHideTimeout() {
-      const { duration } = props;
-      if (duration) {
-        timerId = window.setTimeout(hide, duration);
+      const {
+        duration: duration2
+      } = props;
+      if (duration2) {
+        timerId = window.setTimeout(hide, duration2);
       }
     }
     function handleMouseenter(e) {
@@ -34819,7 +40153,9 @@ const MessageEnvironment = defineComponent({
       setHideTimeout();
     }
     function hide() {
-      const { onHide } = props;
+      const {
+        onHide
+      } = props;
       showRef.value = false;
       if (timerId) {
         window.clearTimeout(timerId);
@@ -34829,13 +40165,20 @@ const MessageEnvironment = defineComponent({
         onHide();
     }
     function handleClose() {
-      const { onClose } = props;
+      const {
+        onClose
+      } = props;
       if (onClose)
         onClose();
       hide();
     }
     function handleAfterLeave() {
-      const { onAfterLeave, onInternalAfterLeave, onAfterHide, internalKey } = props;
+      const {
+        onAfterLeave,
+        onInternalAfterLeave,
+        onAfterHide,
+        internalKey
+      } = props;
       if (onAfterLeave)
         onAfterLeave();
       if (onInternalAfterLeave)
@@ -34857,45 +40200,79 @@ const MessageEnvironment = defineComponent({
     };
   },
   render() {
-    return h(NFadeInExpandTransition, { appear: true, onAfterLeave: this.handleAfterLeave, onLeave: this.onLeave }, {
-      default: () => [
-        this.show ? h(NMessage, { content: this.content, type: this.type, icon: this.icon, showIcon: this.showIcon, closable: this.closable, onClose: this.handleClose, onMouseenter: this.keepAliveOnHover ? this.handleMouseenter : void 0, onMouseleave: this.keepAliveOnHover ? this.handleMouseleave : void 0 }) : null
-      ]
+    return h(NFadeInExpandTransition, {
+      appear: true,
+      onAfterLeave: this.handleAfterLeave,
+      onLeave: this.onLeave
+    }, {
+      default: () => [this.show ? h(NMessage, {
+        content: this.content,
+        type: this.type,
+        icon: this.icon,
+        showIcon: this.showIcon,
+        closable: this.closable,
+        onClose: this.handleClose,
+        onMouseenter: this.keepAliveOnHover ? this.handleMouseenter : void 0,
+        onMouseleave: this.keepAliveOnHover ? this.handleMouseleave : void 0
+      }) : null]
     });
   }
 });
-const messageProviderProps = Object.assign(Object.assign({}, useTheme.props), { to: [String, Object], duration: {
-  type: Number,
-  default: 3e3
-}, keepAliveOnHover: Boolean, max: Number, placement: {
-  type: String,
-  default: "top"
-}, closable: Boolean, containerStyle: [String, Object] });
-const NMessageProvider = defineComponent({
+const messageProviderProps = Object.assign(Object.assign({}, useTheme.props), {
+  to: [String, Object],
+  duration: {
+    type: Number,
+    default: 3e3
+  },
+  keepAliveOnHover: Boolean,
+  max: Number,
+  placement: {
+    type: String,
+    default: "top"
+  },
+  closable: Boolean,
+  containerClass: String,
+  containerStyle: [String, Object]
+});
+const NMessageProvider = /* @__PURE__ */ defineComponent({
   name: "MessageProvider",
   props: messageProviderProps,
   setup(props) {
-    const { mergedClsPrefixRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef
+    } = useConfig(props);
     const messageListRef = ref([]);
     const messageRefs = ref({});
     const api2 = {
       create(content, options) {
-        return create(content, Object.assign({ type: "default" }, options));
+        return create(content, Object.assign({
+          type: "default"
+        }, options));
       },
       info(content, options) {
-        return create(content, Object.assign(Object.assign({}, options), { type: "info" }));
+        return create(content, Object.assign(Object.assign({}, options), {
+          type: "info"
+        }));
       },
       success(content, options) {
-        return create(content, Object.assign(Object.assign({}, options), { type: "success" }));
+        return create(content, Object.assign(Object.assign({}, options), {
+          type: "success"
+        }));
       },
       warning(content, options) {
-        return create(content, Object.assign(Object.assign({}, options), { type: "warning" }));
+        return create(content, Object.assign(Object.assign({}, options), {
+          type: "warning"
+        }));
       },
       error(content, options) {
-        return create(content, Object.assign(Object.assign({}, options), { type: "error" }));
+        return create(content, Object.assign(Object.assign({}, options), {
+          type: "error"
+        }));
       },
       loading(content, options) {
-        return create(content, Object.assign(Object.assign({}, options), { type: "loading" }));
+        return create(content, Object.assign(Object.assign({}, options), {
+          type: "loading"
+        }));
       },
       destroyAll
     };
@@ -34914,7 +40291,9 @@ const NMessageProvider = defineComponent({
           (_a2 = messageRefs.value[key]) === null || _a2 === void 0 ? void 0 : _a2.hide();
         }
       }));
-      const { max } = props;
+      const {
+        max
+      } = props;
       if (max && messageListRef.value.length >= max) {
         messageListRef.value.shift();
       }
@@ -34939,25 +40318,27 @@ const NMessageProvider = defineComponent({
   },
   render() {
     var _a2, _b, _c;
-    return h(
-      Fragment,
-      null,
-      (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2),
-      this.messageList.length ? h(
-        Teleport,
-        { to: (_c = this.to) !== null && _c !== void 0 ? _c : "body" },
-        h("div", { class: [
-          `${this.mergedClsPrefix}-message-container`,
-          `${this.mergedClsPrefix}-message-container--${this.placement}`
-        ], key: "message-container", style: this.containerStyle }, this.messageList.map((message) => {
-          return h(MessageEnvironment, Object.assign({ ref: (inst) => {
-            if (inst) {
-              this.messageRefs[message.key] = inst;
-            }
-          }, internalKey: message.key, onInternalAfterLeave: this.handleAfterLeave }, omit(message, ["destroy"], void 0), { duration: message.duration === void 0 ? this.duration : message.duration, keepAliveOnHover: message.keepAliveOnHover === void 0 ? this.keepAliveOnHover : message.keepAliveOnHover, closable: message.closable === void 0 ? this.closable : message.closable }));
-        }))
-      ) : null
-    );
+    return h(Fragment, null, (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2), this.messageList.length ? h(Teleport, {
+      to: (_c = this.to) !== null && _c !== void 0 ? _c : "body"
+    }, h("div", {
+      class: [`${this.mergedClsPrefix}-message-container`, `${this.mergedClsPrefix}-message-container--${this.placement}`, this.containerClass],
+      key: "message-container",
+      style: this.containerStyle
+    }, this.messageList.map((message) => {
+      return h(MessageEnvironment, Object.assign({
+        ref: (inst) => {
+          if (inst) {
+            this.messageRefs[message.key] = inst;
+          }
+        },
+        internalKey: message.key,
+        onInternalAfterLeave: this.handleAfterLeave
+      }, omit(message, ["destroy"], void 0), {
+        duration: message.duration === void 0 ? this.duration : message.duration,
+        keepAliveOnHover: message.keepAliveOnHover === void 0 ? this.keepAliveOnHover : message.keepAliveOnHover,
+        closable: message.closable === void 0 ? this.closable : message.closable
+      }));
+    }))) : null);
   }
 });
 function useMessage() {
@@ -34968,7 +40349,7 @@ function useMessage() {
   return api2;
 }
 const notificationProviderInjectionKey = createInjectionKey("n-notification-provider");
-const NotificationContainer = defineComponent({
+const NotificationContainer = /* @__PURE__ */ defineComponent({
   name: "NotificationContainer",
   props: {
     scrollable: {
@@ -34981,7 +40362,11 @@ const NotificationContainer = defineComponent({
     }
   },
   setup() {
-    const { mergedThemeRef, mergedClsPrefixRef, wipTransitionCountRef } = inject(notificationProviderInjectionKey);
+    const {
+      mergedThemeRef,
+      mergedClsPrefixRef,
+      wipTransitionCountRef
+    } = inject(notificationProviderInjectionKey);
     const selfRef = ref(null);
     watchEffect(() => {
       var _a2, _b;
@@ -34999,12 +40384,23 @@ const NotificationContainer = defineComponent({
     };
   },
   render() {
-    const { $slots, scrollable, mergedClsPrefix, mergedTheme, placement } = this;
-    return h("div", { ref: "selfRef", class: [
-      `${mergedClsPrefix}-notification-container`,
-      scrollable && `${mergedClsPrefix}-notification-container--scrollable`,
-      `${mergedClsPrefix}-notification-container--${placement}`
-    ] }, scrollable ? h(NScrollbar$1, { theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, contentStyle: { overflow: "hidden" } }, $slots) : $slots);
+    const {
+      $slots,
+      scrollable,
+      mergedClsPrefix,
+      mergedTheme,
+      placement
+    } = this;
+    return h("div", {
+      ref: "selfRef",
+      class: [`${mergedClsPrefix}-notification-container`, scrollable && `${mergedClsPrefix}-notification-container--scrollable`, `${mergedClsPrefix}-notification-container--${placement}`]
+    }, scrollable ? h(NScrollbar$1, {
+      theme: mergedTheme.peers.Scrollbar,
+      themeOverrides: mergedTheme.peerOverrides.Scrollbar,
+      contentStyle: {
+        overflow: "hidden"
+      }
+    }, $slots) : $slots);
   }
 });
 const iconRenderMap = {
@@ -35038,7 +40434,7 @@ const notificationProps = {
   onMouseleave: Function
 };
 const notificationPropKeys = keysOf(notificationProps);
-const Notification = defineComponent({
+const Notification = /* @__PURE__ */ defineComponent({
   name: "Notification",
   props: notificationProps,
   setup(props) {
@@ -35048,12 +40444,55 @@ const Notification = defineComponent({
       props: providerProps
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(notificationProviderInjectionKey);
-    const { inlineThemeDisabled, mergedRtlRef } = useConfig();
+    const {
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig();
     const rtlEnabledRef = useRtl("Notification", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { type } = props;
-      const { self: { color, textColor, closeIconColor, closeIconColorHover, closeIconColorPressed, headerTextColor, descriptionTextColor, actionTextColor, borderRadius, headerFontWeight, boxShadow, lineHeight: lineHeight2, fontSize: fontSize2, closeMargin, closeSize, width, padding, closeIconSize, closeBorderRadius, closeColorHover, closeColorPressed, titleFontSize, metaFontSize, descriptionFontSize, [createKey("iconColor", type)]: iconColor }, common: { cubicBezierEaseOut: cubicBezierEaseOut2, cubicBezierEaseIn: cubicBezierEaseIn2, cubicBezierEaseInOut: cubicBezierEaseInOut2 } } = mergedThemeRef.value;
-      const { left, right, top, bottom } = getMargin(padding);
+      const {
+        type
+      } = props;
+      const {
+        self: {
+          color,
+          textColor,
+          closeIconColor,
+          closeIconColorHover,
+          closeIconColorPressed,
+          headerTextColor,
+          descriptionTextColor,
+          actionTextColor,
+          borderRadius,
+          headerFontWeight,
+          boxShadow,
+          lineHeight: lineHeight2,
+          fontSize: fontSize2,
+          closeMargin,
+          closeSize,
+          width,
+          padding,
+          closeIconSize,
+          closeBorderRadius,
+          closeColorHover,
+          closeColorPressed,
+          titleFontSize,
+          metaFontSize,
+          descriptionFontSize,
+          [createKey("iconColor", type)]: iconColor
+        },
+        common: {
+          cubicBezierEaseOut: cubicBezierEaseOut2,
+          cubicBezierEaseIn: cubicBezierEaseIn2,
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        }
+      } = mergedThemeRef.value;
+      const {
+        left,
+        right,
+        top,
+        bottom
+      } = getMargin(padding);
       return {
         "--n-color": color,
         "--n-font-size": fontSize2,
@@ -35105,39 +40544,47 @@ const Notification = defineComponent({
   },
   render() {
     var _a2;
-    const { mergedClsPrefix } = this;
+    const {
+      mergedClsPrefix
+    } = this;
     (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-    return h(
-      "div",
-      { class: [`${mergedClsPrefix}-notification-wrapper`, this.themeClass], onMouseenter: this.onMouseenter, onMouseleave: this.onMouseleave, style: this.cssVars },
-      h(
-        "div",
-        { class: [
-          `${mergedClsPrefix}-notification`,
-          this.rtlEnabled && `${mergedClsPrefix}-notification--rtl`,
-          this.themeClass,
-          {
-            [`${mergedClsPrefix}-notification--closable`]: this.closable,
-            [`${mergedClsPrefix}-notification--show-avatar`]: this.showAvatar
-          }
-        ], style: this.cssVars },
-        this.showAvatar ? h("div", { class: `${mergedClsPrefix}-notification__avatar` }, this.avatar ? render$1(this.avatar) : this.type !== "default" ? h(NBaseIcon, { clsPrefix: mergedClsPrefix }, { default: () => iconRenderMap[this.type]() }) : null) : null,
-        this.closable ? h(NBaseClose, { clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-notification__close`, onClick: this.handleCloseClick }) : null,
-        h(
-          "div",
-          { ref: "bodyRef", class: `${mergedClsPrefix}-notification-main` },
-          this.title ? h("div", { class: `${mergedClsPrefix}-notification-main__header` }, render$1(this.title)) : null,
-          this.description ? h("div", { class: `${mergedClsPrefix}-notification-main__description` }, render$1(this.description)) : null,
-          this.content ? h("pre", { class: `${mergedClsPrefix}-notification-main__content` }, render$1(this.content)) : null,
-          this.meta || this.action ? h(
-            "div",
-            { class: `${mergedClsPrefix}-notification-main-footer` },
-            this.meta ? h("div", { class: `${mergedClsPrefix}-notification-main-footer__meta` }, render$1(this.meta)) : null,
-            this.action ? h("div", { class: `${mergedClsPrefix}-notification-main-footer__action` }, render$1(this.action)) : null
-          ) : null
-        )
-      )
-    );
+    return h("div", {
+      class: [`${mergedClsPrefix}-notification-wrapper`, this.themeClass],
+      onMouseenter: this.onMouseenter,
+      onMouseleave: this.onMouseleave,
+      style: this.cssVars
+    }, h("div", {
+      class: [`${mergedClsPrefix}-notification`, this.rtlEnabled && `${mergedClsPrefix}-notification--rtl`, this.themeClass, {
+        [`${mergedClsPrefix}-notification--closable`]: this.closable,
+        [`${mergedClsPrefix}-notification--show-avatar`]: this.showAvatar
+      }],
+      style: this.cssVars
+    }, this.showAvatar ? h("div", {
+      class: `${mergedClsPrefix}-notification__avatar`
+    }, this.avatar ? render$1(this.avatar) : this.type !== "default" ? h(NBaseIcon, {
+      clsPrefix: mergedClsPrefix
+    }, {
+      default: () => iconRenderMap[this.type]()
+    }) : null) : null, this.closable ? h(NBaseClose, {
+      clsPrefix: mergedClsPrefix,
+      class: `${mergedClsPrefix}-notification__close`,
+      onClick: this.handleCloseClick
+    }) : null, h("div", {
+      ref: "bodyRef",
+      class: `${mergedClsPrefix}-notification-main`
+    }, this.title ? h("div", {
+      class: `${mergedClsPrefix}-notification-main__header`
+    }, render$1(this.title)) : null, this.description ? h("div", {
+      class: `${mergedClsPrefix}-notification-main__description`
+    }, render$1(this.description)) : null, this.content ? h("pre", {
+      class: `${mergedClsPrefix}-notification-main__content`
+    }, render$1(this.content)) : null, this.meta || this.action ? h("div", {
+      class: `${mergedClsPrefix}-notification-main-footer`
+    }, this.meta ? h("div", {
+      class: `${mergedClsPrefix}-notification-main-footer__meta`
+    }, render$1(this.meta)) : null, this.action ? h("div", {
+      class: `${mergedClsPrefix}-notification-main-footer__action`
+    }, render$1(this.action)) : null) : null)));
   }
 });
 const notificationEnvOptions = Object.assign(Object.assign({}, notificationProps), {
@@ -35153,7 +40600,7 @@ const notificationEnvOptions = Object.assign(Object.assign({}, notificationProps
   /** @deprecated */
   onAfterHide: Function
 });
-const NotificationEnvironment = defineComponent({
+const NotificationEnvironment = /* @__PURE__ */ defineComponent({
   name: "NotificationEnvironment",
   props: Object.assign(Object.assign({}, notificationEnvOptions), {
     // private
@@ -35194,7 +40641,10 @@ const NotificationEnvironment = defineComponent({
       wipTransitionCountRef.value--;
       el.style.height = "";
       el.style.maxHeight = "";
-      const { onAfterEnter, onAfterShow } = props;
+      const {
+        onAfterEnter,
+        onAfterShow
+      } = props;
       if (onAfterEnter)
         onAfterEnter();
       if (onAfterShow)
@@ -35207,7 +40657,9 @@ const NotificationEnvironment = defineComponent({
       void el.offsetHeight;
     }
     function handleLeave(el) {
-      const { onHide } = props;
+      const {
+        onHide
+      } = props;
       if (onHide)
         onHide();
       el.style.maxHeight = "0";
@@ -35215,7 +40667,12 @@ const NotificationEnvironment = defineComponent({
     }
     function handleAfterLeave() {
       wipTransitionCountRef.value--;
-      const { onAfterLeave, onInternalAfterLeave, onAfterHide, internalKey } = props;
+      const {
+        onAfterLeave,
+        onInternalAfterLeave,
+        onAfterHide,
+        internalKey
+      } = props;
       if (onAfterLeave)
         onAfterLeave();
       onInternalAfterLeave(internalKey);
@@ -35223,9 +40680,11 @@ const NotificationEnvironment = defineComponent({
         onAfterHide();
     }
     function setHideTimeout() {
-      const { duration } = props;
-      if (duration) {
-        timerId = window.setTimeout(hide, duration);
+      const {
+        duration: duration2
+      } = props;
+      if (duration2) {
+        timerId = window.setTimeout(hide, duration2);
       }
     }
     function handleMouseenter(e) {
@@ -35242,7 +40701,9 @@ const NotificationEnvironment = defineComponent({
       setHideTimeout();
     }
     function handleClose() {
-      const { onClose } = props;
+      const {
+        onClose
+      } = props;
       if (onClose) {
         void Promise.resolve(onClose()).then((feedback) => {
           if (feedback === false)
@@ -35275,7 +40736,7 @@ const NotificationEnvironment = defineComponent({
     return h(Transition, {
       name: "notification-transition",
       appear: true,
-      // convert to any since Element is not compitable with HTMLElement
+      // convert to any since Element is not compatible with HTMLElement
       onBeforeEnter: this.handleBeforeEnter,
       onAfterEnter: this.handleAfterEnter,
       onBeforeLeave: this.handleBeforeLeave,
@@ -35283,7 +40744,11 @@ const NotificationEnvironment = defineComponent({
       onAfterLeave: this.handleAfterLeave
     }, {
       default: () => {
-        return this.show ? h(Notification, Object.assign({}, keep(this.$props, notificationPropKeys), { onClose: this.handleClose, onMouseenter: this.duration && this.keepAliveOnHover ? this.handleMouseenter : void 0, onMouseleave: this.duration && this.keepAliveOnHover ? this.handleMouseleave : void 0 })) : null;
+        return this.show ? h(Notification, Object.assign({}, keep(this.$props, notificationPropKeys), {
+          onClose: this.handleClose,
+          onMouseenter: this.duration && this.keepAliveOnHover ? this.handleMouseenter : void 0,
+          onMouseleave: this.duration && this.keepAliveOnHover ? this.handleMouseleave : void 0
+        })) : null;
       }
     });
   }
@@ -35400,20 +40865,21 @@ const style$4 = c$1([cB("notification-container", `
  padding-left: var(--n-padding-left);
  padding-right: var(--n-padding-right);
  width: var(--n-width);
+ max-width: calc(100vw - 16px - 16px);
  border-radius: var(--n-border-radius);
  box-shadow: var(--n-box-shadow);
  box-sizing: border-box;
  opacity: 1;
- `, [cE("avatar", [cB("icon", {
-  color: "var(--n-icon-color)"
-}), cB("base-icon", {
-  color: "var(--n-icon-color)"
-})]), cM("show-avatar", [cB("notification-main", `
+ `, [cE("avatar", [cB("icon", `
+ color: var(--n-icon-color);
+ `), cB("base-icon", `
+ color: var(--n-icon-color);
+ `)]), cM("show-avatar", [cB("notification-main", `
  margin-left: 40px;
  width: calc(100% - 40px); 
- `)]), cM("closable", [cB("notification-main", [c$1("> *:first-child", {
-  paddingRight: "20px"
-})]), cE("close", `
+ `)]), cM("closable", [cB("notification-main", [c$1("> *:first-child", `
+ padding-right: 20px;
+ `)]), cE("close", `
  position: absolute;
  top: 0;
  right: 0;
@@ -35472,9 +40938,7 @@ const style$4 = c$1([cB("notification-container", `
  word-wrap: break-word;
  transition: color .3s var(--n-bezier-ease-out);
  color: var(--n-text-color);
- `, [c$1("&:first-child", {
-  margin: 0
-})])])])])]);
+ `, [c$1("&:first-child", "margin: 0;")])])])])]);
 function placementTransformStyle(placement) {
   const direction = placement.split("-")[1];
   const transformXEnter = direction === "left" ? "calc(-100%)" : "calc(100%)";
@@ -35486,18 +40950,28 @@ function placementTransformStyle(placement) {
  `)]);
 }
 const notificationApiInjectionKey = createInjectionKey("n-notification-api");
-const notificationProviderProps = Object.assign(Object.assign({}, useTheme.props), { containerStyle: [String, Object], to: [String, Object], scrollable: {
-  type: Boolean,
-  default: true
-}, max: Number, placement: {
-  type: String,
-  default: "top-right"
-}, keepAliveOnHover: Boolean });
-const NNotificationProvider = defineComponent({
+const notificationProviderProps = Object.assign(Object.assign({}, useTheme.props), {
+  containerClass: String,
+  containerStyle: [String, Object],
+  to: [String, Object],
+  scrollable: {
+    type: Boolean,
+    default: true
+  },
+  max: Number,
+  placement: {
+    type: String,
+    default: "top-right"
+  },
+  keepAliveOnHover: Boolean
+});
+const NNotificationProvider = /* @__PURE__ */ defineComponent({
   name: "NotificationProvider",
   props: notificationProviderProps,
   setup(props) {
-    const { mergedClsPrefixRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef
+    } = useConfig(props);
     const notificationListRef = ref([]);
     const notificationRefs = {};
     const leavingKeySet = /* @__PURE__ */ new Set();
@@ -35515,7 +40989,9 @@ const NNotificationProvider = defineComponent({
         hide: destroy,
         deactivate: destroy
       }));
-      const { max } = props;
+      const {
+        max
+      } = props;
       if (max && notificationListRef.value.length - leavingKeySet.size >= max) {
         let someoneMountedRemoved = false;
         let index2 = 0;
@@ -35537,7 +41013,9 @@ const NNotificationProvider = defineComponent({
       return notificationReactive;
     }
     const apis = ["info", "success", "warning", "error"].map((type) => {
-      return (options) => create(Object.assign(Object.assign({}, options), { type }));
+      return (options) => create(Object.assign(Object.assign({}, options), {
+        type
+      }));
     });
     function handleAfterLeave(key) {
       leavingKeySet.delete(key);
@@ -35578,33 +41056,35 @@ const NNotificationProvider = defineComponent({
   },
   render() {
     var _a2, _b, _c;
-    const { placement } = this;
-    return h(
-      Fragment,
-      null,
-      (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2),
-      this.notificationList.length ? h(
-        Teleport,
-        { to: (_c = this.to) !== null && _c !== void 0 ? _c : "body" },
-        h(NotificationContainer, { style: this.containerStyle, scrollable: this.scrollable && placement !== "top" && placement !== "bottom", placement }, {
-          default: () => {
-            return this.notificationList.map((notification) => {
-              return h(NotificationEnvironment, Object.assign({ ref: (inst) => {
-                const refKey = notification.key;
-                if (inst === null) {
-                  delete this.notificationRefs[refKey];
-                } else
-                  this.notificationRefs[refKey] = inst;
-              } }, omit(notification, [
-                "destroy",
-                "hide",
-                "deactivate"
-              ]), { internalKey: notification.key, onInternalAfterLeave: this.handleAfterLeave, keepAliveOnHover: notification.keepAliveOnHover === void 0 ? this.keepAliveOnHover : notification.keepAliveOnHover }));
-            });
-          }
-        })
-      ) : null
-    );
+    const {
+      placement
+    } = this;
+    return h(Fragment, null, (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2), this.notificationList.length ? h(Teleport, {
+      to: (_c = this.to) !== null && _c !== void 0 ? _c : "body"
+    }, h(NotificationContainer, {
+      class: this.containerClass,
+      style: this.containerStyle,
+      scrollable: this.scrollable && placement !== "top" && placement !== "bottom",
+      placement
+    }, {
+      default: () => {
+        return this.notificationList.map((notification) => {
+          return h(NotificationEnvironment, Object.assign({
+            ref: (inst) => {
+              const refKey = notification.key;
+              if (inst === null) {
+                delete this.notificationRefs[refKey];
+              } else
+                this.notificationRefs[refKey] = inst;
+            }
+          }, omit(notification, ["destroy", "hide", "deactivate"]), {
+            internalKey: notification.key,
+            onInternalAfterLeave: this.handleAfterLeave,
+            keepAliveOnHover: notification.keepAliveOnHover === void 0 ? this.keepAliveOnHover : notification.keepAliveOnHover
+          }));
+        });
+      }
+    })) : null);
   }
 });
 function useNotification() {
@@ -35800,7 +41280,7 @@ const iconMap$2 = {
   warning: h(WarningIcon, null),
   info: h(InfoIcon, null)
 };
-const Line = defineComponent({
+const Line = /* @__PURE__ */ defineComponent({
   name: "ProgressLine",
   props: {
     clsPrefix: {
@@ -35839,7 +41319,9 @@ const Line = defineComponent({
     railBorderRadius: [String, Number],
     fillBorderRadius: [String, Number]
   },
-  setup(props, { slots }) {
+  setup(props, {
+    slots
+  }) {
     const styleHeightRef = computed(() => {
       return formatLength(props.height);
     });
@@ -35848,7 +41330,9 @@ const Line = defineComponent({
         return formatLength(props.railBorderRadius);
       }
       if (props.height !== void 0) {
-        return formatLength(props.height, { c: 0.5 });
+        return formatLength(props.height, {
+          c: 0.5
+        });
       }
       return "";
     });
@@ -35860,66 +41344,77 @@ const Line = defineComponent({
         return formatLength(props.railBorderRadius);
       }
       if (props.height !== void 0) {
-        return formatLength(props.height, { c: 0.5 });
+        return formatLength(props.height, {
+          c: 0.5
+        });
       }
       return "";
     });
     return () => {
-      const { indicatorPlacement, railColor, railStyle, percentage, unit, indicatorTextColor, status, showIndicator, fillColor, processing, clsPrefix } = props;
-      return h(
-        "div",
-        { class: `${clsPrefix}-progress-content`, role: "none" },
-        h(
-          "div",
-          { class: `${clsPrefix}-progress-graph`, "aria-hidden": true },
-          h(
-            "div",
-            { class: [
-              `${clsPrefix}-progress-graph-line`,
-              {
-                [`${clsPrefix}-progress-graph-line--indicator-${indicatorPlacement}`]: true
-              }
-            ] },
-            h(
-              "div",
-              { class: `${clsPrefix}-progress-graph-line-rail`, style: [
-                {
-                  backgroundColor: railColor,
-                  height: styleHeightRef.value,
-                  borderRadius: styleRailBorderRadiusRef.value
-                },
-                railStyle
-              ] },
-              h("div", { class: [
-                `${clsPrefix}-progress-graph-line-fill`,
-                processing && `${clsPrefix}-progress-graph-line-fill--processing`
-              ], style: {
-                maxWidth: `${props.percentage}%`,
-                backgroundColor: fillColor,
-                height: styleHeightRef.value,
-                lineHeight: styleHeightRef.value,
-                borderRadius: styleFillBorderRadiusRef.value
-              } }, indicatorPlacement === "inside" ? h("div", { class: `${clsPrefix}-progress-graph-line-indicator`, style: {
-                color: indicatorTextColor
-              } }, slots.default ? slots.default() : `${percentage}${unit}`) : null)
-            )
-          )
-        ),
-        showIndicator && indicatorPlacement === "outside" ? h("div", null, slots.default ? h("div", { class: `${clsPrefix}-progress-custom-content`, style: {
+      const {
+        indicatorPlacement,
+        railColor,
+        railStyle,
+        percentage,
+        unit,
+        indicatorTextColor,
+        status,
+        showIndicator,
+        fillColor,
+        processing,
+        clsPrefix
+      } = props;
+      return h("div", {
+        class: `${clsPrefix}-progress-content`,
+        role: "none"
+      }, h("div", {
+        class: `${clsPrefix}-progress-graph`,
+        "aria-hidden": true
+      }, h("div", {
+        class: [`${clsPrefix}-progress-graph-line`, {
+          [`${clsPrefix}-progress-graph-line--indicator-${indicatorPlacement}`]: true
+        }]
+      }, h("div", {
+        class: `${clsPrefix}-progress-graph-line-rail`,
+        style: [{
+          backgroundColor: railColor,
+          height: styleHeightRef.value,
+          borderRadius: styleRailBorderRadiusRef.value
+        }, railStyle]
+      }, h("div", {
+        class: [`${clsPrefix}-progress-graph-line-fill`, processing && `${clsPrefix}-progress-graph-line-fill--processing`],
+        style: {
+          maxWidth: `${props.percentage}%`,
+          backgroundColor: fillColor,
+          height: styleHeightRef.value,
+          lineHeight: styleHeightRef.value,
+          borderRadius: styleFillBorderRadiusRef.value
+        }
+      }, indicatorPlacement === "inside" ? h("div", {
+        class: `${clsPrefix}-progress-graph-line-indicator`,
+        style: {
           color: indicatorTextColor
-        }, role: "none" }, slots.default()) : status === "default" ? h(
-          "div",
-          { role: "none", class: `${clsPrefix}-progress-icon ${clsPrefix}-progress-icon--as-text`, style: {
-            color: indicatorTextColor
-          } },
-          percentage,
-          unit
-        ) : h(
-          "div",
-          { class: `${clsPrefix}-progress-icon`, "aria-hidden": true },
-          h(NBaseIcon, { clsPrefix }, { default: () => iconMap$2[status] })
-        )) : null
-      );
+        }
+      }, slots.default ? slots.default() : `${percentage}${unit}`) : null)))), showIndicator && indicatorPlacement === "outside" ? h("div", null, slots.default ? h("div", {
+        class: `${clsPrefix}-progress-custom-content`,
+        style: {
+          color: indicatorTextColor
+        },
+        role: "none"
+      }, slots.default()) : status === "default" ? h("div", {
+        role: "none",
+        class: `${clsPrefix}-progress-icon ${clsPrefix}-progress-icon--as-text`,
+        style: {
+          color: indicatorTextColor
+        }
+      }, percentage, unit) : h("div", {
+        class: `${clsPrefix}-progress-icon`,
+        "aria-hidden": true
+      }, h(NBaseIcon, {
+        clsPrefix
+      }, {
+        default: () => iconMap$2[status]
+      }))) : null);
     };
   }
 });
@@ -35929,7 +41424,7 @@ const iconMap$1 = {
   warning: h(WarningIcon, null),
   info: h(InfoIcon, null)
 };
-const Circle = defineComponent({
+const Circle = /* @__PURE__ */ defineComponent({
   name: "ProgressCircle",
   props: {
     clsPrefix: {
@@ -35974,9 +41469,15 @@ const Circle = defineComponent({
       default: 0
     }
   },
-  setup(props, { slots }) {
+  setup(props, {
+    slots
+  }) {
     function getPathStyles(percent2, offsetDegree, strokeColor) {
-      const { gapDegree, viewBoxWidth, strokeWidth } = props;
+      const {
+        gapDegree,
+        viewBoxWidth,
+        strokeWidth
+      } = props;
       const radius = 50;
       const beginPositionX = 0;
       const beginPositionY = radius;
@@ -36000,62 +41501,83 @@ const Circle = defineComponent({
       };
     }
     return () => {
-      const { fillColor, railColor, strokeWidth, offsetDegree, status, percentage, showIndicator, indicatorTextColor, unit, gapOffsetDegree, clsPrefix } = props;
-      const { pathString: railPathString, pathStyle: railPathStyle } = getPathStyles(100, 0, railColor);
-      const { pathString: fillPathString, pathStyle: fillPathStyle } = getPathStyles(percentage, offsetDegree, fillColor);
+      const {
+        fillColor,
+        railColor,
+        strokeWidth,
+        offsetDegree,
+        status,
+        percentage,
+        showIndicator,
+        indicatorTextColor,
+        unit,
+        gapOffsetDegree,
+        clsPrefix
+      } = props;
+      const {
+        pathString: railPathString,
+        pathStyle: railPathStyle
+      } = getPathStyles(100, 0, railColor);
+      const {
+        pathString: fillPathString,
+        pathStyle: fillPathStyle
+      } = getPathStyles(percentage, offsetDegree, fillColor);
       const viewBoxSize = 100 + strokeWidth;
-      return h(
-        "div",
-        { class: `${clsPrefix}-progress-content`, role: "none" },
-        h(
-          "div",
-          { class: `${clsPrefix}-progress-graph`, "aria-hidden": true },
-          h(
-            "div",
-            { class: `${clsPrefix}-progress-graph-circle`, style: {
-              transform: gapOffsetDegree ? `rotate(${gapOffsetDegree}deg)` : void 0
-            } },
-            h(
-              "svg",
-              { viewBox: `0 0 ${viewBoxSize} ${viewBoxSize}` },
-              h(
-                "g",
-                null,
-                h("path", { class: `${clsPrefix}-progress-graph-circle-rail`, d: railPathString, "stroke-width": strokeWidth, "stroke-linecap": "round", fill: "none", style: railPathStyle })
-              ),
-              h(
-                "g",
-                null,
-                h("path", { class: [
-                  `${clsPrefix}-progress-graph-circle-fill`,
-                  percentage === 0 && `${clsPrefix}-progress-graph-circle-fill--empty`
-                ], d: fillPathString, "stroke-width": strokeWidth, "stroke-linecap": "round", fill: "none", style: fillPathStyle })
-              )
-            )
-          )
-        ),
-        showIndicator ? h("div", null, slots.default ? h("div", { class: `${clsPrefix}-progress-custom-content`, role: "none" }, slots.default()) : status !== "default" ? h(
-          "div",
-          { class: `${clsPrefix}-progress-icon`, "aria-hidden": true },
-          h(NBaseIcon, { clsPrefix }, {
-            default: () => iconMap$1[status]
-          })
-        ) : h(
-          "div",
-          { class: `${clsPrefix}-progress-text`, style: {
-            color: indicatorTextColor
-          }, role: "none" },
-          h("span", { class: `${clsPrefix}-progress-text__percentage` }, percentage),
-          h("span", { class: `${clsPrefix}-progress-text__unit` }, unit)
-        )) : null
-      );
+      return h("div", {
+        class: `${clsPrefix}-progress-content`,
+        role: "none"
+      }, h("div", {
+        class: `${clsPrefix}-progress-graph`,
+        "aria-hidden": true
+      }, h("div", {
+        class: `${clsPrefix}-progress-graph-circle`,
+        style: {
+          transform: gapOffsetDegree ? `rotate(${gapOffsetDegree}deg)` : void 0
+        }
+      }, h("svg", {
+        viewBox: `0 0 ${viewBoxSize} ${viewBoxSize}`
+      }, h("g", null, h("path", {
+        class: `${clsPrefix}-progress-graph-circle-rail`,
+        d: railPathString,
+        "stroke-width": strokeWidth,
+        "stroke-linecap": "round",
+        fill: "none",
+        style: railPathStyle
+      })), h("g", null, h("path", {
+        class: [`${clsPrefix}-progress-graph-circle-fill`, percentage === 0 && `${clsPrefix}-progress-graph-circle-fill--empty`],
+        d: fillPathString,
+        "stroke-width": strokeWidth,
+        "stroke-linecap": "round",
+        fill: "none",
+        style: fillPathStyle
+      }))))), showIndicator ? h("div", null, slots.default ? h("div", {
+        class: `${clsPrefix}-progress-custom-content`,
+        role: "none"
+      }, slots.default()) : status !== "default" ? h("div", {
+        class: `${clsPrefix}-progress-icon`,
+        "aria-hidden": true
+      }, h(NBaseIcon, {
+        clsPrefix
+      }, {
+        default: () => iconMap$1[status]
+      })) : h("div", {
+        class: `${clsPrefix}-progress-text`,
+        style: {
+          color: indicatorTextColor
+        },
+        role: "none"
+      }, h("span", {
+        class: `${clsPrefix}-progress-text__percentage`
+      }, percentage), h("span", {
+        class: `${clsPrefix}-progress-text__unit`
+      }, unit))) : null);
     };
   }
 });
 function circlePath(r, sw, vw = 100) {
   return `m ${vw / 2} ${vw / 2 - r} a ${r} ${r} 0 1 1 0 ${2 * r} a ${r} ${r} 0 1 1 0 -${2 * r}`;
 }
-const MultipleCircle = defineComponent({
+const MultipleCircle = /* @__PURE__ */ defineComponent({
   name: "ProgressMultipleCircle",
   props: {
     clsPrefix: {
@@ -36095,83 +41617,117 @@ const MultipleCircle = defineComponent({
       default: () => []
     }
   },
-  setup(props, { slots }) {
+  setup(props, {
+    slots
+  }) {
     const strokeDasharrayRef = computed(() => {
       const strokeDasharrays = props.percentage.map((v, i) => `${Math.PI * v / 100 * (props.viewBoxWidth / 2 - props.strokeWidth / 2 * (1 + 2 * i) - props.circleGap * i) * 2}, ${props.viewBoxWidth * 8}`);
       return strokeDasharrays;
     });
     return () => {
-      const { viewBoxWidth, strokeWidth, circleGap, showIndicator, fillColor, railColor, railStyle, percentage, clsPrefix } = props;
-      return h(
-        "div",
-        { class: `${clsPrefix}-progress-content`, role: "none" },
-        h(
-          "div",
-          { class: `${clsPrefix}-progress-graph`, "aria-hidden": true },
-          h(
-            "div",
-            { class: `${clsPrefix}-progress-graph-circle` },
-            h("svg", { viewBox: `0 0 ${viewBoxWidth} ${viewBoxWidth}` }, percentage.map((p2, index2) => {
-              return h(
-                "g",
-                { key: index2 },
-                h("path", { class: `${clsPrefix}-progress-graph-circle-rail`, d: circlePath(viewBoxWidth / 2 - strokeWidth / 2 * (1 + 2 * index2) - circleGap * index2, strokeWidth, viewBoxWidth), "stroke-width": strokeWidth, "stroke-linecap": "round", fill: "none", style: [
-                  {
-                    strokeDashoffset: 0,
-                    stroke: railColor[index2]
-                  },
-                  railStyle[index2]
-                ] }),
-                h("path", { class: [
-                  `${clsPrefix}-progress-graph-circle-fill`,
-                  p2 === 0 && `${clsPrefix}-progress-graph-circle-fill--empty`
-                ], d: circlePath(viewBoxWidth / 2 - strokeWidth / 2 * (1 + 2 * index2) - circleGap * index2, strokeWidth, viewBoxWidth), "stroke-width": strokeWidth, "stroke-linecap": "round", fill: "none", style: {
-                  strokeDasharray: strokeDasharrayRef.value[index2],
-                  strokeDashoffset: 0,
-                  stroke: fillColor[index2]
-                } })
-              );
-            }))
-          )
-        ),
-        showIndicator && slots.default ? h(
-          "div",
-          null,
-          h("div", { class: `${clsPrefix}-progress-text` }, slots.default())
-        ) : null
-      );
+      const {
+        viewBoxWidth,
+        strokeWidth,
+        circleGap,
+        showIndicator,
+        fillColor,
+        railColor,
+        railStyle,
+        percentage,
+        clsPrefix
+      } = props;
+      return h("div", {
+        class: `${clsPrefix}-progress-content`,
+        role: "none"
+      }, h("div", {
+        class: `${clsPrefix}-progress-graph`,
+        "aria-hidden": true
+      }, h("div", {
+        class: `${clsPrefix}-progress-graph-circle`
+      }, h("svg", {
+        viewBox: `0 0 ${viewBoxWidth} ${viewBoxWidth}`
+      }, percentage.map((p2, index2) => {
+        return h("g", {
+          key: index2
+        }, h("path", {
+          class: `${clsPrefix}-progress-graph-circle-rail`,
+          d: circlePath(viewBoxWidth / 2 - strokeWidth / 2 * (1 + 2 * index2) - circleGap * index2, strokeWidth, viewBoxWidth),
+          "stroke-width": strokeWidth,
+          "stroke-linecap": "round",
+          fill: "none",
+          style: [{
+            strokeDashoffset: 0,
+            stroke: railColor[index2]
+          }, railStyle[index2]]
+        }), h("path", {
+          class: [`${clsPrefix}-progress-graph-circle-fill`, p2 === 0 && `${clsPrefix}-progress-graph-circle-fill--empty`],
+          d: circlePath(viewBoxWidth / 2 - strokeWidth / 2 * (1 + 2 * index2) - circleGap * index2, strokeWidth, viewBoxWidth),
+          "stroke-width": strokeWidth,
+          "stroke-linecap": "round",
+          fill: "none",
+          style: {
+            strokeDasharray: strokeDasharrayRef.value[index2],
+            strokeDashoffset: 0,
+            stroke: fillColor[index2]
+          }
+        }));
+      })))), showIndicator && slots.default ? h("div", null, h("div", {
+        class: `${clsPrefix}-progress-text`
+      }, slots.default())) : null);
     };
   }
 });
-const progressProps = Object.assign(Object.assign({}, useTheme.props), { processing: Boolean, type: {
-  type: String,
-  default: "line"
-}, gapDegree: Number, gapOffsetDegree: Number, status: {
-  type: String,
-  default: "default"
-}, railColor: [String, Array], railStyle: [String, Array], color: [String, Array], viewBoxWidth: {
-  type: Number,
-  default: 100
-}, strokeWidth: {
-  type: Number,
-  default: 7
-}, percentage: [Number, Array], unit: {
-  type: String,
-  default: "%"
-}, showIndicator: {
-  type: Boolean,
-  default: true
-}, indicatorPosition: {
-  type: String,
-  default: "outside"
-}, indicatorPlacement: {
-  type: String,
-  default: "outside"
-}, indicatorTextColor: String, circleGap: {
-  type: Number,
-  default: 1
-}, height: Number, borderRadius: [String, Number], fillBorderRadius: [String, Number], offsetDegree: Number });
-const NProgress = defineComponent({
+const progressProps = Object.assign(Object.assign({}, useTheme.props), {
+  processing: Boolean,
+  type: {
+    type: String,
+    default: "line"
+  },
+  gapDegree: Number,
+  gapOffsetDegree: Number,
+  status: {
+    type: String,
+    default: "default"
+  },
+  railColor: [String, Array],
+  railStyle: [String, Array],
+  color: [String, Array],
+  viewBoxWidth: {
+    type: Number,
+    default: 100
+  },
+  strokeWidth: {
+    type: Number,
+    default: 7
+  },
+  percentage: [Number, Array],
+  unit: {
+    type: String,
+    default: "%"
+  },
+  showIndicator: {
+    type: Boolean,
+    default: true
+  },
+  indicatorPosition: {
+    type: String,
+    default: "outside"
+  },
+  indicatorPlacement: {
+    type: String,
+    default: "outside"
+  },
+  indicatorTextColor: String,
+  circleGap: {
+    type: Number,
+    default: 1
+  },
+  height: Number,
+  borderRadius: [String, Number],
+  fillBorderRadius: [String, Number],
+  offsetDegree: Number
+});
+const NProgress = /* @__PURE__ */ defineComponent({
   name: "Progress",
   props: progressProps,
   setup(props) {
@@ -36187,11 +41743,35 @@ const NProgress = defineComponent({
       }
       return void 0;
     });
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Progress", "-progress", style$3, progressLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { status } = props;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { fontSize: fontSize2, fontSizeCircle, railColor, railHeight, iconSizeCircle, iconSizeLine, textColorCircle, textColorLineInner, textColorLineOuter, lineBgProcessing, fontWeightCircle, [createKey("iconColor", status)]: iconColor, [createKey("fillColor", status)]: fillColor } } = themeRef.value;
+      const {
+        status
+      } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          fontSize: fontSize2,
+          fontSizeCircle,
+          railColor,
+          railHeight,
+          iconSizeCircle,
+          iconSizeLine,
+          textColorCircle,
+          textColorLineInner,
+          textColorLineOuter,
+          lineBgProcessing,
+          fontWeightCircle,
+          [createKey("iconColor", status)]: iconColor,
+          [createKey("fillColor", status)]: fillColor
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-fill-color": fillColor,
@@ -36220,49 +41800,191 @@ const NProgress = defineComponent({
     };
   },
   render() {
-    const { type, cssVars, indicatorTextColor, showIndicator, status, railColor, railStyle, color, percentage, viewBoxWidth, strokeWidth, mergedIndicatorPlacement, unit, borderRadius, fillBorderRadius, height, processing, circleGap, mergedClsPrefix, gapDeg, gapOffsetDegree, themeClass, $slots, onRender } = this;
-    onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h("div", { class: [
+    const {
+      type,
+      cssVars,
+      indicatorTextColor,
+      showIndicator,
+      status,
+      railColor,
+      railStyle,
+      color,
+      percentage,
+      viewBoxWidth,
+      strokeWidth,
+      mergedIndicatorPlacement,
+      unit,
+      borderRadius,
+      fillBorderRadius,
+      height,
+      processing,
+      circleGap,
+      mergedClsPrefix,
+      gapDeg,
+      gapOffsetDegree,
       themeClass,
-      `${mergedClsPrefix}-progress`,
-      `${mergedClsPrefix}-progress--${type}`,
-      `${mergedClsPrefix}-progress--${status}`
-    ], style: cssVars, "aria-valuemax": 100, "aria-valuemin": 0, "aria-valuenow": percentage, role: type === "circle" || type === "line" || type === "dashboard" ? "progressbar" : "none" }, type === "circle" || type === "dashboard" ? h(Circle, { clsPrefix: mergedClsPrefix, status, showIndicator, indicatorTextColor, railColor, fillColor: color, railStyle, offsetDegree: this.offsetDegree, percentage, viewBoxWidth, strokeWidth, gapDegree: gapDeg === void 0 ? type === "dashboard" ? 75 : 0 : gapDeg, gapOffsetDegree, unit }, $slots) : type === "line" ? h(Line, { clsPrefix: mergedClsPrefix, status, showIndicator, indicatorTextColor, railColor, fillColor: color, railStyle, percentage, processing, indicatorPlacement: mergedIndicatorPlacement, unit, fillBorderRadius, railBorderRadius: borderRadius, height }, $slots) : type === "multiple-circle" ? h(MultipleCircle, { clsPrefix: mergedClsPrefix, strokeWidth, railColor, fillColor: color, railStyle, viewBoxWidth, percentage, showIndicator, circleGap }, $slots) : null);
+      $slots,
+      onRender
+    } = this;
+    onRender === null || onRender === void 0 ? void 0 : onRender();
+    return h("div", {
+      class: [themeClass, `${mergedClsPrefix}-progress`, `${mergedClsPrefix}-progress--${type}`, `${mergedClsPrefix}-progress--${status}`],
+      style: cssVars,
+      "aria-valuemax": 100,
+      "aria-valuemin": 0,
+      "aria-valuenow": percentage,
+      role: type === "circle" || type === "line" || type === "dashboard" ? "progressbar" : "none"
+    }, type === "circle" || type === "dashboard" ? h(Circle, {
+      clsPrefix: mergedClsPrefix,
+      status,
+      showIndicator,
+      indicatorTextColor,
+      railColor,
+      fillColor: color,
+      railStyle,
+      offsetDegree: this.offsetDegree,
+      percentage,
+      viewBoxWidth,
+      strokeWidth,
+      gapDegree: gapDeg === void 0 ? type === "dashboard" ? 75 : 0 : gapDeg,
+      gapOffsetDegree,
+      unit
+    }, $slots) : type === "line" ? h(Line, {
+      clsPrefix: mergedClsPrefix,
+      status,
+      showIndicator,
+      indicatorTextColor,
+      railColor,
+      fillColor: color,
+      railStyle,
+      percentage,
+      processing,
+      indicatorPlacement: mergedIndicatorPlacement,
+      unit,
+      fillBorderRadius,
+      railBorderRadius: borderRadius,
+      height
+    }, $slots) : type === "multiple-circle" ? h(MultipleCircle, {
+      clsPrefix: mergedClsPrefix,
+      strokeWidth,
+      railColor,
+      fillColor: color,
+      railStyle,
+      viewBoxWidth,
+      percentage,
+      showIndicator,
+      circleGap
+    }, $slots) : null);
   }
 });
-const image404 = h(
-  "svg",
-  { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 36 36" },
-  h("circle", { fill: "#FFCB4C", cx: "18", cy: "17.018", r: "17" }),
-  h("path", { fill: "#65471B", d: "M14.524 21.036c-.145-.116-.258-.274-.312-.464-.134-.46.13-.918.59-1.021 4.528-1.021 7.577 1.363 7.706 1.465.384.306.459.845.173 1.205-.286.358-.828.401-1.211.097-.11-.084-2.523-1.923-6.182-1.098-.274.061-.554-.016-.764-.184z" }),
-  h("ellipse", { fill: "#65471B", cx: "13.119", cy: "11.174", rx: "2.125", ry: "2.656" }),
-  h("ellipse", { fill: "#65471B", cx: "24.375", cy: "12.236", rx: "2.125", ry: "2.656" }),
-  h("path", { fill: "#F19020", d: "M17.276 35.149s1.265-.411 1.429-1.352c.173-.972-.624-1.167-.624-1.167s1.041-.208 1.172-1.376c.123-1.101-.861-1.363-.861-1.363s.97-.4 1.016-1.539c.038-.959-.995-1.428-.995-1.428s5.038-1.221 5.556-1.341c.516-.12 1.32-.615 1.069-1.694-.249-1.08-1.204-1.118-1.697-1.003-.494.115-6.744 1.566-8.9 2.068l-1.439.334c-.54.127-.785-.11-.404-.512.508-.536.833-1.129.946-2.113.119-1.035-.232-2.313-.433-2.809-.374-.921-1.005-1.649-1.734-1.899-1.137-.39-1.945.321-1.542 1.561.604 1.854.208 3.375-.833 4.293-2.449 2.157-3.588 3.695-2.83 6.973.828 3.575 4.377 5.876 7.952 5.048l3.152-.681z" }),
-  h("path", { fill: "#65471B", d: "M9.296 6.351c-.164-.088-.303-.224-.391-.399-.216-.428-.04-.927.393-1.112 4.266-1.831 7.699-.043 7.843.034.433.231.608.747.391 1.154-.216.405-.74.546-1.173.318-.123-.063-2.832-1.432-6.278.047-.257.109-.547.085-.785-.042zm12.135 3.75c-.156-.098-.286-.243-.362-.424-.187-.442.023-.927.468-1.084 4.381-1.536 7.685.48 7.823.567.415.26.555.787.312 1.178-.242.39-.776.495-1.191.238-.12-.072-2.727-1.621-6.267-.379-.266.091-.553.046-.783-.096z" })
-);
-const image500 = h(
-  "svg",
-  { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 36 36" },
-  h("path", { fill: "#FFCC4D", d: "M36 18c0 9.941-8.059 18-18 18-9.94 0-18-8.059-18-18C0 8.06 8.06 0 18 0c9.941 0 18 8.06 18 18" }),
-  h("ellipse", { fill: "#664500", cx: "18", cy: "27", rx: "5", ry: "6" }),
-  h("path", { fill: "#664500", d: "M5.999 11c-.208 0-.419-.065-.599-.2-.442-.331-.531-.958-.2-1.4C8.462 5.05 12.816 5 13 5c.552 0 1 .448 1 1 0 .551-.445.998-.996 1-.155.002-3.568.086-6.204 3.6-.196.262-.497.4-.801.4zm24.002 0c-.305 0-.604-.138-.801-.4-2.64-3.521-6.061-3.598-6.206-3.6-.55-.006-.994-.456-.991-1.005C22.006 5.444 22.45 5 23 5c.184 0 4.537.05 7.8 4.4.332.442.242 1.069-.2 1.4-.18.135-.39.2-.599.2zm-16.087 4.5l1.793-1.793c.391-.391.391-1.023 0-1.414s-1.023-.391-1.414 0L12.5 14.086l-1.793-1.793c-.391-.391-1.023-.391-1.414 0s-.391 1.023 0 1.414l1.793 1.793-1.793 1.793c-.391.391-.391 1.023 0 1.414.195.195.451.293.707.293s.512-.098.707-.293l1.793-1.793 1.793 1.793c.195.195.451.293.707.293s.512-.098.707-.293c.391-.391.391-1.023 0-1.414L13.914 15.5zm11 0l1.793-1.793c.391-.391.391-1.023 0-1.414s-1.023-.391-1.414 0L23.5 14.086l-1.793-1.793c-.391-.391-1.023-.391-1.414 0s-.391 1.023 0 1.414l1.793 1.793-1.793 1.793c-.391.391-.391 1.023 0 1.414.195.195.451.293.707.293s.512-.098.707-.293l1.793-1.793 1.793 1.793c.195.195.451.293.707.293s.512-.098.707-.293c.391-.391.391-1.023 0-1.414L24.914 15.5z" })
-);
-const image418 = h(
-  "svg",
-  { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 36 36" },
-  h("ellipse", { fill: "#292F33", cx: "18", cy: "26", rx: "18", ry: "10" }),
-  h("ellipse", { fill: "#66757F", cx: "18", cy: "24", rx: "18", ry: "10" }),
-  h("path", { fill: "#E1E8ED", d: "M18 31C3.042 31 1 16 1 12h34c0 2-1.958 19-17 19z" }),
-  h("path", { fill: "#77B255", d: "M35 12.056c0 5.216-7.611 9.444-17 9.444S1 17.271 1 12.056C1 6.84 8.611 3.611 18 3.611s17 3.229 17 8.445z" }),
-  h("ellipse", { fill: "#A6D388", cx: "18", cy: "13", rx: "15", ry: "7" }),
-  h("path", { d: "M21 17c-.256 0-.512-.098-.707-.293-2.337-2.337-2.376-4.885-.125-8.262.739-1.109.9-2.246.478-3.377-.461-1.236-1.438-1.996-1.731-2.077-.553 0-.958-.443-.958-.996 0-.552.491-.995 1.043-.995.997 0 2.395 1.153 3.183 2.625 1.034 1.933.91 4.039-.351 5.929-1.961 2.942-1.531 4.332-.125 5.738.391.391.391 1.023 0 1.414-.195.196-.451.294-.707.294zm-6-2c-.256 0-.512-.098-.707-.293-2.337-2.337-2.376-4.885-.125-8.262.727-1.091.893-2.083.494-2.947-.444-.961-1.431-1.469-1.684-1.499-.552 0-.989-.447-.989-1 0-.552.458-1 1.011-1 .997 0 2.585.974 3.36 2.423.481.899 1.052 2.761-.528 5.131-1.961 2.942-1.531 4.332-.125 5.738.391.391.391 1.023 0 1.414-.195.197-.451.295-.707.295z", fill: "#5C913B" })
-);
-const image403 = h(
-  "svg",
-  { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 36 36" },
-  h("path", { fill: "#EF9645", d: "M15.5 2.965c1.381 0 2.5 1.119 2.5 2.5v.005L20.5.465c1.381 0 2.5 1.119 2.5 2.5V4.25l2.5-1.535c1.381 0 2.5 1.119 2.5 2.5V8.75L29 18H15.458L15.5 2.965z" }),
-  h("path", { fill: "#FFDC5D", d: "M4.625 16.219c1.381-.611 3.354.208 4.75 2.188.917 1.3 1.187 3.151 2.391 3.344.46.073 1.234-.313 1.234-1.397V4.5s0-2 2-2 2 2 2 2v11.633c0-.029 1-.064 1-.082V2s0-2 2-2 2 2 2 2v14.053c0 .017 1 .041 1 .069V4.25s0-2 2-2 2 2 2 2v12.638c0 .118 1 .251 1 .398V8.75s0-2 2-2 2 2 2 2V24c0 6.627-5.373 12-12 12-4.775 0-8.06-2.598-9.896-5.292C8.547 28.423 8.096 26.051 8 25.334c0 0-.123-1.479-1.156-2.865-1.469-1.969-2.5-3.156-3.125-3.866-.317-.359-.625-1.707.906-2.384z" })
-);
+const qrcodeDark = {
+  name: "QrCode",
+  common: commonDark,
+  self: (vars) => {
+    return {
+      borderRadius: vars.borderRadius
+    };
+  }
+};
+const qrcodeDark$1 = qrcodeDark;
+const self$4 = (vars) => {
+  return {
+    borderRadius: vars.borderRadius
+  };
+};
+const themeLight$1 = {
+  name: "QrCode",
+  common: commonLight,
+  self: self$4
+};
+const qrcodeLight = themeLight$1;
+const image404 = h("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 36 36"
+}, h("circle", {
+  fill: "#FFCB4C",
+  cx: "18",
+  cy: "17.018",
+  r: "17"
+}), h("path", {
+  fill: "#65471B",
+  d: "M14.524 21.036c-.145-.116-.258-.274-.312-.464-.134-.46.13-.918.59-1.021 4.528-1.021 7.577 1.363 7.706 1.465.384.306.459.845.173 1.205-.286.358-.828.401-1.211.097-.11-.084-2.523-1.923-6.182-1.098-.274.061-.554-.016-.764-.184z"
+}), h("ellipse", {
+  fill: "#65471B",
+  cx: "13.119",
+  cy: "11.174",
+  rx: "2.125",
+  ry: "2.656"
+}), h("ellipse", {
+  fill: "#65471B",
+  cx: "24.375",
+  cy: "12.236",
+  rx: "2.125",
+  ry: "2.656"
+}), h("path", {
+  fill: "#F19020",
+  d: "M17.276 35.149s1.265-.411 1.429-1.352c.173-.972-.624-1.167-.624-1.167s1.041-.208 1.172-1.376c.123-1.101-.861-1.363-.861-1.363s.97-.4 1.016-1.539c.038-.959-.995-1.428-.995-1.428s5.038-1.221 5.556-1.341c.516-.12 1.32-.615 1.069-1.694-.249-1.08-1.204-1.118-1.697-1.003-.494.115-6.744 1.566-8.9 2.068l-1.439.334c-.54.127-.785-.11-.404-.512.508-.536.833-1.129.946-2.113.119-1.035-.232-2.313-.433-2.809-.374-.921-1.005-1.649-1.734-1.899-1.137-.39-1.945.321-1.542 1.561.604 1.854.208 3.375-.833 4.293-2.449 2.157-3.588 3.695-2.83 6.973.828 3.575 4.377 5.876 7.952 5.048l3.152-.681z"
+}), h("path", {
+  fill: "#65471B",
+  d: "M9.296 6.351c-.164-.088-.303-.224-.391-.399-.216-.428-.04-.927.393-1.112 4.266-1.831 7.699-.043 7.843.034.433.231.608.747.391 1.154-.216.405-.74.546-1.173.318-.123-.063-2.832-1.432-6.278.047-.257.109-.547.085-.785-.042zm12.135 3.75c-.156-.098-.286-.243-.362-.424-.187-.442.023-.927.468-1.084 4.381-1.536 7.685.48 7.823.567.415.26.555.787.312 1.178-.242.39-.776.495-1.191.238-.12-.072-2.727-1.621-6.267-.379-.266.091-.553.046-.783-.096z"
+}));
+const image500 = h("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 36 36"
+}, h("path", {
+  fill: "#FFCC4D",
+  d: "M36 18c0 9.941-8.059 18-18 18-9.94 0-18-8.059-18-18C0 8.06 8.06 0 18 0c9.941 0 18 8.06 18 18"
+}), h("ellipse", {
+  fill: "#664500",
+  cx: "18",
+  cy: "27",
+  rx: "5",
+  ry: "6"
+}), h("path", {
+  fill: "#664500",
+  d: "M5.999 11c-.208 0-.419-.065-.599-.2-.442-.331-.531-.958-.2-1.4C8.462 5.05 12.816 5 13 5c.552 0 1 .448 1 1 0 .551-.445.998-.996 1-.155.002-3.568.086-6.204 3.6-.196.262-.497.4-.801.4zm24.002 0c-.305 0-.604-.138-.801-.4-2.64-3.521-6.061-3.598-6.206-3.6-.55-.006-.994-.456-.991-1.005C22.006 5.444 22.45 5 23 5c.184 0 4.537.05 7.8 4.4.332.442.242 1.069-.2 1.4-.18.135-.39.2-.599.2zm-16.087 4.5l1.793-1.793c.391-.391.391-1.023 0-1.414s-1.023-.391-1.414 0L12.5 14.086l-1.793-1.793c-.391-.391-1.023-.391-1.414 0s-.391 1.023 0 1.414l1.793 1.793-1.793 1.793c-.391.391-.391 1.023 0 1.414.195.195.451.293.707.293s.512-.098.707-.293l1.793-1.793 1.793 1.793c.195.195.451.293.707.293s.512-.098.707-.293c.391-.391.391-1.023 0-1.414L13.914 15.5zm11 0l1.793-1.793c.391-.391.391-1.023 0-1.414s-1.023-.391-1.414 0L23.5 14.086l-1.793-1.793c-.391-.391-1.023-.391-1.414 0s-.391 1.023 0 1.414l1.793 1.793-1.793 1.793c-.391.391-.391 1.023 0 1.414.195.195.451.293.707.293s.512-.098.707-.293l1.793-1.793 1.793 1.793c.195.195.451.293.707.293s.512-.098.707-.293c.391-.391.391-1.023 0-1.414L24.914 15.5z"
+}));
+const image418 = h("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 36 36"
+}, h("ellipse", {
+  fill: "#292F33",
+  cx: "18",
+  cy: "26",
+  rx: "18",
+  ry: "10"
+}), h("ellipse", {
+  fill: "#66757F",
+  cx: "18",
+  cy: "24",
+  rx: "18",
+  ry: "10"
+}), h("path", {
+  fill: "#E1E8ED",
+  d: "M18 31C3.042 31 1 16 1 12h34c0 2-1.958 19-17 19z"
+}), h("path", {
+  fill: "#77B255",
+  d: "M35 12.056c0 5.216-7.611 9.444-17 9.444S1 17.271 1 12.056C1 6.84 8.611 3.611 18 3.611s17 3.229 17 8.445z"
+}), h("ellipse", {
+  fill: "#A6D388",
+  cx: "18",
+  cy: "13",
+  rx: "15",
+  ry: "7"
+}), h("path", {
+  d: "M21 17c-.256 0-.512-.098-.707-.293-2.337-2.337-2.376-4.885-.125-8.262.739-1.109.9-2.246.478-3.377-.461-1.236-1.438-1.996-1.731-2.077-.553 0-.958-.443-.958-.996 0-.552.491-.995 1.043-.995.997 0 2.395 1.153 3.183 2.625 1.034 1.933.91 4.039-.351 5.929-1.961 2.942-1.531 4.332-.125 5.738.391.391.391 1.023 0 1.414-.195.196-.451.294-.707.294zm-6-2c-.256 0-.512-.098-.707-.293-2.337-2.337-2.376-4.885-.125-8.262.727-1.091.893-2.083.494-2.947-.444-.961-1.431-1.469-1.684-1.499-.552 0-.989-.447-.989-1 0-.552.458-1 1.011-1 .997 0 2.585.974 3.36 2.423.481.899 1.052 2.761-.528 5.131-1.961 2.942-1.531 4.332-.125 5.738.391.391.391 1.023 0 1.414-.195.197-.451.295-.707.295z",
+  fill: "#5C913B"
+}));
+const image403 = h("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 36 36"
+}, h("path", {
+  fill: "#EF9645",
+  d: "M15.5 2.965c1.381 0 2.5 1.119 2.5 2.5v.005L20.5.465c1.381 0 2.5 1.119 2.5 2.5V4.25l2.5-1.535c1.381 0 2.5 1.119 2.5 2.5V8.75L29 18H15.458L15.5 2.965z"
+}), h("path", {
+  fill: "#FFDC5D",
+  d: "M4.625 16.219c1.381-.611 3.354.208 4.75 2.188.917 1.3 1.187 3.151 2.391 3.344.46.073 1.234-.313 1.234-1.397V4.5s0-2 2-2 2 2 2 2v11.633c0-.029 1-.064 1-.082V2s0-2 2-2 2 2 2 2v14.053c0 .017 1 .041 1 .069V4.25s0-2 2-2 2 2 2 2v12.638c0 .118 1 .251 1 .398V8.75s0-2 2-2 2 2 2 2V24c0 6.627-5.373 12-12 12-4.775 0-8.06-2.598-9.896-5.292C8.547 28.423 8.096 26.051 8 25.334c0 0-.123-1.479-1.156-2.865-1.469-1.969-2.5-3.156-3.125-3.866-.317-.359-.625-1.707.906-2.384z"
+}));
 const style$2 = cB("result", `
  color: var(--n-text-color);
  line-height: var(--n-line-height);
@@ -36307,22 +42029,47 @@ const iconMap = {
   warning: h(WarningIcon, null),
   error: h(ErrorIcon, null)
 };
-const resultProps = Object.assign(Object.assign({}, useTheme.props), { size: {
-  type: String,
-  default: "medium"
-}, status: {
-  type: String,
-  default: "info"
-}, title: String, description: String });
-const NResult = defineComponent({
+const resultProps = Object.assign(Object.assign({}, useTheme.props), {
+  size: {
+    type: String,
+    default: "medium"
+  },
+  status: {
+    type: String,
+    default: "info"
+  },
+  title: String,
+  description: String
+});
+const NResult = /* @__PURE__ */ defineComponent({
   name: "Result",
   props: resultProps,
   setup(props) {
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Result", "-result", style$2, resultLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { size: size2, status } = props;
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { textColor, lineHeight: lineHeight2, titleTextColor, titleFontWeight, [createKey("iconColor", status)]: iconColor, [createKey("fontSize", size2)]: fontSize2, [createKey("titleFontSize", size2)]: titleFontSize, [createKey("iconSize", size2)]: iconSize } } = themeRef.value;
+      const {
+        size: size2,
+        status
+      } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          textColor,
+          lineHeight: lineHeight2,
+          titleTextColor,
+          titleFontWeight,
+          [createKey("iconColor", status)]: iconColor,
+          [createKey("fontSize", size2)]: fontSize2,
+          [createKey("titleFontSize", size2)]: titleFontSize,
+          [createKey("iconSize", size2)]: iconSize
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-font-size": fontSize2,
@@ -36336,7 +42083,10 @@ const NResult = defineComponent({
       };
     });
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("result", computed(() => {
-      const { size: size2, status } = props;
+      const {
+        size: size2,
+        status
+      } = props;
       let hash = "";
       if (size2) {
         hash += size2[0];
@@ -36355,25 +42105,42 @@ const NResult = defineComponent({
   },
   render() {
     var _a2;
-    const { status, $slots, mergedClsPrefix, onRender } = this;
+    const {
+      status,
+      $slots,
+      mergedClsPrefix,
+      onRender
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h(
-      "div",
-      { class: [`${mergedClsPrefix}-result`, this.themeClass], style: this.cssVars },
-      h("div", { class: `${mergedClsPrefix}-result-icon` }, ((_a2 = $slots.icon) === null || _a2 === void 0 ? void 0 : _a2.call($slots)) || h(NBaseIcon, { clsPrefix: mergedClsPrefix }, { default: () => iconMap[status] })),
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-result-header` },
-        this.title ? h("div", { class: `${mergedClsPrefix}-result-header__title` }, this.title) : null,
-        this.description ? h("div", { class: `${mergedClsPrefix}-result-header__description` }, this.description) : null
-      ),
-      $slots.default && h("div", { class: `${mergedClsPrefix}-result-content` }, $slots),
-      $slots.footer && h("div", { class: `${mergedClsPrefix}-result-footer` }, $slots.footer())
-    );
+    return h("div", {
+      class: [`${mergedClsPrefix}-result`, this.themeClass],
+      style: this.cssVars
+    }, h("div", {
+      class: `${mergedClsPrefix}-result-icon`
+    }, ((_a2 = $slots.icon) === null || _a2 === void 0 ? void 0 : _a2.call($slots)) || h(NBaseIcon, {
+      clsPrefix: mergedClsPrefix
+    }, {
+      default: () => iconMap[status]
+    })), h("div", {
+      class: `${mergedClsPrefix}-result-header`
+    }, this.title ? h("div", {
+      class: `${mergedClsPrefix}-result-header__title`
+    }, this.title) : null, this.description ? h("div", {
+      class: `${mergedClsPrefix}-result-header__description`
+    }, this.description) : null), $slots.default && h("div", {
+      class: `${mergedClsPrefix}-result-content`
+    }, $slots), $slots.footer && h("div", {
+      class: `${mergedClsPrefix}-result-footer`
+    }, $slots.footer()));
   }
 });
-const scrollbarProps = Object.assign(Object.assign({}, useTheme.props), { trigger: String, xScrollable: Boolean, onScroll: Function, size: Number });
-const Scrollbar = defineComponent({
+const scrollbarProps = Object.assign(Object.assign({}, useTheme.props), {
+  trigger: String,
+  xScrollable: Boolean,
+  onScroll: Function,
+  size: Number
+});
+const Scrollbar = /* @__PURE__ */ defineComponent({
   name: "Scrollbar",
   props: scrollbarProps,
   setup() {
@@ -36388,10 +42155,14 @@ const Scrollbar = defineComponent({
         (_a2 = scrollbarInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.scrollBy(args[0], args[1]);
       }
     };
-    return Object.assign(Object.assign({}, exposedMethods), { scrollbarInstRef });
+    return Object.assign(Object.assign({}, exposedMethods), {
+      scrollbarInstRef
+    });
   },
   render() {
-    return h(NScrollbar$1, Object.assign({ ref: "scrollbarInstRef" }, this.$props), this.$slots);
+    return h(NScrollbar$1, Object.assign({
+      ref: "scrollbarInstRef"
+    }, this.$props), this.$slots);
   }
 });
 const NScrollbar = Scrollbar;
@@ -36399,7 +42170,12 @@ const skeletonDark = {
   name: "Skeleton",
   common: commonDark,
   self(vars) {
-    const { heightSmall, heightMedium, heightLarge, borderRadius } = vars;
+    const {
+      heightSmall,
+      heightMedium,
+      heightLarge,
+      borderRadius
+    } = vars;
     return {
       color: "rgba(255, 255, 255, 0.12)",
       colorEnd: "rgba(255, 255, 255, 0.18)",
@@ -36410,8 +42186,13 @@ const skeletonDark = {
     };
   }
 };
-const self$2 = (vars) => {
-  const { heightSmall, heightMedium, heightLarge, borderRadius } = vars;
+const self$3 = (vars) => {
+  const {
+    heightSmall,
+    heightMedium,
+    heightLarge,
+    borderRadius
+  } = vars;
   return {
     color: "#eee",
     colorEnd: "#ddd",
@@ -36424,8 +42205,29 @@ const self$2 = (vars) => {
 const skeletonLight = {
   name: "Skeleton",
   common: commonLight,
+  self: self$3
+};
+const splitDark = {
+  name: "Split",
+  common: commonDark
+};
+const splitDark$1 = splitDark;
+const self$2 = (vars) => {
+  const {
+    primaryColorHover,
+    borderColor
+  } = vars;
+  return {
+    resizableTriggerColorHover: primaryColorHover,
+    resizableTriggerColor: borderColor
+  };
+};
+const themeLight = {
+  name: "Split",
+  common: commonLight,
   self: self$2
 };
+const splitLight = themeLight;
 const tabsInjectionKey = createInjectionKey("n-tabs");
 const tabPaneProps = {
   tab: [String, Number, Object, Function],
@@ -36446,7 +42248,7 @@ const tabPaneProps = {
   /** @deprecated */
   label: [String, Number, Object, Function]
 };
-const NTabPane = defineComponent({
+const NTabPane = /* @__PURE__ */ defineComponent({
   __TAB_PANE__: true,
   name: "TabPane",
   alias: ["TabPanel"],
@@ -36463,11 +42265,18 @@ const NTabPane = defineComponent({
     };
   },
   render() {
-    return h("div", { class: [`${this.mergedClsPrefix}-tab-pane`, this.class], style: this.style }, this.$slots);
+    return h("div", {
+      class: [`${this.mergedClsPrefix}-tab-pane`, this.class],
+      style: this.style
+    }, this.$slots);
   }
 });
-const tabProps = Object.assign({ internalLeftPadded: Boolean, internalAddable: Boolean, internalCreatedByPane: Boolean }, omit(tabPaneProps, ["displayDirective"]));
-const Tab = defineComponent({
+const tabProps = Object.assign({
+  internalLeftPadded: Boolean,
+  internalAddable: Boolean,
+  internalCreatedByPane: Boolean
+}, omit(tabPaneProps, ["displayDirective"]));
+const Tab = /* @__PURE__ */ defineComponent({
   __TAB__: true,
   inheritAttrs: false,
   name: "Tab",
@@ -36479,6 +42288,9 @@ const Tab = defineComponent({
       typeRef,
       closableRef,
       tabStyleRef,
+      addTabStyleRef,
+      tabClassRef,
+      addTabClassRef,
       tabChangeIdRef,
       onBeforeLeaveRef,
       triggerRef,
@@ -36492,12 +42304,17 @@ const Tab = defineComponent({
       mergedClosable: computed(() => {
         if (props.internalAddable)
           return false;
-        const { closable } = props;
+        const {
+          closable
+        } = props;
         if (closable === void 0)
           return closableRef.value;
         return closable;
       }),
       style: tabStyleRef,
+      addStyle: addTabStyleRef,
+      tabClass: tabClassRef,
+      addTabClass: addTabClassRef,
       clsPrefix: mergedClsPrefixRef,
       value: valueRef,
       type: typeRef,
@@ -36514,10 +42331,14 @@ const Tab = defineComponent({
           handleAdd();
           return;
         }
-        const { name: nameProp } = props;
+        const {
+          name: nameProp
+        } = props;
         const id = ++tabChangeIdRef.id;
         if (nameProp !== valueRef.value) {
-          const { value: onBeforeLeave } = onBeforeLeaveRef;
+          const {
+            value: onBeforeLeave
+          } = onBeforeLeaveRef;
           if (!onBeforeLeave) {
             activateTab(nameProp);
           } else {
@@ -36532,37 +42353,52 @@ const Tab = defineComponent({
     };
   },
   render() {
-    const { internalAddable, clsPrefix, name, disabled, label, tab, value, mergedClosable, style: style2, trigger: trigger2, $slots: { default: defaultSlot } } = this;
+    const {
+      internalAddable,
+      clsPrefix,
+      name,
+      disabled,
+      label,
+      tab,
+      value,
+      mergedClosable,
+      trigger: trigger2,
+      $slots: {
+        default: defaultSlot
+      }
+    } = this;
     const mergedTab = label !== null && label !== void 0 ? label : tab;
-    return h(
-      "div",
-      { class: `${clsPrefix}-tabs-tab-wrapper` },
-      this.internalLeftPadded ? h("div", { class: `${clsPrefix}-tabs-tab-pad` }) : null,
-      h(
-        "div",
-        Object.assign({ key: name, "data-name": name, "data-disabled": disabled ? true : void 0 }, mergeProps({
-          class: [
-            `${clsPrefix}-tabs-tab`,
-            value === name && `${clsPrefix}-tabs-tab--active`,
-            disabled && `${clsPrefix}-tabs-tab--disabled`,
-            mergedClosable && `${clsPrefix}-tabs-tab--closable`,
-            internalAddable && `${clsPrefix}-tabs-tab--addable`
-          ],
-          onClick: trigger2 === "click" ? this.activateTab : void 0,
-          onMouseenter: trigger2 === "hover" ? this.activateTab : void 0,
-          style: internalAddable ? void 0 : style2
-        }, this.internalCreatedByPane ? this.tabProps || {} : this.$attrs)),
-        h("span", { class: `${clsPrefix}-tabs-tab__label` }, internalAddable ? h(
-          Fragment,
-          null,
-          h("div", { class: `${clsPrefix}-tabs-tab__height-placeholder` }, " "),
-          h(NBaseIcon, { clsPrefix }, {
-            default: () => h(AddIcon, null)
-          })
-        ) : defaultSlot ? defaultSlot() : typeof mergedTab === "object" ? mergedTab : render$1(mergedTab !== null && mergedTab !== void 0 ? mergedTab : name)),
-        mergedClosable && this.type === "card" ? h(NBaseClose, { clsPrefix, class: `${clsPrefix}-tabs-tab__close`, onClick: this.handleClose, disabled }) : null
-      )
-    );
+    return h("div", {
+      class: `${clsPrefix}-tabs-tab-wrapper`
+    }, this.internalLeftPadded ? h("div", {
+      class: `${clsPrefix}-tabs-tab-pad`
+    }) : null, h("div", Object.assign({
+      key: name,
+      "data-name": name,
+      "data-disabled": disabled ? true : void 0
+    }, mergeProps(
+      {
+        class: [`${clsPrefix}-tabs-tab`, value === name && `${clsPrefix}-tabs-tab--active`, disabled && `${clsPrefix}-tabs-tab--disabled`, mergedClosable && `${clsPrefix}-tabs-tab--closable`, internalAddable && `${clsPrefix}-tabs-tab--addable`, internalAddable ? this.addTabClass : this.tabClass],
+        onClick: trigger2 === "click" ? this.activateTab : void 0,
+        onMouseenter: trigger2 === "hover" ? this.activateTab : void 0,
+        style: internalAddable ? this.addStyle : this.style
+      },
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      this.internalCreatedByPane ? this.tabProps || {} : this.$attrs
+    )), h("span", {
+      class: `${clsPrefix}-tabs-tab__label`
+    }, internalAddable ? h(Fragment, null, h("div", {
+      class: `${clsPrefix}-tabs-tab__height-placeholder`
+    }, " "), h(NBaseIcon, {
+      clsPrefix
+    }, {
+      default: () => h(AddIcon, null)
+    })) : defaultSlot ? defaultSlot() : typeof mergedTab === "object" ? mergedTab : render$1(mergedTab !== null && mergedTab !== void 0 ? mergedTab : name)), mergedClosable && this.type === "card" ? h(NBaseClose, {
+      clsPrefix,
+      class: `${clsPrefix}-tabs-tab__close`,
+      onClick: this.handleClose,
+      disabled
+    }) : null));
   }
 });
 const style$1 = cB("tabs", `
@@ -36573,7 +42409,7 @@ const style$1 = cB("tabs", `
  transition:
  background-color .3s var(--n-bezier),
  border-color .3s var(--n-bezier);
-`, [cM("segment-type", [cB("tabs-rail", [c$1("&.transition-disabled", "color: red;", [cB("tabs-tab", `
+`, [cM("segment-type", [cB("tabs-rail", [c$1("&.transition-disabled", [cB("tabs-capsule", `
  transition: none;
  `)])])]), cM("top", [cB("tab-pane", `
  padding: var(--n-pane-padding-top) var(--n-pane-padding-right) var(--n-pane-padding-bottom) var(--n-pane-padding-left);
@@ -36611,7 +42447,14 @@ const style$1 = cB("tabs", `
  transition: background-color .3s var(--n-bezier);
  display: flex;
  align-items: center;
- `, [cB("tabs-tab-wrapper", `
+ `, [cB("tabs-capsule", `
+ border-radius: var(--n-tab-border-radius);
+ position: absolute;
+ pointer-events: none;
+ background-color: var(--n-tab-color-segment);
+ box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .08);
+ transition: 0.3s;
+ `), cB("tabs-tab-wrapper", `
  flex-basis: 0;
  flex-grow: 1;
  display: flex;
@@ -36627,8 +42470,6 @@ const style$1 = cB("tabs", `
  `, [cM("active", `
  font-weight: var(--n-font-weight-strong);
  color: var(--n-tab-text-color-active);
- background-color: var(--n-tab-color-segment);
- box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .08);
  `), c$1("&:hover", `
  color: var(--n-tab-text-color-hover);
  `)])])]), cM("flex", [cB("tabs-nav", {
@@ -36659,7 +42500,9 @@ const style$1 = cB("tabs", `
  box-shadow: inset 10px 0 8px -8px rgba(0, 0, 0, .12);
  `)]), cM("shadow-end", [c$1("&::after", `
  box-shadow: inset -10px 0 8px -8px rgba(0, 0, 0, .12);
- `)])])]), cM("left, right", [cB("tabs-nav-scroll-wrapper", [c$1("&::before", `
+ `)])])]), cM("left, right", [cB("tabs-nav-scroll-content", `
+ flex-direction: column;
+ `), cB("tabs-nav-scroll-wrapper", [c$1("&::before", `
  top: 0;
  left: 0;
  right: 0;
@@ -36695,6 +42538,7 @@ const style$1 = cB("tabs", `
  display: flex;
  position: relative;
  min-width: 100%;
+ min-height: 100%;
  width: fit-content;
  box-sizing: border-box;
  `), cB("tabs-wrapper", `
@@ -36731,6 +42575,7 @@ const style$1 = cB("tabs", `
  `), cE("label", `
  display: flex;
  align-items: center;
+ z-index: 1;
  `)]), cB("tabs-bar", `
  position: absolute;
  bottom: 0;
@@ -36740,6 +42585,7 @@ const style$1 = cB("tabs", `
  transition:
  left .2s var(--n-bezier),
  max-width .2s var(--n-bezier),
+ opacity .3s var(--n-bezier),
  background-color .3s var(--n-bezier);
  `, [c$1("&.transition-disabled", `
  transition: none;
@@ -36828,7 +42674,6 @@ const style$1 = cB("tabs", `
  `), cB("tabs-pad", `
  flex-grow: 1;
  transition: border-color .3s var(--n-bezier);
- border-bottom: 1px solid var(--n-tab-border-color);
  `), cB("tabs-tab-pad", `
  transition: border-color .3s var(--n-bezier);
  `), cB("tabs-tab", `
@@ -36869,12 +42714,16 @@ const style$1 = cB("tabs", `
  border-bottom: 1px solid #0000;
  `)]), cB("tabs-tab-pad", `
  border-bottom: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-pad", `
+ border-bottom: 1px solid var(--n-tab-border-color);
  `)])]), cM("left", [cM("card-type", [cB("tabs-tab", `
  border-top-left-radius: var(--n-tab-border-radius);
  border-bottom-left-radius: var(--n-tab-border-radius);
  `, [cM("active", `
  border-right: 1px solid #0000;
  `)]), cB("tabs-tab-pad", `
+ border-right: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-pad", `
  border-right: 1px solid var(--n-tab-border-color);
  `)])]), cM("right", [cM("card-type", [cB("tabs-tab", `
  border-top-right-radius: var(--n-tab-border-radius);
@@ -36883,12 +42732,16 @@ const style$1 = cB("tabs", `
  border-left: 1px solid #0000;
  `)]), cB("tabs-tab-pad", `
  border-left: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-pad", `
+ border-left: 1px solid var(--n-tab-border-color);
  `)])]), cM("bottom", [cM("card-type", [cB("tabs-tab", `
  border-bottom-left-radius: var(--n-tab-border-radius);
  border-bottom-right-radius: var(--n-tab-border-radius);
  `, [cM("active", `
  border-top: 1px solid #0000;
  `)]), cB("tabs-tab-pad", `
+ border-top: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-pad", `
  border-top: 1px solid var(--n-tab-border-color);
  `)])])])]);
 const tabsProps = Object.assign(Object.assign({}, useTheme.props), {
@@ -36913,6 +42766,9 @@ const tabsProps = Object.assign(Object.assign({}, useTheme.props), {
     default: "top"
   },
   tabStyle: [String, Object],
+  tabClass: String,
+  addTabStyle: [String, Object],
+  addTabClass: String,
   barWidth: Number,
   paneClass: String,
   paneStyle: [String, Object],
@@ -36934,25 +42790,33 @@ const tabsProps = Object.assign(Object.assign({}, useTheme.props), {
   activeName: [String, Number],
   onActiveNameChange: [Function, Array]
 });
-const NTabs = defineComponent({
+const NTabs = /* @__PURE__ */ defineComponent({
   name: "Tabs",
   props: tabsProps,
-  setup(props, { slots }) {
+  setup(props, {
+    slots
+  }) {
     var _a2, _b, _c, _d;
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Tabs", "-tabs", style$1, tabsLight$1, props, mergedClsPrefixRef);
     const tabsElRef = ref(null);
     const barElRef = ref(null);
     const scrollWrapperElRef = ref(null);
     const addTabInstRef = ref(null);
     const xScrollInstRef = ref(null);
+    const yScrollElRef = ref(null);
     const startReachedRef = ref(true);
     const endReachedRef = ref(true);
     const compitableSizeRef = useCompitable(props, ["labelSize", "size"]);
     const compitableValueRef = useCompitable(props, ["activeName", "value"]);
     const uncontrolledValueRef = ref((_b = (_a2 = compitableValueRef.value) !== null && _a2 !== void 0 ? _a2 : props.defaultValue) !== null && _b !== void 0 ? _b : slots.default ? (_d = (_c = flatten$2(slots.default())[0]) === null || _c === void 0 ? void 0 : _c.props) === null || _d === void 0 ? void 0 : _d.name : null);
     const mergedValueRef = useMergedState(compitableValueRef, uncontrolledValueRef);
-    const tabChangeIdRef = { id: 0 };
+    const tabChangeIdRef = {
+      id: 0
+    };
     const tabWrapperStyleRef = computed(() => {
       if (!props.justifyContent || props.type === "card")
         return void 0;
@@ -36968,7 +42832,9 @@ const NTabs = defineComponent({
     });
     function getCurrentEl() {
       var _a3;
-      const { value } = mergedValueRef;
+      const {
+        value
+      } = mergedValueRef;
       if (value === null)
         return null;
       const tabEl = (_a3 = tabsElRef.value) === null || _a3 === void 0 ? void 0 : _a3.querySelector(`[data-name="${value}"]`);
@@ -36977,12 +42843,18 @@ const NTabs = defineComponent({
     function updateBarStyle(tabEl) {
       if (props.type === "card")
         return;
-      const { value: barEl } = barElRef;
+      const {
+        value: barEl
+      } = barElRef;
       if (!barEl)
         return;
+      const barIsHide = barEl.style.opacity === "0";
       if (tabEl) {
         const disabledClassName = `${mergedClsPrefixRef.value}-tabs-bar--disabled`;
-        const { barWidth, placement } = props;
+        const {
+          barWidth,
+          placement
+        } = props;
         if (tabEl.dataset.disabled === "true") {
           barEl.classList.add(disabledClassName);
         } else {
@@ -36999,7 +42871,14 @@ const NTabs = defineComponent({
             barEl.style.maxWidth = `${tabEl.offsetWidth}px`;
           }
           barEl.style.width = "8192px";
+          if (barIsHide) {
+            barEl.style.transition = "none";
+          }
           void barEl.offsetWidth;
+          if (barIsHide) {
+            barEl.style.transition = "";
+            barEl.style.opacity = "1";
+          }
         } else {
           clearBarStyle(["left", "maxWidth", "width"]);
           if (typeof barWidth === "number" && tabEl.offsetHeight >= barWidth) {
@@ -37011,12 +42890,31 @@ const NTabs = defineComponent({
             barEl.style.maxHeight = `${tabEl.offsetHeight}px`;
           }
           barEl.style.height = "8192px";
+          if (barIsHide) {
+            barEl.style.transition = "none";
+          }
           void barEl.offsetHeight;
+          if (barIsHide) {
+            barEl.style.transition = "";
+            barEl.style.opacity = "1";
+          }
         }
       }
     }
+    function hideBarStyle() {
+      if (props.type === "card")
+        return;
+      const {
+        value: barEl
+      } = barElRef;
+      if (!barEl)
+        return;
+      barEl.style.opacity = "0";
+    }
     function clearBarStyle(styleProps) {
-      const { value: barEl } = barElRef;
+      const {
+        value: barEl
+      } = barElRef;
       if (!barEl)
         return;
       for (const prop of styleProps) {
@@ -37029,6 +42927,8 @@ const NTabs = defineComponent({
       const tabEl = getCurrentEl();
       if (tabEl) {
         updateBarStyle(tabEl);
+      } else {
+        hideBarStyle();
       }
     }
     function updateCurrentScrollPosition(smooth) {
@@ -37039,8 +42939,14 @@ const NTabs = defineComponent({
       const tabEl = getCurrentEl();
       if (!tabEl)
         return;
-      const { scrollLeft: scrollWrapperElScrollLeft, offsetWidth: scrollWrapperElOffsetWidth } = scrollWrapperEl;
-      const { offsetLeft: tabElOffsetLeft, offsetWidth: tabElOffsetWidth } = tabEl;
+      const {
+        scrollLeft: scrollWrapperElScrollLeft,
+        offsetWidth: scrollWrapperElOffsetWidth
+      } = scrollWrapperEl;
+      const {
+        offsetLeft: tabElOffsetLeft,
+        offsetWidth: tabElOffsetWidth
+      } = tabEl;
       if (scrollWrapperElScrollLeft > tabElOffsetLeft) {
         scrollWrapperEl.scrollTo({
           top: 0,
@@ -37099,11 +43005,16 @@ const NTabs = defineComponent({
       if (tabsPaneWrapperEl) {
         tabsPaneWrapperEl.style.maxHeight = "";
         tabsPaneWrapperEl.style.height = "";
-        const { paneWrapperStyle } = props;
+        const {
+          paneWrapperStyle
+        } = props;
         if (typeof paneWrapperStyle === "string") {
           tabsPaneWrapperEl.style.cssText = paneWrapperStyle;
         } else if (paneWrapperStyle) {
-          const { maxHeight, height } = paneWrapperStyle;
+          const {
+            maxHeight,
+            height
+          } = paneWrapperStyle;
           if (maxHeight !== void 0) {
             tabsPaneWrapperEl.style.maxHeight = maxHeight;
           }
@@ -37113,7 +43024,9 @@ const NTabs = defineComponent({
         }
       }
     }
-    const renderNameListRef = { value: [] };
+    const renderNameListRef = {
+      value: []
+    };
     const animationDirectionRef = ref("next");
     function activateTab(panelName) {
       const currentValue = mergedValueRef.value;
@@ -37131,7 +43044,11 @@ const NTabs = defineComponent({
       doUpdateValue(panelName);
     }
     function doUpdateValue(panelName) {
-      const { onActiveNameChange, onUpdateValue, "onUpdate:value": _onUpdateValue } = props;
+      const {
+        onActiveNameChange,
+        onUpdateValue,
+        "onUpdate:value": _onUpdateValue
+      } = props;
       if (onActiveNameChange) {
         call(onActiveNameChange, panelName);
       }
@@ -37142,12 +43059,16 @@ const NTabs = defineComponent({
       uncontrolledValueRef.value = panelName;
     }
     function handleClose(panelName) {
-      const { onClose } = props;
+      const {
+        onClose
+      } = props;
       if (onClose)
         call(onClose, panelName);
     }
     function updateBarPositionInstantly() {
-      const { value: barEl } = barElRef;
+      const {
+        value: barEl
+      } = barElRef;
       if (!barEl)
         return;
       const disableTransitionClassName = "transition-disabled";
@@ -37155,6 +43076,39 @@ const NTabs = defineComponent({
       updateCurrentBarStyle();
       barEl.classList.remove(disableTransitionClassName);
     }
+    const segmentCapsuleElRef = ref(null);
+    function updateSegmentPosition({
+      disabledTransition
+    }) {
+      const tabsEl = tabsElRef.value;
+      if (!tabsEl)
+        return;
+      disabledTransition && tabsEl.classList.add("transition-disabled");
+      const activeTabEl = getCurrentEl();
+      if (activeTabEl && segmentCapsuleElRef.value) {
+        const rect = activeTabEl.getBoundingClientRect();
+        segmentCapsuleElRef.value.style.width = `${rect.width}px`;
+        segmentCapsuleElRef.value.style.height = `${rect.height}px`;
+        segmentCapsuleElRef.value.style.transform = `translateX(${rect.left - tabsEl.getBoundingClientRect().left - depx(getComputedStyle(tabsEl).paddingLeft)}px)`;
+      }
+      disabledTransition && tabsEl.classList.remove("transition-disabled");
+    }
+    watch([mergedValueRef], () => {
+      if (props.type === "segment") {
+        void nextTick(() => {
+          updateSegmentPosition({
+            disabledTransition: false
+          });
+        });
+      }
+    });
+    onMounted(() => {
+      if (props.type === "segment") {
+        updateSegmentPosition({
+          disabledTransition: true
+        });
+      }
+    });
     let memorizedWidth = 0;
     function _handleNavResize(entry) {
       var _b2;
@@ -37165,20 +43119,27 @@ const NTabs = defineComponent({
         return;
       }
       memorizedWidth = entry.contentRect.width;
-      const { type } = props;
+      const {
+        type
+      } = props;
       if (type === "line" || type === "bar") {
         {
           updateBarPositionInstantly();
         }
       }
       if (type !== "segment") {
-        deriveScrollShadow((_b2 = xScrollInstRef.value) === null || _b2 === void 0 ? void 0 : _b2.$el);
+        const {
+          placement
+        } = props;
+        deriveScrollShadow((placement === "top" || placement === "bottom" ? (_b2 = xScrollInstRef.value) === null || _b2 === void 0 ? void 0 : _b2.$el : yScrollElRef.value) || null);
       }
     }
     const handleNavResize = throttle(_handleNavResize, 64);
     watch([() => props.justifyContent, () => props.size], () => {
       void nextTick(() => {
-        const { type } = props;
+        const {
+          type
+        } = props;
         if (type === "line" || type === "bar") {
           updateBarPositionInstantly();
         }
@@ -37187,30 +43148,41 @@ const NTabs = defineComponent({
     const addTabFixedRef = ref(false);
     function _handleTabsResize(entry) {
       var _a3;
-      const { target, contentRect: { width } } = entry;
+      const {
+        target,
+        contentRect: {
+          width
+        }
+      } = entry;
       const containerWidth = target.parentElement.offsetWidth;
       if (!addTabFixedRef.value) {
         if (containerWidth < width) {
           addTabFixedRef.value = true;
         }
       } else {
-        const { value: addTabInst } = addTabInstRef;
+        const {
+          value: addTabInst
+        } = addTabInstRef;
         if (!addTabInst)
           return;
         if (containerWidth - width > addTabInst.$el.offsetWidth) {
           addTabFixedRef.value = false;
         }
       }
-      deriveScrollShadow((_a3 = xScrollInstRef.value) === null || _a3 === void 0 ? void 0 : _a3.$el);
+      deriveScrollShadow(((_a3 = xScrollInstRef.value) === null || _a3 === void 0 ? void 0 : _a3.$el) || null);
     }
     const handleTabsResize = throttle(_handleTabsResize, 64);
     function handleAdd() {
-      const { onAdd } = props;
+      const {
+        onAdd
+      } = props;
       if (onAdd)
         onAdd();
       void nextTick(() => {
         const currentEl = getCurrentEl();
-        const { value: xScrollInst } = xScrollInstRef;
+        const {
+          value: xScrollInst
+        } = xScrollInstRef;
         if (!currentEl || !xScrollInst)
           return;
         xScrollInst.scrollTo({
@@ -37223,13 +43195,23 @@ const NTabs = defineComponent({
     function deriveScrollShadow(el) {
       if (!el)
         return;
-      const { placement } = props;
+      const {
+        placement
+      } = props;
       if (placement === "top" || placement === "bottom") {
-        const { scrollLeft, scrollWidth, offsetWidth } = el;
+        const {
+          scrollLeft,
+          scrollWidth,
+          offsetWidth
+        } = el;
         startReachedRef.value = scrollLeft <= 0;
         endReachedRef.value = scrollLeft + offsetWidth >= scrollWidth;
       } else {
-        const { scrollTop, scrollHeight, offsetHeight } = el;
+        const {
+          scrollTop,
+          scrollHeight,
+          offsetHeight
+        } = el;
         startReachedRef.value = scrollTop <= 0;
         endReachedRef.value = scrollTop + offsetHeight >= scrollHeight;
       }
@@ -37240,6 +43222,9 @@ const NTabs = defineComponent({
     provide(tabsInjectionKey, {
       triggerRef: toRef(props, "trigger"),
       tabStyleRef: toRef(props, "tabStyle"),
+      tabClassRef: toRef(props, "tabClass"),
+      addTabStyleRef: toRef(props, "addTabStyle"),
+      addTabClassRef: toRef(props, "addTabClass"),
       paneClassRef: toRef(props, "paneClass"),
       paneStyleRef: toRef(props, "paneStyle"),
       mergedClsPrefixRef,
@@ -37257,10 +43242,14 @@ const NTabs = defineComponent({
       updateCurrentScrollPosition();
     });
     watchEffect(() => {
-      const { value: el } = scrollWrapperElRef;
+      const {
+        value: el
+      } = scrollWrapperElRef;
       if (!el)
         return;
-      const { value: clsPrefix } = mergedClsPrefixRef;
+      const {
+        value: clsPrefix
+      } = mergedClsPrefixRef;
       const shadowStartClass = `${clsPrefix}-tabs-nav-scroll-wrapper--shadow-start`;
       const shadowEndClass = `${clsPrefix}-tabs-nav-scroll-wrapper--shadow-end`;
       if (startReachedRef.value) {
@@ -37274,27 +43263,18 @@ const NTabs = defineComponent({
         el.classList.add(shadowEndClass);
       }
     });
-    const tabsRailElRef = ref(null);
-    watch(mergedValueRef, () => {
-      if (props.type === "segment") {
-        const tabsRailEl = tabsRailElRef.value;
-        if (tabsRailEl) {
-          void nextTick(() => {
-            tabsRailEl.classList.add("transition-disabled");
-            void tabsRailEl.offsetWidth;
-            tabsRailEl.classList.remove("transition-disabled");
-          });
-        }
-      }
-    });
     const exposedMethods = {
       syncBarPosition: () => {
         updateCurrentBarStyle();
       }
     };
     const cssVarsRef = computed(() => {
-      const { value: size2 } = compitableSizeRef;
-      const { type } = props;
+      const {
+        value: size2
+      } = compitableSizeRef;
+      const {
+        type
+      } = props;
       const typeSuffix = {
         card: "Card",
         bar: "Bar",
@@ -37302,7 +43282,41 @@ const NTabs = defineComponent({
         segment: "Segment"
       }[type];
       const sizeType = `${size2}${typeSuffix}`;
-      const { self: { barColor, closeIconColor, closeIconColorHover, closeIconColorPressed, tabColor, tabBorderColor, paneTextColor, tabFontWeight, tabBorderRadius, tabFontWeightActive, colorSegment, fontWeightStrong, tabColorSegment, closeSize, closeIconSize, closeColorHover, closeColorPressed, closeBorderRadius, [createKey("panePadding", size2)]: panePadding, [createKey("tabPadding", sizeType)]: tabPadding, [createKey("tabPaddingVertical", sizeType)]: tabPaddingVertical, [createKey("tabGap", sizeType)]: tabGap, [createKey("tabGap", `${sizeType}Vertical`)]: tabGapVertical, [createKey("tabTextColor", type)]: tabTextColor, [createKey("tabTextColorActive", type)]: tabTextColorActive, [createKey("tabTextColorHover", type)]: tabTextColorHover, [createKey("tabTextColorDisabled", type)]: tabTextColorDisabled, [createKey("tabFontSize", size2)]: tabFontSize }, common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 } } = themeRef.value;
+      const {
+        self: {
+          barColor,
+          closeIconColor,
+          closeIconColorHover,
+          closeIconColorPressed,
+          tabColor,
+          tabBorderColor,
+          paneTextColor,
+          tabFontWeight,
+          tabBorderRadius,
+          tabFontWeightActive,
+          colorSegment,
+          fontWeightStrong,
+          tabColorSegment,
+          closeSize,
+          closeIconSize,
+          closeColorHover,
+          closeColorPressed,
+          closeBorderRadius,
+          [createKey("panePadding", size2)]: panePadding,
+          [createKey("tabPadding", sizeType)]: tabPadding,
+          [createKey("tabPaddingVertical", sizeType)]: tabPaddingVertical,
+          [createKey("tabGap", sizeType)]: tabGap,
+          [createKey("tabGap", `${sizeType}Vertical`)]: tabGapVertical,
+          [createKey("tabTextColor", type)]: tabTextColor,
+          [createKey("tabTextColorActive", type)]: tabTextColorActive,
+          [createKey("tabTextColorHover", type)]: tabTextColorHover,
+          [createKey("tabTextColorDisabled", type)]: tabTextColorDisabled,
+          [createKey("tabFontSize", size2)]: tabFontSize
+        },
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-color-segment": colorSegment,
@@ -37345,7 +43359,7 @@ const NTabs = defineComponent({
       mergedClsPrefix: mergedClsPrefixRef,
       mergedValue: mergedValueRef,
       renderedNames: /* @__PURE__ */ new Set(),
-      tabsRailElRef,
+      segmentCapsuleElRef,
       tabsPaneWrapperRef,
       tabsElRef,
       barElRef,
@@ -37362,6 +43376,7 @@ const NTabs = defineComponent({
       themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
       animationDirection: animationDirectionRef,
       renderNameListRef,
+      yScrollElRef,
       onAnimationBeforeLeave,
       onAnimationEnter,
       onAnimationAfterEnter,
@@ -37369,7 +43384,23 @@ const NTabs = defineComponent({
     }, exposedMethods);
   },
   render() {
-    const { mergedClsPrefix, type, placement, addTabFixed, addable, mergedSize, renderNameListRef, onRender, paneWrapperClass, paneWrapperStyle, $slots: { default: defaultSlot, prefix: prefixSlot, suffix: suffixSlot } } = this;
+    const {
+      mergedClsPrefix,
+      type,
+      placement,
+      addTabFixed,
+      addable,
+      mergedSize,
+      renderNameListRef,
+      onRender,
+      paneWrapperClass,
+      paneWrapperStyle,
+      $slots: {
+        default: defaultSlot,
+        prefix: prefixSlot,
+        suffix: suffixSlot
+      }
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
     const tabPaneChildren = defaultSlot ? flatten$2(defaultSlot()).filter((v) => {
       return v.type.__TAB_PANE__ === true;
@@ -37383,87 +43414,123 @@ const NTabs = defineComponent({
     const mergedJustifyContent = !isCard && !isSegment && this.justifyContent;
     renderNameListRef.value = [];
     const scrollContent = () => {
-      const tabs = h(
-        "div",
-        { style: this.tabWrapperStyle, class: [`${mergedClsPrefix}-tabs-wrapper`] },
-        mergedJustifyContent ? null : h("div", { class: `${mergedClsPrefix}-tabs-scroll-padding`, style: { width: `${this.tabsPadding}px` } }),
-        showPane ? tabPaneChildren.map((tabPaneVNode, index2) => {
-          renderNameListRef.value.push(tabPaneVNode.props.name);
-          return justifyTabDynamicProps(h(Tab, Object.assign({}, tabPaneVNode.props, { internalCreatedByPane: true, internalLeftPadded: index2 !== 0 && (!mergedJustifyContent || mergedJustifyContent === "center" || mergedJustifyContent === "start" || mergedJustifyContent === "end") }), tabPaneVNode.children ? {
-            default: tabPaneVNode.children.tab
-          } : void 0));
-        }) : tabChildren.map((tabVNode, index2) => {
-          renderNameListRef.value.push(tabVNode.props.name);
-          if (index2 !== 0 && !mergedJustifyContent) {
-            return justifyTabDynamicProps(createLeftPaddedTabVNode(tabVNode));
-          } else {
-            return justifyTabDynamicProps(tabVNode);
-          }
-        }),
-        !addTabFixed && addable && isCard ? createAddTag(addable, (showPane ? tabPaneChildren.length : tabChildren.length) !== 0) : null,
-        mergedJustifyContent ? null : h("div", { class: `${mergedClsPrefix}-tabs-scroll-padding`, style: { width: `${this.tabsPadding}px` } })
-      );
-      return h(
-        "div",
-        { ref: "tabsElRef", class: `${mergedClsPrefix}-tabs-nav-scroll-content` },
-        isCard && addable ? h(VResizeObserver, { onResize: this.handleTabsResize }, {
-          default: () => tabs
-        }) : tabs,
-        isCard ? h("div", { class: `${mergedClsPrefix}-tabs-pad` }) : null,
-        isCard ? null : h("div", { ref: "barElRef", class: `${mergedClsPrefix}-tabs-bar` })
-      );
+      const tabs = h("div", {
+        style: this.tabWrapperStyle,
+        class: [`${mergedClsPrefix}-tabs-wrapper`]
+      }, mergedJustifyContent ? null : h("div", {
+        class: `${mergedClsPrefix}-tabs-scroll-padding`,
+        style: {
+          width: `${this.tabsPadding}px`
+        }
+      }), showPane ? tabPaneChildren.map((tabPaneVNode, index2) => {
+        renderNameListRef.value.push(tabPaneVNode.props.name);
+        return justifyTabDynamicProps(h(Tab, Object.assign({}, tabPaneVNode.props, {
+          internalCreatedByPane: true,
+          internalLeftPadded: index2 !== 0 && (!mergedJustifyContent || mergedJustifyContent === "center" || mergedJustifyContent === "start" || mergedJustifyContent === "end")
+        }), tabPaneVNode.children ? {
+          default: tabPaneVNode.children.tab
+        } : void 0));
+      }) : tabChildren.map((tabVNode, index2) => {
+        renderNameListRef.value.push(tabVNode.props.name);
+        if (index2 !== 0 && !mergedJustifyContent) {
+          return justifyTabDynamicProps(createLeftPaddedTabVNode(tabVNode));
+        } else {
+          return justifyTabDynamicProps(tabVNode);
+        }
+      }), !addTabFixed && addable && isCard ? createAddTag(addable, (showPane ? tabPaneChildren.length : tabChildren.length) !== 0) : null, mergedJustifyContent ? null : h("div", {
+        class: `${mergedClsPrefix}-tabs-scroll-padding`,
+        style: {
+          width: `${this.tabsPadding}px`
+        }
+      }));
+      return h("div", {
+        ref: "tabsElRef",
+        class: `${mergedClsPrefix}-tabs-nav-scroll-content`
+      }, isCard && addable ? h(VResizeObserver, {
+        onResize: this.handleTabsResize
+      }, {
+        default: () => tabs
+      }) : tabs, isCard ? h("div", {
+        class: `${mergedClsPrefix}-tabs-pad`
+      }) : null, isCard ? null : h("div", {
+        ref: "barElRef",
+        class: `${mergedClsPrefix}-tabs-bar`
+      }));
     };
     const resolvedPlacement = isSegment ? "top" : placement;
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-tabs`,
-        this.themeClass,
-        `${mergedClsPrefix}-tabs--${type}-type`,
-        `${mergedClsPrefix}-tabs--${mergedSize}-size`,
-        mergedJustifyContent && `${mergedClsPrefix}-tabs--flex`,
-        `${mergedClsPrefix}-tabs--${resolvedPlacement}`
-      ], style: this.cssVars },
-      h(
-        "div",
-        { class: [
-          // the class should be applied here since it's possible
-          // to make tabs nested in tabs, style may influence each
-          // other. adding a class will make it easy to write the
-          // style.
-          `${mergedClsPrefix}-tabs-nav--${type}-type`,
-          `${mergedClsPrefix}-tabs-nav--${resolvedPlacement}`,
-          `${mergedClsPrefix}-tabs-nav`
-        ] },
-        resolveWrappedSlot(prefixSlot, (children) => children && h("div", { class: `${mergedClsPrefix}-tabs-nav__prefix` }, children)),
-        isSegment ? h("div", { class: `${mergedClsPrefix}-tabs-rail`, ref: "tabsRailElRef" }, showPane ? tabPaneChildren.map((tabPaneVNode, index2) => {
-          renderNameListRef.value.push(tabPaneVNode.props.name);
-          return h(Tab, Object.assign({}, tabPaneVNode.props, { internalCreatedByPane: true, internalLeftPadded: index2 !== 0 }), tabPaneVNode.children ? {
-            default: tabPaneVNode.children.tab
-          } : void 0);
-        }) : tabChildren.map((tabVNode, index2) => {
-          renderNameListRef.value.push(tabVNode.props.name);
-          if (index2 === 0) {
-            return tabVNode;
-          } else {
-            return createLeftPaddedTabVNode(tabVNode);
-          }
-        })) : h(VResizeObserver, { onResize: this.handleNavResize }, {
-          default: () => h("div", { class: `${mergedClsPrefix}-tabs-nav-scroll-wrapper`, ref: "scrollWrapperElRef" }, ["top", "bottom"].includes(resolvedPlacement) ? h(VXScroll, { ref: "xScrollInstRef", onScroll: this.handleScroll }, {
-            default: scrollContent
-          }) : h("div", { class: `${mergedClsPrefix}-tabs-nav-y-scroll`, onScroll: this.handleScroll }, scrollContent()))
-        }),
-        addTabFixed && addable && isCard ? createAddTag(addable, true) : null,
-        resolveWrappedSlot(suffixSlot, (children) => children && h("div", { class: `${mergedClsPrefix}-tabs-nav__suffix` }, children))
-      ),
-      showPane && (this.animated && (resolvedPlacement === "top" || resolvedPlacement === "bottom") ? h("div", { ref: "tabsPaneWrapperRef", style: paneWrapperStyle, class: [`${mergedClsPrefix}-tabs-pane-wrapper`, paneWrapperClass] }, filterMapTabPanes(tabPaneChildren, this.mergedValue, this.renderedNames, this.onAnimationBeforeLeave, this.onAnimationEnter, this.onAnimationAfterEnter, this.animationDirection)) : filterMapTabPanes(tabPaneChildren, this.mergedValue, this.renderedNames))
-    );
+    return h("div", {
+      class: [`${mergedClsPrefix}-tabs`, this.themeClass, `${mergedClsPrefix}-tabs--${type}-type`, `${mergedClsPrefix}-tabs--${mergedSize}-size`, mergedJustifyContent && `${mergedClsPrefix}-tabs--flex`, `${mergedClsPrefix}-tabs--${resolvedPlacement}`],
+      style: this.cssVars
+    }, h("div", {
+      class: [
+        // the class should be applied here since it's possible
+        // to make tabs nested in tabs, style may influence each
+        // other. adding a class will make it easy to write the
+        // style.
+        `${mergedClsPrefix}-tabs-nav--${type}-type`,
+        `${mergedClsPrefix}-tabs-nav--${resolvedPlacement}`,
+        `${mergedClsPrefix}-tabs-nav`
+      ]
+    }, resolveWrappedSlot(prefixSlot, (children) => children && h("div", {
+      class: `${mergedClsPrefix}-tabs-nav__prefix`
+    }, children)), isSegment ? h("div", {
+      class: `${mergedClsPrefix}-tabs-rail`,
+      ref: "tabsElRef"
+    }, h("div", {
+      class: `${mergedClsPrefix}-tabs-capsule`,
+      ref: "segmentCapsuleElRef"
+    }, h("div", {
+      class: `${mergedClsPrefix}-tabs-wrapper`
+    }, h("div", {
+      class: `${mergedClsPrefix}-tabs-tab`
+    }))), showPane ? tabPaneChildren.map((tabPaneVNode, index2) => {
+      renderNameListRef.value.push(tabPaneVNode.props.name);
+      return h(Tab, Object.assign({}, tabPaneVNode.props, {
+        internalCreatedByPane: true,
+        internalLeftPadded: index2 !== 0
+      }), tabPaneVNode.children ? {
+        default: tabPaneVNode.children.tab
+      } : void 0);
+    }) : tabChildren.map((tabVNode, index2) => {
+      renderNameListRef.value.push(tabVNode.props.name);
+      if (index2 === 0) {
+        return tabVNode;
+      } else {
+        return createLeftPaddedTabVNode(tabVNode);
+      }
+    })) : h(VResizeObserver, {
+      onResize: this.handleNavResize
+    }, {
+      default: () => h("div", {
+        class: `${mergedClsPrefix}-tabs-nav-scroll-wrapper`,
+        ref: "scrollWrapperElRef"
+      }, ["top", "bottom"].includes(resolvedPlacement) ? h(VXScroll, {
+        ref: "xScrollInstRef",
+        onScroll: this.handleScroll
+      }, {
+        default: scrollContent
+      }) : h("div", {
+        class: `${mergedClsPrefix}-tabs-nav-y-scroll`,
+        onScroll: this.handleScroll,
+        ref: "yScrollElRef"
+      }, scrollContent()))
+    }), addTabFixed && addable && isCard ? createAddTag(addable, true) : null, resolveWrappedSlot(suffixSlot, (children) => children && h("div", {
+      class: `${mergedClsPrefix}-tabs-nav__suffix`
+    }, children))), showPane && (this.animated && (resolvedPlacement === "top" || resolvedPlacement === "bottom") ? h("div", {
+      ref: "tabsPaneWrapperRef",
+      style: paneWrapperStyle,
+      class: [`${mergedClsPrefix}-tabs-pane-wrapper`, paneWrapperClass]
+    }, filterMapTabPanes(tabPaneChildren, this.mergedValue, this.renderedNames, this.onAnimationBeforeLeave, this.onAnimationEnter, this.onAnimationAfterEnter, this.animationDirection)) : filterMapTabPanes(tabPaneChildren, this.mergedValue, this.renderedNames)));
   }
 });
 function filterMapTabPanes(tabPaneVNodes, value, renderedNames, onBeforeLeave, onEnter, onAfterEnter, animationDirection) {
   const children = [];
   tabPaneVNodes.forEach((vNode) => {
-    const { name, displayDirective, "display-directive": _displayDirective } = vNode.props;
+    const {
+      name,
+      displayDirective,
+      "display-directive": _displayDirective
+    } = vNode.props;
     const matchDisplayDirective = (directive) => displayDirective === directive || _displayDirective === directive;
     const show = value === name;
     if (vNode.key !== void 0) {
@@ -37480,10 +43547,25 @@ function filterMapTabPanes(tabPaneVNodes, value, renderedNames, onBeforeLeave, o
   if (!animationDirection) {
     return children;
   }
-  return h(TransitionGroup, { name: `${animationDirection}-transition`, onBeforeLeave, onEnter, onAfterEnter }, { default: () => children });
+  return h(TransitionGroup, {
+    name: `${animationDirection}-transition`,
+    onBeforeLeave,
+    onEnter,
+    onAfterEnter
+  }, {
+    default: () => children
+  });
 }
 function createAddTag(addable, internalLeftPadded) {
-  return h(Tab, { ref: "addTabInstRef", key: "__addable", name: "__addable", internalCreatedByPane: true, internalAddable: true, internalLeftPadded, disabled: typeof addable === "object" && addable.disabled });
+  return h(Tab, {
+    ref: "addTabInstRef",
+    key: "__addable",
+    name: "__addable",
+    internalCreatedByPane: true,
+    internalAddable: true,
+    internalLeftPadded,
+    disabled: typeof addable === "object" && addable.disabled
+  });
 }
 function createLeftPaddedTabVNode(tabVNode) {
   const modifiedVNode = cloneVNode(tabVNode);
@@ -37552,16 +43634,35 @@ const textProps = Object.assign(Object.assign({}, useTheme.props), {
     default: void 0
   }
 });
-const NText = defineComponent({
+const NText = /* @__PURE__ */ defineComponent({
   name: "Text",
   props: textProps,
   setup(props) {
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Typography", "-text", style, typographyLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { depth, type } = props;
+      const {
+        depth,
+        type
+      } = props;
       const textColorKey = type === "default" ? depth === void 0 ? "textColor" : `textColor${depth}Depth` : createKey("textColor", type);
-      const { common: { fontWeightStrong, fontFamilyMono, cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { codeTextColor, codeBorderRadius, codeColor, codeBorder, [textColorKey]: textColor } } = themeRef.value;
+      const {
+        common: {
+          fontWeightStrong,
+          fontFamilyMono,
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          codeTextColor,
+          codeBorderRadius,
+          codeColor,
+          codeBorder,
+          [textColorKey]: textColor
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-text-color": textColor,
@@ -37584,21 +43685,28 @@ const NText = defineComponent({
   },
   render() {
     var _a2, _b, _c;
-    const { mergedClsPrefix } = this;
+    const {
+      mergedClsPrefix
+    } = this;
     (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-    const textClass = [
-      `${mergedClsPrefix}-text`,
-      this.themeClass,
-      {
-        [`${mergedClsPrefix}-text--code`]: this.code,
-        [`${mergedClsPrefix}-text--delete`]: this.delete,
-        [`${mergedClsPrefix}-text--strong`]: this.strong,
-        [`${mergedClsPrefix}-text--italic`]: this.italic,
-        [`${mergedClsPrefix}-text--underline`]: this.underline
-      }
-    ];
+    const textClass = [`${mergedClsPrefix}-text`, this.themeClass, {
+      [`${mergedClsPrefix}-text--code`]: this.code,
+      [`${mergedClsPrefix}-text--delete`]: this.delete,
+      [`${mergedClsPrefix}-text--strong`]: this.strong,
+      [`${mergedClsPrefix}-text--italic`]: this.italic,
+      [`${mergedClsPrefix}-text--underline`]: this.underline
+    }];
     const children = (_c = (_b = this.$slots).default) === null || _c === void 0 ? void 0 : _c.call(_b);
-    return this.code ? h("code", { class: textClass, style: this.cssVars }, this.delete ? h("del", null, children) : children) : this.delete ? h("del", { class: textClass, style: this.cssVars }, children) : h(this.compitableTag || "span", { class: textClass, style: this.cssVars }, children);
+    return this.code ? h("code", {
+      class: textClass,
+      style: this.cssVars
+    }, this.delete ? h("del", null, children) : children) : this.delete ? h("del", {
+      class: textClass,
+      style: this.cssVars
+    }, children) : h(this.compitableTag || "span", {
+      class: textClass,
+      style: this.cssVars
+    }, children);
   }
 });
 const self$1 = () => ({});
@@ -37614,6 +43722,24 @@ const equationDark = {
   self: self$1
 };
 const equationDark$1 = equationDark;
+const floatButtonGroupDark = {
+  name: "FloatButtonGroup",
+  common: commonDark,
+  self(vars) {
+    const {
+      popoverColor,
+      dividerColor,
+      borderRadius
+    } = vars;
+    return {
+      color: popoverColor,
+      buttonBorderColor: dividerColor,
+      borderRadiusSquare: borderRadius,
+      boxShadow: "0 2px 8px 0px rgba(0, 0, 0, .12)"
+    };
+  }
+};
+const floatButtonGroupDark$1 = floatButtonGroupDark;
 const darkTheme = {
   name: "dark",
   common: commonDark,
@@ -37649,6 +43775,7 @@ const darkTheme = {
   Empty: emptyDark$1,
   Ellipsis: ellipsisDark$1,
   Equation: equationDark$1,
+  Flex: flexDark$1,
   Form: formDark,
   GradientText: gradientTextDark$1,
   Icon: iconDark$2,
@@ -37672,6 +43799,7 @@ const darkTheme = {
   Popover: popoverDark$1,
   Popselect: popselectDark,
   Progress: progressDark$1,
+  QrCode: qrcodeDark$1,
   Radio: radioDark$1,
   Rate: rateDark$1,
   Result: resultDark$1,
@@ -37697,7 +43825,10 @@ const darkTheme = {
   TreeSelect: treeSelectDark$1,
   Typography: typographyDark$1,
   Upload: uploadDark$1,
-  Watermark: watermarkDark$1
+  Watermark: watermarkDark$1,
+  Split: splitDark$1,
+  FloatButton: floatButtonDark$1,
+  FloatButtonGroup: floatButtonGroupDark$1
 };
 const lightTheme = {
   name: "light",
@@ -37734,6 +43865,7 @@ const lightTheme = {
   Empty: emptyLight$1,
   Equation: equationLight$1,
   Ellipsis: ellipsisLight$1,
+  Flex: flexLight$1,
   Form: formLight$1,
   GradientText: gradientTextLight$1,
   Icon: iconLight$1,
@@ -37757,6 +43889,7 @@ const lightTheme = {
   Popover: popoverLight$1,
   Popselect: popselectLight$1,
   Progress: progressLight$1,
+  QrCode: qrcodeLight,
   Radio: radioLight$1,
   Rate: rateLight,
   Row: rowLight$1,
@@ -37782,39 +43915,60 @@ const lightTheme = {
   TreeSelect: treeSelectLight$1,
   Typography: typographyLight$1,
   Upload: uploadLight$1,
-  Watermark: watermarkLight$1
+  Watermark: watermarkLight$1,
+  Split: splitLight,
+  FloatButton: floatButtonLight,
+  FloatButtonGroup: floatButtonGroupLight
 };
-const MaximizeIcon = defineComponent({
+const MaximizeIcon = /* @__PURE__ */ defineComponent({
   render() {
-    return h(
-      "svg",
-      { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 16 16" },
-      h(
-        "g",
-        { fill: "none" },
-        h("path", { d: "M8.5 2a.5.5 0 0 0 0 1h3.793L3 12.293V8.5a.5.5 0 0 0-1 0v4.9a.6.6 0 0 0 .6.6h4.9a.5.5 0 0 0 0-1H3.707L13 3.707V7.5a.5.5 0 0 0 1 0V2.6a.6.6 0 0 0-.6-.6H8.5z", fill: "currentColor" })
-      )
-    );
+    return h("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      viewBox: "0 0 16 16"
+    }, h("g", {
+      fill: "none"
+    }, h("path", {
+      d: "M8.5 2a.5.5 0 0 0 0 1h3.793L3 12.293V8.5a.5.5 0 0 0-1 0v4.9a.6.6 0 0 0 .6.6h4.9a.5.5 0 0 0 0-1H3.707L13 3.707V7.5a.5.5 0 0 0 1 0V2.6a.6.6 0 0 0-.6-.6H8.5z",
+      fill: "currentColor"
+    })));
   }
 });
-const MinimizeIcon = defineComponent({
+const MinimizeIcon = /* @__PURE__ */ defineComponent({
   render() {
-    return h(
-      "svg",
-      { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 32 32" },
-      h("path", { d: "M4 18v2h6.586L2 28.582L3.414 30L12 21.414V28h2V18H4z", fill: "currentColor" }),
-      h("path", { d: "M30 3.416L28.592 2L20 10.586V4h-2v10h10v-2h-6.586L30 3.416z", fill: "currentColor" })
-    );
+    return h("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      viewBox: "0 0 32 32"
+    }, h("path", {
+      d: "M4 18v2h6.586L2 28.582L3.414 30L12 21.414V28h2V18H4z",
+      fill: "currentColor"
+    }), h("path", {
+      d: "M30 3.416L28.592 2L20 10.586V4h-2v10h10v-2h-6.586L30 3.416z",
+      fill: "currentColor"
+    }));
   }
 });
-const ColorWandIcon = h(
-  "svg",
-  { viewBox: "0 0 16 16", fill: "none", xmlns: "http://www.w3.org/2000/svg", style: { width: "1em", height: "1em", color: "currentColor" } },
-  h("path", { d: "M13.5 1C13.7761 1 14 1.22386 14 1.5V2H14.5C14.7761 2 15 2.22386 15 2.5C15 2.77614 14.7761 3 14.5 3H14V3.5C14 3.77614 13.7761 4 13.5 4C13.2239 4 13 3.77614 13 3.5V3H12.5C12.2239 3 12 2.77614 12 2.5C12 2.22386 12.2239 2 12.5 2H13V1.5C13 1.22386 13.2239 1 13.5 1Z", fill: "currentColor" }),
-  h("path", { d: "M3.5 3C3.77615 3 4 3.22386 4 3.5V4H4.5C4.77615 4 5 4.22386 5 4.5C5 4.77614 4.77615 5 4.5 5H4V5.5C4 5.77614 3.77615 6 3.5 6C3.22386 6 3 5.77614 3 5.5V5H2.5C2.22386 5 2 4.77614 2 4.5C2 4.22386 2.22386 4 2.5 4H3V3.5C3 3.22386 3.22386 3 3.5 3Z", fill: "currentColor" }),
-  h("path", { d: "M12.5 12C12.7761 12 13 11.7761 13 11.5C13 11.2239 12.7761 11 12.5 11H12V10.5C12 10.2239 11.7761 10 11.5 10C11.2239 10 11 10.2239 11 10.5V11H10.5C10.2239 11 10 11.2239 10 11.5C10 11.7761 10.2239 12 10.5 12H11V12.5C11 12.7761 11.2239 13 11.5 13C11.7761 13 12 12.7761 12 12.5V12H12.5Z", fill: "currentColor" }),
-  h("path", { d: "M8.72956 4.56346C9.4771 3.81592 10.6891 3.81592 11.4367 4.56347C12.1842 5.31102 12.1842 6.52303 11.4367 7.27058L4.26679 14.4404C3.51924 15.1879 2.30723 15.1879 1.55968 14.4404C0.812134 13.6928 0.812138 12.4808 1.55969 11.7333L8.72956 4.56346ZM8.25002 6.4572L2.26679 12.4404C1.90977 12.7974 1.90977 13.3763 2.26679 13.7333C2.62381 14.0903 3.20266 14.0903 3.55968 13.7333L9.54292 7.75009L8.25002 6.4572ZM10.25 7.04299L10.7295 6.56347C11.0866 6.20645 11.0866 5.6276 10.7296 5.27057C10.3725 4.91355 9.79368 4.91355 9.43666 5.27057L8.95713 5.7501L10.25 7.04299Z", fill: "currentColor" })
-);
+const ColorWandIcon = h("svg", {
+  viewBox: "0 0 16 16",
+  fill: "none",
+  xmlns: "http://www.w3.org/2000/svg",
+  style: {
+    width: "1em",
+    height: "1em",
+    color: "currentColor"
+  }
+}, h("path", {
+  d: "M13.5 1C13.7761 1 14 1.22386 14 1.5V2H14.5C14.7761 2 15 2.22386 15 2.5C15 2.77614 14.7761 3 14.5 3H14V3.5C14 3.77614 13.7761 4 13.5 4C13.2239 4 13 3.77614 13 3.5V3H12.5C12.2239 3 12 2.77614 12 2.5C12 2.22386 12.2239 2 12.5 2H13V1.5C13 1.22386 13.2239 1 13.5 1Z",
+  fill: "currentColor"
+}), h("path", {
+  d: "M3.5 3C3.77615 3 4 3.22386 4 3.5V4H4.5C4.77615 4 5 4.22386 5 4.5C5 4.77614 4.77615 5 4.5 5H4V5.5C4 5.77614 3.77615 6 3.5 6C3.22386 6 3 5.77614 3 5.5V5H2.5C2.22386 5 2 4.77614 2 4.5C2 4.22386 2.22386 4 2.5 4H3V3.5C3 3.22386 3.22386 3 3.5 3Z",
+  fill: "currentColor"
+}), h("path", {
+  d: "M12.5 12C12.7761 12 13 11.7761 13 11.5C13 11.2239 12.7761 11 12.5 11H12V10.5C12 10.2239 11.7761 10 11.5 10C11.2239 10 11 10.2239 11 10.5V11H10.5C10.2239 11 10 11.2239 10 11.5C10 11.7761 10.2239 12 10.5 12H11V12.5C11 12.7761 11.2239 13 11.5 13C11.7761 13 12 12.7761 12 12.5V12H12.5Z",
+  fill: "currentColor"
+}), h("path", {
+  d: "M8.72956 4.56346C9.4771 3.81592 10.6891 3.81592 11.4367 4.56347C12.1842 5.31102 12.1842 6.52303 11.4367 7.27058L4.26679 14.4404C3.51924 15.1879 2.30723 15.1879 1.55968 14.4404C0.812134 13.6928 0.812138 12.4808 1.55969 11.7333L8.72956 4.56346ZM8.25002 6.4572L2.26679 12.4404C1.90977 12.7974 1.90977 13.3763 2.26679 13.7333C2.62381 14.0903 3.20266 14.0903 3.55968 13.7333L9.54292 7.75009L8.25002 6.4572ZM10.25 7.04299L10.7295 6.56347C11.0866 6.20645 11.0866 5.6276 10.7296 5.27057C10.3725 4.91355 9.79368 4.91355 9.43666 5.27057L8.95713 5.7501L10.25 7.04299Z",
+  fill: "currentColor"
+}));
 const showColorPicker = (key) => {
   if (key.includes("pacity"))
     return false;
@@ -37822,7 +43976,7 @@ const showColorPicker = (key) => {
     return true;
   return false;
 };
-const NThemeEditor = defineComponent({
+const NThemeEditor = /* @__PURE__ */ defineComponent({
   name: "ThemeEditor",
   inheritAttrs: false,
   setup() {
@@ -37862,7 +44016,9 @@ const NThemeEditor = defineComponent({
       overridesRef.value = cloneDeep(toRaw(tempOverridesRef.value));
     }
     function setTempOverrides(compName, varName, value) {
-      const { value: tempOverrides } = tempOverridesRef;
+      const {
+        value: tempOverrides
+      } = tempOverridesRef;
       if (!(compName in tempOverrides))
         tempOverrides[compName] = {};
       const compOverrides = tempOverrides[compName];
@@ -37877,7 +44033,9 @@ const NThemeEditor = defineComponent({
       overridesRef.value = {};
     }
     function handleImportClick() {
-      const { value: fileInput } = fileInputRef;
+      const {
+        value: fileInput
+      } = fileInputRef;
       if (!fileInput)
         return;
       fileInput.click();
@@ -37886,7 +44044,9 @@ const NThemeEditor = defineComponent({
       isMaximized.value = !isMaximized.value;
     }
     function handleInputFileChange() {
-      const { value: fileInput } = fileInputRef;
+      const {
+        value: fileInput
+      } = fileInputRef;
       if (!fileInput)
         return;
       const fileList = fileInput.files;
@@ -37905,12 +44065,7 @@ const NThemeEditor = defineComponent({
     }
     function handleExportClick() {
       const url = URL.createObjectURL(new Blob([JSON.stringify(overridesRef.value, void 0, 2)]));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "naive-ui-theme-overrides.json";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      download(url, "naive-ui-theme-overrides.json");
       URL.revokeObjectURL(url);
     }
     watch(overridesRef, (value) => {
@@ -37939,168 +44094,224 @@ const NThemeEditor = defineComponent({
     };
   },
   render() {
-    return h(NConfigProvider, { themeOverrides: this.overrides }, {
+    return h(NConfigProvider, {
+      themeOverrides: this.overrides
+    }, {
       default: () => {
         var _a2, _b;
-        return [
-          h(NPopover, { scrollable: true, arrowPointToCenter: true, trigger: "manual", show: this.showPanel, displayDirective: "show", placement: "top-end", style: {
+        return [h(NPopover, {
+          scrollable: true,
+          arrowPointToCenter: true,
+          trigger: "manual",
+          show: this.showPanel,
+          displayDirective: "show",
+          placement: "top-end",
+          style: {
             width: this.isMaximized ? "calc(100vw - 80px)" : "288px",
             height: "calc(100vh - 200px)",
             padding: 0
-          } }, {
-            trigger: () => h(NElement, {
-              style: [
-                {
-                  position: "fixed",
-                  zIndex: 10,
-                  bottom: "40px",
-                  right: `calc(40px + ${lockHtmlScrollRightCompensationRef.value})`,
-                  width: "44px",
-                  height: "44px",
-                  fontSize: "26px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: "50%",
-                  backgroundColor: "var(--popover-color)",
-                  color: "var(--text-color-2)",
-                  transition: "color .3s var(--cubic-bezier-ease-in-out), background-color .3s var(--cubic-bezier-ease-in-out), box-shadow .3s var(--cubic-bezier-ease-in-out)",
-                  boxShadow: "0 2px 8px 0px rgba(0, 0, 0, .12)",
-                  cursor: "pointer"
-                },
-                this.$attrs.style
-              ],
-              // We use ts-ignore for vue-tsc, since it seems to patch
-              // native event for vue components
-              // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error, @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              onClick: () => {
-                this.showPanel = !this.showPanel;
-              }
-            }, { default: () => ColorWandIcon }),
-            default: () => h(
-              Fragment,
-              null,
-              h("input", { type: "file", ref: "fileInputRef", style: {
-                display: "block",
-                width: 0,
-                height: 0,
-                visibility: "hidden"
-              }, onChange: this.handleInputFileChange }),
-              h(NSpace, { vertical: true }, {
-                default: () => [
-                  h(NSpace, { align: "center", justify: "space-between", style: {
-                    marginBottom: "8px",
-                    fontSize: "18px",
-                    fontWeight: 500
-                  } }, {
-                    default: () => h(
-                      Fragment,
-                      null,
-                      h("span", null, this.locale.title),
-                      h(NButton, { onClick: this.toggleMaximized, secondary: true, circle: true, size: "tiny" }, {
-                        icon: () => h(NIcon, { component: this.isMaximized ? MinimizeIcon : MaximizeIcon })
-                      })
-                    )
-                  }),
-                  this.locale.filterCompName,
-                  h(NInput, { onChange: () => {
-                    this.compNamePattern = this.tempCompNamePattern;
-                  }, onInput: (value) => {
-                    this.tempCompNamePattern = value;
-                  }, value: this.tempCompNamePattern, placeholder: this.locale.filterCompName }),
-                  this.locale.filterVarName,
-                  h(NInput, { onChange: (value) => {
-                    this.varNamePattern = value;
-                  }, onInput: (value) => {
-                    this.tempVarNamePattern = value;
-                  }, value: this.tempVarNamePattern, placeholder: this.locale.filterVarName }),
-                  h(NButton, { size: "small", onClick: () => {
-                    this.compNamePattern = "";
-                    this.varNamePattern = "";
-                    this.tempCompNamePattern = "";
-                    this.tempVarNamePattern = "";
-                  }, block: true }, { default: () => this.locale.clearSearch }),
-                  h(NButton, { size: "small", onClick: this.handleClearAllClick, block: true }, {
-                    default: () => this.locale.clearAllVars
-                  }),
-                  h(NSpace, { itemStyle: { flex: 1 } }, {
-                    default: () => h(
-                      Fragment,
-                      null,
-                      h(NButton, { block: true, size: "small", onClick: this.handleImportClick }, {
-                        default: () => this.locale.import
-                      }),
-                      h(NButton, { block: true, size: "small", onClick: this.handleExportClick }, {
-                        default: () => this.locale.export
-                      })
-                    )
-                  })
-                ]
-              }),
-              h(NDivider, null),
-              h(NCollapse, null, {
-                default: () => {
-                  const { theme, compNamePattern, varNamePattern } = this;
-                  const themeKeys = Object.keys(theme);
-                  const compNamePatternLower = compNamePattern.toLowerCase();
-                  const varNamePatternLower = varNamePattern.toLowerCase();
-                  let filteredItemsCount = 0;
-                  const collapsedItems = themeKeys.filter((themeKey2) => {
-                    return themeKey2.toLowerCase().includes(compNamePatternLower);
-                  }).map((themeKey2) => {
-                    const componentTheme = themeKey2 === "common" ? this.themeCommonDefault : theme[themeKey2];
-                    if (componentTheme === void 0) {
-                      return null;
-                    }
-                    const varKeys = Object.keys(componentTheme).filter((key) => {
-                      return key !== "name" && key.toLowerCase().includes(varNamePatternLower);
-                    });
-                    if (!varKeys.length) {
-                      return null;
-                    }
-                    filteredItemsCount += 1;
-                    return h(NCollapseItem, { title: themeKey2, name: themeKey2 }, {
-                      default: () => h(NGrid, { xGap: 32, yGap: 16, responsive: "screen", cols: this.isMaximized ? "1 xs:1 s:2 m:3 l:4" : 1 }, {
-                        default: () => varKeys.map((varKey) => h(NGi, null, {
-                          default: () => {
-                            var _a3, _b2, _c, _d;
-                            return h(
-                              Fragment,
-                              null,
-                              h("div", { key: `${varKey}Label`, style: {
-                                wordBreak: "break-word"
-                              } }, varKey),
-                              showColorPicker(varKey) ? h(NColorPicker, { key: varKey, modes: ["rgb", "hex"], value: ((_b2 = (_a3 = this.tempOverrides) === null || _a3 === void 0 ? void 0 : _a3[themeKey2]) === null || _b2 === void 0 ? void 0 : _b2[varKey]) || componentTheme[varKey], onComplete: this.applyTempOverrides, onUpdateValue: (value) => {
-                                this.setTempOverrides(themeKey2, varKey, value);
-                              } }, {
-                                action: () => {
-                                  var _a4, _b3;
-                                  return h(NButton, { size: "small", disabled: componentTheme[varKey] === ((_b3 = (_a4 = this.tempOverrides) === null || _a4 === void 0 ? void 0 : _a4[themeKey2]) === null || _b3 === void 0 ? void 0 : _b3[varKey]), onClick: () => {
-                                    this.setTempOverrides(themeKey2, varKey, componentTheme[varKey]);
-                                    this.applyTempOverrides();
-                                  } }, {
-                                    default: () => this.locale.restore
-                                  });
-                                }
-                              }) : h(NInput, { key: varKey, onChange: this.applyTempOverrides, onUpdateValue: (value) => {
-                                this.setTempOverrides(themeKey2, varKey, value);
-                              }, value: ((_d = (_c = this.tempOverrides) === null || _c === void 0 ? void 0 : _c[themeKey2]) === null || _d === void 0 ? void 0 : _d[varKey]) || "", placeholder: componentTheme[varKey] })
-                            );
-                          }
-                        }))
-                      })
-                    });
-                  });
-                  if (!filteredItemsCount)
-                    return h(NEmpty, null);
-                  return collapsedItems;
-                }
-              })
-            )
+          }
+        }, {
+          trigger: () => h(NElement, {
+            style: [{
+              position: "fixed",
+              zIndex: 10,
+              bottom: "40px",
+              right: `calc(40px + ${lockHtmlScrollRightCompensationRef.value})`,
+              width: "44px",
+              height: "44px",
+              fontSize: "26px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "50%",
+              backgroundColor: "var(--popover-color)",
+              color: "var(--text-color-2)",
+              transition: "color .3s var(--cubic-bezier-ease-in-out), background-color .3s var(--cubic-bezier-ease-in-out), box-shadow .3s var(--cubic-bezier-ease-in-out)",
+              boxShadow: "0 2px 8px 0px rgba(0, 0, 0, .12)",
+              cursor: "pointer"
+            }, this.$attrs.style],
+            // We use ts-ignore for vue-tsc, since it seems to patch
+            // native event for vue components
+            // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error, @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            onClick: () => {
+              this.showPanel = !this.showPanel;
+            }
+          }, {
+            default: () => ColorWandIcon
           }),
-          (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2)
-        ];
+          default: () => h(Fragment, null, h("input", {
+            type: "file",
+            ref: "fileInputRef",
+            style: {
+              display: "block",
+              width: 0,
+              height: 0,
+              visibility: "hidden"
+            },
+            onChange: this.handleInputFileChange
+          }), h(NSpace, {
+            vertical: true
+          }, {
+            default: () => [h(NSpace, {
+              align: "center",
+              justify: "space-between",
+              style: {
+                marginBottom: "8px",
+                fontSize: "18px",
+                fontWeight: 500
+              }
+            }, {
+              default: () => h(Fragment, null, h("span", null, this.locale.title), h(NButton, {
+                onClick: this.toggleMaximized,
+                secondary: true,
+                circle: true,
+                size: "tiny"
+              }, {
+                icon: () => h(NIcon, {
+                  component: this.isMaximized ? MinimizeIcon : MaximizeIcon
+                })
+              }))
+            }), this.locale.filterCompName, h(NInput, {
+              onChange: () => {
+                this.compNamePattern = this.tempCompNamePattern;
+              },
+              onInput: (value) => {
+                this.tempCompNamePattern = value;
+              },
+              value: this.tempCompNamePattern,
+              placeholder: this.locale.filterCompName
+            }), this.locale.filterVarName, h(NInput, {
+              onChange: (value) => {
+                this.varNamePattern = value;
+              },
+              onInput: (value) => {
+                this.tempVarNamePattern = value;
+              },
+              value: this.tempVarNamePattern,
+              placeholder: this.locale.filterVarName
+            }), h(NButton, {
+              size: "small",
+              onClick: () => {
+                this.compNamePattern = "";
+                this.varNamePattern = "";
+                this.tempCompNamePattern = "";
+                this.tempVarNamePattern = "";
+              },
+              block: true
+            }, {
+              default: () => this.locale.clearSearch
+            }), h(NButton, {
+              size: "small",
+              onClick: this.handleClearAllClick,
+              block: true
+            }, {
+              default: () => this.locale.clearAllVars
+            }), h(NSpace, {
+              itemStyle: {
+                flex: 1
+              }
+            }, {
+              default: () => h(Fragment, null, h(NButton, {
+                block: true,
+                size: "small",
+                onClick: this.handleImportClick
+              }, {
+                default: () => this.locale.import
+              }), h(NButton, {
+                block: true,
+                size: "small",
+                onClick: this.handleExportClick
+              }, {
+                default: () => this.locale.export
+              }))
+            })]
+          }), h(NDivider, null), h(NCollapse, null, {
+            default: () => {
+              const {
+                theme,
+                compNamePattern,
+                varNamePattern
+              } = this;
+              const themeKeys = Object.keys(theme);
+              const compNamePatternLower = compNamePattern.toLowerCase();
+              const varNamePatternLower = varNamePattern.toLowerCase();
+              let filteredItemsCount = 0;
+              const collapsedItems = themeKeys.filter((themeKey2) => {
+                return themeKey2.toLowerCase().includes(compNamePatternLower);
+              }).map((themeKey2) => {
+                const componentTheme = themeKey2 === "common" ? this.themeCommonDefault : theme[themeKey2];
+                if (componentTheme === void 0) {
+                  return null;
+                }
+                const varKeys = Object.keys(componentTheme).filter((key) => {
+                  return key !== "name" && key.toLowerCase().includes(varNamePatternLower);
+                });
+                if (!varKeys.length) {
+                  return null;
+                }
+                filteredItemsCount += 1;
+                return h(NCollapseItem, {
+                  title: themeKey2,
+                  name: themeKey2
+                }, {
+                  default: () => h(NGrid, {
+                    xGap: 32,
+                    yGap: 16,
+                    responsive: "screen",
+                    cols: this.isMaximized ? "1 xs:1 s:2 m:3 l:4" : 1
+                  }, {
+                    default: () => varKeys.map((varKey) => h(NGi, null, {
+                      default: () => {
+                        var _a3, _b2, _c, _d;
+                        return h(Fragment, null, h("div", {
+                          key: `${varKey}Label`,
+                          style: {
+                            wordBreak: "break-word"
+                          }
+                        }, varKey), showColorPicker(varKey) ? h(NColorPicker, {
+                          key: varKey,
+                          modes: ["rgb", "hex"],
+                          value: ((_b2 = (_a3 = this.tempOverrides) === null || _a3 === void 0 ? void 0 : _a3[themeKey2]) === null || _b2 === void 0 ? void 0 : _b2[varKey]) || componentTheme[varKey],
+                          onComplete: this.applyTempOverrides,
+                          onUpdateValue: (value) => {
+                            this.setTempOverrides(themeKey2, varKey, value);
+                          }
+                        }, {
+                          action: () => {
+                            var _a4, _b3;
+                            return h(NButton, {
+                              size: "small",
+                              disabled: componentTheme[varKey] === ((_b3 = (_a4 = this.tempOverrides) === null || _a4 === void 0 ? void 0 : _a4[themeKey2]) === null || _b3 === void 0 ? void 0 : _b3[varKey]),
+                              onClick: () => {
+                                this.setTempOverrides(themeKey2, varKey, componentTheme[varKey]);
+                                this.applyTempOverrides();
+                              }
+                            }, {
+                              default: () => this.locale.restore
+                            });
+                          }
+                        }) : h(NInput, {
+                          key: varKey,
+                          onChange: this.applyTempOverrides,
+                          onUpdateValue: (value) => {
+                            this.setTempOverrides(themeKey2, varKey, value);
+                          },
+                          value: ((_d = (_c = this.tempOverrides) === null || _c === void 0 ? void 0 : _c[themeKey2]) === null || _d === void 0 ? void 0 : _d[varKey]) || "",
+                          placeholder: componentTheme[varKey]
+                        }));
+                      }
+                    }))
+                  })
+                });
+              });
+              if (!filteredItemsCount)
+                return h(NEmpty, null);
+              return collapsedItems;
+            }
+          }))
+        }), (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2)];
       }
     });
   }
@@ -38581,7 +44792,7 @@ const _hoisted_3$h = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$e = [_hoisted_2$i, _hoisted_3$h];
-const Add = defineComponent({
+const Add = /* @__PURE__ */ defineComponent({
   name: "Add",
   render: function render2(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$k, _hoisted_4$e);
@@ -38623,7 +44834,7 @@ const _hoisted_4$d = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_5$9 = [_hoisted_2$h, _hoisted_3$g, _hoisted_4$d];
-const Albums = defineComponent({
+const Albums = /* @__PURE__ */ defineComponent({
   name: "Albums",
   render: function render3(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$j, _hoisted_5$9);
@@ -38665,7 +44876,7 @@ const _hoisted_4$c = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_5$8 = [_hoisted_2$g, _hoisted_3$f, _hoisted_4$c];
-const Create = defineComponent({
+const Create = /* @__PURE__ */ defineComponent({
   name: "Create",
   render: function render4(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$i, _hoisted_5$8);
@@ -38707,7 +44918,7 @@ const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_5$7 = [_hoisted_2$f, _hoisted_3$e, _hoisted_4$b];
-const Cube = defineComponent({
+const Cube = /* @__PURE__ */ defineComponent({
   name: "Cube",
   render: function render5(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$h, _hoisted_5$7);
@@ -38739,7 +44950,7 @@ const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$a = [_hoisted_2$e, _hoisted_3$d];
-const DocumentText = defineComponent({
+const DocumentText = /* @__PURE__ */ defineComponent({
   name: "DocumentText",
   render: function render6(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$g, _hoisted_4$a);
@@ -38771,7 +44982,7 @@ const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$9 = [_hoisted_2$d, _hoisted_3$c];
-const Duplicate = defineComponent({
+const Duplicate = /* @__PURE__ */ defineComponent({
   name: "Duplicate",
   render: function render7(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_4$9);
@@ -38793,7 +45004,7 @@ const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_3$b = [_hoisted_2$c];
-const Image$1 = defineComponent({
+const Image$1 = /* @__PURE__ */ defineComponent({
   name: "Image",
   render: function render8(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_3$b);
@@ -38825,7 +45036,7 @@ const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$8 = [_hoisted_2$b, _hoisted_3$a];
-const Images = defineComponent({
+const Images = /* @__PURE__ */ defineComponent({
   name: "Images",
   render: function render9(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$8);
@@ -38879,7 +45090,7 @@ const _hoisted_4$7 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_5$6 = [_hoisted_2$a, _hoisted_3$9, _hoisted_4$7];
-const Menu = defineComponent({
+const Menu = /* @__PURE__ */ defineComponent({
   name: "Menu",
   render: function render10(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_5$6);
@@ -38911,7 +45122,7 @@ const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$6 = [_hoisted_2$9, _hoisted_3$8];
-const PowerSharp = defineComponent({
+const PowerSharp = /* @__PURE__ */ defineComponent({
   name: "PowerSharp",
   render: function render11(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$6);
@@ -38933,7 +45144,7 @@ const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_3$7 = [_hoisted_2$8];
-const SettingsSharp = defineComponent({
+const SettingsSharp = /* @__PURE__ */ defineComponent({
   name: "SettingsSharp",
   render: function render12(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_3$7);
@@ -38955,7 +45166,7 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_3$6 = [_hoisted_2$7];
-const Speedometer = defineComponent({
+const Speedometer = /* @__PURE__ */ defineComponent({
   name: "Speedometer",
   render: function render13(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_3$6);
@@ -39007,7 +45218,7 @@ const _hoisted_5$5 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_6$3 = [_hoisted_2$6, _hoisted_3$5, _hoisted_4$5, _hoisted_5$5];
-const StatsChart = defineComponent({
+const StatsChart = /* @__PURE__ */ defineComponent({
   name: "StatsChart",
   render: function render14(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_6$3);
@@ -39061,7 +45272,7 @@ const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_5$4 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$4];
-const SyncSharp = defineComponent({
+const SyncSharp = /* @__PURE__ */ defineComponent({
   name: "SyncSharp",
   render: function render15(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_5$4);
@@ -39115,18 +45326,18 @@ const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_6$2 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$3, _hoisted_5$3];
-const Wifi = defineComponent({
+const Wifi = /* @__PURE__ */ defineComponent({
   name: "Wifi",
   render: function render16(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_6$2);
   }
 });
 /*!
-  * vue-router v4.2.5
-  * (c) 2023 Eduardo San Martin Morote
+  * vue-router v4.3.0
+  * (c) 2024 Eduardo San Martin Morote
   * @license MIT
   */
-const isBrowser2 = typeof window !== "undefined";
+const isBrowser2 = typeof document !== "undefined";
 function isESModule(obj) {
   return obj.__esModule || obj[Symbol.toStringTag] === "Module";
 }
@@ -39142,6 +45353,45 @@ function applyToParams(fn, params) {
 const noop = () => {
 };
 const isArray = Array.isArray;
+const HASH_RE = /#/g;
+const AMPERSAND_RE = /&/g;
+const SLASH_RE = /\//g;
+const EQUAL_RE = /=/g;
+const IM_RE = /\?/g;
+const PLUS_RE = /\+/g;
+const ENC_BRACKET_OPEN_RE = /%5B/g;
+const ENC_BRACKET_CLOSE_RE = /%5D/g;
+const ENC_CARET_RE = /%5E/g;
+const ENC_BACKTICK_RE = /%60/g;
+const ENC_CURLY_OPEN_RE = /%7B/g;
+const ENC_PIPE_RE = /%7C/g;
+const ENC_CURLY_CLOSE_RE = /%7D/g;
+const ENC_SPACE_RE = /%20/g;
+function commonEncode(text) {
+  return encodeURI("" + text).replace(ENC_PIPE_RE, "|").replace(ENC_BRACKET_OPEN_RE, "[").replace(ENC_BRACKET_CLOSE_RE, "]");
+}
+function encodeHash(text) {
+  return commonEncode(text).replace(ENC_CURLY_OPEN_RE, "{").replace(ENC_CURLY_CLOSE_RE, "}").replace(ENC_CARET_RE, "^");
+}
+function encodeQueryValue(text) {
+  return commonEncode(text).replace(PLUS_RE, "%2B").replace(ENC_SPACE_RE, "+").replace(HASH_RE, "%23").replace(AMPERSAND_RE, "%26").replace(ENC_BACKTICK_RE, "`").replace(ENC_CURLY_OPEN_RE, "{").replace(ENC_CURLY_CLOSE_RE, "}").replace(ENC_CARET_RE, "^");
+}
+function encodeQueryKey(text) {
+  return encodeQueryValue(text).replace(EQUAL_RE, "%3D");
+}
+function encodePath(text) {
+  return commonEncode(text).replace(HASH_RE, "%23").replace(IM_RE, "%3F");
+}
+function encodeParam(text) {
+  return text == null ? "" : encodePath(text).replace(SLASH_RE, "%2F");
+}
+function decode(text) {
+  try {
+    return decodeURIComponent("" + text);
+  } catch (err) {
+  }
+  return "" + text;
+}
 const TRAILING_SLASH_RE = /\/$/;
 const removeTrailingSlash = (path) => path.replace(TRAILING_SLASH_RE, "");
 function parseURL(parseQuery2, location2, currentLocation = "/") {
@@ -39165,7 +45415,7 @@ function parseURL(parseQuery2, location2, currentLocation = "/") {
     fullPath: path + (searchString && "?") + searchString + hash,
     path,
     query: query2,
-    hash
+    hash: decode(hash)
   };
 }
 function stringifyURL(stringifyQuery2, location2) {
@@ -39224,7 +45474,7 @@ function resolveRelativePath(to, from) {
     } else
       break;
   }
-  return fromSegments.slice(0, position).join("/") + "/" + toSegments.slice(toPosition - (toPosition === toSegments.length ? 1 : 0)).join("/");
+  return fromSegments.slice(0, position).join("/") + "/" + toSegments.slice(toPosition).join("/");
 }
 var NavigationType;
 (function(NavigationType2) {
@@ -39265,8 +45515,8 @@ function getElementPosition(el, offset) {
   };
 }
 const computeScrollPosition = () => ({
-  left: window.pageXOffset,
-  top: window.pageYOffset
+  left: window.scrollX,
+  top: window.scrollY
 });
 function scrollToPosition(position) {
   let scrollToOptions;
@@ -39284,7 +45534,7 @@ function scrollToPosition(position) {
   if ("scrollBehavior" in document.documentElement.style)
     window.scrollTo(scrollToOptions);
   else {
-    window.scrollTo(scrollToOptions.left != null ? scrollToOptions.left : window.pageXOffset, scrollToOptions.top != null ? scrollToOptions.top : window.pageYOffset);
+    window.scrollTo(scrollToOptions.left != null ? scrollToOptions.left : window.scrollX, scrollToOptions.top != null ? scrollToOptions.top : window.scrollY);
   }
 }
 function getScrollKey(path, delta) {
@@ -39932,15 +46182,15 @@ function createRouterMatcher(routes, globalOptions) {
         paramsFromLocation(
           currentLocation.params,
           // only keep params that exist in the resolved location
-          // TODO: only keep optional params coming from a parent record
-          matcher.keys.filter((k) => !k.optional).map((k) => k.name)
+          // only keep optional params coming from a parent record
+          matcher.keys.filter((k) => !k.optional).concat(matcher.parent ? matcher.parent.keys.filter((k) => k.optional) : []).map((k) => k.name)
         ),
         // discard any existing params in the current location that do not exist here
         // #1497 this ensures better active/exact matching
         location2.params && paramsFromLocation(location2.params, matcher.keys.map((k) => k.name))
       );
       path = matcher.stringify(params);
-    } else if ("path" in location2) {
+    } else if (location2.path != null) {
       path = location2.path;
       matcher = matchers.find((m) => m.re.test(path));
       if (matcher) {
@@ -40032,45 +46282,6 @@ function mergeOptions(defaults, partialOptions) {
 function isRecordChildOf(record, parent) {
   return parent.children.some((child) => child === record || isRecordChildOf(record, child));
 }
-const HASH_RE = /#/g;
-const AMPERSAND_RE = /&/g;
-const SLASH_RE = /\//g;
-const EQUAL_RE = /=/g;
-const IM_RE = /\?/g;
-const PLUS_RE = /\+/g;
-const ENC_BRACKET_OPEN_RE = /%5B/g;
-const ENC_BRACKET_CLOSE_RE = /%5D/g;
-const ENC_CARET_RE = /%5E/g;
-const ENC_BACKTICK_RE = /%60/g;
-const ENC_CURLY_OPEN_RE = /%7B/g;
-const ENC_PIPE_RE = /%7C/g;
-const ENC_CURLY_CLOSE_RE = /%7D/g;
-const ENC_SPACE_RE = /%20/g;
-function commonEncode(text) {
-  return encodeURI("" + text).replace(ENC_PIPE_RE, "|").replace(ENC_BRACKET_OPEN_RE, "[").replace(ENC_BRACKET_CLOSE_RE, "]");
-}
-function encodeHash(text) {
-  return commonEncode(text).replace(ENC_CURLY_OPEN_RE, "{").replace(ENC_CURLY_CLOSE_RE, "}").replace(ENC_CARET_RE, "^");
-}
-function encodeQueryValue(text) {
-  return commonEncode(text).replace(PLUS_RE, "%2B").replace(ENC_SPACE_RE, "+").replace(HASH_RE, "%23").replace(AMPERSAND_RE, "%26").replace(ENC_BACKTICK_RE, "`").replace(ENC_CURLY_OPEN_RE, "{").replace(ENC_CURLY_CLOSE_RE, "}").replace(ENC_CARET_RE, "^");
-}
-function encodeQueryKey(text) {
-  return encodeQueryValue(text).replace(EQUAL_RE, "%3D");
-}
-function encodePath(text) {
-  return commonEncode(text).replace(HASH_RE, "%23").replace(IM_RE, "%3F");
-}
-function encodeParam(text) {
-  return text == null ? "" : encodePath(text).replace(SLASH_RE, "%2F");
-}
-function decode(text) {
-  try {
-    return decodeURIComponent("" + text);
-  } catch (err) {
-  }
-  return "" + text;
-}
 function parseQuery(search) {
   const query2 = {};
   if (search === "" || search === "?")
@@ -40150,7 +46361,7 @@ function useCallbacks() {
     reset
   };
 }
-function guardToPromiseFn(guard, to, from, record, name) {
+function guardToPromiseFn(guard, to, from, record, name, runWithContext = (fn) => fn()) {
   const enterCallbackArray = record && // name is defined if record is because of the function overload
   (record.enterCallbacks[name] = record.enterCallbacks[name] || []);
   return () => new Promise((resolve2, reject) => {
@@ -40175,14 +46386,14 @@ function guardToPromiseFn(guard, to, from, record, name) {
         resolve2();
       }
     };
-    const guardReturn = guard.call(record && record.instances[name], to, from, next);
+    const guardReturn = runWithContext(() => guard.call(record && record.instances[name], to, from, next));
     let guardCall = Promise.resolve(guardReturn);
     if (guard.length < 3)
       guardCall = guardCall.then(next);
     guardCall.catch((err) => reject(err));
   });
 }
-function extractComponentsGuards(matched, guardType, to, from) {
+function extractComponentsGuards(matched, guardType, to, from, runWithContext = (fn) => fn()) {
   const guards = [];
   for (const record of matched) {
     for (const name in record.components) {
@@ -40192,7 +46403,7 @@ function extractComponentsGuards(matched, guardType, to, from) {
       if (isRouteComponent(rawComponent)) {
         const options = rawComponent.__vccOpts || rawComponent;
         const guard = options[guardType];
-        guard && guards.push(guardToPromiseFn(guard, to, from, record, name));
+        guard && guards.push(guardToPromiseFn(guard, to, from, record, name, runWithContext));
       } else {
         let componentPromise = rawComponent();
         guards.push(() => componentPromise.then((resolved) => {
@@ -40202,7 +46413,7 @@ function extractComponentsGuards(matched, guardType, to, from) {
           record.components[name] = resolvedComponent;
           const options = resolvedComponent.__vccOpts || resolvedComponent;
           const guard = options[guardType];
-          return guard && guardToPromiseFn(guard, to, from, record, name)();
+          return guard && guardToPromiseFn(guard, to, from, record, name, runWithContext)();
         }));
       }
     }
@@ -40474,7 +46685,7 @@ function createRouter(options) {
       });
     }
     let matcherLocation;
-    if ("path" in rawLocation) {
+    if (rawLocation.path != null) {
       matcherLocation = assign({}, rawLocation, {
         path: parseURL(parseQuery$1, rawLocation.path, currentLocation.path).path
       });
@@ -40549,7 +46760,7 @@ function createRouter(options) {
         query: to.query,
         hash: to.hash,
         // avoid transferring params if the redirect has a path
-        params: "path" in newTargetLocation ? {} : to.params
+        params: newTargetLocation.path != null ? {} : to.params
       }, newTargetLocation);
     }
   }
@@ -40674,7 +46885,7 @@ function createRouter(options) {
       return runGuardQueue(guards);
     }).then(() => {
       to.matched.forEach((record) => record.enterCallbacks = {});
-      guards = extractComponentsGuards(enteringRecords, "beforeRouteEnter", to, from);
+      guards = extractComponentsGuards(enteringRecords, "beforeRouteEnter", to, from, runWithContext);
       guards.push(canceledNavigationCheck);
       return runGuardQueue(guards);
     }).then(() => {
@@ -43921,7 +50132,7 @@ export {
   NPopover as ay,
   popoverBaseProps as az,
   createBaseVNode as b,
-  XButton as b$,
+  inputNumberLight$1 as b$,
   cssrAnchorMetaName as b0,
   warn$2 as b1,
   VVirtualList as b2,
@@ -43932,67 +50143,68 @@ export {
   iconSwitchTransition as b7,
   insideModal as b8,
   insidePopover as b9,
-  ErrorIcon$1 as bA,
-  convertToTextString as bB,
-  themeKey as bC,
-  useNotification as bD,
-  defaultSettings as bE,
-  getCurrentInstance as bF,
-  formLight$1 as bG,
-  commonVariables$m as bH,
-  formItemInjectionKey as bI,
-  isDev as bJ,
-  NAlert as bK,
-  resolveDynamicComponent as bL,
-  checkboxLight$1 as bM,
-  urlFromPath as bN,
-  diffusersSchedulerTuple as bO,
-  useRouter as bP,
-  useCompitable as bQ,
-  descriptionsLight$1 as bR,
-  isBrowser$3 as bS,
-  fadeInTransition as bT,
-  imageLight as bU,
-  isMounted as bV,
-  LazyTeleport as bW,
-  zindexable$1 as bX,
-  kebabCase$1 as bY,
-  rgba as bZ,
-  inputNumberLight$1 as b_,
+  stepsLight$1 as bA,
+  FinishedIcon as bB,
+  ErrorIcon$1 as bC,
+  convertToTextString as bD,
+  themeKey as bE,
+  useNotification as bF,
+  defaultSettings as bG,
+  getCurrentInstance as bH,
+  formLight$1 as bI,
+  commonVariables$m as bJ,
+  formItemInjectionKey as bK,
+  isDev as bL,
+  NAlert as bM,
+  resolveDynamicComponent as bN,
+  checkboxLight$1 as bO,
+  urlFromPath as bP,
+  diffusersSchedulerTuple as bQ,
+  useRouter as bR,
+  useCompitable as bS,
+  descriptionsLight$1 as bT,
+  fadeInTransition as bU,
+  imageLight as bV,
+  isMounted as bW,
+  LazyTeleport as bX,
+  zindexable$1 as bY,
+  kebabCase$1 as bZ,
+  rgba as b_,
   createId as ba,
   dataTableLight$1 as bb,
-  loadingBarApiInjectionKey as bc,
-  color2Class as bd,
-  rateLight as be,
-  AddIcon as bf,
-  NProgress as bg,
-  NFadeInExpandTransition as bh,
-  EyeIcon as bi,
-  fadeInHeightExpandTransition as bj,
-  Teleport as bk,
-  uploadLight$1 as bl,
-  createStaticVNode as bm,
-  useCssVars as bn,
-  themeOverridesKey as bo,
-  reactive as bp,
-  NText as bq,
-  withModifiers as br,
-  huggingfaceModelsFile as bs,
-  Menu as bt,
-  NModal as bu,
-  NDivider as bv,
-  Backends as bw,
-  NTag as bx,
-  stepsLight$1 as by,
-  FinishedIcon as bz,
+  download as bc,
+  loadingBarApiInjectionKey as bd,
+  color2Class as be,
+  rateLight as bf,
+  isBrowser$3 as bg,
+  AddIcon as bh,
+  NProgress as bi,
+  NFadeInExpandTransition as bj,
+  EyeIcon as bk,
+  fadeInHeightExpandTransition as bl,
+  Teleport as bm,
+  uploadLight$1 as bn,
+  createStaticVNode as bo,
+  useCssVars as bp,
+  themeOverridesKey as bq,
+  reactive as br,
+  NText as bs,
+  withModifiers as bt,
+  huggingfaceModelsFile as bu,
+  Menu as bv,
+  NModal as bw,
+  NDivider as bx,
+  Backends as by,
+  NTag as bz,
   createBlock as c,
-  VBinder as c0,
-  VTarget as c1,
-  VFollower as c2,
-  sliderLight$1 as c3,
-  isSlotEmpty as c4,
-  switchLight$1 as c5,
-  NResult as c6,
+  XButton as c0,
+  VBinder as c1,
+  VTarget as c2,
+  VFollower as c3,
+  sliderLight$1 as c4,
+  isSlotEmpty as c5,
+  switchLight$1 as c6,
+  NResult as c7,
   defineComponent as d,
   createVNode as e,
   unref as f,

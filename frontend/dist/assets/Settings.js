@@ -1,14 +1,16 @@
-import { t as h, d as defineComponent, X as useConfig, aN as useFormItem, y as ref, i as computed, a6 as useMergedState, T as provide, a7 as toRef, U as createInjectionKey, at as call, a3 as c, a1 as cB, a4 as cM, a2 as cE, b7 as iconSwitchTransition, b8 as insideModal, b9 as insidePopover, V as inject, aO as useMemo, ab as useTheme, bM as checkboxLight, aC as useRtl, aD as createKey, ac as useThemeClass, ba as createId, aQ as resolveWrappedSlot, aZ as NIconSwitchTransition, al as on, o as openBlock, g as createElementBlock, b as createBaseVNode } from "./index.js";
-const CheckMark = h(
-  "svg",
-  { viewBox: "0 0 64 64", class: "check-icon" },
-  h("path", { d: "M50.42,16.76L22.34,39.45l-8.1-11.46c-1.12-1.58-3.3-1.96-4.88-0.84c-1.58,1.12-1.95,3.3-0.84,4.88l10.26,14.51  c0.56,0.79,1.42,1.31,2.38,1.45c0.16,0.02,0.32,0.03,0.48,0.03c0.8,0,1.57-0.27,2.2-0.78l30.99-25.03c1.5-1.21,1.74-3.42,0.52-4.92  C54.13,15.78,51.93,15.55,50.42,16.76z" })
-);
-const LineMark = h(
-  "svg",
-  { viewBox: "0 0 100 100", class: "line-icon" },
-  h("path", { d: "M80.2,55.5H21.4c-2.8,0-5.1-2.5-5.1-5.5l0,0c0-3,2.3-5.5,5.1-5.5h58.7c2.8,0,5.1,2.5,5.1,5.5l0,0C85.2,53.1,82.9,55.5,80.2,55.5z" })
-);
+import { t as h, d as defineComponent, X as useConfig, aN as useFormItem, y as ref, i as computed, a6 as useMergedState, T as provide, a7 as toRef, U as createInjectionKey, at as call, a3 as c, a1 as cB, a4 as cM, a2 as cE, b7 as iconSwitchTransition, b8 as insideModal, b9 as insidePopover, V as inject, aO as useMemo, ab as useTheme, bO as checkboxLight, aC as useRtl, aD as createKey, ac as useThemeClass, ba as createId, aQ as resolveWrappedSlot, aZ as NIconSwitchTransition, al as on, o as openBlock, g as createElementBlock, b as createBaseVNode } from "./index.js";
+const CheckMark = h("svg", {
+  viewBox: "0 0 64 64",
+  class: "check-icon"
+}, h("path", {
+  d: "M50.42,16.76L22.34,39.45l-8.1-11.46c-1.12-1.58-3.3-1.96-4.88-0.84c-1.58,1.12-1.95,3.3-0.84,4.88l10.26,14.51  c0.56,0.79,1.42,1.31,2.38,1.45c0.16,0.02,0.32,0.03,0.48,0.03c0.8,0,1.57-0.27,2.2-0.78l30.99-25.03c1.5-1.21,1.74-3.42,0.52-4.92  C54.13,15.78,51.93,15.55,50.42,16.76z"
+}));
+const LineMark = h("svg", {
+  viewBox: "0 0 100 100",
+  class: "line-icon"
+}, h("path", {
+  d: "M80.2,55.5H21.4c-2.8,0-5.1-2.5-5.1-5.5l0,0c0-3,2.3-5.5,5.1-5.5h58.7c2.8,0,5.1,2.5,5.1,5.5l0,0C85.2,53.1,82.9,55.5,80.2,55.5z"
+}));
 const checkboxGroupInjectionKey = createInjectionKey("n-checkbox-group");
 const checkboxGroupProps = {
   min: Number,
@@ -32,9 +34,14 @@ const NCheckboxGroup = defineComponent({
   name: "CheckboxGroup",
   props: checkboxGroupProps,
   setup(props) {
-    const { mergedClsPrefixRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef
+    } = useConfig(props);
     const formItem = useFormItem(props);
-    const { mergedSizeRef, mergedDisabledRef } = formItem;
+    const {
+      mergedSizeRef,
+      mergedDisabledRef
+    } = formItem;
     const uncontrolledValueRef = ref(props.defaultValue);
     const controlledValueRef = computed(() => props.value);
     const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
@@ -49,8 +56,15 @@ const NCheckboxGroup = defineComponent({
       return /* @__PURE__ */ new Set();
     });
     function toggleCheckbox(checked, checkboxValue) {
-      const { nTriggerFormInput, nTriggerFormChange } = formItem;
-      const { onChange, "onUpdate:value": _onUpdateValue, onUpdateValue } = props;
+      const {
+        nTriggerFormInput,
+        nTriggerFormChange
+      } = formItem;
+      const {
+        onChange,
+        "onUpdate:value": _onUpdateValue,
+        onUpdateValue
+      } = props;
       if (Array.isArray(mergedValueRef.value)) {
         const groupValue = Array.from(mergedValueRef.value);
         const index = groupValue.findIndex((value) => value === checkboxValue);
@@ -151,7 +165,10 @@ const NCheckboxGroup = defineComponent({
     };
   },
   render() {
-    return h("div", { class: `${this.mergedClsPrefix}-checkbox-group`, role: "group" }, this.$slots);
+    return h("div", {
+      class: `${this.mergedClsPrefix}-checkbox-group`,
+      role: "group"
+    }, this.$slots);
   }
 });
 const style = c([
@@ -322,37 +339,58 @@ const NCheckbox = defineComponent({
   props: checkboxProps,
   setup(props) {
     const selfRef = ref(null);
-    const { mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig(props);
     const formItem = useFormItem(props, {
       mergedSize(NFormItem) {
-        const { size } = props;
+        const {
+          size
+        } = props;
         if (size !== void 0)
           return size;
         if (NCheckboxGroup2) {
-          const { value: mergedSize } = NCheckboxGroup2.mergedSizeRef;
+          const {
+            value: mergedSize
+          } = NCheckboxGroup2.mergedSizeRef;
           if (mergedSize !== void 0) {
             return mergedSize;
           }
         }
         if (NFormItem) {
-          const { mergedSize } = NFormItem;
+          const {
+            mergedSize
+          } = NFormItem;
           if (mergedSize !== void 0)
             return mergedSize.value;
         }
         return "medium";
       },
       mergedDisabled(NFormItem) {
-        const { disabled } = props;
+        const {
+          disabled
+        } = props;
         if (disabled !== void 0)
           return disabled;
         if (NCheckboxGroup2) {
           if (NCheckboxGroup2.disabledRef.value)
             return true;
-          const { maxRef: { value: max }, checkedCountRef } = NCheckboxGroup2;
+          const {
+            maxRef: {
+              value: max
+            },
+            checkedCountRef
+          } = NCheckboxGroup2;
           if (max !== void 0 && checkedCountRef.value >= max && !renderedCheckedRef.value) {
             return true;
           }
-          const { minRef: { value: min } } = NCheckboxGroup2;
+          const {
+            minRef: {
+              value: min
+            }
+          } = NCheckboxGroup2;
           if (min !== void 0 && checkedCountRef.value <= min && renderedCheckedRef.value) {
             return true;
           }
@@ -363,7 +401,10 @@ const NCheckbox = defineComponent({
         return false;
       }
     });
-    const { mergedDisabledRef, mergedSizeRef } = formItem;
+    const {
+      mergedDisabledRef,
+      mergedSizeRef
+    } = formItem;
     const NCheckboxGroup2 = inject(checkboxGroupInjectionKey, null);
     const uncontrolledCheckedRef = ref(props.defaultChecked);
     const controlledCheckedRef = toRef(props, "checked");
@@ -384,8 +425,15 @@ const NCheckbox = defineComponent({
       if (NCheckboxGroup2 && props.value !== void 0) {
         NCheckboxGroup2.toggleCheckbox(!renderedCheckedRef.value, props.value);
       } else {
-        const { onChange, "onUpdate:checked": _onUpdateCheck, onUpdateChecked } = props;
-        const { nTriggerFormInput, nTriggerFormChange } = formItem;
+        const {
+          onChange,
+          "onUpdate:checked": _onUpdateCheck,
+          onUpdateChecked
+        } = props;
+        const {
+          nTriggerFormInput,
+          nTriggerFormChange
+        } = formItem;
         const nextChecked = renderedCheckedRef.value ? props.uncheckedValue : props.checkedValue;
         if (_onUpdateCheck) {
           call(_onUpdateCheck, nextChecked, e);
@@ -432,8 +480,40 @@ const NCheckbox = defineComponent({
     };
     const rtlEnabledRef = useRtl("Checkbox", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { value: mergedSize } = mergedSizeRef;
-      const { common: { cubicBezierEaseInOut }, self: { borderRadius, color, colorChecked, colorDisabled, colorTableHeader, colorTableHeaderModal, colorTableHeaderPopover, checkMarkColor, checkMarkColorDisabled, border, borderFocus, borderDisabled, borderChecked, boxShadowFocus, textColor, textColorDisabled, checkMarkColorDisabledChecked, colorDisabledChecked, borderDisabledChecked, labelPadding, labelLineHeight, labelFontWeight, [createKey("fontSize", mergedSize)]: fontSize, [createKey("size", mergedSize)]: size } } = themeRef.value;
+      const {
+        value: mergedSize
+      } = mergedSizeRef;
+      const {
+        common: {
+          cubicBezierEaseInOut
+        },
+        self: {
+          borderRadius,
+          color,
+          colorChecked,
+          colorDisabled,
+          colorTableHeader,
+          colorTableHeaderModal,
+          colorTableHeaderPopover,
+          checkMarkColor,
+          checkMarkColorDisabled,
+          border,
+          borderFocus,
+          borderDisabled,
+          borderChecked,
+          boxShadowFocus,
+          textColor,
+          textColorDisabled,
+          checkMarkColorDisabledChecked,
+          colorDisabledChecked,
+          borderDisabledChecked,
+          labelPadding,
+          labelLineHeight,
+          labelFontWeight,
+          [createKey("fontSize", mergedSize)]: fontSize,
+          [createKey("size", mergedSize)]: size
+        }
+      } = themeRef.value;
       return {
         "--n-label-line-height": labelLineHeight,
         "--n-label-font-weight": labelFontWeight,
@@ -481,47 +561,64 @@ const NCheckbox = defineComponent({
   },
   render() {
     var _a;
-    const { $slots, renderedChecked, mergedDisabled, indeterminate, privateInsideTable, cssVars, labelId, label, mergedClsPrefix, focusable, handleKeyUp, handleKeyDown, handleClick } = this;
+    const {
+      $slots,
+      renderedChecked,
+      mergedDisabled,
+      indeterminate,
+      privateInsideTable,
+      cssVars,
+      labelId,
+      label,
+      mergedClsPrefix,
+      focusable,
+      handleKeyUp,
+      handleKeyDown,
+      handleClick
+    } = this;
     (_a = this.onRender) === null || _a === void 0 ? void 0 : _a.call(this);
     const labelNode = resolveWrappedSlot($slots.default, (children) => {
       if (label || children) {
-        return h("span", { class: `${mergedClsPrefix}-checkbox__label`, id: labelId }, label || children);
+        return h("span", {
+          class: `${mergedClsPrefix}-checkbox__label`,
+          id: labelId
+        }, label || children);
       }
       return null;
     });
-    return h(
-      "div",
-      { ref: "selfRef", class: [
-        `${mergedClsPrefix}-checkbox`,
-        this.themeClass,
-        this.rtlEnabled && `${mergedClsPrefix}-checkbox--rtl`,
-        renderedChecked && `${mergedClsPrefix}-checkbox--checked`,
-        mergedDisabled && `${mergedClsPrefix}-checkbox--disabled`,
-        indeterminate && `${mergedClsPrefix}-checkbox--indeterminate`,
-        privateInsideTable && `${mergedClsPrefix}-checkbox--inside-table`,
-        labelNode && `${mergedClsPrefix}-checkbox--show-label`
-      ], tabindex: mergedDisabled || !focusable ? void 0 : 0, role: "checkbox", "aria-checked": indeterminate ? "mixed" : renderedChecked, "aria-labelledby": labelId, style: cssVars, onKeyup: handleKeyUp, onKeydown: handleKeyDown, onClick: handleClick, onMousedown: () => {
+    return h("div", {
+      ref: "selfRef",
+      class: [`${mergedClsPrefix}-checkbox`, this.themeClass, this.rtlEnabled && `${mergedClsPrefix}-checkbox--rtl`, renderedChecked && `${mergedClsPrefix}-checkbox--checked`, mergedDisabled && `${mergedClsPrefix}-checkbox--disabled`, indeterminate && `${mergedClsPrefix}-checkbox--indeterminate`, privateInsideTable && `${mergedClsPrefix}-checkbox--inside-table`, labelNode && `${mergedClsPrefix}-checkbox--show-label`],
+      tabindex: mergedDisabled || !focusable ? void 0 : 0,
+      role: "checkbox",
+      "aria-checked": indeterminate ? "mixed" : renderedChecked,
+      "aria-labelledby": labelId,
+      style: cssVars,
+      onKeyup: handleKeyUp,
+      onKeydown: handleKeyDown,
+      onClick: handleClick,
+      onMousedown: () => {
         on("selectstart", window, (e) => {
           e.preventDefault();
         }, {
           once: true
         });
-      } },
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-checkbox-box-wrapper` },
-        " ",
-        h(
-          "div",
-          { class: `${mergedClsPrefix}-checkbox-box` },
-          h(NIconSwitchTransition, null, {
-            default: () => this.indeterminate ? h("div", { key: "indeterminate", class: `${mergedClsPrefix}-checkbox-icon` }, LineMark) : h("div", { key: "check", class: `${mergedClsPrefix}-checkbox-icon` }, CheckMark)
-          }),
-          h("div", { class: `${mergedClsPrefix}-checkbox-box__border` })
-        )
-      ),
-      labelNode
-    );
+      }
+    }, h("div", {
+      class: `${mergedClsPrefix}-checkbox-box-wrapper`
+    }, " ", h("div", {
+      class: `${mergedClsPrefix}-checkbox-box`
+    }, h(NIconSwitchTransition, null, {
+      default: () => this.indeterminate ? h("div", {
+        key: "indeterminate",
+        class: `${mergedClsPrefix}-checkbox-icon`
+      }, LineMark) : h("div", {
+        key: "check",
+        class: `${mergedClsPrefix}-checkbox-icon`
+      }, CheckMark)
+    }), h("div", {
+      class: `${mergedClsPrefix}-checkbox-box__border`
+    }))), labelNode);
   }
 });
 const _hoisted_1 = {

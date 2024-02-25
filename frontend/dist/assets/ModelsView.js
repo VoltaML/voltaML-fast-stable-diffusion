@@ -1,8 +1,8 @@
-import { O as upperFirst, P as toString, Q as createCompounder, d as defineComponent, t as h, R as replaceable, S as cloneVNode, T as provide, U as createInjectionKey, V as inject, W as throwError, X as useConfig, y as ref, Y as onBeforeUpdate, Z as indexMap, i as computed, $ as onMounted, a0 as onBeforeUnmount, a1 as cB, a2 as cE, a3 as c, a4 as cM, a5 as keep, a6 as useMergedState, a7 as toRef, a8 as watchEffect, a9 as onUpdated, J as watch, aa as nextTick, ab as useTheme, ac as useThemeClass, ad as flatten$1, ae as VResizeObserver, af as resolveSlotWithProps, ag as withDirectives, ah as vShow, ai as Transition, aj as normalizeStyle, ak as getPreciseEventTarget, al as on, am as off, an as carouselLight, ao as popselectLight, ap as createTreeMate, aq as NInternalSelectMenu, ar as createTmOptions, as as happensIn, at as call, au as keysOf, av as createRefSetter, aw as mergeEventHandlers, ax as omit, ay as NPopover, az as popoverBaseProps, aA as cNotM, aB as useLocale, aC as useRtl, aD as createKey, aE as resolveSlot, I as NInput, m as NSelect, F as Fragment, aF as NBaseIcon, aG as useAdjustedTo, aH as paginationLight, aI as useMergedClsPrefix, aJ as ellipsisLight, aK as onDeactivated, l as NTooltip, aL as mergeProps, aM as useStyle, aN as useFormItem, aO as useMemo, aP as radioLight, aQ as resolveWrappedSlot, aR as getSlot, aS as depx, aT as formatLength, z as NButton, aU as NScrollbar, aV as ChevronDownIcon, aW as NDropdown, aX as pxfy, aY as get, aZ as NIconSwitchTransition, a_ as NBaseLoading, a$ as ChevronRightIcon, b0 as cssrAnchorMetaName, p as onUnmounted, b1 as warn, b2 as VVirtualList, b3 as NEmpty, b4 as repeat, b5 as beforeNextFrameOnce, b6 as fadeInScaleUpTransition, b7 as iconSwitchTransition, b8 as insideModal, b9 as insidePopover, ba as createId, bb as dataTableLight, bc as loadingBarApiInjectionKey, bd as color2Class, L as renderList, be as rateLight, bf as AddIcon, bg as NProgress, bh as NFadeInExpandTransition, bi as EyeIcon, bj as fadeInHeightExpandTransition, bk as Teleport, bl as uploadLight, o as openBlock, g as createElementBlock, b as createBaseVNode, bm as createStaticVNode, bn as useCssVars, f as unref, bo as themeOverridesKey, bp as reactive, e as createVNode, w as withCtx, A as NIcon, _ as _export_sfc, u as useSettings, h as createCommentVNode, k as createTextVNode, B as toDisplayString, bq as NText, c as createBlock, br as withModifiers, a as useState, n as useMessage, bs as huggingfaceModelsFile, N as NCard, s as serverUrl, v as pushScopeId, x as popScopeId, bt as Menu, j as NSpace, bu as NModal, q as NGi, r as NGrid, bv as NDivider, bw as Backends, C as NTabPane, bx as NTag, D as NTabs } from "./index.js";
+import { O as upperFirst, P as toString, Q as createCompounder, d as defineComponent, t as h, R as replaceable, S as cloneVNode, T as provide, U as createInjectionKey, V as inject, W as throwError, X as useConfig, y as ref, Y as onBeforeUpdate, Z as indexMap, i as computed, $ as onMounted, a0 as onBeforeUnmount, a1 as cB, a2 as cE, a3 as c, a4 as cM, a5 as keep, a6 as useMergedState, a7 as toRef, a8 as watchEffect, a9 as onUpdated, J as watch, aa as nextTick, ab as useTheme, ac as useThemeClass, ad as flatten$1, ae as VResizeObserver, af as resolveSlotWithProps, ag as withDirectives, ah as vShow, ai as Transition, aj as normalizeStyle, ak as getPreciseEventTarget, al as on, am as off, an as carouselLight, ao as popselectLight, ap as createTreeMate, aq as NInternalSelectMenu, ar as createTmOptions, as as happensIn, at as call, au as keysOf, av as createRefSetter, aw as mergeEventHandlers, ax as omit, ay as NPopover, az as popoverBaseProps, aA as cNotM, aB as useLocale, aC as useRtl, aD as createKey, aE as resolveSlot, I as NInput, m as NSelect, F as Fragment, aF as NBaseIcon, aG as useAdjustedTo, aH as paginationLight, aI as useMergedClsPrefix, aJ as ellipsisLight, aK as onDeactivated, l as NTooltip, aL as mergeProps, aM as useStyle, aN as useFormItem, aO as useMemo, aP as radioLight, aQ as resolveWrappedSlot, aR as getSlot, aS as depx, aT as formatLength, z as NButton, aU as NScrollbar, aV as ChevronDownIcon, aW as NDropdown, aX as pxfy, aY as get, aZ as NIconSwitchTransition, a_ as NBaseLoading, a$ as ChevronRightIcon, b0 as cssrAnchorMetaName, p as onUnmounted, b1 as warn, b2 as VVirtualList, b3 as NEmpty, b4 as repeat, b5 as beforeNextFrameOnce, b6 as fadeInScaleUpTransition, b7 as iconSwitchTransition, b8 as insideModal, b9 as insidePopover, ba as createId, bb as dataTableLight, bc as download, bd as loadingBarApiInjectionKey, be as color2Class, L as renderList, bf as rateLight, bg as isBrowser, bh as AddIcon, bi as NProgress, bj as NFadeInExpandTransition, bk as EyeIcon, bl as fadeInHeightExpandTransition, bm as Teleport, bn as uploadLight, o as openBlock, g as createElementBlock, b as createBaseVNode, bo as createStaticVNode, bp as useCssVars, f as unref, bq as themeOverridesKey, br as reactive, e as createVNode, w as withCtx, A as NIcon, _ as _export_sfc, u as useSettings, h as createCommentVNode, k as createTextVNode, B as toDisplayString, bs as NText, c as createBlock, bt as withModifiers, a as useState, n as useMessage, bu as huggingfaceModelsFile, N as NCard, s as serverUrl, v as pushScopeId, x as popScopeId, bv as Menu, j as NSpace, bw as NModal, q as NGi, r as NGrid, bx as NDivider, by as Backends, C as NTabPane, bz as NTag, D as NTabs } from "./index.js";
 import { a as NDescriptions, N as NDescriptionsItem } from "./DescriptionsItem.js";
 import { N as NCheckboxGroup, a as NCheckbox, S as Settings } from "./Settings.js";
 import { N as NSwitch } from "./Switch.js";
-import { g as getFilesFromEntries, i as isImageFile, N as NImage, d as download, a as NImageGroup, c as createSettledFileInfo, e as environmentSupportFile, m as matchType, b as createImageDataUrl, T as TrashBin } from "./TrashBin.js";
+import { N as NImage, a as NImageGroup, T as TrashBin } from "./TrashBin.js";
 import { C as CloudUpload } from "./CloudUpload.js";
 function smallerSize(size) {
   switch (size) {
@@ -30,168 +30,211 @@ const camelCase$1 = camelCase;
 const ArrowDownIcon = defineComponent({
   name: "ArrowDown",
   render() {
-    return h(
-      "svg",
-      { viewBox: "0 0 28 28", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-      h(
-        "g",
-        { stroke: "none", "stroke-width": "1", "fill-rule": "evenodd" },
-        h(
-          "g",
-          { "fill-rule": "nonzero" },
-          h("path", { d: "M23.7916,15.2664 C24.0788,14.9679 24.0696,14.4931 23.7711,14.206 C23.4726,13.9188 22.9978,13.928 22.7106,14.2265 L14.7511,22.5007 L14.7511,3.74792 C14.7511,3.33371 14.4153,2.99792 14.0011,2.99792 C13.5869,2.99792 13.2511,3.33371 13.2511,3.74793 L13.2511,22.4998 L5.29259,14.2265 C5.00543,13.928 4.53064,13.9188 4.23213,14.206 C3.93361,14.4931 3.9244,14.9679 4.21157,15.2664 L13.2809,24.6944 C13.6743,25.1034 14.3289,25.1034 14.7223,24.6944 L23.7916,15.2664 Z" })
-        )
-      )
-    );
+    return h("svg", {
+      viewBox: "0 0 28 28",
+      version: "1.1",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("g", {
+      stroke: "none",
+      "stroke-width": "1",
+      "fill-rule": "evenodd"
+    }, h("g", {
+      "fill-rule": "nonzero"
+    }, h("path", {
+      d: "M23.7916,15.2664 C24.0788,14.9679 24.0696,14.4931 23.7711,14.206 C23.4726,13.9188 22.9978,13.928 22.7106,14.2265 L14.7511,22.5007 L14.7511,3.74792 C14.7511,3.33371 14.4153,2.99792 14.0011,2.99792 C13.5869,2.99792 13.2511,3.33371 13.2511,3.74793 L13.2511,22.4998 L5.29259,14.2265 C5.00543,13.928 4.53064,13.9188 4.23213,14.206 C3.93361,14.4931 3.9244,14.9679 4.21157,15.2664 L13.2809,24.6944 C13.6743,25.1034 14.3289,25.1034 14.7223,24.6944 L23.7916,15.2664 Z"
+    }))));
   }
 });
-const AttachIcon = replaceable("attach", h(
-  "svg",
-  { viewBox: "0 0 16 16", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-  h(
-    "g",
-    { stroke: "none", "stroke-width": "1", fill: "none", "fill-rule": "evenodd" },
-    h(
-      "g",
-      { fill: "currentColor", "fill-rule": "nonzero" },
-      h("path", { d: "M3.25735931,8.70710678 L7.85355339,4.1109127 C8.82986412,3.13460197 10.4127766,3.13460197 11.3890873,4.1109127 C12.365398,5.08722343 12.365398,6.67013588 11.3890873,7.64644661 L6.08578644,12.9497475 C5.69526215,13.3402718 5.06209717,13.3402718 4.67157288,12.9497475 C4.28104858,12.5592232 4.28104858,11.9260582 4.67157288,11.5355339 L9.97487373,6.23223305 C10.1701359,6.0369709 10.1701359,5.72038841 9.97487373,5.52512627 C9.77961159,5.32986412 9.4630291,5.32986412 9.26776695,5.52512627 L3.96446609,10.8284271 C3.18341751,11.6094757 3.18341751,12.8758057 3.96446609,13.6568542 C4.74551468,14.4379028 6.01184464,14.4379028 6.79289322,13.6568542 L12.0961941,8.35355339 C13.4630291,6.98671837 13.4630291,4.77064094 12.0961941,3.40380592 C10.7293591,2.0369709 8.51328163,2.0369709 7.14644661,3.40380592 L2.55025253,8 C2.35499039,8.19526215 2.35499039,8.51184464 2.55025253,8.70710678 C2.74551468,8.90236893 3.06209717,8.90236893 3.25735931,8.70710678 Z" })
-    )
-  )
-));
+const AttachIcon = replaceable("attach", h("svg", {
+  viewBox: "0 0 16 16",
+  version: "1.1",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("g", {
+  stroke: "none",
+  "stroke-width": "1",
+  fill: "none",
+  "fill-rule": "evenodd"
+}, h("g", {
+  fill: "currentColor",
+  "fill-rule": "nonzero"
+}, h("path", {
+  d: "M3.25735931,8.70710678 L7.85355339,4.1109127 C8.82986412,3.13460197 10.4127766,3.13460197 11.3890873,4.1109127 C12.365398,5.08722343 12.365398,6.67013588 11.3890873,7.64644661 L6.08578644,12.9497475 C5.69526215,13.3402718 5.06209717,13.3402718 4.67157288,12.9497475 C4.28104858,12.5592232 4.28104858,11.9260582 4.67157288,11.5355339 L9.97487373,6.23223305 C10.1701359,6.0369709 10.1701359,5.72038841 9.97487373,5.52512627 C9.77961159,5.32986412 9.4630291,5.32986412 9.26776695,5.52512627 L3.96446609,10.8284271 C3.18341751,11.6094757 3.18341751,12.8758057 3.96446609,13.6568542 C4.74551468,14.4379028 6.01184464,14.4379028 6.79289322,13.6568542 L12.0961941,8.35355339 C13.4630291,6.98671837 13.4630291,4.77064094 12.0961941,3.40380592 C10.7293591,2.0369709 8.51328163,2.0369709 7.14644661,3.40380592 L2.55025253,8 C2.35499039,8.19526215 2.35499039,8.51184464 2.55025253,8.70710678 C2.74551468,8.90236893 3.06209717,8.90236893 3.25735931,8.70710678 Z"
+})))));
 const BackwardIcon = defineComponent({
   name: "Backward",
   render() {
-    return h(
-      "svg",
-      { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-      h("path", { d: "M12.2674 15.793C11.9675 16.0787 11.4927 16.0672 11.2071 15.7673L6.20572 10.5168C5.9298 10.2271 5.9298 9.7719 6.20572 9.48223L11.2071 4.23177C11.4927 3.93184 11.9675 3.92031 12.2674 4.206C12.5673 4.49169 12.5789 4.96642 12.2932 5.26634L7.78458 9.99952L12.2932 14.7327C12.5789 15.0326 12.5673 15.5074 12.2674 15.793Z", fill: "currentColor" })
-    );
+    return h("svg", {
+      viewBox: "0 0 20 20",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("path", {
+      d: "M12.2674 15.793C11.9675 16.0787 11.4927 16.0672 11.2071 15.7673L6.20572 10.5168C5.9298 10.2271 5.9298 9.7719 6.20572 9.48223L11.2071 4.23177C11.4927 3.93184 11.9675 3.92031 12.2674 4.206C12.5673 4.49169 12.5789 4.96642 12.2932 5.26634L7.78458 9.99952L12.2932 14.7327C12.5789 15.0326 12.5673 15.5074 12.2674 15.793Z",
+      fill: "currentColor"
+    }));
   }
 });
-const TrashIcon = replaceable("trash", h(
-  "svg",
-  { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 512 512" },
-  h("path", { d: "M432,144,403.33,419.74A32,32,0,0,1,371.55,448H140.46a32,32,0,0,1-31.78-28.26L80,144", style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 32px;" }),
-  h("rect", { x: "32", y: "64", width: "448", height: "80", rx: "16", ry: "16", style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 32px;" }),
-  h("line", { x1: "312", y1: "240", x2: "200", y2: "352", style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 32px;" }),
-  h("line", { x1: "312", y1: "352", x2: "200", y2: "240", style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 32px;" })
-));
-const DownloadIcon = replaceable("download", h(
-  "svg",
-  { viewBox: "0 0 16 16", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-  h(
-    "g",
-    { stroke: "none", "stroke-width": "1", fill: "none", "fill-rule": "evenodd" },
-    h(
-      "g",
-      { fill: "currentColor", "fill-rule": "nonzero" },
-      h("path", { d: "M3.5,13 L12.5,13 C12.7761424,13 13,13.2238576 13,13.5 C13,13.7454599 12.8231248,13.9496084 12.5898756,13.9919443 L12.5,14 L3.5,14 C3.22385763,14 3,13.7761424 3,13.5 C3,13.2545401 3.17687516,13.0503916 3.41012437,13.0080557 L3.5,13 L12.5,13 L3.5,13 Z M7.91012437,1.00805567 L8,1 C8.24545989,1 8.44960837,1.17687516 8.49194433,1.41012437 L8.5,1.5 L8.5,10.292 L11.1819805,7.6109127 C11.3555469,7.43734635 11.6249713,7.4180612 11.8198394,7.55305725 L11.8890873,7.6109127 C12.0626536,7.78447906 12.0819388,8.05390346 11.9469427,8.2487716 L11.8890873,8.31801948 L8.35355339,11.8535534 C8.17998704,12.0271197 7.91056264,12.0464049 7.7156945,11.9114088 L7.64644661,11.8535534 L4.1109127,8.31801948 C3.91565056,8.12275734 3.91565056,7.80617485 4.1109127,7.6109127 C4.28447906,7.43734635 4.55390346,7.4180612 4.7487716,7.55305725 L4.81801948,7.6109127 L7.5,10.292 L7.5,1.5 C7.5,1.25454011 7.67687516,1.05039163 7.91012437,1.00805567 L8,1 L7.91012437,1.00805567 Z" })
-    )
-  )
-));
+const TrashIcon = replaceable("trash", h("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 512 512"
+}, h("path", {
+  d: "M432,144,403.33,419.74A32,32,0,0,1,371.55,448H140.46a32,32,0,0,1-31.78-28.26L80,144",
+  style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 32px;"
+}), h("rect", {
+  x: "32",
+  y: "64",
+  width: "448",
+  height: "80",
+  rx: "16",
+  ry: "16",
+  style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 32px;"
+}), h("line", {
+  x1: "312",
+  y1: "240",
+  x2: "200",
+  y2: "352",
+  style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 32px;"
+}), h("line", {
+  x1: "312",
+  y1: "352",
+  x2: "200",
+  y2: "240",
+  style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 32px;"
+})));
+const DownloadIcon = replaceable("download", h("svg", {
+  viewBox: "0 0 16 16",
+  version: "1.1",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("g", {
+  stroke: "none",
+  "stroke-width": "1",
+  fill: "none",
+  "fill-rule": "evenodd"
+}, h("g", {
+  fill: "currentColor",
+  "fill-rule": "nonzero"
+}, h("path", {
+  d: "M3.5,13 L12.5,13 C12.7761424,13 13,13.2238576 13,13.5 C13,13.7454599 12.8231248,13.9496084 12.5898756,13.9919443 L12.5,14 L3.5,14 C3.22385763,14 3,13.7761424 3,13.5 C3,13.2545401 3.17687516,13.0503916 3.41012437,13.0080557 L3.5,13 L12.5,13 L3.5,13 Z M7.91012437,1.00805567 L8,1 C8.24545989,1 8.44960837,1.17687516 8.49194433,1.41012437 L8.5,1.5 L8.5,10.292 L11.1819805,7.6109127 C11.3555469,7.43734635 11.6249713,7.4180612 11.8198394,7.55305725 L11.8890873,7.6109127 C12.0626536,7.78447906 12.0819388,8.05390346 11.9469427,8.2487716 L11.8890873,8.31801948 L8.35355339,11.8535534 C8.17998704,12.0271197 7.91056264,12.0464049 7.7156945,11.9114088 L7.64644661,11.8535534 L4.1109127,8.31801948 C3.91565056,8.12275734 3.91565056,7.80617485 4.1109127,7.6109127 C4.28447906,7.43734635 4.55390346,7.4180612 4.7487716,7.55305725 L4.81801948,7.6109127 L7.5,10.292 L7.5,1.5 C7.5,1.25454011 7.67687516,1.05039163 7.91012437,1.00805567 L8,1 L7.91012437,1.00805567 Z"
+})))));
 const FastBackwardIcon = defineComponent({
   name: "FastBackward",
   render() {
-    return h(
-      "svg",
-      { viewBox: "0 0 20 20", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-      h(
-        "g",
-        { stroke: "none", "stroke-width": "1", fill: "none", "fill-rule": "evenodd" },
-        h(
-          "g",
-          { fill: "currentColor", "fill-rule": "nonzero" },
-          h("path", { d: "M8.73171,16.7949 C9.03264,17.0795 9.50733,17.0663 9.79196,16.7654 C10.0766,16.4644 10.0634,15.9897 9.76243,15.7051 L4.52339,10.75 L17.2471,10.75 C17.6613,10.75 17.9971,10.4142 17.9971,10 C17.9971,9.58579 17.6613,9.25 17.2471,9.25 L4.52112,9.25 L9.76243,4.29275 C10.0634,4.00812 10.0766,3.53343 9.79196,3.2325 C9.50733,2.93156 9.03264,2.91834 8.73171,3.20297 L2.31449,9.27241 C2.14819,9.4297 2.04819,9.62981 2.01448,9.8386 C2.00308,9.89058 1.99707,9.94459 1.99707,10 C1.99707,10.0576 2.00356,10.1137 2.01585,10.1675 C2.05084,10.3733 2.15039,10.5702 2.31449,10.7254 L8.73171,16.7949 Z" })
-        )
-      )
-    );
+    return h("svg", {
+      viewBox: "0 0 20 20",
+      version: "1.1",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("g", {
+      stroke: "none",
+      "stroke-width": "1",
+      fill: "none",
+      "fill-rule": "evenodd"
+    }, h("g", {
+      fill: "currentColor",
+      "fill-rule": "nonzero"
+    }, h("path", {
+      d: "M8.73171,16.7949 C9.03264,17.0795 9.50733,17.0663 9.79196,16.7654 C10.0766,16.4644 10.0634,15.9897 9.76243,15.7051 L4.52339,10.75 L17.2471,10.75 C17.6613,10.75 17.9971,10.4142 17.9971,10 C17.9971,9.58579 17.6613,9.25 17.2471,9.25 L4.52112,9.25 L9.76243,4.29275 C10.0634,4.00812 10.0766,3.53343 9.79196,3.2325 C9.50733,2.93156 9.03264,2.91834 8.73171,3.20297 L2.31449,9.27241 C2.14819,9.4297 2.04819,9.62981 2.01448,9.8386 C2.00308,9.89058 1.99707,9.94459 1.99707,10 C1.99707,10.0576 2.00356,10.1137 2.01585,10.1675 C2.05084,10.3733 2.15039,10.5702 2.31449,10.7254 L8.73171,16.7949 Z"
+    }))));
   }
 });
 const FastForwardIcon = defineComponent({
   name: "FastForward",
   render() {
-    return h(
-      "svg",
-      { viewBox: "0 0 20 20", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-      h(
-        "g",
-        { stroke: "none", "stroke-width": "1", fill: "none", "fill-rule": "evenodd" },
-        h(
-          "g",
-          { fill: "currentColor", "fill-rule": "nonzero" },
-          h("path", { d: "M11.2654,3.20511 C10.9644,2.92049 10.4897,2.93371 10.2051,3.23464 C9.92049,3.53558 9.93371,4.01027 10.2346,4.29489 L15.4737,9.25 L2.75,9.25 C2.33579,9.25 2,9.58579 2,10.0000012 C2,10.4142 2.33579,10.75 2.75,10.75 L15.476,10.75 L10.2346,15.7073 C9.93371,15.9919 9.92049,16.4666 10.2051,16.7675 C10.4897,17.0684 10.9644,17.0817 11.2654,16.797 L17.6826,10.7276 C17.8489,10.5703 17.9489,10.3702 17.9826,10.1614 C17.994,10.1094 18,10.0554 18,10.0000012 C18,9.94241 17.9935,9.88633 17.9812,9.83246 C17.9462,9.62667 17.8467,9.42976 17.6826,9.27455 L11.2654,3.20511 Z" })
-        )
-      )
-    );
+    return h("svg", {
+      viewBox: "0 0 20 20",
+      version: "1.1",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("g", {
+      stroke: "none",
+      "stroke-width": "1",
+      fill: "none",
+      "fill-rule": "evenodd"
+    }, h("g", {
+      fill: "currentColor",
+      "fill-rule": "nonzero"
+    }, h("path", {
+      d: "M11.2654,3.20511 C10.9644,2.92049 10.4897,2.93371 10.2051,3.23464 C9.92049,3.53558 9.93371,4.01027 10.2346,4.29489 L15.4737,9.25 L2.75,9.25 C2.33579,9.25 2,9.58579 2,10.0000012 C2,10.4142 2.33579,10.75 2.75,10.75 L15.476,10.75 L10.2346,15.7073 C9.93371,15.9919 9.92049,16.4666 10.2051,16.7675 C10.4897,17.0684 10.9644,17.0817 11.2654,16.797 L17.6826,10.7276 C17.8489,10.5703 17.9489,10.3702 17.9826,10.1614 C17.994,10.1094 18,10.0554 18,10.0000012 C18,9.94241 17.9935,9.88633 17.9812,9.83246 C17.9462,9.62667 17.8467,9.42976 17.6826,9.27455 L11.2654,3.20511 Z"
+    }))));
   }
 });
 const FilterIcon = defineComponent({
   name: "Filter",
   render() {
-    return h(
-      "svg",
-      { viewBox: "0 0 28 28", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-      h(
-        "g",
-        { stroke: "none", "stroke-width": "1", "fill-rule": "evenodd" },
-        h(
-          "g",
-          { "fill-rule": "nonzero" },
-          h("path", { d: "M17,19 C17.5522847,19 18,19.4477153 18,20 C18,20.5522847 17.5522847,21 17,21 L11,21 C10.4477153,21 10,20.5522847 10,20 C10,19.4477153 10.4477153,19 11,19 L17,19 Z M21,13 C21.5522847,13 22,13.4477153 22,14 C22,14.5522847 21.5522847,15 21,15 L7,15 C6.44771525,15 6,14.5522847 6,14 C6,13.4477153 6.44771525,13 7,13 L21,13 Z M24,7 C24.5522847,7 25,7.44771525 25,8 C25,8.55228475 24.5522847,9 24,9 L4,9 C3.44771525,9 3,8.55228475 3,8 C3,7.44771525 3.44771525,7 4,7 L24,7 Z" })
-        )
-      )
-    );
+    return h("svg", {
+      viewBox: "0 0 28 28",
+      version: "1.1",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("g", {
+      stroke: "none",
+      "stroke-width": "1",
+      "fill-rule": "evenodd"
+    }, h("g", {
+      "fill-rule": "nonzero"
+    }, h("path", {
+      d: "M17,19 C17.5522847,19 18,19.4477153 18,20 C18,20.5522847 17.5522847,21 17,21 L11,21 C10.4477153,21 10,20.5522847 10,20 C10,19.4477153 10.4477153,19 11,19 L17,19 Z M21,13 C21.5522847,13 22,13.4477153 22,14 C22,14.5522847 21.5522847,15 21,15 L7,15 C6.44771525,15 6,14.5522847 6,14 C6,13.4477153 6.44771525,13 7,13 L21,13 Z M24,7 C24.5522847,7 25,7.44771525 25,8 C25,8.55228475 24.5522847,9 24,9 L4,9 C3.44771525,9 3,8.55228475 3,8 C3,7.44771525 3.44771525,7 4,7 L24,7 Z"
+    }))));
   }
 });
 const ForwardIcon = defineComponent({
   name: "Forward",
   render() {
-    return h(
-      "svg",
-      { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-      h("path", { d: "M7.73271 4.20694C8.03263 3.92125 8.50737 3.93279 8.79306 4.23271L13.7944 9.48318C14.0703 9.77285 14.0703 10.2281 13.7944 10.5178L8.79306 15.7682C8.50737 16.0681 8.03263 16.0797 7.73271 15.794C7.43279 15.5083 7.42125 15.0336 7.70694 14.7336L12.2155 10.0005L7.70694 5.26729C7.42125 4.96737 7.43279 4.49264 7.73271 4.20694Z", fill: "currentColor" })
-    );
+    return h("svg", {
+      viewBox: "0 0 20 20",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("path", {
+      d: "M7.73271 4.20694C8.03263 3.92125 8.50737 3.93279 8.79306 4.23271L13.7944 9.48318C14.0703 9.77285 14.0703 10.2281 13.7944 10.5178L8.79306 15.7682C8.50737 16.0681 8.03263 16.0797 7.73271 15.794C7.43279 15.5083 7.42125 15.0336 7.70694 14.7336L12.2155 10.0005L7.70694 5.26729C7.42125 4.96737 7.43279 4.49264 7.73271 4.20694Z",
+      fill: "currentColor"
+    }));
   }
 });
 const MoreIcon = defineComponent({
   name: "More",
   render() {
-    return h(
-      "svg",
-      { viewBox: "0 0 16 16", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-      h(
-        "g",
-        { stroke: "none", "stroke-width": "1", fill: "none", "fill-rule": "evenodd" },
-        h(
-          "g",
-          { fill: "currentColor", "fill-rule": "nonzero" },
-          h("path", { d: "M4,7 C4.55228,7 5,7.44772 5,8 C5,8.55229 4.55228,9 4,9 C3.44772,9 3,8.55229 3,8 C3,7.44772 3.44772,7 4,7 Z M8,7 C8.55229,7 9,7.44772 9,8 C9,8.55229 8.55229,9 8,9 C7.44772,9 7,8.55229 7,8 C7,7.44772 7.44772,7 8,7 Z M12,7 C12.5523,7 13,7.44772 13,8 C13,8.55229 12.5523,9 12,9 C11.4477,9 11,8.55229 11,8 C11,7.44772 11.4477,7 12,7 Z" })
-        )
-      )
-    );
+    return h("svg", {
+      viewBox: "0 0 16 16",
+      version: "1.1",
+      xmlns: "http://www.w3.org/2000/svg"
+    }, h("g", {
+      stroke: "none",
+      "stroke-width": "1",
+      fill: "none",
+      "fill-rule": "evenodd"
+    }, h("g", {
+      fill: "currentColor",
+      "fill-rule": "nonzero"
+    }, h("path", {
+      d: "M4,7 C4.55228,7 5,7.44772 5,8 C5,8.55229 4.55228,9 4,9 C3.44772,9 3,8.55229 3,8 C3,7.44772 3.44772,7 4,7 Z M8,7 C8.55229,7 9,7.44772 9,8 C9,8.55229 8.55229,9 8,9 C7.44772,9 7,8.55229 7,8 C7,7.44772 7.44772,7 8,7 Z M12,7 C12.5523,7 13,7.44772 13,8 C13,8.55229 12.5523,9 12,9 C11.4477,9 11,8.55229 11,8 C11,7.44772 11.4477,7 12,7 Z"
+    }))));
   }
 });
-const CancelIcon = replaceable("cancel", h(
-  "svg",
-  { viewBox: "0 0 16 16", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
-  h(
-    "g",
-    { stroke: "none", "stroke-width": "1", fill: "none", "fill-rule": "evenodd" },
-    h(
-      "g",
-      { fill: "currentColor", "fill-rule": "nonzero" },
-      h("path", { d: "M2.58859116,2.7156945 L2.64644661,2.64644661 C2.82001296,2.47288026 3.08943736,2.45359511 3.2843055,2.58859116 L3.35355339,2.64644661 L8,7.293 L12.6464466,2.64644661 C12.8417088,2.45118446 13.1582912,2.45118446 13.3535534,2.64644661 C13.5488155,2.84170876 13.5488155,3.15829124 13.3535534,3.35355339 L8.707,8 L13.3535534,12.6464466 C13.5271197,12.820013 13.5464049,13.0894374 13.4114088,13.2843055 L13.3535534,13.3535534 C13.179987,13.5271197 12.9105626,13.5464049 12.7156945,13.4114088 L12.6464466,13.3535534 L8,8.707 L3.35355339,13.3535534 C3.15829124,13.5488155 2.84170876,13.5488155 2.64644661,13.3535534 C2.45118446,13.1582912 2.45118446,12.8417088 2.64644661,12.6464466 L7.293,8 L2.64644661,3.35355339 C2.47288026,3.17998704 2.45359511,2.91056264 2.58859116,2.7156945 L2.64644661,2.64644661 L2.58859116,2.7156945 Z" })
-    )
-  )
-));
-const RetryIcon = replaceable("retry", h(
-  "svg",
-  { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 512 512" },
-  h("path", { d: "M320,146s24.36-12-64-12A160,160,0,1,0,416,294", style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-miterlimit: 10; stroke-width: 32px;" }),
-  h("polyline", { points: "256 58 336 138 256 218", style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 32px;" })
-));
+const CancelIcon = replaceable("cancel", h("svg", {
+  viewBox: "0 0 16 16",
+  version: "1.1",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("g", {
+  stroke: "none",
+  "stroke-width": "1",
+  fill: "none",
+  "fill-rule": "evenodd"
+}, h("g", {
+  fill: "currentColor",
+  "fill-rule": "nonzero"
+}, h("path", {
+  d: "M2.58859116,2.7156945 L2.64644661,2.64644661 C2.82001296,2.47288026 3.08943736,2.45359511 3.2843055,2.58859116 L3.35355339,2.64644661 L8,7.293 L12.6464466,2.64644661 C12.8417088,2.45118446 13.1582912,2.45118446 13.3535534,2.64644661 C13.5488155,2.84170876 13.5488155,3.15829124 13.3535534,3.35355339 L8.707,8 L13.3535534,12.6464466 C13.5271197,12.820013 13.5464049,13.0894374 13.4114088,13.2843055 L13.3535534,13.3535534 C13.179987,13.5271197 12.9105626,13.5464049 12.7156945,13.4114088 L12.6464466,13.3535534 L8,8.707 L3.35355339,13.3535534 C3.15829124,13.5488155 2.84170876,13.5488155 2.64644661,13.3535534 C2.45118446,13.1582912 2.45118446,12.8417088 2.64644661,12.6464466 L7.293,8 L2.64644661,3.35355339 C2.47288026,3.17998704 2.45359511,2.91056264 2.58859116,2.7156945 L2.64644661,2.64644661 L2.58859116,2.7156945 Z"
+})))));
+const RetryIcon = replaceable("retry", h("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 512 512"
+}, h("path", {
+  d: "M320,146s24.36-12-64-12A160,160,0,1,0,416,294",
+  style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-miterlimit: 10; stroke-width: 32px;"
+}), h("polyline", {
+  points: "256 58 336 138 256 218",
+  style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 32px;"
+})));
 function addDuplicateSlides(slides) {
-  const { length } = slides;
+  const {
+    length
+  } = slides;
   if (length > 1) {
     slides.push(duplicateSlide(slides[0], 0, "append"));
     slides.unshift(duplicateSlide(slides[length - 1], length - 1, "prepend"));
@@ -206,6 +249,8 @@ function duplicateSlide(child, index, position) {
   });
 }
 function getDisplayIndex(current, length, duplicatedable) {
+  if (length === 1)
+    return 0;
   return !duplicatedable ? current : current === 0 ? length - 3 : current === length - 1 ? 0 : current - 1;
 }
 function getRealIndex(current, duplicatedable) {
@@ -228,13 +273,19 @@ function isTouchEvent(e) {
   return window.TouchEvent && e instanceof window.TouchEvent;
 }
 function calculateSize(element, innerOnly) {
-  let { offsetWidth: width, offsetHeight: height } = element;
+  let {
+    offsetWidth: width,
+    offsetHeight: height
+  } = element;
   if (innerOnly) {
     const style2 = getComputedStyle(element);
     width = width - parseFloat(style2.getPropertyValue("padding-left")) - parseFloat(style2.getPropertyValue("padding-right"));
     height = height - parseFloat(style2.getPropertyValue("padding-top")) - parseFloat(style2.getPropertyValue("padding-bottom"));
   }
-  return { width, height };
+  return {
+    width,
+    height
+  };
 }
 function clampValue(value, min, max) {
   return value < min ? min : value > max ? max : value;
@@ -286,7 +337,9 @@ const NCarouselDots = defineComponent({
   name: "CarouselDots",
   props: carouselDotsProps,
   setup(props) {
-    const { mergedClsPrefixRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef
+    } = useConfig(props);
     const dotElsRef = ref([]);
     const NCarousel2 = useCarouselContext();
     function handleKeydown(e, current) {
@@ -320,7 +373,9 @@ const NCarouselDots = defineComponent({
       if (nodeName === "input" || nodeName === "textarea") {
         return;
       }
-      const { code: keycode } = e;
+      const {
+        code: keycode
+      } = e;
       const isVerticalNext = keycode === "PageUp" || keycode === "ArrowUp";
       const isVerticalPrev = keycode === "PageDown" || keycode === "ArrowDown";
       const isHorizontalNext = keycode === "PageUp" || keycode === "ArrowRight";
@@ -354,48 +409,66 @@ const NCarouselDots = defineComponent({
     };
   },
   render() {
-    const { mergedClsPrefix, dotEls } = this;
-    return h("div", { class: [
-      `${mergedClsPrefix}-carousel__dots`,
-      `${mergedClsPrefix}-carousel__dots--${this.dotType}`
-    ], role: "tablist" }, indexMap(this.total, (i) => {
+    const {
+      mergedClsPrefix,
+      dotEls
+    } = this;
+    return h("div", {
+      class: [`${mergedClsPrefix}-carousel__dots`, `${mergedClsPrefix}-carousel__dots--${this.dotType}`],
+      role: "tablist"
+    }, indexMap(this.total, (i) => {
       const selected = i === this.currentIndex;
-      return h("div", { "aria-selected": selected, ref: (el) => dotEls.push(el), role: "button", tabindex: "0", class: [
-        `${mergedClsPrefix}-carousel__dot`,
-        selected && `${mergedClsPrefix}-carousel__dot--active`
-      ], key: i, onClick: () => {
-        this.handleClick(i);
-      }, onMouseenter: () => {
-        this.handleMouseenter(i);
-      }, onKeydown: (e) => {
-        this.handleKeydown(e, i);
-      } });
+      return h("div", {
+        "aria-selected": selected,
+        ref: (el) => dotEls.push(el),
+        role: "button",
+        tabindex: "0",
+        class: [`${mergedClsPrefix}-carousel__dot`, selected && `${mergedClsPrefix}-carousel__dot--active`],
+        key: i,
+        onClick: () => {
+          this.handleClick(i);
+        },
+        onMouseenter: () => {
+          this.handleMouseenter(i);
+        },
+        onKeydown: (e) => {
+          this.handleKeydown(e, i);
+        }
+      });
     }));
   }
 });
-const backwardIcon = h(
-  "svg",
-  { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 16 16" },
-  h(
-    "g",
-    { fill: "none" },
-    h("path", { d: "M10.26 3.2a.75.75 0 0 1 .04 1.06L6.773 8l3.527 3.74a.75.75 0 1 1-1.1 1.02l-4-4.25a.75.75 0 0 1 0-1.02l4-4.25a.75.75 0 0 1 1.06-.04z", fill: "currentColor" })
-  )
-);
-const forwardIcon = h(
-  "svg",
-  { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 16 16" },
-  h(
-    "g",
-    { fill: "none" },
-    h("path", { d: "M5.74 3.2a.75.75 0 0 0-.04 1.06L9.227 8L5.7 11.74a.75.75 0 1 0 1.1 1.02l4-4.25a.75.75 0 0 0 0-1.02l-4-4.25a.75.75 0 0 0-1.06-.04z", fill: "currentColor" })
-  )
-);
+const backwardIcon = h("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 16 16"
+}, h("g", {
+  fill: "none"
+}, h("path", {
+  d: "M10.26 3.2a.75.75 0 0 1 .04 1.06L6.773 8l3.527 3.74a.75.75 0 1 1-1.1 1.02l-4-4.25a.75.75 0 0 1 0-1.02l4-4.25a.75.75 0 0 1 1.06-.04z",
+  fill: "currentColor"
+})));
+const forwardIcon = h("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 16 16"
+}, h("g", {
+  fill: "none"
+}, h("path", {
+  d: "M5.74 3.2a.75.75 0 0 0-.04 1.06L9.227 8L5.7 11.74a.75.75 0 1 0 1.1 1.02l4-4.25a.75.75 0 0 0 0-1.02l-4-4.25a.75.75 0 0 0-1.06-.04z",
+  fill: "currentColor"
+})));
 const NCarouselArrow = defineComponent({
   name: "CarouselArrow",
   setup(props) {
-    const { mergedClsPrefixRef } = useConfig(props);
-    const { isVertical, isPrevDisabled, isNextDisabled, prev, next } = useCarouselContext();
+    const {
+      mergedClsPrefixRef
+    } = useConfig(props);
+    const {
+      isVertical,
+      isPrevDisabled,
+      isNextDisabled,
+      prev,
+      next
+    } = useCarouselContext();
     return {
       mergedClsPrefix: mergedClsPrefixRef,
       isVertical,
@@ -406,19 +479,20 @@ const NCarouselArrow = defineComponent({
     };
   },
   render() {
-    const { mergedClsPrefix } = this;
-    return h(
-      "div",
-      { class: `${mergedClsPrefix}-carousel__arrow-group` },
-      h("div", { class: [
-        `${mergedClsPrefix}-carousel__arrow`,
-        this.isPrevDisabled() && `${mergedClsPrefix}-carousel__arrow--disabled`
-      ], role: "button", onClick: this.prev }, backwardIcon),
-      h("div", { class: [
-        `${mergedClsPrefix}-carousel__arrow`,
-        this.isNextDisabled() && `${mergedClsPrefix}-carousel__arrow--disabled`
-      ], role: "button", onClick: this.next }, forwardIcon)
-    );
+    const {
+      mergedClsPrefix
+    } = this;
+    return h("div", {
+      class: `${mergedClsPrefix}-carousel__arrow-group`
+    }, h("div", {
+      class: [`${mergedClsPrefix}-carousel__arrow`, this.isPrevDisabled() && `${mergedClsPrefix}-carousel__arrow--disabled`],
+      role: "button",
+      onClick: this.prev
+    }, backwardIcon), h("div", {
+      class: [`${mergedClsPrefix}-carousel__arrow`, this.isNextDisabled() && `${mergedClsPrefix}-carousel__arrow--disabled`],
+      role: "button",
+      onClick: this.next
+    }, forwardIcon));
   }
 });
 const CarouselItemName = "CarouselItem";
@@ -429,11 +503,15 @@ const isCarouselItem = (child) => {
 const NCarouselItem = defineComponent({
   name: CarouselItemName,
   setup(props) {
-    const { mergedClsPrefixRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef
+    } = useConfig(props);
     const NCarousel2 = useCarouselContext(camelCase$1(CarouselItemName), `n-${camelCase$1(CarouselItemName)}`);
     const selfElRef = ref();
     const indexRef = computed(() => {
-      const { value: selfEl } = selfElRef;
+      const {
+        value: selfEl
+      } = selfElRef;
       return selfEl ? NCarousel2.getSlideIndex(selfEl) : -1;
     });
     const isPrevRef = computed(() => NCarousel2.isPrev(indexRef.value));
@@ -447,7 +525,9 @@ const NCarouselItem = defineComponent({
       NCarousel2.removeSlide(selfElRef.value);
     });
     function handleClick(event) {
-      const { value: index } = indexRef;
+      const {
+        value: index
+      } = indexRef;
       if (index !== void 0) {
         NCarousel2 === null || NCarousel2 === void 0 ? void 0 : NCarousel2.onCarouselItemClick(index, event);
       }
@@ -465,15 +545,20 @@ const NCarouselItem = defineComponent({
   },
   render() {
     var _a;
-    const { $slots: slots, mergedClsPrefix, isPrev, isNext, isActive, index, style: style2 } = this;
-    const className = [
-      `${mergedClsPrefix}-carousel__slide`,
-      {
-        [`${mergedClsPrefix}-carousel__slide--current`]: isActive,
-        [`${mergedClsPrefix}-carousel__slide--prev`]: isPrev,
-        [`${mergedClsPrefix}-carousel__slide--next`]: isNext
-      }
-    ];
+    const {
+      $slots: slots,
+      mergedClsPrefix,
+      isPrev,
+      isNext,
+      isActive,
+      index,
+      style: style2
+    } = this;
+    const className = [`${mergedClsPrefix}-carousel__slide`, {
+      [`${mergedClsPrefix}-carousel__slide--current`]: isActive,
+      [`${mergedClsPrefix}-carousel__slide--prev`]: isPrev,
+      [`${mergedClsPrefix}-carousel__slide--next`]: isNext
+    }];
     return h("div", {
       ref: "selfElRef",
       class: className,
@@ -716,62 +801,90 @@ const style$8 = cB("carousel", `
  opacity: 0.4;
  transform: translateX(0%) translateZ(-200px);
  `)])])]);
-const transitionProperties = [
-  "transitionDuration",
-  "transitionTimingFunction"
-];
-const carouselProps = Object.assign(Object.assign({}, useTheme.props), { defaultIndex: {
-  type: Number,
-  default: 0
-}, currentIndex: Number, showArrow: Boolean, dotType: {
-  type: String,
-  default: "dot"
-}, dotPlacement: {
-  type: String,
-  default: "bottom"
-}, slidesPerView: {
-  type: [Number, String],
-  default: 1
-}, spaceBetween: {
-  type: Number,
-  default: 0
-}, centeredSlides: Boolean, direction: {
-  type: String,
-  default: "horizontal"
-}, autoplay: Boolean, interval: {
-  type: Number,
-  default: 5e3
-}, loop: {
-  type: Boolean,
-  default: true
-}, effect: {
-  type: String,
-  default: "slide"
-}, showDots: {
-  type: Boolean,
-  default: true
-}, trigger: {
-  type: String,
-  default: "click"
-}, transitionStyle: {
-  type: Object,
-  default: () => ({
-    transitionDuration: "300ms"
-  })
-}, transitionProps: Object, draggable: Boolean, prevSlideStyle: [Object, String], nextSlideStyle: [Object, String], touchable: {
-  type: Boolean,
-  default: true
-}, mousewheel: Boolean, keyboard: Boolean, "onUpdate:currentIndex": Function, onUpdateCurrentIndex: Function });
+const transitionProperties = ["transitionDuration", "transitionTimingFunction"];
+const carouselProps = Object.assign(Object.assign({}, useTheme.props), {
+  defaultIndex: {
+    type: Number,
+    default: 0
+  },
+  currentIndex: Number,
+  showArrow: Boolean,
+  dotType: {
+    type: String,
+    default: "dot"
+  },
+  dotPlacement: {
+    type: String,
+    default: "bottom"
+  },
+  slidesPerView: {
+    type: [Number, String],
+    default: 1
+  },
+  spaceBetween: {
+    type: Number,
+    default: 0
+  },
+  centeredSlides: Boolean,
+  direction: {
+    type: String,
+    default: "horizontal"
+  },
+  autoplay: Boolean,
+  interval: {
+    type: Number,
+    default: 5e3
+  },
+  loop: {
+    type: Boolean,
+    default: true
+  },
+  effect: {
+    type: String,
+    default: "slide"
+  },
+  showDots: {
+    type: Boolean,
+    default: true
+  },
+  trigger: {
+    type: String,
+    default: "click"
+  },
+  transitionStyle: {
+    type: Object,
+    default: () => ({
+      transitionDuration: "300ms"
+    })
+  },
+  transitionProps: Object,
+  draggable: Boolean,
+  prevSlideStyle: [Object, String],
+  nextSlideStyle: [Object, String],
+  touchable: {
+    type: Boolean,
+    default: true
+  },
+  mousewheel: Boolean,
+  keyboard: Boolean,
+  "onUpdate:currentIndex": Function,
+  onUpdateCurrentIndex: Function
+});
 let globalDragging = false;
 const NCarousel = defineComponent({
   name: "Carousel",
   props: carouselProps,
   setup(props) {
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const selfElRef = ref(null);
     const slidesElRef = ref(null);
     const slideElsRef = ref([]);
-    const slideVNodesRef = { value: [] };
+    const slideVNodesRef = {
+      value: []
+    };
     const verticalRef = computed(() => props.direction === "vertical");
     const sizeAxisRef = computed(() => verticalRef.value ? "height" : "width");
     const spaceAxisRef = computed(() => verticalRef.value ? "bottom" : "right");
@@ -785,37 +898,65 @@ const NCarousel = defineComponent({
     const displaySlidesPerViewRef = computed(() => !sequenceLayoutRef.value || props.centeredSlides ? 1 : props.slidesPerView);
     const realSlidesPerViewRef = computed(() => userWantsControlRef.value ? 1 : props.slidesPerView);
     const autoSlideSizeRef = computed(() => displaySlidesPerViewRef.value === "auto" || props.slidesPerView === "auto" && props.centeredSlides);
-    const perViewSizeRef = ref({ width: 0, height: 0 });
+    const perViewSizeRef = ref({
+      width: 0,
+      height: 0
+    });
     const slideSizesRef = computed(() => {
-      const { value: slidesEls } = slideElsRef;
+      const {
+        value: slidesEls
+      } = slideElsRef;
       if (!slidesEls.length)
         return [];
-      const { value: autoSlideSize } = autoSlideSizeRef;
+      const {
+        value: autoSlideSize
+      } = autoSlideSizeRef;
       if (autoSlideSize) {
         return slidesEls.map((slide) => calculateSize(slide));
       }
-      const { value: slidesPerView } = realSlidesPerViewRef;
-      const { value: perViewSize } = perViewSizeRef;
-      const { value: axis } = sizeAxisRef;
+      const {
+        value: slidesPerView
+      } = realSlidesPerViewRef;
+      const {
+        value: perViewSize
+      } = perViewSizeRef;
+      const {
+        value: axis
+      } = sizeAxisRef;
       let axisSize = perViewSize[axis];
       if (slidesPerView !== "auto") {
-        const { spaceBetween } = props;
+        const {
+          spaceBetween
+        } = props;
         const remaining = axisSize - (slidesPerView - 1) * spaceBetween;
         const percentage = 1 / Math.max(1, slidesPerView);
         axisSize = remaining * percentage;
       }
-      const slideSize = Object.assign(Object.assign({}, perViewSize), { [axis]: axisSize });
+      const slideSize = Object.assign(Object.assign({}, perViewSize), {
+        [axis]: axisSize
+      });
       return slidesEls.map(() => slideSize);
     });
     const slideTranlatesRef = computed(() => {
-      const { value: slideSizes } = slideSizesRef;
+      const {
+        value: slideSizes
+      } = slideSizesRef;
       if (!slideSizes.length)
         return [];
-      const { centeredSlides, spaceBetween } = props;
-      const { value: axis } = sizeAxisRef;
-      const { [axis]: perViewSize } = perViewSizeRef.value;
+      const {
+        centeredSlides,
+        spaceBetween
+      } = props;
+      const {
+        value: axis
+      } = sizeAxisRef;
+      const {
+        [axis]: perViewSize
+      } = perViewSizeRef.value;
       let previousTranslate2 = 0;
-      return slideSizes.map(({ [axis]: slideSize }) => {
+      return slideSizes.map(({
+        [axis]: slideSize
+      }) => {
         let translate = previousTranslate2;
         if (centeredSlides) {
           translate += (slideSize - perViewSize) / 2;
@@ -826,18 +967,24 @@ const NCarousel = defineComponent({
     });
     const isMountedRef = ref(false);
     const transitionStyleRef = computed(() => {
-      const { transitionStyle } = props;
+      const {
+        transitionStyle
+      } = props;
       return transitionStyle ? keep(transitionStyle, transitionProperties) : {};
     });
     const speedRef = computed(() => userWantsControlRef.value ? 0 : resolveSpeed(transitionStyleRef.value.transitionDuration));
     const slideStylesRef = computed(() => {
-      const { value: slidesEls } = slideElsRef;
+      const {
+        value: slidesEls
+      } = slideElsRef;
       if (!slidesEls.length)
         return [];
       const useComputedSize = !(autoSlideSizeRef.value || realSlidesPerViewRef.value === 1);
       const getSlideSize = (index) => {
         if (useComputedSize) {
-          const { value: axis } = sizeAxisRef;
+          const {
+            value: axis
+          } = sizeAxisRef;
           return {
             [axis]: `${slideSizesRef.value[index][axis]}px`
           };
@@ -846,10 +993,17 @@ const NCarousel = defineComponent({
       if (userWantsControlRef.value) {
         return slidesEls.map((_, i) => getSlideSize(i));
       }
-      const { effect, spaceBetween } = props;
-      const { value: spaceAxis } = spaceAxisRef;
+      const {
+        effect,
+        spaceBetween
+      } = props;
+      const {
+        value: spaceAxis
+      } = spaceAxisRef;
       return slidesEls.reduce((styles, _, i) => {
-        const style2 = Object.assign(Object.assign({}, getSlideSize(i)), { [`margin-${spaceAxis}`]: `${spaceBetween}px` });
+        const style2 = Object.assign(Object.assign({}, getSlideSize(i)), {
+          [`margin-${spaceAxis}`]: `${spaceBetween}px`
+        });
         styles.push(style2);
         if (isMountedRef.value && (effect === "fade" || effect === "card")) {
           Object.assign(style2, transitionStyleRef.value);
@@ -858,17 +1012,29 @@ const NCarousel = defineComponent({
       }, []);
     });
     const totalViewRef = computed(() => {
-      const { value: slidesPerView } = displaySlidesPerViewRef;
-      const { length: totalSlides } = slideElsRef.value;
+      const {
+        value: slidesPerView
+      } = displaySlidesPerViewRef;
+      const {
+        length: totalSlides
+      } = slideElsRef.value;
       if (slidesPerView !== "auto") {
         return Math.max(totalSlides - slidesPerView, 0) + 1;
       } else {
-        const { value: slideSizes } = slideSizesRef;
-        const { length } = slideSizes;
+        const {
+          value: slideSizes
+        } = slideSizesRef;
+        const {
+          length
+        } = slideSizes;
         if (!length)
           return totalSlides;
-        const { value: translates } = slideTranlatesRef;
-        const { value: axis } = sizeAxisRef;
+        const {
+          value: translates
+        } = slideTranlatesRef;
+        const {
+          value: axis
+        } = sizeAxisRef;
         const perViewSize = perViewSizeRef.value[axis];
         let lastViewSize = slideSizes[slideSizes.length - 1][axis];
         let i = length;
@@ -888,7 +1054,9 @@ const NCarousel = defineComponent({
       var _a, _b;
       index = clampValue(index, 0, totalViewRef.value - 1);
       const displayIndex = getDisplayIndex(index, totalViewRef.value, duplicatedableRef.value);
-      const { value: lastDisplayIndex } = mergedDisplayIndexRef;
+      const {
+        value: lastDisplayIndex
+      } = mergedDisplayIndexRef;
       if (displayIndex !== mergedDisplayIndexRef.value) {
         uncontrolledDisplayIndexRef.value = displayIndex;
         (_a = props["onUpdate:currentIndex"]) === null || _a === void 0 ? void 0 : _a.call(props, displayIndex, lastDisplayIndex);
@@ -983,20 +1151,30 @@ const NCarousel = defineComponent({
     }
     function getLastViewTranslate() {
       if (displaySlidesPerViewRef.value === "auto") {
-        const { value: axis } = sizeAxisRef;
-        const { [axis]: perViewSize } = perViewSizeRef.value;
-        const { value: translates } = slideTranlatesRef;
+        const {
+          value: axis
+        } = sizeAxisRef;
+        const {
+          [axis]: perViewSize
+        } = perViewSizeRef.value;
+        const {
+          value: translates
+        } = slideTranlatesRef;
         const lastTranslate = translates[translates.length - 1];
         let overallSize;
         if (lastTranslate === void 0) {
           overallSize = perViewSize;
         } else {
-          const { value: slideSizes } = slideSizesRef;
+          const {
+            value: slideSizes
+          } = slideSizesRef;
           overallSize = lastTranslate + slideSizes[slideSizes.length - 1][axis];
         }
         return overallSize - perViewSize;
       } else {
-        const { value: translates } = slideTranlatesRef;
+        const {
+          value: translates
+        } = slideTranlatesRef;
         return translates[totalViewRef.value - 1] || 0;
       }
     }
@@ -1103,7 +1281,7 @@ const NCarousel = defineComponent({
         dragStartX = touchEvent.clientX;
       }
       if (props.touchable) {
-        on("touchmove", document, handleTouchmove, { passive: true });
+        on("touchmove", document, handleTouchmove);
         on("touchend", document, handleTouchend);
         on("touchcancel", document, handleTouchend);
       }
@@ -1113,8 +1291,12 @@ const NCarousel = defineComponent({
       }
     }
     function handleTouchmove(event) {
-      const { value: vertical } = verticalRef;
-      const { value: axis } = sizeAxisRef;
+      const {
+        value: vertical
+      } = verticalRef;
+      const {
+        value: axis
+      } = sizeAxisRef;
       const touchEvent = isTouchEvent(event) ? event.touches[0] : event;
       const offset = vertical ? touchEvent.clientY - dragStartY : touchEvent.clientX - dragStartX;
       const perViewSize = perViewSizeRef.value[axis];
@@ -1127,14 +1309,13 @@ const NCarousel = defineComponent({
       }
     }
     function handleTouchend() {
-      const { value: realIndex } = realIndexRef;
+      const {
+        value: realIndex
+      } = realIndexRef;
       let currentIndex = realIndex;
       if (!inTransition && dragOffset !== 0 && sequenceLayoutRef.value) {
         const currentTranslate = previousTranslate - dragOffset;
-        const translates = [
-          ...slideTranlatesRef.value.slice(0, totalViewRef.value - 1),
-          getLastViewTranslate()
-        ];
+        const translates = [...slideTranlatesRef.value.slice(0, totalViewRef.value - 1), getLastViewTranslate()];
         let prevOffset = null;
         for (let i = 0; i < translates.length; i++) {
           const offset = Math.abs(translates[i] - currentTranslate);
@@ -1147,7 +1328,9 @@ const NCarousel = defineComponent({
       }
       if (currentIndex === realIndex) {
         const timeElapsed = Date.now() - dragStartTime;
-        const { value: axis } = sizeAxisRef;
+        const {
+          value: axis
+        } = sizeAxisRef;
         const perViewSize = perViewSizeRef.value[axis];
         if (dragOffset > perViewSize / 2 || dragOffset / timeElapsed > 0.4) {
           currentIndex = getRealPrevIndex(realIndex);
@@ -1186,7 +1369,9 @@ const NCarousel = defineComponent({
     }
     function handleTransitionEnd() {
       if (sequenceLayoutRef.value && inTransition) {
-        const { value: realIndex } = realIndexRef;
+        const {
+          value: realIndex
+        } = realIndexRef;
         translateTo(realIndex, 0);
       } else {
         resetAutoplay();
@@ -1200,7 +1385,10 @@ const NCarousel = defineComponent({
       event.preventDefault();
       if (inTransition)
         return;
-      let { deltaX, deltaY } = event;
+      let {
+        deltaX,
+        deltaY
+      } = event;
       if (event.shiftKey && !deltaX) {
         deltaX = deltaY;
       }
@@ -1253,8 +1441,12 @@ const NCarousel = defineComponent({
       stopAutoplay();
     });
     onUpdated(() => {
-      const { value: slidesEls } = slideElsRef;
-      const { value: slideVNodes } = slideVNodesRef;
+      const {
+        value: slidesEls
+      } = slideElsRef;
+      const {
+        value: slideVNodes
+      } = slideVNodesRef;
       const indexMap2 = /* @__PURE__ */ new Map();
       const getDisplayIndex2 = (el) => (
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -1277,9 +1469,11 @@ const NCarousel = defineComponent({
         return;
       resetAutoplay();
       if (sequenceLayoutRef.value) {
-        if (duplicatedableRef.value && displayTotalViewRef.value > 2) {
-          const { value: length } = totalViewRef;
-          if (realIndex === length - 2 && lastRealIndex === 1) {
+        if (duplicatedableRef.value) {
+          const {
+            value: length
+          } = totalViewRef;
+          if (displayTotalViewRef.value > 2 && realIndex === length - 2 && lastRealIndex === 1) {
             realIndex = 0;
           } else if (realIndex === 1 && lastRealIndex === length - 2) {
             realIndex = length - 1;
@@ -1289,7 +1483,9 @@ const NCarousel = defineComponent({
       } else {
         fixTranslate();
       }
-    }, { immediate: true });
+    }, {
+      immediate: true
+    });
     watch([duplicatedableRef, displaySlidesPerViewRef], () => void nextTick(() => {
       toRealIndex(realIndexRef.value);
     }));
@@ -1313,13 +1509,10 @@ const NCarousel = defineComponent({
         onWheel: props.mousewheel ? handleMousewheel : void 0
       };
     });
-    const arrowSlotPropsRef = computed(() => Object.assign(Object.assign({}, keep(carouselContext, [
-      "to",
-      "prev",
-      "next",
-      "isPrevDisabled",
-      "isNextDisabled"
-    ])), { total: displayTotalViewRef.value, currentIndex: mergedDisplayIndexRef.value }));
+    const arrowSlotPropsRef = computed(() => Object.assign(Object.assign({}, keep(carouselContext, ["to", "prev", "next", "isPrevDisabled", "isNextDisabled"])), {
+      total: displayTotalViewRef.value,
+      currentIndex: mergedDisplayIndexRef.value
+    }));
     const dotSlotPropsRef = computed(() => ({
       total: displayTotalViewRef.value,
       currentIndex: mergedDisplayIndexRef.value,
@@ -1333,7 +1526,20 @@ const NCarousel = defineComponent({
     };
     const themeRef = useTheme("Carousel", "-carousel", style$8, carouselLight, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut }, self: { dotSize, dotColor, dotColorActive, dotColorFocus, dotLineWidth, dotLineWidthActive, arrowColor } } = themeRef.value;
+      const {
+        common: {
+          cubicBezierEaseInOut
+        },
+        self: {
+          dotSize,
+          dotColor,
+          dotColorActive,
+          dotColorFocus,
+          dotLineWidth,
+          dotLineWidthActive,
+          arrowColor
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut,
         "--n-dot-color": dotColor,
@@ -1354,7 +1560,6 @@ const NCarousel = defineComponent({
       duplicatedable: duplicatedableRef,
       userWantsControl: userWantsControlRef,
       autoSlideSize: autoSlideSizeRef,
-      displayIndex: mergedDisplayIndexRef,
       realIndex: realIndexRef,
       slideStyles: slideStylesRef,
       translateStyle: translateStyleRef,
@@ -1367,11 +1572,31 @@ const NCarousel = defineComponent({
       isActive: isDisplayActive,
       arrowSlotProps: arrowSlotPropsRef,
       dotSlotProps: dotSlotPropsRef
-    }, caroulseExposedMethod), { cssVars: inlineThemeDisabled ? void 0 : cssVarsRef, themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass, onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender });
+    }, caroulseExposedMethod), {
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    });
   },
   render() {
     var _a;
-    const { mergedClsPrefix, showArrow, userWantsControl, slideStyles, dotType, dotPlacement, slidesControlListeners, transitionProps = {}, arrowSlotProps, dotSlotProps, $slots: { default: defaultSlot, dots: dotsSlot, arrow: arrowSlot } } = this;
+    const {
+      mergedClsPrefix,
+      showArrow,
+      userWantsControl,
+      slideStyles,
+      dotType,
+      dotPlacement,
+      slidesControlListeners,
+      transitionProps = {},
+      arrowSlotProps,
+      dotSlotProps,
+      $slots: {
+        default: defaultSlot,
+        dots: dotsSlot,
+        arrow: arrowSlot
+      }
+    } = this;
     const children = defaultSlot && flatten$1(defaultSlot()) || [];
     let slides = filterCarouselItem(children);
     if (!slides.length) {
@@ -1384,35 +1609,43 @@ const NCarousel = defineComponent({
     }
     this.slideVNodes.value = slides;
     if (this.autoSlideSize) {
-      slides = slides.map((slide) => h(VResizeObserver, { onResize: this.handleSlideResize }, {
+      slides = slides.map((slide) => h(VResizeObserver, {
+        onResize: this.handleSlideResize
+      }, {
         default: () => slide
       }));
     }
     (_a = this.onRender) === null || _a === void 0 ? void 0 : _a.call(this);
-    return h(
-      "div",
-      Object.assign({ ref: "selfElRef", class: [
-        this.themeClass,
-        `${mergedClsPrefix}-carousel`,
-        this.direction === "vertical" && `${mergedClsPrefix}-carousel--vertical`,
-        this.showArrow && `${mergedClsPrefix}-carousel--show-arrow`,
-        `${mergedClsPrefix}-carousel--${dotPlacement}`,
-        `${mergedClsPrefix}-carousel--${this.direction}`,
-        `${mergedClsPrefix}-carousel--${this.effect}`,
-        userWantsControl && `${mergedClsPrefix}-carousel--usercontrol`
-      ], style: this.cssVars }, slidesControlListeners, { onMouseenter: this.handleMouseenter, onMouseleave: this.handleMouseleave }),
-      h(VResizeObserver, { onResize: this.handleResize }, {
-        default: () => h("div", { ref: "slidesElRef", class: `${mergedClsPrefix}-carousel__slides`, role: "listbox", style: this.translateStyle, onTransitionend: this.handleTransitionEnd }, userWantsControl ? slides.map((slide, i) => h("div", { style: slideStyles[i], key: i }, withDirectives(h(Transition, Object.assign({}, transitionProps), {
-          default: () => slide
-        }), [[vShow, this.isActive(i)]]))) : slides)
-      }),
-      this.showDots && dotSlotProps.total > 1 && resolveSlotWithProps(dotsSlot, dotSlotProps, () => [
-        h(NCarouselDots, { key: dotType + dotPlacement, total: dotSlotProps.total, currentIndex: dotSlotProps.currentIndex, dotType, trigger: this.trigger, keyboard: this.keyboard })
-      ]),
-      showArrow && resolveSlotWithProps(arrowSlot, arrowSlotProps, () => [
-        h(NCarouselArrow, null)
-      ])
-    );
+    return h("div", Object.assign({
+      ref: "selfElRef",
+      class: [this.themeClass, `${mergedClsPrefix}-carousel`, this.direction === "vertical" && `${mergedClsPrefix}-carousel--vertical`, this.showArrow && `${mergedClsPrefix}-carousel--show-arrow`, `${mergedClsPrefix}-carousel--${dotPlacement}`, `${mergedClsPrefix}-carousel--${this.direction}`, `${mergedClsPrefix}-carousel--${this.effect}`, userWantsControl && `${mergedClsPrefix}-carousel--usercontrol`],
+      style: this.cssVars
+    }, slidesControlListeners, {
+      onMouseenter: this.handleMouseenter,
+      onMouseleave: this.handleMouseleave
+    }), h(VResizeObserver, {
+      onResize: this.handleResize
+    }, {
+      default: () => h("div", {
+        ref: "slidesElRef",
+        class: `${mergedClsPrefix}-carousel__slides`,
+        role: "listbox",
+        style: this.translateStyle,
+        onTransitionend: this.handleTransitionEnd
+      }, userWantsControl ? slides.map((slide, i) => h("div", {
+        style: slideStyles[i],
+        key: i
+      }, withDirectives(h(Transition, Object.assign({}, transitionProps), {
+        default: () => slide
+      }), [[vShow, this.isActive(i)]]))) : slides)
+    }), this.showDots && dotSlotProps.total > 1 && resolveSlotWithProps(dotsSlot, dotSlotProps, () => [h(NCarouselDots, {
+      key: dotType + dotPlacement,
+      total: dotSlotProps.total,
+      currentIndex: dotSlotProps.currentIndex,
+      dotType,
+      trigger: this.trigger,
+      keyboard: this.keyboard
+    })]), showArrow && resolveSlotWithProps(arrowSlot, arrowSlotProps, () => [h(NCarouselArrow, null)]));
   }
 });
 function filterCarouselItem(vnodes) {
@@ -1463,13 +1696,20 @@ const NPopselectPanel = defineComponent({
   props: panelProps,
   setup(props) {
     const NPopselect2 = inject(popselectInjectionKey);
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Popselect", "-pop-select", style$7, popselectLight, NPopselect2.props, mergedClsPrefixRef);
     const treeMateRef = computed(() => {
       return createTreeMate(props.options, createTmOptions("value", "children"));
     });
     function doUpdateValue(value, option) {
-      const { onUpdateValue, "onUpdate:value": _onUpdateValue, onChange } = props;
+      const {
+        onUpdateValue,
+        "onUpdate:value": _onUpdateValue,
+        onChange
+      } = props;
       if (onUpdateValue)
         call(onUpdateValue, value, option);
       if (_onUpdateValue) {
@@ -1482,11 +1722,16 @@ const NPopselectPanel = defineComponent({
       toggle(tmNode.key);
     }
     function handleMenuMousedown(e) {
-      if (!happensIn(e, "action"))
+      if (!happensIn(e, "action") && !happensIn(e, "empty") && !happensIn(e, "header")) {
         e.preventDefault();
+      }
     }
     function toggle(value) {
-      const { value: { getNode } } = treeMateRef;
+      const {
+        value: {
+          getNode
+        }
+      } = treeMateRef;
       if (props.multiple) {
         if (Array.isArray(props.value)) {
           const newValue = [];
@@ -1522,7 +1767,10 @@ const NPopselectPanel = defineComponent({
           if (tmNode) {
             doUpdateValue(value, tmNode.rawNode);
           }
-          const { "onUpdate:show": _onUpdateShow, onUpdateShow } = NPopselect2.props;
+          const {
+            "onUpdate:show": _onUpdateShow,
+            onUpdateShow
+          } = NPopselect2.props;
           if (_onUpdateShow)
             call(_onUpdateShow, false);
           if (onUpdateShow)
@@ -1540,7 +1788,11 @@ const NPopselectPanel = defineComponent({
       });
     });
     const cssVarsRef = computed(() => {
-      const { self: { menuBoxShadow } } = themeRef.value;
+      const {
+        self: {
+          menuBoxShadow
+        }
+      } = themeRef.value;
       return {
         "--n-menu-box-shadow": menuBoxShadow
       };
@@ -1560,7 +1812,31 @@ const NPopselectPanel = defineComponent({
   render() {
     var _a;
     (_a = this.onRender) === null || _a === void 0 ? void 0 : _a.call(this);
-    return h(NInternalSelectMenu, { clsPrefix: this.mergedClsPrefix, focusable: true, nodeProps: this.nodeProps, class: [`${this.mergedClsPrefix}-popselect-menu`, this.themeClass], style: this.cssVars, theme: this.mergedTheme.peers.InternalSelectMenu, themeOverrides: this.mergedTheme.peerOverrides.InternalSelectMenu, multiple: this.multiple, treeMate: this.treeMate, size: this.size, value: this.value, virtualScroll: this.virtualScroll, scrollable: this.scrollable, renderLabel: this.renderLabel, onToggle: this.handleToggle, onMouseenter: this.onMouseenter, onMouseleave: this.onMouseenter, onMousedown: this.handleMenuMousedown, showCheckmark: this.showCheckmark }, {
+    return h(NInternalSelectMenu, {
+      clsPrefix: this.mergedClsPrefix,
+      focusable: true,
+      nodeProps: this.nodeProps,
+      class: [`${this.mergedClsPrefix}-popselect-menu`, this.themeClass],
+      style: this.cssVars,
+      theme: this.mergedTheme.peers.InternalSelectMenu,
+      themeOverrides: this.mergedTheme.peerOverrides.InternalSelectMenu,
+      multiple: this.multiple,
+      treeMate: this.treeMate,
+      size: this.size,
+      value: this.value,
+      virtualScroll: this.virtualScroll,
+      scrollable: this.scrollable,
+      renderLabel: this.renderLabel,
+      onToggle: this.handleToggle,
+      onMouseenter: this.onMouseenter,
+      onMouseleave: this.onMouseenter,
+      onMousedown: this.handleMenuMousedown,
+      showCheckmark: this.showCheckmark
+    }, {
+      header: () => {
+        var _a2, _b;
+        return ((_b = (_a2 = this.$slots).header) === null || _b === void 0 ? void 0 : _b.call(_a2)) || [];
+      },
       action: () => {
         var _a2, _b;
         return ((_b = (_a2 = this.$slots).action) === null || _b === void 0 ? void 0 : _b.call(_a2)) || [];
@@ -1572,17 +1848,24 @@ const NPopselectPanel = defineComponent({
     });
   }
 });
-const popselectProps = Object.assign(Object.assign(Object.assign(Object.assign({}, useTheme.props), omit(popoverBaseProps, ["showArrow", "arrow"])), { placement: Object.assign(Object.assign({}, popoverBaseProps.placement), { default: "bottom" }), trigger: {
-  type: String,
-  default: "hover"
-} }), panelProps);
+const popselectProps = Object.assign(Object.assign(Object.assign(Object.assign({}, useTheme.props), omit(popoverBaseProps, ["showArrow", "arrow"])), {
+  placement: Object.assign(Object.assign({}, popoverBaseProps.placement), {
+    default: "bottom"
+  }),
+  trigger: {
+    type: String,
+    default: "hover"
+  }
+}), panelProps);
 const NPopselect = defineComponent({
   name: "Popselect",
   props: popselectProps,
   inheritAttrs: false,
   __popover__: true,
   setup(props) {
-    const { mergedClsPrefixRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef
+    } = useConfig(props);
     const themeRef = useTheme("Popselect", "-popselect", void 0, popselectLight, props, mergedClsPrefixRef);
     const popoverInstRef = ref(null);
     function syncPosition() {
@@ -1603,10 +1886,15 @@ const NPopselect = defineComponent({
       syncPosition,
       setShow
     };
-    return Object.assign(Object.assign({}, exposedMethods), { popoverInstRef, mergedTheme: themeRef });
+    return Object.assign(Object.assign({}, exposedMethods), {
+      popoverInstRef,
+      mergedTheme: themeRef
+    });
   },
   render() {
-    const { mergedTheme } = this;
+    const {
+      mergedTheme
+    } = this;
     const popoverProps = {
       theme: mergedTheme.peers.Popover,
       themeOverrides: mergedTheme.peerOverrides.Popover,
@@ -1615,14 +1903,21 @@ const NPopselect = defineComponent({
       },
       ref: "popoverInstRef",
       internalRenderBody: (className, ref2, style2, onMouseenter, onMouseleave) => {
-        const { $attrs } = this;
-        return h(NPopselectPanel, Object.assign({}, $attrs, { class: [$attrs.class, className], style: [$attrs.style, style2] }, keep(this.$props, panelPropKeys), { ref: createRefSetter(ref2), onMouseenter: mergeEventHandlers([
-          onMouseenter,
-          $attrs.onMouseenter
-        ]), onMouseleave: mergeEventHandlers([
-          onMouseleave,
-          $attrs.onMouseleave
-        ]) }), {
+        const {
+          $attrs
+        } = this;
+        return h(NPopselectPanel, Object.assign({}, $attrs, {
+          class: [$attrs.class, className],
+          style: [$attrs.style, ...style2]
+        }, keep(this.$props, panelPropKeys), {
+          ref: createRefSetter(ref2),
+          onMouseenter: mergeEventHandlers([onMouseenter, $attrs.onMouseenter]),
+          onMouseleave: mergeEventHandlers([onMouseleave, $attrs.onMouseleave])
+        }), {
+          header: () => {
+            var _a, _b;
+            return (_b = (_a = this.$slots).header) === null || _b === void 0 ? void 0 : _b.call(_a);
+          },
           action: () => {
             var _a, _b;
             return (_b = (_a = this.$slots).action) === null || _b === void 0 ? void 0 : _b.call(_a);
@@ -1634,7 +1929,9 @@ const NPopselect = defineComponent({
         });
       }
     };
-    return h(NPopover, Object.assign({}, omit(this.$props, panelPropKeys), popoverProps, { internalDeactivateImmediately: true }), {
+    return h(NPopover, Object.assign({}, omit(this.$props, panelPropKeys), popoverProps, {
+      internalDeactivateImmediately: true
+    }), {
       trigger: () => {
         var _a, _b;
         return (_b = (_a = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a);
@@ -1642,7 +1939,21 @@ const NPopselect = defineComponent({
     });
   }
 });
-function createPageItemsInfo(currentPage, pageCount, pageSlot) {
+const getDefaultPageSize = (paginationProps2) => {
+  var _a;
+  if (!paginationProps2)
+    return 10;
+  const {
+    defaultPageSize
+  } = paginationProps2;
+  if (defaultPageSize !== void 0)
+    return defaultPageSize;
+  const pageSizeOption = (_a = paginationProps2.pageSizes) === null || _a === void 0 ? void 0 : _a[0];
+  if (typeof pageSizeOption === "number")
+    return pageSizeOption;
+  return (pageSizeOption === null || pageSizeOption === void 0 ? void 0 : pageSizeOption.value) || 10;
+};
+function createPageItemsInfo(currentPage, pageCount, pageSlot, showQuickJumpDropdown) {
   let hasFastBackward = false;
   let hasFastForward = false;
   let fastBackwardTo = 1;
@@ -1653,15 +1964,13 @@ function createPageItemsInfo(currentPage, pageCount, pageSlot) {
       hasFastForward: false,
       fastForwardTo,
       fastBackwardTo,
-      items: [
-        {
-          type: "page",
-          label: 1,
-          active: currentPage === 1,
-          mayBeFastBackward: false,
-          mayBeFastForward: false
-        }
-      ]
+      items: [{
+        type: "page",
+        label: 1,
+        active: currentPage === 1,
+        mayBeFastBackward: false,
+        mayBeFastForward: false
+      }]
     };
   }
   if (pageCount === 2) {
@@ -1670,22 +1979,19 @@ function createPageItemsInfo(currentPage, pageCount, pageSlot) {
       hasFastForward: false,
       fastForwardTo,
       fastBackwardTo,
-      items: [
-        {
-          type: "page",
-          label: 1,
-          active: currentPage === 1,
-          mayBeFastBackward: false,
-          mayBeFastForward: false
-        },
-        {
-          type: "page",
-          label: 2,
-          active: currentPage === 2,
-          mayBeFastBackward: true,
-          mayBeFastForward: false
-        }
-      ]
+      items: [{
+        type: "page",
+        label: 1,
+        active: currentPage === 1,
+        mayBeFastBackward: false,
+        mayBeFastForward: false
+      }, {
+        type: "page",
+        label: 2,
+        active: currentPage === 2,
+        mayBeFastBackward: true,
+        mayBeFastForward: false
+      }]
     };
   }
   const firstPage = 1;
@@ -1718,7 +2024,7 @@ function createPageItemsInfo(currentPage, pageCount, pageSlot) {
       type: "fast-backward",
       active: false,
       label: void 0,
-      options: createRange(firstPage + 1, middleStart - 1)
+      options: showQuickJumpDropdown ? createRange(firstPage + 1, middleStart - 1) : null
     });
   } else if (lastPage >= firstPage + 1) {
     items.push({
@@ -1745,7 +2051,7 @@ function createPageItemsInfo(currentPage, pageCount, pageSlot) {
       type: "fast-forward",
       active: false,
       label: void 0,
-      options: createRange(middleEnd + 1, lastPage - 1)
+      options: showQuickJumpDropdown ? createRange(middleEnd + 1, lastPage - 1) : null
     });
   } else if (middleEnd === lastPage - 2 && items[items.length - 1].label !== lastPage - 1) {
     items.push({
@@ -1924,6 +2230,10 @@ const paginationProps = Object.assign(Object.assign({}, useTheme.props), {
     default: ["pages", "size-picker", "quick-jumper"]
   },
   to: useAdjustedTo.propTo,
+  showQuickJumpDropdown: {
+    type: Boolean,
+    default: true
+  },
   "onUpdate:page": [Function, Array],
   onUpdatePage: [Function, Array],
   "onUpdate:pageSize": [Function, Array],
@@ -1937,29 +2247,31 @@ const NPagination = defineComponent({
   name: "Pagination",
   props: paginationProps,
   setup(props) {
-    const { mergedComponentPropsRef, mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
+    const {
+      mergedComponentPropsRef,
+      mergedClsPrefixRef,
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig(props);
     const themeRef = useTheme("Pagination", "-pagination", style$6, paginationLight, props, mergedClsPrefixRef);
-    const { localeRef } = useLocale("Pagination");
+    const {
+      localeRef
+    } = useLocale("Pagination");
     const selfRef = ref(null);
     const uncontrolledPageRef = ref(props.defaultPage);
-    const getDefaultPageSize = () => {
-      const { defaultPageSize } = props;
-      if (defaultPageSize !== void 0)
-        return defaultPageSize;
-      const pageSizeOption = props.pageSizes[0];
-      if (typeof pageSizeOption === "number")
-        return pageSizeOption;
-      return pageSizeOption.value || 10;
-    };
-    const uncontrolledPageSizeRef = ref(getDefaultPageSize());
+    const uncontrolledPageSizeRef = ref(getDefaultPageSize(props));
     const mergedPageRef = useMergedState(toRef(props, "page"), uncontrolledPageRef);
     const mergedPageSizeRef = useMergedState(toRef(props, "pageSize"), uncontrolledPageSizeRef);
     const mergedPageCountRef = computed(() => {
-      const { itemCount } = props;
+      const {
+        itemCount
+      } = props;
       if (itemCount !== void 0) {
         return Math.max(1, Math.ceil(itemCount / mergedPageSizeRef.value));
       }
-      const { pageCount } = props;
+      const {
+        pageCount
+      } = props;
       if (pageCount !== void 0)
         return Math.max(pageCount, 1);
       return 1;
@@ -1996,7 +2308,7 @@ const NPagination = defineComponent({
     const handleMenuSelect = (value) => {
       doUpdatePage(value);
     };
-    const pageItemsInfo = computed(() => createPageItemsInfo(mergedPageRef.value, mergedPageCountRef.value, props.pageSlot));
+    const pageItemsInfo = computed(() => createPageItemsInfo(mergedPageRef.value, mergedPageCountRef.value, props.pageSlot, props.showQuickJumpDropdown));
     watchEffect(() => {
       if (!pageItemsInfo.value.hasFastBackward) {
         fastBackwardActiveRef.value = false;
@@ -2032,14 +2344,18 @@ const NPagination = defineComponent({
     });
     const endIndexRef = computed(() => {
       const endIndex = mergedPageRef.value * mergedPageSizeRef.value - 1;
-      const { itemCount } = props;
+      const {
+        itemCount
+      } = props;
       if (itemCount !== void 0) {
         return endIndex > itemCount - 1 ? itemCount - 1 : endIndex;
       }
       return endIndex;
     });
     const mergedItemCountRef = computed(() => {
-      const { itemCount } = props;
+      const {
+        itemCount
+      } = props;
       if (itemCount !== void 0)
         return itemCount;
       return (props.pageCount || 1) * mergedPageSizeRef.value;
@@ -2048,7 +2364,9 @@ const NPagination = defineComponent({
     const disableTransitionOneTick = () => {
       void nextTick(() => {
         var _a;
-        const { value: selfEl } = selfRef;
+        const {
+          value: selfEl
+        } = selfRef;
         if (!selfEl)
           return;
         selfEl.classList.add("transition-disabled");
@@ -2059,7 +2377,12 @@ const NPagination = defineComponent({
     function doUpdatePage(page) {
       if (page === mergedPageRef.value)
         return;
-      const { "onUpdate:page": _onUpdatePage, onUpdatePage, onChange, simple } = props;
+      const {
+        "onUpdate:page": _onUpdatePage,
+        onUpdatePage,
+        onChange,
+        simple
+      } = props;
       if (_onUpdatePage)
         call(_onUpdatePage, page);
       if (onUpdatePage)
@@ -2074,7 +2397,11 @@ const NPagination = defineComponent({
     function doUpdatePageSize(pageSize) {
       if (pageSize === mergedPageSizeRef.value)
         return;
-      const { "onUpdate:pageSize": _onUpdatePageSize, onUpdatePageSize, onPageSizeChange } = props;
+      const {
+        "onUpdate:pageSize": _onUpdatePageSize,
+        onUpdatePageSize,
+        onPageSizeChange
+      } = props;
       if (_onUpdatePageSize)
         call(_onUpdatePageSize, pageSize);
       if (onUpdatePageSize)
@@ -2149,8 +2476,58 @@ const NPagination = defineComponent({
       disableTransitionOneTick();
     });
     const cssVarsRef = computed(() => {
-      const { size } = props;
-      const { self: { buttonBorder, buttonBorderHover, buttonBorderPressed, buttonIconColor, buttonIconColorHover, buttonIconColorPressed, itemTextColor, itemTextColorHover, itemTextColorPressed, itemTextColorActive, itemTextColorDisabled, itemColor, itemColorHover, itemColorPressed, itemColorActive, itemColorActiveHover, itemColorDisabled, itemBorder, itemBorderHover, itemBorderPressed, itemBorderActive, itemBorderDisabled, itemBorderRadius, jumperTextColor, jumperTextColorDisabled, buttonColor, buttonColorHover, buttonColorPressed, [createKey("itemPadding", size)]: itemPadding, [createKey("itemMargin", size)]: itemMargin, [createKey("inputWidth", size)]: inputWidth, [createKey("selectWidth", size)]: selectWidth, [createKey("inputMargin", size)]: inputMargin, [createKey("selectMargin", size)]: selectMargin, [createKey("jumperFontSize", size)]: jumperFontSize, [createKey("prefixMargin", size)]: prefixMargin, [createKey("suffixMargin", size)]: suffixMargin, [createKey("itemSize", size)]: itemSize, [createKey("buttonIconSize", size)]: buttonIconSize, [createKey("itemFontSize", size)]: itemFontSize, [`${createKey("itemMargin", size)}Rtl`]: itemMarginRtl, [`${createKey("inputMargin", size)}Rtl`]: inputMarginRtl }, common: { cubicBezierEaseInOut } } = themeRef.value;
+      const {
+        size
+      } = props;
+      const {
+        self: {
+          buttonBorder,
+          buttonBorderHover,
+          buttonBorderPressed,
+          buttonIconColor,
+          buttonIconColorHover,
+          buttonIconColorPressed,
+          itemTextColor,
+          itemTextColorHover,
+          itemTextColorPressed,
+          itemTextColorActive,
+          itemTextColorDisabled,
+          itemColor,
+          itemColorHover,
+          itemColorPressed,
+          itemColorActive,
+          itemColorActiveHover,
+          itemColorDisabled,
+          itemBorder,
+          itemBorderHover,
+          itemBorderPressed,
+          itemBorderActive,
+          itemBorderDisabled,
+          itemBorderRadius,
+          jumperTextColor,
+          jumperTextColorDisabled,
+          buttonColor,
+          buttonColorHover,
+          buttonColorPressed,
+          [createKey("itemPadding", size)]: itemPadding,
+          [createKey("itemMargin", size)]: itemMargin,
+          [createKey("inputWidth", size)]: inputWidth,
+          [createKey("selectWidth", size)]: selectWidth,
+          [createKey("inputMargin", size)]: inputMargin,
+          [createKey("selectMargin", size)]: selectMargin,
+          [createKey("jumperFontSize", size)]: jumperFontSize,
+          [createKey("prefixMargin", size)]: prefixMargin,
+          [createKey("suffixMargin", size)]: suffixMargin,
+          [createKey("itemSize", size)]: itemSize,
+          [createKey("buttonIconSize", size)]: buttonIconSize,
+          [createKey("itemFontSize", size)]: itemFontSize,
+          [`${createKey("itemMargin", size)}Rtl`]: itemMarginRtl,
+          [`${createKey("inputMargin", size)}Rtl`]: inputMarginRtl
+        },
+        common: {
+          cubicBezierEaseInOut
+        }
+      } = themeRef.value;
       return {
         "--n-prefix-margin": prefixMargin,
         "--n-suffix-margin": suffixMargin,
@@ -2199,7 +2576,9 @@ const NPagination = defineComponent({
     });
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("pagination", computed(() => {
       let hash = "";
-      const { size } = props;
+      const {
+        size
+      } = props;
       hash += size[0];
       return hash;
     }), cssVarsRef, props) : void 0;
@@ -2243,190 +2622,271 @@ const NPagination = defineComponent({
     };
   },
   render() {
-    const { $slots, mergedClsPrefix, disabled, cssVars, mergedPage, mergedPageCount, pageItems, showSizePicker, showQuickJumper, mergedTheme, locale, inputSize, selectSize, mergedPageSize, pageSizeOptions, jumperValue, simple, prev, next, prefix, suffix, label, goto, handleJumperInput, handleSizePickerChange, handleBackwardClick, handlePageItemClick, handleForwardClick, handleQuickJumperChange, onRender } = this;
+    const {
+      $slots,
+      mergedClsPrefix,
+      disabled,
+      cssVars,
+      mergedPage,
+      mergedPageCount,
+      pageItems,
+      showSizePicker,
+      showQuickJumper,
+      mergedTheme,
+      locale,
+      inputSize,
+      selectSize,
+      mergedPageSize,
+      pageSizeOptions,
+      jumperValue,
+      simple,
+      prev,
+      next,
+      prefix,
+      suffix,
+      label,
+      goto,
+      handleJumperInput,
+      handleSizePickerChange,
+      handleBackwardClick,
+      handlePageItemClick,
+      handleForwardClick,
+      handleQuickJumperChange,
+      onRender
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
     const renderPrefix = $slots.prefix || prefix;
     const renderSuffix = $slots.suffix || suffix;
     const renderPrev = prev || $slots.prev;
     const renderNext = next || $slots.next;
     const renderLabel = label || $slots.label;
-    return h(
-      "div",
-      { ref: "selfRef", class: [
-        `${mergedClsPrefix}-pagination`,
-        this.themeClass,
-        this.rtlEnabled && `${mergedClsPrefix}-pagination--rtl`,
-        disabled && `${mergedClsPrefix}-pagination--disabled`,
-        simple && `${mergedClsPrefix}-pagination--simple`
-      ], style: cssVars },
-      renderPrefix ? h("div", { class: `${mergedClsPrefix}-pagination-prefix` }, renderPrefix({
-        page: mergedPage,
-        pageSize: mergedPageSize,
-        pageCount: mergedPageCount,
-        startIndex: this.startIndex,
-        endIndex: this.endIndex,
-        itemCount: this.mergedItemCount
-      })) : null,
-      this.displayOrder.map((part) => {
-        switch (part) {
-          case "pages":
-            return h(
-              Fragment,
-              null,
-              h("div", { class: [
-                `${mergedClsPrefix}-pagination-item`,
-                !renderPrev && `${mergedClsPrefix}-pagination-item--button`,
-                (mergedPage <= 1 || mergedPage > mergedPageCount || disabled) && `${mergedClsPrefix}-pagination-item--disabled`
-              ], onClick: handleBackwardClick }, renderPrev ? renderPrev({
-                page: mergedPage,
-                pageSize: mergedPageSize,
-                pageCount: mergedPageCount,
-                startIndex: this.startIndex,
-                endIndex: this.endIndex,
-                itemCount: this.mergedItemCount
-              }) : h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
-                default: () => this.rtlEnabled ? h(ForwardIcon, null) : h(BackwardIcon, null)
-              })),
-              simple ? h(
-                Fragment,
-                null,
-                h(
-                  "div",
-                  { class: `${mergedClsPrefix}-pagination-quick-jumper` },
-                  h(NInput, { value: jumperValue, onUpdateValue: handleJumperInput, size: inputSize, placeholder: "", disabled, theme: mergedTheme.peers.Input, themeOverrides: mergedTheme.peerOverrides.Input, onChange: handleQuickJumperChange })
-                ),
-                " / ",
-                mergedPageCount
-              ) : pageItems.map((pageItem, index) => {
-                let contentNode;
-                let onMouseenter;
-                let onMouseleave;
-                const { type } = pageItem;
-                switch (type) {
-                  case "page":
-                    const pageNode = pageItem.label;
-                    if (renderLabel) {
-                      contentNode = renderLabel({
-                        type: "page",
-                        node: pageNode,
-                        active: pageItem.active
-                      });
-                    } else {
-                      contentNode = pageNode;
-                    }
-                    break;
-                  case "fast-forward":
-                    const fastForwardNode = this.fastForwardActive ? h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
-                      default: () => this.rtlEnabled ? h(FastBackwardIcon, null) : h(FastForwardIcon, null)
-                    }) : h(NBaseIcon, { clsPrefix: mergedClsPrefix }, { default: () => h(MoreIcon, null) });
-                    if (renderLabel) {
-                      contentNode = renderLabel({
-                        type: "fast-forward",
-                        node: fastForwardNode,
-                        active: this.fastForwardActive || this.showFastForwardMenu
-                      });
-                    } else {
-                      contentNode = fastForwardNode;
-                    }
-                    onMouseenter = this.handleFastForwardMouseenter;
-                    onMouseleave = this.handleFastForwardMouseleave;
-                    break;
-                  case "fast-backward":
-                    const fastBackwardNode = this.fastBackwardActive ? h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
-                      default: () => this.rtlEnabled ? h(FastForwardIcon, null) : h(FastBackwardIcon, null)
-                    }) : h(NBaseIcon, { clsPrefix: mergedClsPrefix }, { default: () => h(MoreIcon, null) });
-                    if (renderLabel) {
-                      contentNode = renderLabel({
-                        type: "fast-backward",
-                        node: fastBackwardNode,
-                        active: this.fastBackwardActive || this.showFastBackwardMenu
-                      });
-                    } else {
-                      contentNode = fastBackwardNode;
-                    }
-                    onMouseenter = this.handleFastBackwardMouseenter;
-                    onMouseleave = this.handleFastBackwardMouseleave;
-                    break;
-                }
-                const itemNode = h("div", { key: index, class: [
-                  `${mergedClsPrefix}-pagination-item`,
-                  pageItem.active && `${mergedClsPrefix}-pagination-item--active`,
-                  type !== "page" && (type === "fast-backward" && this.showFastBackwardMenu || type === "fast-forward" && this.showFastForwardMenu) && `${mergedClsPrefix}-pagination-item--hover`,
-                  disabled && `${mergedClsPrefix}-pagination-item--disabled`,
-                  type === "page" && `${mergedClsPrefix}-pagination-item--clickable`
-                ], onClick: () => {
-                  handlePageItemClick(pageItem);
-                }, onMouseenter, onMouseleave }, contentNode);
-                if (type === "page" && !pageItem.mayBeFastBackward && !pageItem.mayBeFastForward) {
-                  return itemNode;
+    return h("div", {
+      ref: "selfRef",
+      class: [`${mergedClsPrefix}-pagination`, this.themeClass, this.rtlEnabled && `${mergedClsPrefix}-pagination--rtl`, disabled && `${mergedClsPrefix}-pagination--disabled`, simple && `${mergedClsPrefix}-pagination--simple`],
+      style: cssVars
+    }, renderPrefix ? h("div", {
+      class: `${mergedClsPrefix}-pagination-prefix`
+    }, renderPrefix({
+      page: mergedPage,
+      pageSize: mergedPageSize,
+      pageCount: mergedPageCount,
+      startIndex: this.startIndex,
+      endIndex: this.endIndex,
+      itemCount: this.mergedItemCount
+    })) : null, this.displayOrder.map((part) => {
+      switch (part) {
+        case "pages":
+          return h(Fragment, null, h("div", {
+            class: [`${mergedClsPrefix}-pagination-item`, !renderPrev && `${mergedClsPrefix}-pagination-item--button`, (mergedPage <= 1 || mergedPage > mergedPageCount || disabled) && `${mergedClsPrefix}-pagination-item--disabled`],
+            onClick: handleBackwardClick
+          }, renderPrev ? renderPrev({
+            page: mergedPage,
+            pageSize: mergedPageSize,
+            pageCount: mergedPageCount,
+            startIndex: this.startIndex,
+            endIndex: this.endIndex,
+            itemCount: this.mergedItemCount
+          }) : h(NBaseIcon, {
+            clsPrefix: mergedClsPrefix
+          }, {
+            default: () => this.rtlEnabled ? h(ForwardIcon, null) : h(BackwardIcon, null)
+          })), simple ? h(Fragment, null, h("div", {
+            class: `${mergedClsPrefix}-pagination-quick-jumper`
+          }, h(NInput, {
+            value: jumperValue,
+            onUpdateValue: handleJumperInput,
+            size: inputSize,
+            placeholder: "",
+            disabled,
+            theme: mergedTheme.peers.Input,
+            themeOverrides: mergedTheme.peerOverrides.Input,
+            onChange: handleQuickJumperChange
+          })), " / ", mergedPageCount) : pageItems.map((pageItem, index) => {
+            let contentNode;
+            let onMouseenter;
+            let onMouseleave;
+            const {
+              type
+            } = pageItem;
+            switch (type) {
+              case "page":
+                const pageNode = pageItem.label;
+                if (renderLabel) {
+                  contentNode = renderLabel({
+                    type: "page",
+                    node: pageNode,
+                    active: pageItem.active
+                  });
                 } else {
-                  const key = pageItem.type === "page" ? pageItem.mayBeFastBackward ? "fast-backward" : "fast-forward" : pageItem.type;
-                  return h(NPopselect, { to: this.to, key, disabled, trigger: "hover", virtualScroll: true, style: { width: "60px" }, theme: mergedTheme.peers.Popselect, themeOverrides: mergedTheme.peerOverrides.Popselect, builtinThemeOverrides: {
-                    peers: {
-                      InternalSelectMenu: {
-                        height: "calc(var(--n-option-height) * 4.6)"
-                      }
+                  contentNode = pageNode;
+                }
+                break;
+              case "fast-forward":
+                const fastForwardNode = this.fastForwardActive ? h(NBaseIcon, {
+                  clsPrefix: mergedClsPrefix
+                }, {
+                  default: () => this.rtlEnabled ? h(FastBackwardIcon, null) : h(FastForwardIcon, null)
+                }) : h(NBaseIcon, {
+                  clsPrefix: mergedClsPrefix
+                }, {
+                  default: () => h(MoreIcon, null)
+                });
+                if (renderLabel) {
+                  contentNode = renderLabel({
+                    type: "fast-forward",
+                    node: fastForwardNode,
+                    active: this.fastForwardActive || this.showFastForwardMenu
+                  });
+                } else {
+                  contentNode = fastForwardNode;
+                }
+                onMouseenter = this.handleFastForwardMouseenter;
+                onMouseleave = this.handleFastForwardMouseleave;
+                break;
+              case "fast-backward":
+                const fastBackwardNode = this.fastBackwardActive ? h(NBaseIcon, {
+                  clsPrefix: mergedClsPrefix
+                }, {
+                  default: () => this.rtlEnabled ? h(FastForwardIcon, null) : h(FastBackwardIcon, null)
+                }) : h(NBaseIcon, {
+                  clsPrefix: mergedClsPrefix
+                }, {
+                  default: () => h(MoreIcon, null)
+                });
+                if (renderLabel) {
+                  contentNode = renderLabel({
+                    type: "fast-backward",
+                    node: fastBackwardNode,
+                    active: this.fastBackwardActive || this.showFastBackwardMenu
+                  });
+                } else {
+                  contentNode = fastBackwardNode;
+                }
+                onMouseenter = this.handleFastBackwardMouseenter;
+                onMouseleave = this.handleFastBackwardMouseleave;
+                break;
+            }
+            const itemNode = h("div", {
+              key: index,
+              class: [`${mergedClsPrefix}-pagination-item`, pageItem.active && `${mergedClsPrefix}-pagination-item--active`, type !== "page" && (type === "fast-backward" && this.showFastBackwardMenu || type === "fast-forward" && this.showFastForwardMenu) && `${mergedClsPrefix}-pagination-item--hover`, disabled && `${mergedClsPrefix}-pagination-item--disabled`, type === "page" && `${mergedClsPrefix}-pagination-item--clickable`],
+              onClick: () => {
+                handlePageItemClick(pageItem);
+              },
+              onMouseenter,
+              onMouseleave
+            }, contentNode);
+            if (type === "page" && !pageItem.mayBeFastBackward && !pageItem.mayBeFastForward) {
+              return itemNode;
+            } else {
+              const key = pageItem.type === "page" ? pageItem.mayBeFastBackward ? "fast-backward" : "fast-forward" : pageItem.type;
+              if (pageItem.type !== "page" && !pageItem.options) {
+                return itemNode;
+              }
+              return h(NPopselect, {
+                to: this.to,
+                key,
+                disabled,
+                trigger: "hover",
+                virtualScroll: true,
+                style: {
+                  width: "60px"
+                },
+                theme: mergedTheme.peers.Popselect,
+                themeOverrides: mergedTheme.peerOverrides.Popselect,
+                builtinThemeOverrides: {
+                  peers: {
+                    InternalSelectMenu: {
+                      height: "calc(var(--n-option-height) * 4.6)"
                     }
-                  }, nodeProps: () => ({
-                    style: {
-                      justifyContent: "center"
-                    }
-                  }), show: type === "page" ? false : type === "fast-backward" ? this.showFastBackwardMenu : this.showFastForwardMenu, onUpdateShow: (value) => {
-                    if (type === "page")
-                      return;
-                    if (value) {
-                      if (type === "fast-backward") {
-                        this.showFastBackwardMenu = value;
-                      } else {
-                        this.showFastForwardMenu = value;
-                      }
+                  }
+                },
+                nodeProps: () => ({
+                  style: {
+                    justifyContent: "center"
+                  }
+                }),
+                show: type === "page" ? false : type === "fast-backward" ? this.showFastBackwardMenu : this.showFastForwardMenu,
+                onUpdateShow: (value) => {
+                  if (type === "page")
+                    return;
+                  if (value) {
+                    if (type === "fast-backward") {
+                      this.showFastBackwardMenu = value;
                     } else {
-                      this.showFastBackwardMenu = false;
-                      this.showFastForwardMenu = false;
+                      this.showFastForwardMenu = value;
                     }
-                  }, options: pageItem.type !== "page" ? pageItem.options : [], onUpdateValue: this.handleMenuSelect, scrollable: true, showCheckmark: false }, { default: () => itemNode });
-                }
-              }),
-              h("div", { class: [
-                `${mergedClsPrefix}-pagination-item`,
-                !renderNext && `${mergedClsPrefix}-pagination-item--button`,
-                {
-                  [`${mergedClsPrefix}-pagination-item--disabled`]: mergedPage < 1 || mergedPage >= mergedPageCount || disabled
-                }
-              ], onClick: handleForwardClick }, renderNext ? renderNext({
-                page: mergedPage,
-                pageSize: mergedPageSize,
-                pageCount: mergedPageCount,
-                itemCount: this.mergedItemCount,
-                startIndex: this.startIndex,
-                endIndex: this.endIndex
-              }) : h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
-                default: () => this.rtlEnabled ? h(BackwardIcon, null) : h(ForwardIcon, null)
-              }))
-            );
-          case "size-picker": {
-            return !simple && showSizePicker ? h(NSelect, Object.assign({ consistentMenuWidth: false, placeholder: "", showCheckmark: false, to: this.to }, this.selectProps, { size: selectSize, options: pageSizeOptions, value: mergedPageSize, disabled, theme: mergedTheme.peers.Select, themeOverrides: mergedTheme.peerOverrides.Select, onUpdateValue: handleSizePickerChange })) : null;
-          }
-          case "quick-jumper":
-            return !simple && showQuickJumper ? h(
-              "div",
-              { class: `${mergedClsPrefix}-pagination-quick-jumper` },
-              goto ? goto() : resolveSlot(this.$slots.goto, () => [locale.goto]),
-              h(NInput, { value: jumperValue, onUpdateValue: handleJumperInput, size: inputSize, placeholder: "", disabled, theme: mergedTheme.peers.Input, themeOverrides: mergedTheme.peerOverrides.Input, onChange: handleQuickJumperChange })
-            ) : null;
-          default:
-            return null;
+                  } else {
+                    this.showFastBackwardMenu = false;
+                    this.showFastForwardMenu = false;
+                  }
+                },
+                options: pageItem.type !== "page" && pageItem.options ? pageItem.options : [],
+                onUpdateValue: this.handleMenuSelect,
+                scrollable: true,
+                showCheckmark: false
+              }, {
+                default: () => itemNode
+              });
+            }
+          }), h("div", {
+            class: [`${mergedClsPrefix}-pagination-item`, !renderNext && `${mergedClsPrefix}-pagination-item--button`, {
+              [`${mergedClsPrefix}-pagination-item--disabled`]: mergedPage < 1 || mergedPage >= mergedPageCount || disabled
+            }],
+            onClick: handleForwardClick
+          }, renderNext ? renderNext({
+            page: mergedPage,
+            pageSize: mergedPageSize,
+            pageCount: mergedPageCount,
+            itemCount: this.mergedItemCount,
+            startIndex: this.startIndex,
+            endIndex: this.endIndex
+          }) : h(NBaseIcon, {
+            clsPrefix: mergedClsPrefix
+          }, {
+            default: () => this.rtlEnabled ? h(BackwardIcon, null) : h(ForwardIcon, null)
+          })));
+        case "size-picker": {
+          return !simple && showSizePicker ? h(NSelect, Object.assign({
+            consistentMenuWidth: false,
+            placeholder: "",
+            showCheckmark: false,
+            to: this.to
+          }, this.selectProps, {
+            size: selectSize,
+            options: pageSizeOptions,
+            value: mergedPageSize,
+            disabled,
+            theme: mergedTheme.peers.Select,
+            themeOverrides: mergedTheme.peerOverrides.Select,
+            onUpdateValue: handleSizePickerChange
+          })) : null;
         }
-      }),
-      renderSuffix ? h("div", { class: `${mergedClsPrefix}-pagination-suffix` }, renderSuffix({
-        page: mergedPage,
-        pageSize: mergedPageSize,
-        pageCount: mergedPageCount,
-        startIndex: this.startIndex,
-        endIndex: this.endIndex,
-        itemCount: this.mergedItemCount
-      })) : null
-    );
+        case "quick-jumper":
+          return !simple && showQuickJumper ? h("div", {
+            class: `${mergedClsPrefix}-pagination-quick-jumper`
+          }, goto ? goto() : resolveSlot(this.$slots.goto, () => [locale.goto]), h(NInput, {
+            value: jumperValue,
+            onUpdateValue: handleJumperInput,
+            size: inputSize,
+            placeholder: "",
+            disabled,
+            theme: mergedTheme.peers.Input,
+            themeOverrides: mergedTheme.peerOverrides.Input,
+            onChange: handleQuickJumperChange
+          })) : null;
+        default:
+          return null;
+      }
+    }), renderSuffix ? h("div", {
+      class: `${mergedClsPrefix}-pagination-suffix`
+    }, renderSuffix({
+      page: mergedPage,
+      pageSize: mergedPageSize,
+      pageCount: mergedPageCount,
+      startIndex: this.startIndex,
+      endIndex: this.endIndex,
+      itemCount: this.mergedItemCount
+    })) : null);
   }
 });
 const style$5 = cB("ellipsis", {
@@ -2448,15 +2908,22 @@ function createLineClampClass(clsPrefix) {
 function createCursorClass(clsPrefix, cursor) {
   return `${clsPrefix}-ellipsis--cursor-${cursor}`;
 }
-const ellipsisProps = Object.assign(Object.assign({}, useTheme.props), { expandTrigger: String, lineClamp: [Number, String], tooltip: {
-  type: [Boolean, Object],
-  default: true
-} });
+const ellipsisProps = Object.assign(Object.assign({}, useTheme.props), {
+  expandTrigger: String,
+  lineClamp: [Number, String],
+  tooltip: {
+    type: [Boolean, Object],
+    default: true
+  }
+});
 const NEllipsis = defineComponent({
   name: "Ellipsis",
   inheritAttrs: false,
   props: ellipsisProps,
-  setup(props, { slots, attrs }) {
+  setup(props, {
+    slots,
+    attrs
+  }) {
     const mergedClsPrefixRef = useMergedClsPrefix();
     const mergedTheme = useTheme("Ellipsis", "-ellipsis", style$5, ellipsisLight, props, mergedClsPrefixRef);
     const triggerRef = ref(null);
@@ -2464,8 +2931,12 @@ const NEllipsis = defineComponent({
     const tooltipRef = ref(null);
     const expandedRef = ref(false);
     const ellipsisStyleRef = computed(() => {
-      const { lineClamp } = props;
-      const { value: expanded } = expandedRef;
+      const {
+        lineClamp
+      } = props;
+      const {
+        value: expanded
+      } = expandedRef;
       if (lineClamp !== void 0) {
         return {
           textOverflow: "",
@@ -2480,17 +2951,25 @@ const NEllipsis = defineComponent({
     });
     function getTooltipDisabled() {
       let tooltipDisabled = false;
-      const { value: expanded } = expandedRef;
+      const {
+        value: expanded
+      } = expandedRef;
       if (expanded)
         return true;
-      const { value: trigger } = triggerRef;
+      const {
+        value: trigger
+      } = triggerRef;
       if (trigger) {
-        const { lineClamp } = props;
+        const {
+          lineClamp
+        } = props;
         syncEllipsisStyle(trigger);
         if (lineClamp !== void 0) {
           tooltipDisabled = trigger.scrollHeight <= trigger.offsetHeight;
         } else {
-          const { value: triggerInner } = triggerInnerRef;
+          const {
+            value: triggerInner
+          } = triggerInnerRef;
           if (triggerInner) {
             tooltipDisabled = triggerInner.getBoundingClientRect().width <= trigger.getBoundingClientRect().width;
           }
@@ -2502,7 +2981,9 @@ const NEllipsis = defineComponent({
     const handleClickRef = computed(() => {
       return props.expandTrigger === "click" ? () => {
         var _a;
-        const { value: expanded } = expandedRef;
+        const {
+          value: expanded
+        } = expandedRef;
         if (expanded) {
           (_a = tooltipRef.value) === null || _a === void 0 ? void 0 : _a.setShow(false);
         }
@@ -2516,16 +2997,18 @@ const NEllipsis = defineComponent({
       }
     });
     const renderTrigger = () => h("span", Object.assign({}, mergeProps(attrs, {
-      class: [
-        `${mergedClsPrefixRef.value}-ellipsis`,
-        props.lineClamp !== void 0 ? createLineClampClass(mergedClsPrefixRef.value) : void 0,
-        props.expandTrigger === "click" ? createCursorClass(mergedClsPrefixRef.value, "pointer") : void 0
-      ],
+      class: [`${mergedClsPrefixRef.value}-ellipsis`, props.lineClamp !== void 0 ? createLineClampClass(mergedClsPrefixRef.value) : void 0, props.expandTrigger === "click" ? createCursorClass(mergedClsPrefixRef.value, "pointer") : void 0],
       style: ellipsisStyleRef.value
-    }), { ref: "triggerRef", onClick: handleClickRef.value, onMouseenter: (
-      // get tooltip disabled will derive cursor style
-      props.expandTrigger === "click" ? getTooltipDisabled : void 0
-    ) }), props.lineClamp ? slots : h("span", { ref: "triggerInnerRef" }, slots));
+    }), {
+      ref: "triggerRef",
+      onClick: handleClickRef.value,
+      onMouseenter: (
+        // get tooltip disabled will derive cursor style
+        props.expandTrigger === "click" ? getTooltipDisabled : void 0
+      )
+    }), props.lineClamp ? slots : h("span", {
+      ref: "triggerInnerRef"
+    }, slots));
     function syncEllipsisStyle(trigger) {
       if (!trigger)
         return;
@@ -2573,10 +3056,23 @@ const NEllipsis = defineComponent({
   },
   render() {
     var _a;
-    const { tooltip, renderTrigger, $slots } = this;
+    const {
+      tooltip,
+      renderTrigger,
+      $slots
+    } = this;
     if (tooltip) {
-      const { mergedTheme } = this;
-      return h(NTooltip, Object.assign({ ref: "tooltipRef", placement: "top" }, tooltip, { getDisabled: this.getTooltipDisabled, theme: mergedTheme.peers.Tooltip, themeOverrides: mergedTheme.peerOverrides.Tooltip }), {
+      const {
+        mergedTheme
+      } = this;
+      return h(NTooltip, Object.assign({
+        ref: "tooltipRef",
+        placement: "top"
+      }, tooltip, {
+        getDisabled: this.getTooltipDisabled,
+        theme: mergedTheme.peers.Tooltip,
+        themeOverrides: mergedTheme.peerOverrides.Tooltip
+      }), {
         trigger: renderTrigger,
         default: (_a = $slots.tooltip) !== null && _a !== void 0 ? _a : $slots.default
       });
@@ -2588,27 +3084,30 @@ const NPerformantEllipsis = defineComponent({
   name: "PerformantEllipsis",
   props: ellipsisProps,
   inheritAttrs: false,
-  setup(props, { attrs, slots }) {
+  setup(props, {
+    attrs,
+    slots
+  }) {
     const mouseEnteredRef = ref(false);
     const mergedClsPrefixRef = useMergedClsPrefix();
     useStyle("-ellipsis", style$5, mergedClsPrefixRef);
     const renderTrigger = () => {
-      const { lineClamp } = props;
+      const {
+        lineClamp
+      } = props;
       const mergedClsPrefix = mergedClsPrefixRef.value;
       return h("span", Object.assign({}, mergeProps(attrs, {
-        class: [
-          `${mergedClsPrefix}-ellipsis`,
-          lineClamp !== void 0 ? createLineClampClass(mergedClsPrefix) : void 0,
-          props.expandTrigger === "click" ? createCursorClass(mergedClsPrefix, "pointer") : void 0
-        ],
+        class: [`${mergedClsPrefix}-ellipsis`, lineClamp !== void 0 ? createLineClampClass(mergedClsPrefix) : void 0, props.expandTrigger === "click" ? createCursorClass(mergedClsPrefix, "pointer") : void 0],
         style: lineClamp === void 0 ? {
           textOverflow: "ellipsis"
         } : {
           "-webkit-line-clamp": lineClamp
         }
-      }), { onMouseenter: () => {
-        mouseEnteredRef.value = true;
-      } }), lineClamp ? slots : h("span", null, slots));
+      }), {
+        onMouseenter: () => {
+          mouseEnteredRef.value = true;
+        }
+      }), lineClamp ? slots : h("span", null, slots));
     };
     return {
       mouseEntered: mouseEnteredRef,
@@ -2637,7 +3136,10 @@ const RenderSorter = defineComponent({
     }
   },
   render() {
-    const { render: render7, order } = this;
+    const {
+      render: render7,
+      order
+    } = this;
     return render7({
       order
     });
@@ -2731,7 +3233,10 @@ const dataTableProps = Object.assign(Object.assign({}, useTheme.props), {
   scrollbarProps: Object,
   renderCell: Function,
   renderExpandIcon: Function,
-  spinProps: { type: Object, default: {} },
+  spinProps: {
+    type: Object,
+    default: {}
+  },
   onLoad: Function,
   "onUpdate:page": [Function, Array],
   onUpdatePage: [Function, Array],
@@ -2763,14 +3268,21 @@ const SortButton = defineComponent({
     }
   },
   setup(props) {
-    const { mergedComponentPropsRef } = useConfig();
-    const { mergedSortStateRef, mergedClsPrefixRef } = inject(dataTableInjectionKey);
+    const {
+      mergedComponentPropsRef
+    } = useConfig();
+    const {
+      mergedSortStateRef,
+      mergedClsPrefixRef
+    } = inject(dataTableInjectionKey);
     const sortStateRef = computed(() => mergedSortStateRef.value.find((state) => state.columnKey === props.column.key));
     const activeRef = computed(() => {
       return sortStateRef.value !== void 0;
     });
     const mergedSortOrderRef = computed(() => {
-      const { value: sortState } = sortStateRef;
+      const {
+        value: sortState
+      } = sortStateRef;
       if (sortState && activeRef.value) {
         return sortState.order;
       }
@@ -2788,13 +3300,26 @@ const SortButton = defineComponent({
     };
   },
   render() {
-    const { mergedRenderSorter, mergedSortOrder, mergedClsPrefix } = this;
-    const { renderSorterIcon } = this.column;
-    return mergedRenderSorter ? h(RenderSorter, { render: mergedRenderSorter, order: mergedSortOrder }) : h("span", { class: [
-      `${mergedClsPrefix}-data-table-sorter`,
-      mergedSortOrder === "ascend" && `${mergedClsPrefix}-data-table-sorter--asc`,
-      mergedSortOrder === "descend" && `${mergedClsPrefix}-data-table-sorter--desc`
-    ] }, renderSorterIcon ? renderSorterIcon({ order: mergedSortOrder }) : h(NBaseIcon, { clsPrefix: mergedClsPrefix }, { default: () => h(ArrowDownIcon, null) }));
+    const {
+      mergedRenderSorter,
+      mergedSortOrder,
+      mergedClsPrefix
+    } = this;
+    const {
+      renderSorterIcon
+    } = this.column;
+    return mergedRenderSorter ? h(RenderSorter, {
+      render: mergedRenderSorter,
+      order: mergedSortOrder
+    }) : h("span", {
+      class: [`${mergedClsPrefix}-data-table-sorter`, mergedSortOrder === "ascend" && `${mergedClsPrefix}-data-table-sorter--asc`, mergedSortOrder === "descend" && `${mergedClsPrefix}-data-table-sorter--desc`]
+    }, renderSorterIcon ? renderSorterIcon({
+      order: mergedSortOrder
+    }) : h(NBaseIcon, {
+      clsPrefix: mergedClsPrefix
+    }, {
+      default: () => h(ArrowDownIcon, null)
+    }));
   }
 });
 const RenderFilter = defineComponent({
@@ -2814,7 +3339,11 @@ const RenderFilter = defineComponent({
     }
   },
   render() {
-    const { render: render7, active, show } = this;
+    const {
+      render: render7,
+      active,
+      show
+    } = this;
     return render7({
       active,
       show
@@ -2850,11 +3379,17 @@ const radioGroupInjectionKey = createInjectionKey("n-radio-group");
 function setup(props) {
   const formItem = useFormItem(props, {
     mergedSize(NFormItem) {
-      const { size } = props;
+      const {
+        size
+      } = props;
       if (size !== void 0)
         return size;
       if (NRadioGroup2) {
-        const { mergedSizeRef: { value: mergedSize } } = NRadioGroup2;
+        const {
+          mergedSizeRef: {
+            value: mergedSize
+          }
+        } = NRadioGroup2;
         if (mergedSize !== void 0) {
           return mergedSize;
         }
@@ -2874,7 +3409,10 @@ function setup(props) {
       return false;
     }
   });
-  const { mergedSizeRef, mergedDisabledRef } = formItem;
+  const {
+    mergedSizeRef,
+    mergedDisabledRef
+  } = formItem;
   const inputRef = ref(null);
   const labelRef = ref(null);
   const NRadioGroup2 = inject(radioGroupInjectionKey, null);
@@ -2887,7 +3425,9 @@ function setup(props) {
     return mergedCheckedRef.value;
   });
   const mergedNameRef = useMemo(() => {
-    const { name } = props;
+    const {
+      name
+    } = props;
     if (name !== void 0)
       return name;
     if (NRadioGroup2)
@@ -2896,12 +3436,22 @@ function setup(props) {
   const focusRef = ref(false);
   function doUpdateChecked() {
     if (NRadioGroup2) {
-      const { doUpdateValue } = NRadioGroup2;
-      const { value } = props;
+      const {
+        doUpdateValue
+      } = NRadioGroup2;
+      const {
+        value
+      } = props;
       call(doUpdateValue, value);
     } else {
-      const { onUpdateChecked, "onUpdate:checked": _onUpdateChecked } = props;
-      const { nTriggerFormInput, nTriggerFormChange } = formItem;
+      const {
+        onUpdateChecked,
+        "onUpdate:checked": _onUpdateChecked
+      } = props;
+      const {
+        nTriggerFormInput,
+        nTriggerFormChange
+      } = formItem;
       if (onUpdateChecked)
         call(onUpdateChecked, true);
       if (_onUpdateChecked)
@@ -2920,6 +3470,9 @@ function setup(props) {
   }
   function handleRadioInputChange() {
     toggle();
+    if (inputRef.value) {
+      inputRef.value.checked = renderSafeCheckedRef.value;
+    }
   }
   function handleRadioInputBlur() {
     focusRef.value = false;
@@ -2933,7 +3486,6 @@ function setup(props) {
     labelRef,
     mergedName: mergedNameRef,
     mergedDisabled: mergedDisabledRef,
-    uncontrolledChecked: uncontrolledCheckedRef,
     renderSafeChecked: renderSafeCheckedRef,
     focus: focusRef,
     mergedSize: mergedSizeRef,
@@ -3038,8 +3590,35 @@ const NRadio = defineComponent({
     const radio = setup(props);
     const themeRef = useTheme("Radio", "-radio", style$4, radioLight, props, radio.mergedClsPrefix);
     const cssVarsRef = computed(() => {
-      const { mergedSize: { value: size } } = radio;
-      const { common: { cubicBezierEaseInOut }, self: { boxShadow, boxShadowActive, boxShadowDisabled, boxShadowFocus, boxShadowHover, color, colorDisabled, colorActive, textColor, textColorDisabled, dotColorActive, dotColorDisabled, labelPadding, labelLineHeight, labelFontWeight, [createKey("fontSize", size)]: fontSize, [createKey("radioSize", size)]: radioSize } } = themeRef.value;
+      const {
+        mergedSize: {
+          value: size
+        }
+      } = radio;
+      const {
+        common: {
+          cubicBezierEaseInOut
+        },
+        self: {
+          boxShadow,
+          boxShadowActive,
+          boxShadowDisabled,
+          boxShadowFocus,
+          boxShadowHover,
+          color,
+          colorDisabled,
+          colorActive,
+          textColor,
+          textColorDisabled,
+          dotColorActive,
+          dotColorDisabled,
+          labelPadding,
+          labelLineHeight,
+          labelFontWeight,
+          [createKey("fontSize", size)]: fontSize,
+          [createKey("radioSize", size)]: radioSize
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut,
         "--n-label-line-height": labelLineHeight,
@@ -3061,7 +3640,11 @@ const NRadio = defineComponent({
         "--n-label-padding": labelPadding
       };
     });
-    const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
+    const {
+      inlineThemeDisabled,
+      mergedClsPrefixRef,
+      mergedRtlRef
+    } = useConfig(props);
     const rtlEnabledRef = useRtl("Radio", mergedRtlRef, mergedClsPrefixRef);
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("radio", computed(() => radio.mergedSize.value[0]), cssVarsRef, props) : void 0;
     return Object.assign(radio, {
@@ -3072,36 +3655,39 @@ const NRadio = defineComponent({
     });
   },
   render() {
-    const { $slots, mergedClsPrefix, onRender, label } = this;
+    const {
+      $slots,
+      mergedClsPrefix,
+      onRender,
+      label
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h(
-      "label",
-      { class: [
-        `${mergedClsPrefix}-radio`,
-        this.themeClass,
-        {
-          [`${mergedClsPrefix}-radio--rtl`]: this.rtlEnabled,
-          [`${mergedClsPrefix}-radio--disabled`]: this.mergedDisabled,
-          [`${mergedClsPrefix}-radio--checked`]: this.renderSafeChecked,
-          [`${mergedClsPrefix}-radio--focus`]: this.focus
-        }
-      ], style: this.cssVars },
-      h("input", { ref: "inputRef", type: "radio", class: `${mergedClsPrefix}-radio-input`, value: this.value, name: this.mergedName, checked: this.renderSafeChecked, disabled: this.mergedDisabled, onChange: this.handleRadioInputChange, onFocus: this.handleRadioInputFocus, onBlur: this.handleRadioInputBlur }),
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-radio__dot-wrapper` },
-        " ",
-        h("div", { class: [
-          `${mergedClsPrefix}-radio__dot`,
-          this.renderSafeChecked && `${mergedClsPrefix}-radio__dot--checked`
-        ] })
-      ),
-      resolveWrappedSlot($slots.default, (children) => {
-        if (!children && !label)
-          return null;
-        return h("div", { ref: "labelRef", class: `${mergedClsPrefix}-radio__label` }, children || label);
-      })
-    );
+    return h("label", {
+      class: [`${mergedClsPrefix}-radio`, this.themeClass, this.rtlEnabled && `${mergedClsPrefix}-radio--rtl`, this.mergedDisabled && `${mergedClsPrefix}-radio--disabled`, this.renderSafeChecked && `${mergedClsPrefix}-radio--checked`, this.focus && `${mergedClsPrefix}-radio--focus`],
+      style: this.cssVars
+    }, h("input", {
+      ref: "inputRef",
+      type: "radio",
+      class: `${mergedClsPrefix}-radio-input`,
+      value: this.value,
+      name: this.mergedName,
+      checked: this.renderSafeChecked,
+      disabled: this.mergedDisabled,
+      onChange: this.handleRadioInputChange,
+      onFocus: this.handleRadioInputFocus,
+      onBlur: this.handleRadioInputBlur
+    }), h("div", {
+      class: `${mergedClsPrefix}-radio__dot-wrapper`
+    }, " ", h("div", {
+      class: [`${mergedClsPrefix}-radio__dot`, this.renderSafeChecked && `${mergedClsPrefix}-radio__dot--checked`]
+    })), resolveWrappedSlot($slots.default, (children) => {
+      if (!children && !label)
+        return null;
+      return h("div", {
+        ref: "labelRef",
+        class: `${mergedClsPrefix}-radio__label`
+      }, children || label);
+    }));
   }
 });
 const style$3 = cB("radio-group", `
@@ -3144,6 +3730,7 @@ const style$3 = cB("radio-group", `
  opacity .3s var(--n-bezier),
  border-color .3s var(--n-bezier),
  color .3s var(--n-bezier);
+ background: var(--n-button-color);
  color: var(--n-button-text-color);
  border-top: 1px solid var(--n-button-border-color);
  border-bottom: 1px solid var(--n-button-border-color);
@@ -3233,7 +3820,9 @@ function mapSlot(defaultSlot, value, clsPrefix) {
         [`${clsPrefix}-radio-group__splitor--checked`]: currentInstanceChecked
       };
       const splitorClass = lastInstancePriority < currentInstancePriority ? currentInstanceClass : lastInstanceClass;
-      children.push(h("div", { class: [`${clsPrefix}-radio-group__splitor`, splitorClass] }), wrappedInstance);
+      children.push(h("div", {
+        class: [`${clsPrefix}-radio-group__splitor`, splitorClass]
+      }), wrappedInstance);
     }
   }
   return {
@@ -3241,26 +3830,48 @@ function mapSlot(defaultSlot, value, clsPrefix) {
     isButtonGroup
   };
 }
-const radioGroupProps = Object.assign(Object.assign({}, useTheme.props), { name: String, value: [String, Number, Boolean], defaultValue: {
-  type: [String, Number, Boolean],
-  default: null
-}, size: String, disabled: {
-  type: Boolean,
-  default: void 0
-}, "onUpdate:value": [Function, Array], onUpdateValue: [Function, Array] });
+const radioGroupProps = Object.assign(Object.assign({}, useTheme.props), {
+  name: String,
+  value: [String, Number, Boolean],
+  defaultValue: {
+    type: [String, Number, Boolean],
+    default: null
+  },
+  size: String,
+  disabled: {
+    type: Boolean,
+    default: void 0
+  },
+  "onUpdate:value": [Function, Array],
+  onUpdateValue: [Function, Array]
+});
 const NRadioGroup = defineComponent({
   name: "RadioGroup",
   props: radioGroupProps,
   setup(props) {
     const selfElRef = ref(null);
-    const { mergedSizeRef, mergedDisabledRef, nTriggerFormChange, nTriggerFormInput, nTriggerFormBlur, nTriggerFormFocus } = useFormItem(props);
-    const { mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
+    const {
+      mergedSizeRef,
+      mergedDisabledRef,
+      nTriggerFormChange,
+      nTriggerFormInput,
+      nTriggerFormBlur,
+      nTriggerFormFocus
+    } = useFormItem(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig(props);
     const themeRef = useTheme("Radio", "-radio-group", style$3, radioLight, props, mergedClsPrefixRef);
     const uncontrolledValueRef = ref(props.defaultValue);
     const controlledValueRef = toRef(props, "value");
     const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
     function doUpdateValue(value) {
-      const { onUpdateValue, "onUpdate:value": _onUpdateValue } = props;
+      const {
+        onUpdateValue,
+        "onUpdate:value": _onUpdateValue
+      } = props;
       if (onUpdateValue) {
         call(onUpdateValue, value);
       }
@@ -3272,7 +3883,9 @@ const NRadioGroup = defineComponent({
       nTriggerFormInput();
     }
     function handleFocusin(e) {
-      const { value: selfEl } = selfElRef;
+      const {
+        value: selfEl
+      } = selfElRef;
       if (!selfEl)
         return;
       if (selfEl.contains(e.relatedTarget))
@@ -3280,7 +3893,9 @@ const NRadioGroup = defineComponent({
       nTriggerFormFocus();
     }
     function handleFocusout(e) {
-      const { value: selfEl } = selfElRef;
+      const {
+        value: selfEl
+      } = selfElRef;
       if (!selfEl)
         return;
       if (selfEl.contains(e.relatedTarget))
@@ -3297,8 +3912,30 @@ const NRadioGroup = defineComponent({
     });
     const rtlEnabledRef = useRtl("Radio", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
-      const { value: size } = mergedSizeRef;
-      const { common: { cubicBezierEaseInOut }, self: { buttonBorderColor, buttonBorderColorActive, buttonBorderRadius, buttonBoxShadow, buttonBoxShadowFocus, buttonBoxShadowHover, buttonColorActive, buttonTextColor, buttonTextColorActive, buttonTextColorHover, opacityDisabled, [createKey("buttonHeight", size)]: height, [createKey("fontSize", size)]: fontSize } } = themeRef.value;
+      const {
+        value: size
+      } = mergedSizeRef;
+      const {
+        common: {
+          cubicBezierEaseInOut
+        },
+        self: {
+          buttonBorderColor,
+          buttonBorderColorActive,
+          buttonBorderRadius,
+          buttonBoxShadow,
+          buttonBoxShadowFocus,
+          buttonBoxShadowHover,
+          buttonColor,
+          buttonColorActive,
+          buttonTextColor,
+          buttonTextColorActive,
+          buttonTextColorHover,
+          opacityDisabled,
+          [createKey("buttonHeight", size)]: height,
+          [createKey("fontSize", size)]: fontSize
+        }
+      } = themeRef.value;
       return {
         "--n-font-size": fontSize,
         "--n-bezier": cubicBezierEaseInOut,
@@ -3308,6 +3945,7 @@ const NRadioGroup = defineComponent({
         "--n-button-box-shadow": buttonBoxShadow,
         "--n-button-box-shadow-focus": buttonBoxShadowFocus,
         "--n-button-box-shadow-hover": buttonBoxShadowHover,
+        "--n-button-color": buttonColor,
         "--n-button-color-active": buttonColorActive,
         "--n-button-text-color": buttonTextColor,
         "--n-button-text-color-hover": buttonTextColorHover,
@@ -3331,15 +3969,24 @@ const NRadioGroup = defineComponent({
   },
   render() {
     var _a;
-    const { mergedValue, mergedClsPrefix, handleFocusin, handleFocusout } = this;
-    const { children, isButtonGroup } = mapSlot(flatten$1(getSlot(this)), mergedValue, mergedClsPrefix);
+    const {
+      mergedValue,
+      mergedClsPrefix,
+      handleFocusin,
+      handleFocusout
+    } = this;
+    const {
+      children,
+      isButtonGroup
+    } = mapSlot(flatten$1(getSlot(this)), mergedValue, mergedClsPrefix);
     (_a = this.onRender) === null || _a === void 0 ? void 0 : _a.call(this);
-    return h("div", { onFocusin: handleFocusin, onFocusout: handleFocusout, ref: "selfElRef", class: [
-      `${mergedClsPrefix}-radio-group`,
-      this.rtlEnabled && `${mergedClsPrefix}-radio-group--rtl`,
-      this.themeClass,
-      isButtonGroup && `${mergedClsPrefix}-radio-group--button-group`
-    ], style: this.cssVars }, children);
+    return h("div", {
+      onFocusin: handleFocusin,
+      onFocusout: handleFocusout,
+      ref: "selfElRef",
+      class: [`${mergedClsPrefix}-radio-group`, this.rtlEnabled && `${mergedClsPrefix}-radio-group--rtl`, this.themeClass, isButtonGroup && `${mergedClsPrefix}-radio-group--button-group`],
+      style: this.cssVars
+    }, children);
   }
 });
 const SELECTION_COL_WIDTH = 40;
@@ -3411,7 +4058,10 @@ function createCustomWidthStyle(column, resizedWidth) {
     };
   }
   const width = getStringColWidth(column);
-  const { minWidth, maxWidth } = column;
+  const {
+    minWidth,
+    maxWidth
+  } = column;
   return {
     width,
     minWidth: formatLength(minWidth) || width,
@@ -3458,11 +4108,30 @@ function createNextSorter(column, currentSortState) {
       order: getNextOrderOf(false)
     };
   } else {
-    return Object.assign(Object.assign({}, currentSortState), { order: getNextOrderOf(currentSortState.order) });
+    return Object.assign(Object.assign({}, currentSortState), {
+      order: getNextOrderOf(currentSortState.order)
+    });
   }
 }
 function isColumnSorting(column, mergedSortState) {
   return mergedSortState.find((state) => state.columnKey === column.key && state.order) !== void 0;
+}
+function formatCsvCell(value) {
+  if (typeof value === "string") {
+    return value.replace(/,/g, "\\,");
+  } else if (value === null || value === void 0) {
+    return "";
+  } else {
+    return `${value}`.replace(/,/g, "\\,");
+  }
+}
+function generateCsv(columns, data) {
+  const exportableColumns = columns.filter((column) => column.type !== "expand" && column.type !== "selection");
+  const header = exportableColumns.map((col) => col.title).join(",");
+  const rows = data.map((row) => {
+    return exportableColumns.map((col) => formatCsvCell(row[col.key])).join(",");
+  });
+  return [header, ...rows].join("\n");
 }
 const NDataTableFilterMenu = defineComponent({
   name: "DataTableFilterMenu",
@@ -3502,6 +4171,11 @@ const NDataTableFilterMenu = defineComponent({
   },
   setup(props) {
     const {
+      mergedClsPrefixRef: mergedClsPrefixRefRtl,
+      mergedRtlRef
+    } = useConfig(props);
+    const rtlEnabledRef = useRtl("DataTable", mergedRtlRef, mergedClsPrefixRefRtl);
+    const {
       mergedClsPrefixRef,
       mergedThemeRef,
       localeRef
@@ -3509,13 +4183,17 @@ const NDataTableFilterMenu = defineComponent({
     } = inject(dataTableInjectionKey);
     const temporalValueRef = ref(props.value);
     const checkboxGroupValueRef = computed(() => {
-      const { value: temporalValue } = temporalValueRef;
+      const {
+        value: temporalValue
+      } = temporalValueRef;
       if (!Array.isArray(temporalValue))
         return null;
       return temporalValue;
     });
     const radioGroupValueRef = computed(() => {
-      const { value: temporalValue } = temporalValueRef;
+      const {
+        value: temporalValue
+      } = temporalValueRef;
       if (shouldUseArrayInSingleMode(props.column)) {
         return Array.isArray(temporalValue) && temporalValue.length && temporalValue[0] || null;
       }
@@ -3549,6 +4227,7 @@ const NDataTableFilterMenu = defineComponent({
     }
     return {
       mergedClsPrefix: mergedClsPrefixRef,
+      rtlEnabled: rtlEnabledRef,
       mergedTheme: mergedThemeRef,
       locale: localeRef,
       checkboxGroupValue: checkboxGroupValueRef,
@@ -3559,29 +4238,68 @@ const NDataTableFilterMenu = defineComponent({
     };
   },
   render() {
-    const { mergedTheme, locale, mergedClsPrefix } = this;
-    return h(
-      "div",
-      { class: `${mergedClsPrefix}-data-table-filter-menu` },
-      h(NScrollbar, null, {
-        default: () => {
-          const { checkboxGroupValue, handleChange } = this;
-          return this.multiple ? h(NCheckboxGroup, { value: checkboxGroupValue, class: `${mergedClsPrefix}-data-table-filter-menu__group`, onUpdateValue: handleChange }, {
-            default: () => this.options.map((option) => {
-              return h(NCheckbox, { key: option.value, theme: mergedTheme.peers.Checkbox, themeOverrides: mergedTheme.peerOverrides.Checkbox, value: option.value }, { default: () => option.label });
-            })
-          }) : h(NRadioGroup, { name: this.radioGroupName, class: `${mergedClsPrefix}-data-table-filter-menu__group`, value: this.radioGroupValue, onUpdateValue: this.handleChange }, {
-            default: () => this.options.map((option) => h(NRadio, { key: option.value, value: option.value, theme: mergedTheme.peers.Radio, themeOverrides: mergedTheme.peerOverrides.Radio }, { default: () => option.label }))
-          });
-        }
-      }),
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-data-table-filter-menu__action` },
-        h(NButton, { size: "tiny", theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button, onClick: this.handleClearClick }, { default: () => locale.clear }),
-        h(NButton, { theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button, type: "primary", size: "tiny", onClick: this.handleConfirmClick }, { default: () => locale.confirm })
-      )
-    );
+    const {
+      mergedTheme,
+      locale,
+      mergedClsPrefix
+    } = this;
+    return h("div", {
+      class: [`${mergedClsPrefix}-data-table-filter-menu`, this.rtlEnabled && `${mergedClsPrefix}-data-table-filter-menu--rtl`]
+    }, h(NScrollbar, null, {
+      default: () => {
+        const {
+          checkboxGroupValue,
+          handleChange
+        } = this;
+        return this.multiple ? h(NCheckboxGroup, {
+          value: checkboxGroupValue,
+          class: `${mergedClsPrefix}-data-table-filter-menu__group`,
+          onUpdateValue: handleChange
+        }, {
+          default: () => this.options.map((option) => {
+            return h(NCheckbox, {
+              key: option.value,
+              theme: mergedTheme.peers.Checkbox,
+              themeOverrides: mergedTheme.peerOverrides.Checkbox,
+              value: option.value
+            }, {
+              default: () => option.label
+            });
+          })
+        }) : h(NRadioGroup, {
+          name: this.radioGroupName,
+          class: `${mergedClsPrefix}-data-table-filter-menu__group`,
+          value: this.radioGroupValue,
+          onUpdateValue: this.handleChange
+        }, {
+          default: () => this.options.map((option) => h(NRadio, {
+            key: option.value,
+            value: option.value,
+            theme: mergedTheme.peers.Radio,
+            themeOverrides: mergedTheme.peerOverrides.Radio
+          }, {
+            default: () => option.label
+          }))
+        });
+      }
+    }), h("div", {
+      class: `${mergedClsPrefix}-data-table-filter-menu__action`
+    }, h(NButton, {
+      size: "tiny",
+      theme: mergedTheme.peers.Button,
+      themeOverrides: mergedTheme.peerOverrides.Button,
+      onClick: this.handleClearClick
+    }, {
+      default: () => locale.clear
+    }), h(NButton, {
+      theme: mergedTheme.peers.Button,
+      themeOverrides: mergedTheme.peerOverrides.Button,
+      type: "primary",
+      size: "tiny",
+      onClick: this.handleConfirmClick
+    }, {
+      default: () => locale.confirm
+    })));
   }
 });
 function createFilterState(currentFilterState, columnKey, mergedFilterValue) {
@@ -3602,7 +4320,9 @@ const FilterButton = defineComponent({
     }
   },
   setup(props) {
-    const { mergedComponentPropsRef } = useConfig();
+    const {
+      mergedComponentPropsRef
+    } = useConfig();
     const {
       mergedThemeRef,
       mergedClsPrefixRef,
@@ -3621,7 +4341,9 @@ const FilterButton = defineComponent({
     const mergedFilterValueRef = computed(() => {
       const filterValue = filterStateRef.value[props.column.key];
       if (filterValue === void 0) {
-        const { value: multiple } = filterMultipleRef;
+        const {
+          value: multiple
+        } = filterMultipleRef;
         if (multiple)
           return [];
         else
@@ -3630,7 +4352,9 @@ const FilterButton = defineComponent({
       return filterValue;
     });
     const activeRef = computed(() => {
-      const { value: filterValue } = mergedFilterValueRef;
+      const {
+        value: filterValue
+      } = mergedFilterValueRef;
       if (Array.isArray(filterValue)) {
         return filterValue.length > 0;
       }
@@ -3668,28 +4392,69 @@ const FilterButton = defineComponent({
     };
   },
   render() {
-    const { mergedTheme, mergedClsPrefix, handleFilterMenuCancel } = this;
-    return h(NPopover, { show: this.showPopover, onUpdateShow: (v) => this.showPopover = v, trigger: "click", theme: mergedTheme.peers.Popover, themeOverrides: mergedTheme.peerOverrides.Popover, placement: "bottom", style: { padding: 0 } }, {
+    const {
+      mergedTheme,
+      mergedClsPrefix,
+      handleFilterMenuCancel
+    } = this;
+    return h(NPopover, {
+      show: this.showPopover,
+      onUpdateShow: (v) => this.showPopover = v,
+      trigger: "click",
+      theme: mergedTheme.peers.Popover,
+      themeOverrides: mergedTheme.peerOverrides.Popover,
+      placement: "bottom",
+      style: {
+        padding: 0
+      }
+    }, {
       trigger: () => {
-        const { mergedRenderFilter } = this;
+        const {
+          mergedRenderFilter
+        } = this;
         if (mergedRenderFilter) {
-          return h(RenderFilter, { "data-data-table-filter": true, render: mergedRenderFilter, active: this.active, show: this.showPopover });
+          return h(RenderFilter, {
+            "data-data-table-filter": true,
+            render: mergedRenderFilter,
+            active: this.active,
+            show: this.showPopover
+          });
         }
-        const { renderFilterIcon } = this.column;
-        return h("div", { "data-data-table-filter": true, class: [
-          `${mergedClsPrefix}-data-table-filter`,
-          {
+        const {
+          renderFilterIcon
+        } = this.column;
+        return h("div", {
+          "data-data-table-filter": true,
+          class: [`${mergedClsPrefix}-data-table-filter`, {
             [`${mergedClsPrefix}-data-table-filter--active`]: this.active,
             [`${mergedClsPrefix}-data-table-filter--show`]: this.showPopover
-          }
-        ] }, renderFilterIcon ? renderFilterIcon({
+          }]
+        }, renderFilterIcon ? renderFilterIcon({
           active: this.active,
           show: this.showPopover
-        }) : h(NBaseIcon, { clsPrefix: mergedClsPrefix }, { default: () => h(FilterIcon, null) }));
+        }) : h(NBaseIcon, {
+          clsPrefix: mergedClsPrefix
+        }, {
+          default: () => h(FilterIcon, null)
+        }));
       },
       default: () => {
-        const { renderFilterMenu } = this.column;
-        return renderFilterMenu ? renderFilterMenu({ hide: handleFilterMenuCancel }) : h(NDataTableFilterMenu, { style: this.filterMenuCssVars, radioGroupName: String(this.column.key), multiple: this.filterMultiple, value: this.mergedFilterValue, options: this.options, column: this.column, onChange: this.handleFilterChange, onClear: this.handleFilterMenuCancel, onConfirm: this.handleFilterMenuConfirm });
+        const {
+          renderFilterMenu
+        } = this.column;
+        return renderFilterMenu ? renderFilterMenu({
+          hide: handleFilterMenuCancel
+        }) : h(NDataTableFilterMenu, {
+          style: this.filterMenuCssVars,
+          radioGroupName: String(this.column.key),
+          multiple: this.filterMultiple,
+          value: this.mergedFilterValue,
+          options: this.options,
+          column: this.column,
+          onChange: this.handleFilterChange,
+          onClear: this.handleFilterMenuCancel,
+          onConfirm: this.handleFilterMenuConfirm
+        });
       }
     });
   }
@@ -3702,7 +4467,9 @@ const ResizeButton = defineComponent({
     onResizeEnd: Function
   },
   setup(props) {
-    const { mergedClsPrefixRef } = inject(dataTableInjectionKey);
+    const {
+      mergedClsPrefixRef
+    } = inject(dataTableInjectionKey);
     const activeRef = ref(false);
     let startX = 0;
     function getMouseX(e) {
@@ -3742,11 +4509,14 @@ const ResizeButton = defineComponent({
     };
   },
   render() {
-    const { mergedClsPrefix } = this;
-    return h("span", { "data-data-table-resizable": true, class: [
-      `${mergedClsPrefix}-data-table-resize-button`,
-      this.active && `${mergedClsPrefix}-data-table-resize-button--active`
-    ], onMousedown: this.handleMousedown });
+    const {
+      mergedClsPrefix
+    } = this;
+    return h("span", {
+      "data-data-table-resizable": true,
+      class: [`${mergedClsPrefix}-data-table-resize-button`, this.active && `${mergedClsPrefix}-data-table-resize-button--active`],
+      onMousedown: this.handleMousedown
+    });
   }
 });
 const allKey = "_n_all__";
@@ -3815,9 +4585,19 @@ const SelectionMenu = defineComponent({
     const optionsRef = computed(() => createDropdownOptions(checkOptionsRef.value, localeRef.value));
     return () => {
       var _a, _b, _c, _d;
-      const { clsPrefix } = props;
-      return h(NDropdown, { theme: (_b = (_a = dataTableProps2.theme) === null || _a === void 0 ? void 0 : _a.peers) === null || _b === void 0 ? void 0 : _b.Dropdown, themeOverrides: (_d = (_c = dataTableProps2.themeOverrides) === null || _c === void 0 ? void 0 : _c.peers) === null || _d === void 0 ? void 0 : _d.Dropdown, options: optionsRef.value, onSelect: handleSelectRef.value }, {
-        default: () => h(NBaseIcon, { clsPrefix, class: `${clsPrefix}-data-table-check-extra` }, {
+      const {
+        clsPrefix
+      } = props;
+      return h(NDropdown, {
+        theme: (_b = (_a = dataTableProps2.theme) === null || _a === void 0 ? void 0 : _a.peers) === null || _b === void 0 ? void 0 : _b.Dropdown,
+        themeOverrides: (_d = (_c = dataTableProps2.themeOverrides) === null || _c === void 0 ? void 0 : _c.peers) === null || _d === void 0 ? void 0 : _d.Dropdown,
+        options: optionsRef.value,
+        onSelect: handleSelectRef.value
+      }, {
+        default: () => h(NBaseIcon, {
+          clsPrefix,
+          class: `${clsPrefix}-data-table-check-extra`
+        }, {
           default: () => h(ChevronDownIcon, null)
         })
       });
@@ -3921,79 +4701,130 @@ const TableHeader = defineComponent({
     };
   },
   render() {
-    const { cellElsRef, mergedClsPrefix, fixedColumnLeftMap, fixedColumnRightMap, currentPage, allRowsChecked, someRowsChecked, rows, cols, mergedTheme, checkOptions, componentId, discrete, mergedTableLayout, headerCheckboxDisabled, mergedSortState, handleColHeaderClick, handleCheckboxUpdateChecked, handleColumnResizeStart, handleColumnResize } = this;
-    const theadVNode = h("thead", { class: `${mergedClsPrefix}-data-table-thead`, "data-n-id": componentId }, rows.map((row) => {
-      return h("tr", { class: `${mergedClsPrefix}-data-table-tr` }, row.map(({ column, colSpan, rowSpan, isLast }) => {
+    const {
+      cellElsRef,
+      mergedClsPrefix,
+      fixedColumnLeftMap,
+      fixedColumnRightMap,
+      currentPage,
+      allRowsChecked,
+      someRowsChecked,
+      rows,
+      cols,
+      mergedTheme,
+      checkOptions,
+      componentId,
+      discrete,
+      mergedTableLayout,
+      headerCheckboxDisabled,
+      mergedSortState,
+      handleColHeaderClick,
+      handleCheckboxUpdateChecked,
+      handleColumnResizeStart,
+      handleColumnResize
+    } = this;
+    const theadVNode = h("thead", {
+      class: `${mergedClsPrefix}-data-table-thead`,
+      "data-n-id": componentId
+    }, rows.map((row) => {
+      return h("tr", {
+        class: `${mergedClsPrefix}-data-table-tr`
+      }, row.map(({
+        column,
+        colSpan,
+        rowSpan,
+        isLast
+      }) => {
         var _a, _b;
         const key = getColKey(column);
-        const { ellipsis } = column;
+        const {
+          ellipsis
+        } = column;
         const createColumnVNode = () => {
           if (column.type === "selection") {
-            return column.multiple !== false ? h(
-              Fragment,
-              null,
-              h(NCheckbox, { key: currentPage, privateInsideTable: true, checked: allRowsChecked, indeterminate: someRowsChecked, disabled: headerCheckboxDisabled, onUpdateChecked: handleCheckboxUpdateChecked }),
-              checkOptions ? h(SelectionMenu, { clsPrefix: mergedClsPrefix }) : null
-            ) : null;
+            return column.multiple !== false ? h(Fragment, null, h(NCheckbox, {
+              key: currentPage,
+              privateInsideTable: true,
+              checked: allRowsChecked,
+              indeterminate: someRowsChecked,
+              disabled: headerCheckboxDisabled,
+              onUpdateChecked: handleCheckboxUpdateChecked
+            }), checkOptions ? h(SelectionMenu, {
+              clsPrefix: mergedClsPrefix
+            }) : null) : null;
           }
-          return h(
-            Fragment,
-            null,
-            h(
-              "div",
-              { class: `${mergedClsPrefix}-data-table-th__title-wrapper` },
-              h("div", { class: `${mergedClsPrefix}-data-table-th__title` }, ellipsis === true || ellipsis && !ellipsis.tooltip ? h("div", { class: `${mergedClsPrefix}-data-table-th__ellipsis` }, renderTitle(column)) : ellipsis && typeof ellipsis === "object" ? h(NEllipsis, Object.assign({}, ellipsis, { theme: mergedTheme.peers.Ellipsis, themeOverrides: mergedTheme.peerOverrides.Ellipsis }), {
-                default: () => renderTitle(column)
-              }) : renderTitle(column)),
-              isColumnSortable(column) ? h(SortButton, { column }) : null
-            ),
-            isColumnFilterable(column) ? h(FilterButton, { column, options: column.filterOptions }) : null,
-            isColumnResizable(column) ? h(ResizeButton, { onResizeStart: () => {
+          return h(Fragment, null, h("div", {
+            class: `${mergedClsPrefix}-data-table-th__title-wrapper`
+          }, h("div", {
+            class: `${mergedClsPrefix}-data-table-th__title`
+          }, ellipsis === true || ellipsis && !ellipsis.tooltip ? h("div", {
+            class: `${mergedClsPrefix}-data-table-th__ellipsis`
+          }, renderTitle(column)) : ellipsis && typeof ellipsis === "object" ? h(NEllipsis, Object.assign({}, ellipsis, {
+            theme: mergedTheme.peers.Ellipsis,
+            themeOverrides: mergedTheme.peerOverrides.Ellipsis
+          }), {
+            default: () => renderTitle(column)
+          }) : renderTitle(column)), isColumnSortable(column) ? h(SortButton, {
+            column
+          }) : null), isColumnFilterable(column) ? h(FilterButton, {
+            column,
+            options: column.filterOptions
+          }) : null, isColumnResizable(column) ? h(ResizeButton, {
+            onResizeStart: () => {
               handleColumnResizeStart(column);
-            }, onResize: (displacementX) => {
+            },
+            onResize: (displacementX) => {
               handleColumnResize(column, displacementX);
-            } }) : null
-          );
+            }
+          }) : null);
         };
         const leftFixed = key in fixedColumnLeftMap;
         const rightFixed = key in fixedColumnRightMap;
-        return h("th", { ref: (el) => cellElsRef[key] = el, key, style: {
-          textAlign: column.titleAlign || column.align,
-          left: pxfy((_a = fixedColumnLeftMap[key]) === null || _a === void 0 ? void 0 : _a.start),
-          right: pxfy((_b = fixedColumnRightMap[key]) === null || _b === void 0 ? void 0 : _b.start)
-        }, colspan: colSpan, rowspan: rowSpan, "data-col-key": key, class: [
-          `${mergedClsPrefix}-data-table-th`,
-          (leftFixed || rightFixed) && `${mergedClsPrefix}-data-table-th--fixed-${leftFixed ? "left" : "right"}`,
-          {
+        return h("th", {
+          ref: (el) => cellElsRef[key] = el,
+          key,
+          style: {
+            textAlign: column.titleAlign || column.align,
+            left: pxfy((_a = fixedColumnLeftMap[key]) === null || _a === void 0 ? void 0 : _a.start),
+            right: pxfy((_b = fixedColumnRightMap[key]) === null || _b === void 0 ? void 0 : _b.start)
+          },
+          colspan: colSpan,
+          rowspan: rowSpan,
+          "data-col-key": key,
+          class: [`${mergedClsPrefix}-data-table-th`, (leftFixed || rightFixed) && `${mergedClsPrefix}-data-table-th--fixed-${leftFixed ? "left" : "right"}`, {
             [`${mergedClsPrefix}-data-table-th--hover`]: isColumnSorting(column, mergedSortState),
             [`${mergedClsPrefix}-data-table-th--filterable`]: isColumnFilterable(column),
             [`${mergedClsPrefix}-data-table-th--sortable`]: isColumnSortable(column),
             [`${mergedClsPrefix}-data-table-th--selection`]: column.type === "selection",
             [`${mergedClsPrefix}-data-table-th--last`]: isLast
-          },
-          column.className
-        ], onClick: column.type !== "selection" && column.type !== "expand" && !("children" in column) ? (e) => {
-          handleColHeaderClick(e, column);
-        } : void 0 }, createColumnVNode());
+          }, column.className],
+          onClick: column.type !== "selection" && column.type !== "expand" && !("children" in column) ? (e) => {
+            handleColHeaderClick(e, column);
+          } : void 0
+        }, createColumnVNode());
       }));
     }));
     if (!discrete) {
       return theadVNode;
     }
-    const { handleTableHeaderScroll, scrollX } = this;
-    return h(
-      "div",
-      { class: `${mergedClsPrefix}-data-table-base-table-header`, onScroll: handleTableHeaderScroll },
-      h(
-        "table",
-        { ref: "body", class: `${mergedClsPrefix}-data-table-table`, style: {
-          minWidth: formatLength(scrollX),
-          tableLayout: mergedTableLayout
-        } },
-        h("colgroup", null, cols.map((col) => h("col", { key: col.key, style: col.style }))),
-        theadVNode
-      )
-    );
+    const {
+      handleTableHeaderScroll,
+      scrollX
+    } = this;
+    return h("div", {
+      class: `${mergedClsPrefix}-data-table-base-table-header`,
+      onScroll: handleTableHeaderScroll
+    }, h("table", {
+      ref: "body",
+      class: `${mergedClsPrefix}-data-table-table`,
+      style: {
+        minWidth: formatLength(scrollX),
+        tableLayout: mergedTableLayout
+      }
+    }, h("colgroup", null, cols.map((col) => h("col", {
+      key: col.key,
+      style: col.style
+    }))), theadVNode));
   }
 });
 const Cell = defineComponent({
@@ -4023,27 +4854,51 @@ const Cell = defineComponent({
     renderCell: Function
   },
   render() {
-    const { isSummary, column, row, renderCell } = this;
+    var _a;
+    const {
+      isSummary,
+      column,
+      row,
+      renderCell
+    } = this;
     let cell;
-    const { render: render7, key, ellipsis } = column;
+    const {
+      render: render7,
+      key,
+      ellipsis
+    } = column;
     if (render7 && !isSummary) {
       cell = render7(row, this.index);
     } else {
       if (isSummary) {
-        cell = row[key].value;
+        cell = (_a = row[key]) === null || _a === void 0 ? void 0 : _a.value;
       } else {
         cell = renderCell ? renderCell(get(row, key), row, column) : get(row, key);
       }
     }
     if (ellipsis) {
       if (typeof ellipsis === "object") {
-        const { mergedTheme } = this;
+        const {
+          mergedTheme
+        } = this;
         if (column.ellipsisComponent === "performant-ellipsis") {
-          return h(NPerformantEllipsis, Object.assign({}, ellipsis, { theme: mergedTheme.peers.Ellipsis, themeOverrides: mergedTheme.peerOverrides.Ellipsis }), { default: () => cell });
+          return h(NPerformantEllipsis, Object.assign({}, ellipsis, {
+            theme: mergedTheme.peers.Ellipsis,
+            themeOverrides: mergedTheme.peerOverrides.Ellipsis
+          }), {
+            default: () => cell
+          });
         }
-        return h(NEllipsis, Object.assign({}, ellipsis, { theme: mergedTheme.peers.Ellipsis, themeOverrides: mergedTheme.peerOverrides.Ellipsis }), { default: () => cell });
+        return h(NEllipsis, Object.assign({}, ellipsis, {
+          theme: mergedTheme.peers.Ellipsis,
+          themeOverrides: mergedTheme.peerOverrides.Ellipsis
+        }), {
+          default: () => cell
+        });
       } else {
-        return h("span", { class: `${this.clsPrefix}-data-table-td__ellipsis` }, cell);
+        return h("span", {
+          class: `${this.clsPrefix}-data-table-td__ellipsis`
+        }, cell);
       }
     }
     return cell;
@@ -4067,25 +4922,33 @@ const ExpandTrigger = defineComponent({
     }
   },
   render() {
-    const { clsPrefix } = this;
-    return h(
-      "div",
-      { class: [
-        `${clsPrefix}-data-table-expand-trigger`,
-        this.expanded && `${clsPrefix}-data-table-expand-trigger--expanded`
-      ], onClick: this.onClick, onMousedown: (e) => {
+    const {
+      clsPrefix
+    } = this;
+    return h("div", {
+      class: [`${clsPrefix}-data-table-expand-trigger`, this.expanded && `${clsPrefix}-data-table-expand-trigger--expanded`],
+      onClick: this.onClick,
+      onMousedown: (e) => {
         e.preventDefault();
-      } },
-      h(NIconSwitchTransition, null, {
-        default: () => {
-          return this.loading ? h(NBaseLoading, { key: "loading", clsPrefix: this.clsPrefix, radius: 85, strokeWidth: 15, scale: 0.88 }) : this.renderExpandIcon ? this.renderExpandIcon({
-            expanded: this.expanded
-          }) : h(NBaseIcon, { clsPrefix, key: "base-icon" }, {
-            default: () => h(ChevronRightIcon, null)
-          });
-        }
-      })
-    );
+      }
+    }, h(NIconSwitchTransition, null, {
+      default: () => {
+        return this.loading ? h(NBaseLoading, {
+          key: "loading",
+          clsPrefix: this.clsPrefix,
+          radius: 85,
+          strokeWidth: 15,
+          scale: 0.88
+        }) : this.renderExpandIcon ? this.renderExpandIcon({
+          expanded: this.expanded
+        }) : h(NBaseIcon, {
+          clsPrefix,
+          key: "base-icon"
+        }, {
+          default: () => h(ChevronRightIcon, null)
+        });
+      }
+    }));
   }
 });
 const RenderSafeCheckbox = defineComponent({
@@ -4111,8 +4974,16 @@ const RenderSafeCheckbox = defineComponent({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dataTableInjectionKey);
     return () => {
-      const { rowKey } = props;
-      return h(NCheckbox, { privateInsideTable: true, disabled: props.disabled, indeterminate: mergedInderminateRowKeySetRef.value.has(rowKey), checked: mergedCheckedRowKeySetRef.value.has(rowKey), onUpdateChecked: props.onUpdateChecked });
+      const {
+        rowKey
+      } = props;
+      return h(NCheckbox, {
+        privateInsideTable: true,
+        disabled: props.disabled,
+        indeterminate: mergedInderminateRowKeySetRef.value.has(rowKey),
+        checked: mergedCheckedRowKeySetRef.value.has(rowKey),
+        onUpdateChecked: props.onUpdateChecked
+      });
     };
   }
 });
@@ -4139,8 +5010,15 @@ const RenderSafeRadio = defineComponent({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dataTableInjectionKey);
     return () => {
-      const { rowKey } = props;
-      return h(NRadio, { name: componentId, disabled: props.disabled, checked: mergedCheckedRowKeySetRef.value.has(rowKey), onUpdateChecked: props.onUpdateChecked });
+      const {
+        rowKey
+      } = props;
+      return h(NRadio, {
+        name: componentId,
+        disabled: props.disabled,
+        checked: mergedCheckedRowKeySetRef.value.has(rowKey),
+        onUpdateChecked: props.onUpdateChecked
+      });
     };
   }
 });
@@ -4168,7 +5046,9 @@ function flatten(rowInfos, expandedRowKeys) {
   }
   rowInfos.forEach((rowInfo) => {
     fRows.push(rowInfo);
-    const { children } = rowInfo.tmNode;
+    const {
+      children
+    } = rowInfo.tmNode;
     if (children && expandedRowKeys.has(rowInfo.key)) {
       traverse(children, rowInfo.index);
     }
@@ -4193,13 +5073,27 @@ const VirtualListItemWrapper = defineComponent({
     onMouseleave: Function
   },
   render() {
-    const { clsPrefix, id, cols, onMouseenter, onMouseleave } = this;
-    return h(
-      "table",
-      { style: { tableLayout: "fixed" }, class: `${clsPrefix}-data-table-table`, onMouseenter, onMouseleave },
-      h("colgroup", null, cols.map((col) => h("col", { key: col.key, style: col.style }))),
-      h("tbody", { "data-n-id": id, class: `${clsPrefix}-data-table-tbody` }, this.$slots)
-    );
+    const {
+      clsPrefix,
+      id,
+      cols,
+      onMouseenter,
+      onMouseleave
+    } = this;
+    return h("table", {
+      style: {
+        tableLayout: "fixed"
+      },
+      class: `${clsPrefix}-data-table-table`,
+      onMouseenter,
+      onMouseleave
+    }, h("colgroup", null, cols.map((col) => h("col", {
+      key: col.key,
+      style: col.style
+    }))), h("tbody", {
+      "data-n-id": id,
+      class: `${clsPrefix}-data-table-tbody`
+    }, this.$slots));
   }
 });
 const TableBody = defineComponent({
@@ -4318,7 +5212,9 @@ const TableBody = defineComponent({
     }
     function getScrollContainer() {
       if (!shouldDisplaySomeTablePartRef.value) {
-        const { value: emptyEl } = emptyElRef;
+        const {
+          value: emptyEl
+        } = emptyElRef;
         if (emptyEl) {
           return emptyEl;
         } else {
@@ -4328,7 +5224,9 @@ const TableBody = defineComponent({
       if (virtualScrollRef.value) {
         return virtualListContainer();
       }
-      const { value } = scrollbarInstRef;
+      const {
+        value
+      } = scrollbarInstRef;
       if (value)
         return value.containerRef;
       return null;
@@ -4337,7 +5235,9 @@ const TableBody = defineComponent({
       var _a;
       if (loadingKeySetRef.value.has(key))
         return;
-      const { value: mergedExpandedRowKeys } = mergedExpandedRowKeysRef;
+      const {
+        value: mergedExpandedRowKeys
+      } = mergedExpandedRowKeysRef;
       const index = mergedExpandedRowKeys.indexOf(key);
       const nextExpandedKeys = Array.from(mergedExpandedRowKeys);
       if (~index) {
@@ -4347,7 +5247,9 @@ const TableBody = defineComponent({
         if (tmNode && !tmNode.isLeaf && !tmNode.shallowLoaded) {
           loadingKeySetRef.value.add(key);
           void ((_a = onLoadRef.value) === null || _a === void 0 ? void 0 : _a.call(onLoadRef, tmNode.rawNode).then(() => {
-            const { value: futureMergedExpandedRowKeys } = mergedExpandedRowKeysRef;
+            const {
+              value: futureMergedExpandedRowKeys
+            } = mergedExpandedRowKeysRef;
             const futureNextExpandedKeys = Array.from(futureMergedExpandedRowKeys);
             const index2 = futureNextExpandedKeys.indexOf(key);
             if (!~index2) {
@@ -4367,12 +5269,16 @@ const TableBody = defineComponent({
       hoverKeyRef.value = null;
     }
     function virtualListContainer() {
-      const { value } = virtualListRef;
-      return value === null || value === void 0 ? void 0 : value.listElRef;
+      const {
+        value
+      } = virtualListRef;
+      return (value === null || value === void 0 ? void 0 : value.listElRef) || null;
     }
     function virtualListContent() {
-      const { value } = virtualListRef;
-      return value === null || value === void 0 ? void 0 : value.itemsElRef;
+      const {
+        value
+      } = virtualListRef;
+      return (value === null || value === void 0 ? void 0 : value.itemsElRef) || null;
     }
     function handleVirtualListScroll(e) {
       var _a;
@@ -4381,7 +5287,9 @@ const TableBody = defineComponent({
     }
     function handleVirtualListResize(e) {
       var _a;
-      const { onResize } = props;
+      const {
+        onResize
+      } = props;
       if (onResize)
         onResize(e);
       (_a = scrollbarInstRef.value) === null || _a === void 0 ? void 0 : _a.sync();
@@ -4397,32 +5305,39 @@ const TableBody = defineComponent({
         }
       }
     };
-    const style2 = c([
-      ({ props: cProps }) => {
-        const createActiveLeftFixedStyle = (leftActiveFixedColKey) => {
-          if (leftActiveFixedColKey === null)
-            return null;
-          return c(`[data-n-id="${cProps.componentId}"] [data-col-key="${leftActiveFixedColKey}"]::after`, { boxShadow: "var(--n-box-shadow-after)" });
-        };
-        const createActiveRightFixedStyle = (rightActiveFixedColKey) => {
-          if (rightActiveFixedColKey === null)
-            return null;
-          return c(`[data-n-id="${cProps.componentId}"] [data-col-key="${rightActiveFixedColKey}"]::before`, { boxShadow: "var(--n-box-shadow-before)" });
-        };
-        return c([
-          createActiveLeftFixedStyle(cProps.leftActiveFixedColKey),
-          createActiveRightFixedStyle(cProps.rightActiveFixedColKey),
-          cProps.leftActiveFixedChildrenColKeys.map((leftActiveFixedColKey) => createActiveLeftFixedStyle(leftActiveFixedColKey)),
-          cProps.rightActiveFixedChildrenColKeys.map((rightActiveFixedColKey) => createActiveRightFixedStyle(rightActiveFixedColKey))
-        ]);
-      }
-    ]);
+    const style2 = c([({
+      props: cProps
+    }) => {
+      const createActiveLeftFixedStyle = (leftActiveFixedColKey) => {
+        if (leftActiveFixedColKey === null)
+          return null;
+        return c(`[data-n-id="${cProps.componentId}"] [data-col-key="${leftActiveFixedColKey}"]::after`, {
+          boxShadow: "var(--n-box-shadow-after)"
+        });
+      };
+      const createActiveRightFixedStyle = (rightActiveFixedColKey) => {
+        if (rightActiveFixedColKey === null)
+          return null;
+        return c(`[data-n-id="${cProps.componentId}"] [data-col-key="${rightActiveFixedColKey}"]::before`, {
+          boxShadow: "var(--n-box-shadow-before)"
+        });
+      };
+      return c([createActiveLeftFixedStyle(cProps.leftActiveFixedColKey), createActiveRightFixedStyle(cProps.rightActiveFixedColKey), cProps.leftActiveFixedChildrenColKeys.map((leftActiveFixedColKey) => createActiveLeftFixedStyle(leftActiveFixedColKey)), cProps.rightActiveFixedChildrenColKeys.map((rightActiveFixedColKey) => createActiveRightFixedStyle(rightActiveFixedColKey))]);
+    }]);
     let fixedStyleMounted = false;
     watchEffect(() => {
-      const { value: leftActiveFixedColKey } = leftActiveFixedColKeyRef;
-      const { value: leftActiveFixedChildrenColKeys } = leftActiveFixedChildrenColKeysRef;
-      const { value: rightActiveFixedColKey } = rightActiveFixedColKeyRef;
-      const { value: rightActiveFixedChildrenColKeys } = rightActiveFixedChildrenColKeysRef;
+      const {
+        value: leftActiveFixedColKey
+      } = leftActiveFixedColKeyRef;
+      const {
+        value: leftActiveFixedChildrenColKeys
+      } = leftActiveFixedChildrenColKeysRef;
+      const {
+        value: rightActiveFixedColKey
+      } = rightActiveFixedColKeyRef;
+      const {
+        value: rightActiveFixedChildrenColKeys
+      } = rightActiveFixedChildrenColKeysRef;
       if (!fixedStyleMounted && leftActiveFixedColKey === null && rightActiveFixedColKey === null) {
         return;
       }
@@ -4464,7 +5379,9 @@ const TableBody = defineComponent({
       shouldDisplaySomeTablePart: shouldDisplaySomeTablePartRef,
       empty: emptyRef,
       paginatedDataAndInfo: computed(() => {
-        const { value: striped } = stripedRef;
+        const {
+          value: striped
+        } = stripedRef;
         let hasChildren = false;
         const data = paginatedDataRef.value.map(striped ? (tmNode, index) => {
           if (!tmNode.isLeaf)
@@ -4524,7 +5441,18 @@ const TableBody = defineComponent({
     }, exposedMethods);
   },
   render() {
-    const { mergedTheme, scrollX, mergedClsPrefix, virtualScroll, maxHeight, mergedTableLayout, flexHeight, loadingKeySet, onResize, setHeaderScrollLeft } = this;
+    const {
+      mergedTheme,
+      scrollX,
+      mergedClsPrefix,
+      virtualScroll,
+      maxHeight,
+      mergedTableLayout,
+      flexHeight,
+      loadingKeySet,
+      onResize,
+      setHeaderScrollLeft
+    } = this;
     const scrollable = scrollX !== void 0 || maxHeight !== void 0 || flexHeight;
     const isBasicAutoLayout = !scrollable && mergedTableLayout === "auto";
     const xScrollable = scrollX !== void 0 || isBasicAutoLayout;
@@ -4533,14 +5461,60 @@ const TableBody = defineComponent({
     };
     if (scrollX)
       contentStyle.width = "100%";
-    const tableNode = h(NScrollbar, Object.assign({}, this.scrollbarProps, { ref: "scrollbarInstRef", scrollable: scrollable || isBasicAutoLayout, class: `${mergedClsPrefix}-data-table-base-table-body`, style: this.bodyStyle, theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, contentStyle, container: virtualScroll ? this.virtualListContainer : void 0, content: virtualScroll ? this.virtualListContent : void 0, horizontalRailStyle: { zIndex: 3 }, verticalRailStyle: { zIndex: 3 }, xScrollable, onScroll: virtualScroll ? void 0 : this.handleTableBodyScroll, internalOnUpdateScrollLeft: setHeaderScrollLeft, onResize }), {
+    const tableNode = h(NScrollbar, Object.assign({}, this.scrollbarProps, {
+      ref: "scrollbarInstRef",
+      scrollable: scrollable || isBasicAutoLayout,
+      class: `${mergedClsPrefix}-data-table-base-table-body`,
+      style: !this.empty ? this.bodyStyle : void 0,
+      theme: mergedTheme.peers.Scrollbar,
+      themeOverrides: mergedTheme.peerOverrides.Scrollbar,
+      contentStyle,
+      container: virtualScroll ? this.virtualListContainer : void 0,
+      content: virtualScroll ? this.virtualListContent : void 0,
+      horizontalRailStyle: {
+        zIndex: 3
+      },
+      verticalRailStyle: {
+        zIndex: 3
+      },
+      xScrollable,
+      onScroll: virtualScroll ? void 0 : this.handleTableBodyScroll,
+      internalOnUpdateScrollLeft: setHeaderScrollLeft,
+      onResize
+    }), {
       default: () => {
         const cordToPass = {};
         const cordKey = {};
-        const { cols, paginatedDataAndInfo, mergedTheme: mergedTheme2, fixedColumnLeftMap, fixedColumnRightMap, currentPage, rowClassName, mergedSortState, mergedExpandedRowKeySet, stickyExpandedRows, componentId, childTriggerColIndex, expandable, rowProps, handleMouseleaveTable, renderExpand, summary, handleCheckboxUpdateChecked, handleRadioUpdateChecked, handleUpdateExpanded } = this;
-        const { length: colCount } = cols;
+        const {
+          cols,
+          paginatedDataAndInfo,
+          mergedTheme: mergedTheme2,
+          fixedColumnLeftMap,
+          fixedColumnRightMap,
+          currentPage,
+          rowClassName,
+          mergedSortState,
+          mergedExpandedRowKeySet,
+          stickyExpandedRows,
+          componentId,
+          childTriggerColIndex,
+          expandable,
+          rowProps,
+          handleMouseleaveTable,
+          renderExpand,
+          summary,
+          handleCheckboxUpdateChecked,
+          handleRadioUpdateChecked,
+          handleUpdateExpanded
+        } = this;
+        const {
+          length: colCount
+        } = cols;
         let mergedData;
-        const { data: paginatedData, hasChildren } = paginatedDataAndInfo;
+        const {
+          data: paginatedData,
+          hasChildren
+        } = paginatedDataAndInfo;
         const mergedPaginationData = hasChildren ? flatten(paginatedData, mergedExpandedRowKeySet) : paginatedData;
         if (summary) {
           const summaryRows = summary(this.rawPaginatedData);
@@ -4570,13 +5544,16 @@ const TableBody = defineComponent({
         } else {
           mergedData = mergedPaginationData;
         }
-        const indentStyle = hasChildren ? { width: pxfy(this.indent) } : void 0;
+        const indentStyle = hasChildren ? {
+          width: pxfy(this.indent)
+        } : void 0;
         const displayedData = [];
         mergedData.forEach((rowInfo) => {
           if (renderExpand && mergedExpandedRowKeySet.has(rowInfo.key) && (!expandable || expandable(rowInfo.tmNode.rawNode))) {
             displayedData.push(rowInfo, {
               isExpandedRow: true,
               key: `${rowInfo.key}-expand`,
+              // solve key repeat of the expanded row
               tmNode: rowInfo.tmNode,
               index: rowInfo.index
             });
@@ -4584,45 +5561,60 @@ const TableBody = defineComponent({
             displayedData.push(rowInfo);
           }
         });
-        const { length: rowCount } = displayedData;
+        const {
+          length: rowCount
+        } = displayedData;
         const rowIndexToKey = {};
-        paginatedData.forEach(({ tmNode }, rowIndex) => {
+        paginatedData.forEach(({
+          tmNode
+        }, rowIndex) => {
           rowIndexToKey[rowIndex] = tmNode.key;
         });
         const bodyWidth = stickyExpandedRows ? this.bodyWidth : null;
         const bodyWidthPx = bodyWidth === null ? void 0 : `${bodyWidth}px`;
         const renderRow = (rowInfo, displayedRowIndex, isVirtual) => {
-          const { index: actualRowIndex } = rowInfo;
+          const {
+            index: actualRowIndex
+          } = rowInfo;
           if ("isExpandedRow" in rowInfo) {
-            const { tmNode: { key, rawNode } } = rowInfo;
-            return h(
-              "tr",
-              { class: `${mergedClsPrefix}-data-table-tr ${mergedClsPrefix}-data-table-tr--expanded`, key: `${key}__expand` },
-              h("td", { class: [
-                `${mergedClsPrefix}-data-table-td`,
-                `${mergedClsPrefix}-data-table-td--last-col`,
-                displayedRowIndex + 1 === rowCount && `${mergedClsPrefix}-data-table-td--last-row`
-              ], colspan: colCount }, stickyExpandedRows ? h("div", { class: `${mergedClsPrefix}-data-table-expand`, style: {
+            const {
+              tmNode: {
+                key,
+                rawNode
+              }
+            } = rowInfo;
+            return h("tr", {
+              class: `${mergedClsPrefix}-data-table-tr ${mergedClsPrefix}-data-table-tr--expanded`,
+              key: `${key}__expand`
+            }, h("td", {
+              class: [`${mergedClsPrefix}-data-table-td`, `${mergedClsPrefix}-data-table-td--last-col`, displayedRowIndex + 1 === rowCount && `${mergedClsPrefix}-data-table-td--last-row`],
+              colspan: colCount
+            }, stickyExpandedRows ? h("div", {
+              class: `${mergedClsPrefix}-data-table-expand`,
+              style: {
                 width: bodyWidthPx
-              } }, renderExpand(rawNode, actualRowIndex)) : renderExpand(rawNode, actualRowIndex))
-            );
+              }
+            }, renderExpand(rawNode, actualRowIndex)) : renderExpand(rawNode, actualRowIndex)));
           }
           const isSummary = "isSummaryRow" in rowInfo;
           const striped = !isSummary && rowInfo.striped;
-          const { tmNode, key: rowKey } = rowInfo;
-          const { rawNode: rowData } = tmNode;
+          const {
+            tmNode,
+            key: rowKey
+          } = rowInfo;
+          const {
+            rawNode: rowData
+          } = tmNode;
           const expanded = mergedExpandedRowKeySet.has(rowKey);
           const props = rowProps ? rowProps(rowData, actualRowIndex) : void 0;
           const mergedRowClassName = typeof rowClassName === "string" ? rowClassName : createRowClassName(rowData, actualRowIndex, rowClassName);
-          const row = h("tr", Object.assign({ onMouseenter: () => {
-            this.hoverKey = rowKey;
-          }, key: rowKey, class: [
-            `${mergedClsPrefix}-data-table-tr`,
-            isSummary && `${mergedClsPrefix}-data-table-tr--summary`,
-            striped && `${mergedClsPrefix}-data-table-tr--striped`,
-            expanded && `${mergedClsPrefix}-data-table-tr--expanded`,
-            mergedRowClassName
-          ] }, props), cols.map((col, colIndex) => {
+          const row = h("tr", Object.assign({
+            onMouseenter: () => {
+              this.hoverKey = rowKey;
+            },
+            key: rowKey,
+            class: [`${mergedClsPrefix}-data-table-tr`, isSummary && `${mergedClsPrefix}-data-table-tr--summary`, striped && `${mergedClsPrefix}-data-table-tr--striped`, expanded && `${mergedClsPrefix}-data-table-tr--expanded`, mergedRowClassName]
+          }, props), cols.map((col, colIndex) => {
             var _a, _b, _c, _d, _e;
             if (displayedRowIndex in cordToPass) {
               const cordOfRowToPass = cordToPass[displayedRowIndex];
@@ -4632,9 +5624,14 @@ const TableBody = defineComponent({
                 return null;
               }
             }
-            const { column } = col;
+            const {
+              column
+            } = col;
             const colKey = getColKey(col);
-            const { rowSpan, colSpan } = column;
+            const {
+              rowSpan,
+              colSpan
+            } = column;
             const mergedColSpan = isSummary ? ((_a = rowInfo.tmNode.rawNode[colKey]) === null || _a === void 0 ? void 0 : _a.colSpan) || 1 : colSpan ? colSpan(rowData, actualRowIndex) : 1;
             const mergedRowSpan = isSummary ? ((_b = rowInfo.tmNode.rawNode[colKey]) === null || _b === void 0 ? void 0 : _b.rowSpan) || 1 : rowSpan ? rowSpan(rowData, actualRowIndex) : 1;
             const isLastCol = colIndex + mergedColSpan === colCount;
@@ -4663,97 +5660,139 @@ const TableBody = defineComponent({
               }
             }
             const hoverKey = isCrossRowTd ? this.hoverKey : null;
-            const { cellProps } = column;
+            const {
+              cellProps
+            } = column;
             const resolvedCellProps = cellProps === null || cellProps === void 0 ? void 0 : cellProps(rowData, actualRowIndex);
             const indentOffsetStyle = {
               "--indent-offset": ""
             };
-            return h(
-              "td",
-              Object.assign({}, resolvedCellProps, { key: colKey, style: [
-                {
-                  textAlign: column.align || void 0,
-                  left: pxfy((_c = fixedColumnLeftMap[colKey]) === null || _c === void 0 ? void 0 : _c.start),
-                  right: pxfy((_d = fixedColumnRightMap[colKey]) === null || _d === void 0 ? void 0 : _d.start)
-                },
-                indentOffsetStyle,
-                (resolvedCellProps === null || resolvedCellProps === void 0 ? void 0 : resolvedCellProps.style) || ""
-              ], colspan: mergedColSpan, rowspan: isVirtual ? void 0 : mergedRowSpan, "data-col-key": colKey, class: [
-                `${mergedClsPrefix}-data-table-td`,
-                column.className,
-                resolvedCellProps === null || resolvedCellProps === void 0 ? void 0 : resolvedCellProps.class,
-                isSummary && `${mergedClsPrefix}-data-table-td--summary`,
-                (hoverKey !== null && cordKey[displayedRowIndex][colIndex].includes(hoverKey) || isColumnSorting(column, mergedSortState)) && `${mergedClsPrefix}-data-table-td--hover`,
-                column.fixed && `${mergedClsPrefix}-data-table-td--fixed-${column.fixed}`,
-                column.align && `${mergedClsPrefix}-data-table-td--${column.align}-align`,
-                column.type === "selection" && `${mergedClsPrefix}-data-table-td--selection`,
-                column.type === "expand" && `${mergedClsPrefix}-data-table-td--expand`,
-                isLastCol && `${mergedClsPrefix}-data-table-td--last-col`,
-                isLastRow && `${mergedClsPrefix}-data-table-td--last-row`
-              ] }),
-              hasChildren && colIndex === childTriggerColIndex ? [
-                repeat(indentOffsetStyle["--indent-offset"] = isSummary ? 0 : rowInfo.tmNode.level, h("div", { class: `${mergedClsPrefix}-data-table-indent`, style: indentStyle })),
-                isSummary || rowInfo.tmNode.isLeaf ? h("div", { class: `${mergedClsPrefix}-data-table-expand-placeholder` }) : h(ExpandTrigger, { class: `${mergedClsPrefix}-data-table-expand-trigger`, clsPrefix: mergedClsPrefix, expanded, renderExpandIcon: this.renderExpandIcon, loading: loadingKeySet.has(rowInfo.key), onClick: () => {
-                  handleUpdateExpanded(rowKey, rowInfo.tmNode);
-                } })
-              ] : null,
-              column.type === "selection" ? !isSummary ? column.multiple === false ? h(RenderSafeRadio, { key: currentPage, rowKey, disabled: rowInfo.tmNode.disabled, onUpdateChecked: () => {
+            return h("td", Object.assign({}, resolvedCellProps, {
+              key: colKey,
+              style: [{
+                textAlign: column.align || void 0,
+                left: pxfy((_c = fixedColumnLeftMap[colKey]) === null || _c === void 0 ? void 0 : _c.start),
+                right: pxfy((_d = fixedColumnRightMap[colKey]) === null || _d === void 0 ? void 0 : _d.start)
+              }, indentOffsetStyle, (resolvedCellProps === null || resolvedCellProps === void 0 ? void 0 : resolvedCellProps.style) || ""],
+              colspan: mergedColSpan,
+              rowspan: isVirtual ? void 0 : mergedRowSpan,
+              "data-col-key": colKey,
+              class: [`${mergedClsPrefix}-data-table-td`, column.className, resolvedCellProps === null || resolvedCellProps === void 0 ? void 0 : resolvedCellProps.class, isSummary && `${mergedClsPrefix}-data-table-td--summary`, (hoverKey !== null && cordKey[displayedRowIndex][colIndex].includes(hoverKey) || isColumnSorting(column, mergedSortState)) && `${mergedClsPrefix}-data-table-td--hover`, column.fixed && `${mergedClsPrefix}-data-table-td--fixed-${column.fixed}`, column.align && `${mergedClsPrefix}-data-table-td--${column.align}-align`, column.type === "selection" && `${mergedClsPrefix}-data-table-td--selection`, column.type === "expand" && `${mergedClsPrefix}-data-table-td--expand`, isLastCol && `${mergedClsPrefix}-data-table-td--last-col`, isLastRow && `${mergedClsPrefix}-data-table-td--last-row`]
+            }), hasChildren && colIndex === childTriggerColIndex ? [repeat(indentOffsetStyle["--indent-offset"] = isSummary ? 0 : rowInfo.tmNode.level, h("div", {
+              class: `${mergedClsPrefix}-data-table-indent`,
+              style: indentStyle
+            })), isSummary || rowInfo.tmNode.isLeaf ? h("div", {
+              class: `${mergedClsPrefix}-data-table-expand-placeholder`
+            }) : h(ExpandTrigger, {
+              class: `${mergedClsPrefix}-data-table-expand-trigger`,
+              clsPrefix: mergedClsPrefix,
+              expanded,
+              renderExpandIcon: this.renderExpandIcon,
+              loading: loadingKeySet.has(rowInfo.key),
+              onClick: () => {
+                handleUpdateExpanded(rowKey, rowInfo.tmNode);
+              }
+            })] : null, column.type === "selection" ? !isSummary ? column.multiple === false ? h(RenderSafeRadio, {
+              key: currentPage,
+              rowKey,
+              disabled: rowInfo.tmNode.disabled,
+              onUpdateChecked: () => {
                 handleRadioUpdateChecked(rowInfo.tmNode);
-              } }) : h(RenderSafeCheckbox, { key: currentPage, rowKey, disabled: rowInfo.tmNode.disabled, onUpdateChecked: (checked, e) => {
+              }
+            }) : h(RenderSafeCheckbox, {
+              key: currentPage,
+              rowKey,
+              disabled: rowInfo.tmNode.disabled,
+              onUpdateChecked: (checked, e) => {
                 handleCheckboxUpdateChecked(rowInfo.tmNode, checked, e.shiftKey);
-              } }) : null : column.type === "expand" ? !isSummary ? !column.expandable || ((_e = column.expandable) === null || _e === void 0 ? void 0 : _e.call(column, rowData)) ? h(ExpandTrigger, { clsPrefix: mergedClsPrefix, expanded, renderExpandIcon: this.renderExpandIcon, onClick: () => {
+              }
+            }) : null : column.type === "expand" ? !isSummary ? !column.expandable || ((_e = column.expandable) === null || _e === void 0 ? void 0 : _e.call(column, rowData)) ? h(ExpandTrigger, {
+              clsPrefix: mergedClsPrefix,
+              expanded,
+              renderExpandIcon: this.renderExpandIcon,
+              onClick: () => {
                 handleUpdateExpanded(rowKey, null);
-              } }) : null : null : h(Cell, { clsPrefix: mergedClsPrefix, index: actualRowIndex, row: rowData, column, isSummary, mergedTheme: mergedTheme2, renderCell: this.renderCell })
-            );
+              }
+            }) : null : null : h(Cell, {
+              clsPrefix: mergedClsPrefix,
+              index: actualRowIndex,
+              row: rowData,
+              column,
+              isSummary,
+              mergedTheme: mergedTheme2,
+              renderCell: this.renderCell
+            }));
           }));
           return row;
         };
         if (!virtualScroll) {
-          return h(
-            "table",
-            { class: `${mergedClsPrefix}-data-table-table`, onMouseleave: handleMouseleaveTable, style: {
+          return h("table", {
+            class: `${mergedClsPrefix}-data-table-table`,
+            onMouseleave: handleMouseleaveTable,
+            style: {
               tableLayout: this.mergedTableLayout
-            } },
-            h("colgroup", null, cols.map((col) => h("col", { key: col.key, style: col.style }))),
-            this.showHeader ? h(TableHeader, { discrete: false }) : null,
-            !this.empty ? h("tbody", { "data-n-id": componentId, class: `${mergedClsPrefix}-data-table-tbody` }, displayedData.map((rowInfo, displayedRowIndex) => {
-              return renderRow(rowInfo, displayedRowIndex, false);
-            })) : null
-          );
+            }
+          }, h("colgroup", null, cols.map((col) => h("col", {
+            key: col.key,
+            style: col.style
+          }))), this.showHeader ? h(TableHeader, {
+            discrete: false
+          }) : null, !this.empty ? h("tbody", {
+            "data-n-id": componentId,
+            class: `${mergedClsPrefix}-data-table-tbody`
+          }, displayedData.map((rowInfo, displayedRowIndex) => {
+            return renderRow(rowInfo, displayedRowIndex, false);
+          })) : null);
         } else {
-          return h(VVirtualList, { ref: "virtualListRef", items: displayedData, itemSize: 28, visibleItemsTag: VirtualListItemWrapper, visibleItemsProps: {
-            clsPrefix: mergedClsPrefix,
-            id: componentId,
-            cols,
-            onMouseleave: handleMouseleaveTable
-          }, showScrollbar: false, onResize: this.handleVirtualListResize, onScroll: this.handleVirtualListScroll, itemsStyle: contentStyle, itemResizable: true }, {
-            default: ({ item, index }) => renderRow(item, index, true)
+          return h(VVirtualList, {
+            ref: "virtualListRef",
+            items: displayedData,
+            itemSize: 28,
+            visibleItemsTag: VirtualListItemWrapper,
+            visibleItemsProps: {
+              clsPrefix: mergedClsPrefix,
+              id: componentId,
+              cols,
+              onMouseleave: handleMouseleaveTable
+            },
+            showScrollbar: false,
+            onResize: this.handleVirtualListResize,
+            onScroll: this.handleVirtualListScroll,
+            itemsStyle: contentStyle,
+            itemResizable: true
+          }, {
+            default: ({
+              item,
+              index
+            }) => renderRow(item, index, true)
           });
         }
       }
     });
     if (this.empty) {
-      const createEmptyNode = () => h("div", { class: [
-        `${mergedClsPrefix}-data-table-empty`,
-        this.loading && `${mergedClsPrefix}-data-table-empty--hide`
-      ], style: this.bodyStyle, ref: "emptyElRef" }, resolveSlot(this.dataTableSlots.empty, () => [
-        h(NEmpty, { theme: this.mergedTheme.peers.Empty, themeOverrides: this.mergedTheme.peerOverrides.Empty })
-      ]));
+      const createEmptyNode = () => h("div", {
+        class: [`${mergedClsPrefix}-data-table-empty`, this.loading && `${mergedClsPrefix}-data-table-empty--hide`],
+        style: this.bodyStyle,
+        ref: "emptyElRef"
+      }, resolveSlot(this.dataTableSlots.empty, () => [h(NEmpty, {
+        theme: this.mergedTheme.peers.Empty,
+        themeOverrides: this.mergedTheme.peerOverrides.Empty
+      })]));
       if (this.shouldDisplaySomeTablePart) {
-        return h(
-          Fragment,
-          null,
-          tableNode,
-          createEmptyNode()
-        );
+        return h(Fragment, null, tableNode, createEmptyNode());
       } else {
-        return h(VResizeObserver, { onResize: this.onResize }, { default: createEmptyNode });
+        return h(VResizeObserver, {
+          onResize: this.onResize
+        }, {
+          default: createEmptyNode
+        });
       }
     }
     return tableNode;
   }
 });
 const MainTable = defineComponent({
+  name: "MainTable",
   setup() {
     const {
       mergedClsPrefixRef,
@@ -4784,14 +5823,18 @@ const MainTable = defineComponent({
       }
     }
     function getHeaderElement() {
-      const { value } = headerInstRef;
+      const {
+        value
+      } = headerInstRef;
       if (value) {
         return value.$el;
       }
       return null;
     }
     function getBodyElement() {
-      const { value } = bodyInstRef;
+      const {
+        value
+      } = bodyInstRef;
       if (value) {
         return value.getScrollContainer();
       }
@@ -4806,7 +5849,9 @@ const MainTable = defineComponent({
       }
     };
     watchEffect(() => {
-      const { value: selfEl } = selfElRef;
+      const {
+        value: selfEl
+      } = selfElRef;
       if (!selfEl)
         return;
       const transitionDisabledClass = `${mergedClsPrefixRef.value}-data-table-base-table--transition-disabled`;
@@ -4830,22 +5875,38 @@ const MainTable = defineComponent({
     }, exposedMethods);
   },
   render() {
-    const { mergedClsPrefix, maxHeight, flexHeight } = this;
+    const {
+      mergedClsPrefix,
+      maxHeight,
+      flexHeight
+    } = this;
     const headerInBody = maxHeight === void 0 && !flexHeight;
-    return h(
-      "div",
-      { class: `${mergedClsPrefix}-data-table-base-table`, ref: "selfElRef" },
-      headerInBody ? null : h(TableHeader, { ref: "headerInstRef" }),
-      h(TableBody, { ref: "bodyInstRef", bodyStyle: this.bodyStyle, showHeader: headerInBody, flexHeight, onResize: this.handleBodyResize })
-    );
+    return h("div", {
+      class: `${mergedClsPrefix}-data-table-base-table`,
+      ref: "selfElRef"
+    }, headerInBody ? null : h(TableHeader, {
+      ref: "headerInstRef"
+    }), h(TableBody, {
+      ref: "bodyInstRef",
+      bodyStyle: this.bodyStyle,
+      showHeader: headerInBody,
+      flexHeight,
+      onResize: this.handleBodyResize
+    }));
   }
 });
 function useCheck(props, data) {
-  const { paginatedDataRef, treeMateRef, selectionColumnRef } = data;
+  const {
+    paginatedDataRef,
+    treeMateRef,
+    selectionColumnRef
+  } = data;
   const uncontrolledCheckedRowKeysRef = ref(props.defaultCheckedRowKeys);
   const mergedCheckState = computed(() => {
     var _a;
-    const { checkedRowKeys } = props;
+    const {
+      checkedRowKeys
+    } = props;
     const sourceKeys = checkedRowKeys === void 0 ? uncontrolledCheckedRowKeysRef.value : checkedRowKeys;
     if (((_a = selectionColumnRef.value) === null || _a === void 0 ? void 0 : _a.multiple) === false) {
       return {
@@ -4867,9 +5928,14 @@ function useCheck(props, data) {
     return new Set(mergedInderminateRowKeysRef.value);
   });
   const countOfCurrentPageCheckedRowsRef = computed(() => {
-    const { value: mergedCheckedRowKeySet } = mergedCheckedRowKeySetRef;
+    const {
+      value: mergedCheckedRowKeySet
+    } = mergedCheckedRowKeySetRef;
     return paginatedDataRef.value.reduce((total, tmNode) => {
-      const { key, disabled } = tmNode;
+      const {
+        key,
+        disabled
+      } = tmNode;
       return total + (!disabled && mergedCheckedRowKeySet.has(key) ? 1 : 0);
     }, 0);
   });
@@ -4877,34 +5943,57 @@ function useCheck(props, data) {
     return paginatedDataRef.value.filter((item) => item.disabled).length;
   });
   const someRowsCheckedRef = computed(() => {
-    const { length } = paginatedDataRef.value;
-    const { value: mergedInderminateRowKeySet } = mergedInderminateRowKeySetRef;
+    const {
+      length
+    } = paginatedDataRef.value;
+    const {
+      value: mergedInderminateRowKeySet
+    } = mergedInderminateRowKeySetRef;
     return countOfCurrentPageCheckedRowsRef.value > 0 && countOfCurrentPageCheckedRowsRef.value < length - countOfCurrentPageDisabledRowsRef.value || paginatedDataRef.value.some((rowData) => mergedInderminateRowKeySet.has(rowData.key));
   });
   const allRowsCheckedRef = computed(() => {
-    const { length } = paginatedDataRef.value;
+    const {
+      length
+    } = paginatedDataRef.value;
     return countOfCurrentPageCheckedRowsRef.value !== 0 && countOfCurrentPageCheckedRowsRef.value === length - countOfCurrentPageDisabledRowsRef.value;
   });
   const headerCheckboxDisabledRef = computed(() => {
     return paginatedDataRef.value.length === 0;
   });
   function doUpdateCheckedRowKeys(keys, row, action) {
-    const { "onUpdate:checkedRowKeys": _onUpdateCheckedRowKeys, onUpdateCheckedRowKeys, onCheckedRowKeysChange } = props;
+    const {
+      "onUpdate:checkedRowKeys": _onUpdateCheckedRowKeys,
+      onUpdateCheckedRowKeys,
+      onCheckedRowKeysChange
+    } = props;
     const rows = [];
-    const { value: { getNode } } = treeMateRef;
+    const {
+      value: {
+        getNode
+      }
+    } = treeMateRef;
     keys.forEach((key) => {
       var _a;
       const row2 = (_a = getNode(key)) === null || _a === void 0 ? void 0 : _a.rawNode;
       rows.push(row2);
     });
     if (_onUpdateCheckedRowKeys) {
-      call(_onUpdateCheckedRowKeys, keys, rows, { row, action });
+      call(_onUpdateCheckedRowKeys, keys, rows, {
+        row,
+        action
+      });
     }
     if (onUpdateCheckedRowKeys) {
-      call(onUpdateCheckedRowKeys, keys, rows, { row, action });
+      call(onUpdateCheckedRowKeys, keys, rows, {
+        row,
+        action
+      });
     }
     if (onCheckedRowKeysChange) {
-      call(onCheckedRowKeysChange, keys, rows, { row, action });
+      call(onCheckedRowKeysChange, keys, rows, {
+        row,
+        action
+      });
     }
     uncontrolledCheckedRowKeysRef.value = keys;
   }
@@ -4929,7 +6018,9 @@ function useCheck(props, data) {
     }).checkedKeys, rowInfo, "uncheck");
   }
   function doCheckAll(checkWholeTable = false) {
-    const { value: column } = selectionColumnRef;
+    const {
+      value: column
+    } = selectionColumnRef;
     if (!column || props.loading)
       return;
     const rowKeysToCheck = [];
@@ -4944,7 +6035,9 @@ function useCheck(props, data) {
     }).checkedKeys, void 0, "checkAll");
   }
   function doUncheckAll(checkWholeTable = false) {
-    const { value: column } = selectionColumnRef;
+    const {
+      value: column
+    } = selectionColumnRef;
     if (!column || props.loading)
       return;
     const rowKeysToUncheck = [];
@@ -4994,7 +6087,13 @@ function getDefaultSorterFn(columnKey) {
   return (row1, row2) => {
     const value1 = row1[columnKey];
     const value2 = row2[columnKey];
-    if (typeof value1 === "number" && typeof value2 === "number") {
+    if (value1 === null || value1 === void 0) {
+      if (value2 === null || value2 === void 0)
+        return 0;
+      return -1;
+    } else if (value2 === null || value2 === void 0) {
+      return 1;
+    } else if (typeof value1 === "number" && typeof value2 === "number") {
       return value1 - value2;
     } else if (typeof value1 === "string" && typeof value2 === "string") {
       return value1.localeCompare(value2);
@@ -5002,7 +6101,10 @@ function getDefaultSorterFn(columnKey) {
     return 0;
   };
 }
-function useSorter(props, { dataRelatedColsRef, filteredDataRef }) {
+function useSorter(props, {
+  dataRelatedColsRef,
+  filteredDataRef
+}) {
   const defaultSortState = [];
   dataRelatedColsRef.value.forEach((column) => {
     var _a;
@@ -5033,7 +6135,9 @@ function useSorter(props, { dataRelatedColsRef, filteredDataRef }) {
     }
     if (columnsWithControlledSortOrder.length)
       return [];
-    const { value: uncontrolledSortState } = uncontrolledSortStateRef;
+    const {
+      value: uncontrolledSortState
+    } = uncontrolledSortStateRef;
     if (Array.isArray(uncontrolledSortState)) {
       return uncontrolledSortState;
     } else if (uncontrolledSortState) {
@@ -5053,7 +6157,11 @@ function useSorter(props, { dataRelatedColsRef, filteredDataRef }) {
       return filteredData.sort((tmNode1, tmNode2) => {
         let compareResult = 0;
         activeSorters.some((sorterState) => {
-          const { columnKey, sorter, order } = sorterState;
+          const {
+            columnKey,
+            sorter,
+            order
+          } = sorterState;
           const compareFn = getSortFunction(sorter, columnKey);
           if (compareFn && order) {
             compareResult = compareFn(tmNode1.rawNode, tmNode2.rawNode);
@@ -5085,7 +6193,11 @@ function useSorter(props, { dataRelatedColsRef, filteredDataRef }) {
     doUpdateSorter(nextSorterState);
   }
   function doUpdateSorter(sortState) {
-    const { "onUpdate:sorter": _onUpdateSorter, onUpdateSorter, onSorterChange } = props;
+    const {
+      "onUpdate:sorter": _onUpdateSorter,
+      onUpdateSorter,
+      onSorterChange
+    } = props;
     if (_onUpdateSorter) {
       call(_onUpdateSorter, sortState);
     }
@@ -5131,7 +6243,9 @@ function useSorter(props, { dataRelatedColsRef, filteredDataRef }) {
     deriveNextSorter
   };
 }
-function useTableData(props, { dataRelatedColsRef }) {
+function useTableData(props, {
+  dataRelatedColsRef
+}) {
   const selectionColumnRef = computed(() => {
     const getSelectionColumn = (cols) => {
       for (let i = 0; i < cols.length; ++i) {
@@ -5147,7 +6261,9 @@ function useTableData(props, { dataRelatedColsRef }) {
     return getSelectionColumn(props.columns);
   });
   const treeMateRef = computed(() => {
-    const { childrenKey } = props;
+    const {
+      childrenKey
+    } = props;
     return createTreeMate(props.data, {
       ignoreEmptyChildren: true,
       getKey: props.rowKey,
@@ -5162,8 +6278,12 @@ function useTableData(props, { dataRelatedColsRef }) {
     });
   });
   const childTriggerColIndexRef = useMemo(() => {
-    const { columns } = props;
-    const { length } = columns;
+    const {
+      columns
+    } = props;
+    const {
+      length
+    } = columns;
     let firstContentfulColIndex = null;
     for (let i = 0; i < length; ++i) {
       const col = columns[i];
@@ -5177,8 +6297,11 @@ function useTableData(props, { dataRelatedColsRef }) {
     return firstContentfulColIndex || 0;
   });
   const uncontrolledFilterStateRef = ref({});
-  const uncontrolledCurrentPageRef = ref(1);
-  const uncontrolledPageSizeRef = ref(10);
+  const {
+    pagination
+  } = props;
+  const uncontrolledCurrentPageRef = ref(pagination ? pagination.defaultPage || 1 : 1);
+  const uncontrolledPageSizeRef = ref(getDefaultPageSize(pagination));
   const mergedFilterStateRef = computed(() => {
     const columnsWithControlledFilter = dataRelatedColsRef.value.filter((column) => {
       return column.filterOptionValues !== void 0 || column.filterOptionValue !== void 0;
@@ -5199,11 +6322,17 @@ function useTableData(props, { dataRelatedColsRef }) {
   });
   const filteredDataRef = computed(() => {
     const mergedFilterState = mergedFilterStateRef.value;
-    const { columns } = props;
+    const {
+      columns
+    } = props;
     function createDefaultFilter(columnKey) {
       return (filterOptionValue, row) => !!~String(row[columnKey]).indexOf(String(filterOptionValue));
     }
-    const { value: { treeNodes: data } } = treeMateRef;
+    const {
+      value: {
+        treeNodes: data
+      }
+    } = treeMateRef;
     const columnEntries = [];
     columns.forEach((column) => {
       if (column.type === "selection" || column.type === "expand" || "children" in column) {
@@ -5212,7 +6341,9 @@ function useTableData(props, { dataRelatedColsRef }) {
       columnEntries.push([column.key, column]);
     });
     return data ? data.filter((tmNode) => {
-      const { rawNode: row } = tmNode;
+      const {
+        rawNode: row
+      } = tmNode;
       for (const [columnKey, column] of columnEntries) {
         let activeFilterOptionValues = mergedFilterState[columnKey];
         if (activeFilterOptionValues == null)
@@ -5240,7 +6371,13 @@ function useTableData(props, { dataRelatedColsRef }) {
       return true;
     }) : [];
   });
-  const { sortedDataRef, deriveNextSorter, mergedSortStateRef, sort, clearSorter } = useSorter(props, {
+  const {
+    sortedDataRef,
+    deriveNextSorter,
+    mergedSortStateRef,
+    sort,
+    clearSorter
+  } = useSorter(props, {
     dataRelatedColsRef,
     filteredDataRef
   });
@@ -5258,16 +6395,20 @@ function useTableData(props, { dataRelatedColsRef }) {
     }
   });
   const controlledCurrentPageRef = computed(() => {
-    const { pagination } = props;
-    if (pagination === false)
+    const {
+      pagination: pagination2
+    } = props;
+    if (pagination2 === false)
       return void 0;
-    return pagination.page;
+    return pagination2.page;
   });
   const controlledPageSizeRef = computed(() => {
-    const { pagination } = props;
-    if (pagination === false)
+    const {
+      pagination: pagination2
+    } = props;
+    if (pagination2 === false)
       return void 0;
-    return pagination.pageSize;
+    return pagination2.pageSize;
   });
   const _mergedCurrentPageRef = useMergedState(controlledCurrentPageRef, uncontrolledCurrentPageRef);
   const mergedPageSizeRef = useMergedState(controlledPageSizeRef, uncontrolledPageSizeRef);
@@ -5276,9 +6417,13 @@ function useTableData(props, { dataRelatedColsRef }) {
     return props.remote ? page2 : Math.max(1, Math.min(Math.ceil(filteredDataRef.value.length / mergedPageSizeRef.value), page2));
   });
   const mergedPageCountRef = computed(() => {
-    const { pagination } = props;
-    if (pagination) {
-      const { pageCount } = pagination;
+    const {
+      pagination: pagination2
+    } = props;
+    if (pagination2) {
+      const {
+        pageCount
+      } = pagination2;
       if (pageCount !== void 0)
         return pageCount;
     }
@@ -5297,9 +6442,15 @@ function useTableData(props, { dataRelatedColsRef }) {
     return paginatedDataRef.value.map((tmNode) => tmNode.rawNode);
   });
   function mergedOnUpdatePage(page2) {
-    const { pagination } = props;
-    if (pagination) {
-      const { onChange, "onUpdate:page": _onUpdatePage, onUpdatePage } = pagination;
+    const {
+      pagination: pagination2
+    } = props;
+    if (pagination2) {
+      const {
+        onChange,
+        "onUpdate:page": _onUpdatePage,
+        onUpdatePage
+      } = pagination2;
       if (onChange)
         call(onChange, page2);
       if (onUpdatePage)
@@ -5310,9 +6461,15 @@ function useTableData(props, { dataRelatedColsRef }) {
     }
   }
   function mergedOnUpdatePageSize(pageSize) {
-    const { pagination } = props;
-    if (pagination) {
-      const { onPageSizeChange, "onUpdate:pageSize": _onUpdatePageSize, onUpdatePageSize } = pagination;
+    const {
+      pagination: pagination2
+    } = props;
+    if (pagination2) {
+      const {
+        onPageSizeChange,
+        "onUpdate:pageSize": _onUpdatePageSize,
+        onUpdatePageSize
+      } = pagination2;
       if (onPageSizeChange)
         call(onPageSizeChange, pageSize);
       if (onUpdatePageSize)
@@ -5324,9 +6481,13 @@ function useTableData(props, { dataRelatedColsRef }) {
   }
   const mergedItemCountRef = computed(() => {
     if (props.remote) {
-      const { pagination } = props;
-      if (pagination) {
-        const { itemCount } = pagination;
+      const {
+        pagination: pagination2
+      } = props;
+      if (pagination2) {
+        const {
+          itemCount
+        } = pagination2;
         if (itemCount !== void 0)
           return itemCount;
       }
@@ -5353,7 +6514,11 @@ function useTableData(props, { dataRelatedColsRef }) {
     });
   });
   function doUpdatePage(page2) {
-    const { "onUpdate:page": _onUpdatePage, onPageChange, onUpdatePage } = props;
+    const {
+      "onUpdate:page": _onUpdatePage,
+      onPageChange,
+      onUpdatePage
+    } = props;
     if (onUpdatePage)
       call(onUpdatePage, page2);
     if (_onUpdatePage)
@@ -5363,7 +6528,11 @@ function useTableData(props, { dataRelatedColsRef }) {
     uncontrolledCurrentPageRef.value = page2;
   }
   function doUpdatePageSize(pageSize) {
-    const { "onUpdate:pageSize": _onUpdatePageSize, onPageSizeChange, onUpdatePageSize } = props;
+    const {
+      "onUpdate:pageSize": _onUpdatePageSize,
+      onPageSizeChange,
+      onUpdatePageSize
+    } = props;
     if (onPageSizeChange)
       call(onPageSizeChange, pageSize);
     if (onUpdatePageSize)
@@ -5373,7 +6542,11 @@ function useTableData(props, { dataRelatedColsRef }) {
     uncontrolledPageSizeRef.value = pageSize;
   }
   function doUpdateFilters(filters2, sourceColumn) {
-    const { onUpdateFilters, "onUpdate:filters": _onUpdateFilters, onFiltersChange } = props;
+    const {
+      onUpdateFilters,
+      "onUpdate:filters": _onUpdateFilters,
+      onFiltersChange
+    } = props;
     if (onUpdateFilters)
       call(onUpdateFilters, filters2, sourceColumn);
     if (_onUpdateFilters)
@@ -5432,7 +6605,11 @@ function useTableData(props, { dataRelatedColsRef }) {
     sort
   };
 }
-function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef }) {
+function useScroll(props, {
+  mainTableInstRef,
+  mergedCurrentPageRef,
+  bodyWidthRef
+}) {
   let lastScrollLeft = 0;
   const scrollPartRef = ref();
   const leftActiveFixedColKeyRef = ref(null);
@@ -5453,7 +6630,10 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     let left = 0;
     function traverse(cols) {
       cols.forEach((col) => {
-        const positionInfo = { start: left, end: 0 };
+        const positionInfo = {
+          start: left,
+          end: 0
+        };
         columns[getColKey(col)] = positionInfo;
         if ("children" in col) {
           traverse(col.children);
@@ -5473,7 +6653,10 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     function traverse(cols) {
       for (let i = cols.length - 1; i >= 0; --i) {
         const col = cols[i];
-        const positionInfo = { start: right, end: 0 };
+        const positionInfo = {
+          start: right,
+          end: 0
+        };
         columns[getColKey(col)] = positionInfo;
         if ("children" in col) {
           traverse(col.children);
@@ -5489,9 +6672,13 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
   });
   function deriveActiveLeftFixedColumn() {
     var _a, _b;
-    const { value: leftFixedColumns } = leftFixedColumnsRef;
+    const {
+      value: leftFixedColumns
+    } = leftFixedColumnsRef;
     let leftWidth = 0;
-    const { value: fixedColumnLeftMap } = fixedColumnLeftMapRef;
+    const {
+      value: fixedColumnLeftMap
+    } = fixedColumnLeftMapRef;
     let leftActiveFixedColKey = null;
     for (let i = 0; i < leftFixedColumns.length; ++i) {
       const key = getColKey(leftFixedColumns[i]);
@@ -5518,14 +6705,20 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
   }
   function deriveActiveRightFixedColumn() {
     var _a, _b;
-    const { value: rightFixedColumns } = rightFixedColumnsRef;
+    const {
+      value: rightFixedColumns
+    } = rightFixedColumnsRef;
     const scrollWidth = Number(props.scrollX);
-    const { value: tableWidth } = bodyWidthRef;
+    const {
+      value: tableWidth
+    } = bodyWidthRef;
     if (tableWidth === null)
       return;
     let rightWidth = 0;
     let rightActiveFixedColKey = null;
-    const { value: fixedColumnRightMap } = fixedColumnRightMapRef;
+    const {
+      value: fixedColumnRightMap
+    } = fixedColumnRightMapRef;
     for (let i = rightFixedColumns.length - 1; i >= 0; --i) {
       const key = getColKey(rightFixedColumns[i]);
       if (Math.round(lastScrollLeft + (((_a = fixedColumnRightMap[key]) === null || _a === void 0 ? void 0 : _a.start) || 0) + tableWidth - rightWidth) < scrollWidth) {
@@ -5555,7 +6748,9 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     };
   }
   function scrollMainTableBodyToTop() {
-    const { body } = getScrollElements();
+    const {
+      body
+    } = getScrollElements();
     if (body) {
       body.scrollTop = 0;
     }
@@ -5577,10 +6772,15 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     }
   }
   function syncScrollState() {
-    const { header, body } = getScrollElements();
+    const {
+      header,
+      body
+    } = getScrollElements();
     if (!body)
       return;
-    const { value: tableWidth } = bodyWidthRef;
+    const {
+      value: tableWidth
+    } = bodyWidthRef;
     if (tableWidth === null)
       return;
     if (props.maxHeight || props.flexHeight) {
@@ -5604,7 +6804,9 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     deriveActiveRightFixedChildrenColumns();
   }
   function setHeaderScrollLeft(left) {
-    const { header } = getScrollElements();
+    const {
+      header
+    } = getScrollElements();
     if (!header)
       return;
     header.scrollLeft = left;
@@ -5777,7 +6979,10 @@ function useExpand(props, treeMateRef) {
   const stickyExpandedRowsRef = toRef(props, "stickyExpandedRows");
   const mergedExpandedRowKeysRef = useMergedState(controlledExpandedRowKeysRef, uncontrolledExpandedRowKeysRef);
   function doUpdateExpandedRowKeys(expandedKeys) {
-    const { onUpdateExpandedRowKeys, "onUpdate:expandedRowKeys": _onUpdateExpandedRowKeys } = props;
+    const {
+      onUpdateExpandedRowKeys,
+      "onUpdate:expandedRowKeys": _onUpdateExpandedRowKeys
+    } = props;
     if (onUpdateExpandedRowKeys) {
       call(onUpdateExpandedRowKeys, expandedKeys);
     }
@@ -6188,10 +7393,20 @@ const NDataTable = defineComponent({
   name: "DataTable",
   alias: ["AdvancedTable"],
   props: dataTableProps,
-  setup(props, { slots }) {
-    const { mergedBorderedRef, mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+  setup(props, {
+    slots
+  }) {
+    const {
+      mergedBorderedRef,
+      mergedClsPrefixRef,
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig(props);
+    const rtlEnabledRef = useRtl("DataTable", mergedRtlRef, mergedClsPrefixRef);
     const mergedBottomBorderedRef = computed(() => {
-      const { bottomBordered } = props;
+      const {
+        bottomBordered
+      } = props;
       if (mergedBorderedRef.value)
         return false;
       if (bottomBordered !== void 0)
@@ -6201,21 +7416,99 @@ const NDataTable = defineComponent({
     const themeRef = useTheme("DataTable", "-data-table", style$2, dataTableLight, props, mergedClsPrefixRef);
     const bodyWidthRef = ref(null);
     const mainTableInstRef = ref(null);
-    const { getResizableWidth, clearResizableWidth, doUpdateResizableWidth } = useResizable();
-    const { rowsRef, colsRef, dataRelatedColsRef, hasEllipsisRef } = useGroupHeader(props, getResizableWidth);
-    const { treeMateRef, mergedCurrentPageRef, paginatedDataRef, rawPaginatedDataRef, selectionColumnRef, hoverKeyRef, mergedPaginationRef, mergedFilterStateRef, mergedSortStateRef, childTriggerColIndexRef, doUpdatePage, doUpdateFilters, onUnstableColumnResize, deriveNextSorter, filter, filters, clearFilter, clearFilters, clearSorter, page, sort } = useTableData(props, { dataRelatedColsRef });
-    const { doCheckAll, doUncheckAll, doCheck, doUncheck, headerCheckboxDisabledRef, someRowsCheckedRef, allRowsCheckedRef, mergedCheckedRowKeySetRef, mergedInderminateRowKeySetRef } = useCheck(props, {
+    const {
+      getResizableWidth,
+      clearResizableWidth,
+      doUpdateResizableWidth
+    } = useResizable();
+    const {
+      rowsRef,
+      colsRef,
+      dataRelatedColsRef,
+      hasEllipsisRef
+    } = useGroupHeader(props, getResizableWidth);
+    const downloadCsv = (options) => {
+      const {
+        fileName = "data.csv",
+        keepOriginalData = false
+      } = options || {};
+      const data = keepOriginalData ? props.data : rawPaginatedDataRef.value;
+      const csvData = generateCsv(props.columns, data);
+      const blob = new Blob([csvData], {
+        type: "text/csv;charset=utf-8"
+      });
+      const downloadUrl = URL.createObjectURL(blob);
+      download(downloadUrl, fileName.endsWith(".csv") ? fileName : `${fileName}.csv`);
+      URL.revokeObjectURL(downloadUrl);
+    };
+    const {
+      treeMateRef,
+      mergedCurrentPageRef,
+      paginatedDataRef,
+      rawPaginatedDataRef,
+      selectionColumnRef,
+      hoverKeyRef,
+      mergedPaginationRef,
+      mergedFilterStateRef,
+      mergedSortStateRef,
+      childTriggerColIndexRef,
+      doUpdatePage,
+      doUpdateFilters,
+      onUnstableColumnResize,
+      deriveNextSorter,
+      filter,
+      filters,
+      clearFilter,
+      clearFilters,
+      clearSorter,
+      page,
+      sort
+    } = useTableData(props, {
+      dataRelatedColsRef
+    });
+    const {
+      doCheckAll,
+      doUncheckAll,
+      doCheck,
+      doUncheck,
+      headerCheckboxDisabledRef,
+      someRowsCheckedRef,
+      allRowsCheckedRef,
+      mergedCheckedRowKeySetRef,
+      mergedInderminateRowKeySetRef
+    } = useCheck(props, {
       selectionColumnRef,
       treeMateRef,
       paginatedDataRef
     });
-    const { stickyExpandedRowsRef, mergedExpandedRowKeysRef, renderExpandRef, expandableRef, doUpdateExpandedRowKeys } = useExpand(props, treeMateRef);
-    const { handleTableBodyScroll, handleTableHeaderScroll, syncScrollState, setHeaderScrollLeft, leftActiveFixedColKeyRef, leftActiveFixedChildrenColKeysRef, rightActiveFixedColKeyRef, rightActiveFixedChildrenColKeysRef, leftFixedColumnsRef, rightFixedColumnsRef, fixedColumnLeftMapRef, fixedColumnRightMapRef } = useScroll(props, {
+    const {
+      stickyExpandedRowsRef,
+      mergedExpandedRowKeysRef,
+      renderExpandRef,
+      expandableRef,
+      doUpdateExpandedRowKeys
+    } = useExpand(props, treeMateRef);
+    const {
+      handleTableBodyScroll,
+      handleTableHeaderScroll,
+      syncScrollState,
+      setHeaderScrollLeft,
+      leftActiveFixedColKeyRef,
+      leftActiveFixedChildrenColKeysRef,
+      rightActiveFixedColKeyRef,
+      rightActiveFixedChildrenColKeysRef,
+      leftFixedColumnsRef,
+      rightFixedColumnsRef,
+      fixedColumnLeftMapRef,
+      fixedColumnRightMapRef
+    } = useScroll(props, {
       bodyWidthRef,
       mainTableInstRef,
       mergedCurrentPageRef
     });
-    const { localeRef } = useLocale("DataTable");
+    const {
+      localeRef
+    } = useLocale("DataTable");
     const mergedTableLayoutRef = computed(() => {
       if (props.virtualScroll || props.flexHeight || props.maxHeight !== void 0 || hasEllipsisRef.value) {
         return "fixed";
@@ -6267,12 +7560,20 @@ const NDataTable = defineComponent({
       rowPropsRef: toRef(props, "rowProps"),
       stripedRef: toRef(props, "striped"),
       checkOptionsRef: computed(() => {
-        const { value: selectionColumn } = selectionColumnRef;
+        const {
+          value: selectionColumn
+        } = selectionColumnRef;
         return selectionColumn === null || selectionColumn === void 0 ? void 0 : selectionColumn.options;
       }),
       rawPaginatedDataRef,
       filterMenuCssVarsRef: computed(() => {
-        const { self: { actionDividerColor, actionPadding, actionButtonMargin } } = themeRef.value;
+        const {
+          self: {
+            actionDividerColor,
+            actionPadding,
+            actionButtonMargin
+          }
+        } = themeRef.value;
         return {
           "--n-action-padding": actionPadding,
           "--n-action-button-margin": actionButtonMargin,
@@ -6314,14 +7615,63 @@ const NDataTable = defineComponent({
       page,
       sort,
       clearFilter,
+      downloadCsv,
       scrollTo: (arg0, arg1) => {
         var _a;
         (_a = mainTableInstRef.value) === null || _a === void 0 ? void 0 : _a.scrollTo(arg0, arg1);
       }
     };
     const cssVarsRef = computed(() => {
-      const { size } = props;
-      const { common: { cubicBezierEaseInOut }, self: { borderColor, tdColorHover, thColor, thColorHover, tdColor, tdTextColor, thTextColor, thFontWeight, thButtonColorHover, thIconColor, thIconColorActive, filterSize, borderRadius, lineHeight, tdColorModal, thColorModal, borderColorModal, thColorHoverModal, tdColorHoverModal, borderColorPopover, thColorPopover, tdColorPopover, tdColorHoverPopover, thColorHoverPopover, paginationMargin, emptyPadding, boxShadowAfter, boxShadowBefore, sorterSize, resizableContainerSize, resizableSize, loadingColor, loadingSize, opacityLoading, tdColorStriped, tdColorStripedModal, tdColorStripedPopover, [createKey("fontSize", size)]: fontSize, [createKey("thPadding", size)]: thPadding, [createKey("tdPadding", size)]: tdPadding } } = themeRef.value;
+      const {
+        size
+      } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut
+        },
+        self: {
+          borderColor,
+          tdColorHover,
+          thColor,
+          thColorHover,
+          tdColor,
+          tdTextColor,
+          thTextColor,
+          thFontWeight,
+          thButtonColorHover,
+          thIconColor,
+          thIconColorActive,
+          filterSize,
+          borderRadius,
+          lineHeight,
+          tdColorModal,
+          thColorModal,
+          borderColorModal,
+          thColorHoverModal,
+          tdColorHoverModal,
+          borderColorPopover,
+          thColorPopover,
+          tdColorPopover,
+          tdColorHoverPopover,
+          thColorHoverPopover,
+          paginationMargin,
+          emptyPadding,
+          boxShadowAfter,
+          boxShadowBefore,
+          sorterSize,
+          resizableContainerSize,
+          resizableSize,
+          loadingColor,
+          loadingSize,
+          opacityLoading,
+          tdColorStriped,
+          tdColorStripedModal,
+          tdColorStripedPopover,
+          [createKey("fontSize", size)]: fontSize,
+          [createKey("thPadding", size)]: thPadding,
+          [createKey("tdPadding", size)]: tdPadding
+        }
+      } = themeRef.value;
       return {
         "--n-font-size": fontSize,
         "--n-th-padding": thPadding,
@@ -6373,48 +7723,69 @@ const NDataTable = defineComponent({
       if (props.paginateSinglePage)
         return true;
       const mergedPagination = mergedPaginationRef.value;
-      const { pageCount } = mergedPagination;
+      const {
+        pageCount
+      } = mergedPagination;
       if (pageCount !== void 0)
         return pageCount > 1;
       return mergedPagination.itemCount && mergedPagination.pageSize && mergedPagination.itemCount > mergedPagination.pageSize;
     });
-    return Object.assign({ mainTableInstRef, mergedClsPrefix: mergedClsPrefixRef, mergedTheme: themeRef, paginatedData: paginatedDataRef, mergedBordered: mergedBorderedRef, mergedBottomBordered: mergedBottomBorderedRef, mergedPagination: mergedPaginationRef, mergedShowPagination: mergedShowPaginationRef, cssVars: inlineThemeDisabled ? void 0 : cssVarsRef, themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass, onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender }, exposedMethods);
+    return Object.assign({
+      mainTableInstRef,
+      mergedClsPrefix: mergedClsPrefixRef,
+      rtlEnabled: rtlEnabledRef,
+      mergedTheme: themeRef,
+      paginatedData: paginatedDataRef,
+      mergedBordered: mergedBorderedRef,
+      mergedBottomBordered: mergedBottomBorderedRef,
+      mergedPagination: mergedPaginationRef,
+      mergedShowPagination: mergedShowPaginationRef,
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    }, exposedMethods);
   },
   render() {
-    const { mergedClsPrefix, themeClass, onRender, $slots, spinProps } = this;
+    const {
+      mergedClsPrefix,
+      themeClass,
+      onRender,
+      $slots,
+      spinProps
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-data-table`,
-        themeClass,
-        {
-          [`${mergedClsPrefix}-data-table--bordered`]: this.mergedBordered,
-          [`${mergedClsPrefix}-data-table--bottom-bordered`]: this.mergedBottomBordered,
-          [`${mergedClsPrefix}-data-table--single-line`]: this.singleLine,
-          [`${mergedClsPrefix}-data-table--single-column`]: this.singleColumn,
-          [`${mergedClsPrefix}-data-table--loading`]: this.loading,
-          [`${mergedClsPrefix}-data-table--flex-height`]: this.flexHeight
-        }
-      ], style: this.cssVars },
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-data-table-wrapper` },
-        h(MainTable, { ref: "mainTableInstRef" })
-      ),
-      this.mergedShowPagination ? h(
-        "div",
-        { class: `${mergedClsPrefix}-data-table__pagination` },
-        h(NPagination, Object.assign({ theme: this.mergedTheme.peers.Pagination, themeOverrides: this.mergedTheme.peerOverrides.Pagination, disabled: this.loading }, this.mergedPagination))
-      ) : null,
-      h(Transition, { name: "fade-in-scale-up-transition" }, {
-        default: () => {
-          return this.loading ? h("div", { class: `${mergedClsPrefix}-data-table-loading-wrapper` }, resolveSlot($slots.loading, () => [
-            h(NBaseLoading, Object.assign({ clsPrefix: mergedClsPrefix, strokeWidth: 20 }, spinProps))
-          ])) : null;
-        }
-      })
-    );
+    return h("div", {
+      class: [`${mergedClsPrefix}-data-table`, this.rtlEnabled && `${mergedClsPrefix}-data-table--rtl`, themeClass, {
+        [`${mergedClsPrefix}-data-table--bordered`]: this.mergedBordered,
+        [`${mergedClsPrefix}-data-table--bottom-bordered`]: this.mergedBottomBordered,
+        [`${mergedClsPrefix}-data-table--single-line`]: this.singleLine,
+        [`${mergedClsPrefix}-data-table--single-column`]: this.singleColumn,
+        [`${mergedClsPrefix}-data-table--loading`]: this.loading,
+        [`${mergedClsPrefix}-data-table--flex-height`]: this.flexHeight
+      }],
+      style: this.cssVars
+    }, h("div", {
+      class: `${mergedClsPrefix}-data-table-wrapper`
+    }, h(MainTable, {
+      ref: "mainTableInstRef"
+    })), this.mergedShowPagination ? h("div", {
+      class: `${mergedClsPrefix}-data-table__pagination`
+    }, h(NPagination, Object.assign({
+      theme: this.mergedTheme.peers.Pagination,
+      themeOverrides: this.mergedTheme.peerOverrides.Pagination,
+      disabled: this.loading
+    }, this.mergedPagination))) : null, h(Transition, {
+      name: "fade-in-scale-up-transition"
+    }, {
+      default: () => {
+        return this.loading ? h("div", {
+          class: `${mergedClsPrefix}-data-table-loading-wrapper`
+        }, resolveSlot($slots.loading, () => [h(NBaseLoading, Object.assign({
+          clsPrefix: mergedClsPrefix,
+          strokeWidth: 20
+        }, spinProps))])) : null;
+      }
+    }));
   }
 });
 function useLoadingBar() {
@@ -6424,11 +7795,11 @@ function useLoadingBar() {
   }
   return loadingBar;
 }
-const StarIcon = h(
-  "svg",
-  { viewBox: "0 0 512 512" },
-  h("path", { d: "M394 480a16 16 0 01-9.39-3L256 383.76 127.39 477a16 16 0 01-24.55-18.08L153 310.35 23 221.2a16 16 0 019-29.2h160.38l48.4-148.95a16 16 0 0130.44 0l48.4 149H480a16 16 0 019.05 29.2L359 310.35l50.13 148.53A16 16 0 01394 480z" })
-);
+const StarIcon = h("svg", {
+  viewBox: "0 0 512 512"
+}, h("path", {
+  d: "M394 480a16 16 0 01-9.39-3L256 383.76 127.39 477a16 16 0 01-24.55-18.08L153 310.35 23 221.2a16 16 0 019-29.2h160.38l48.4-148.95a16 16 0 0130.44 0l48.4 149H480a16 16 0 019.05 29.2L359 310.35l50.13 148.53A16 16 0 01394 480z"
+}));
 const style$1 = cB("rate", {
   display: "inline-flex",
   flexWrap: "nowrap"
@@ -6468,21 +7839,36 @@ const style$1 = cB("rate", {
  `, [cM("active", `
  color: var(--n-item-color-active);
  `)])]);
-const rateProps = Object.assign(Object.assign({}, useTheme.props), { allowHalf: Boolean, count: {
-  type: Number,
-  default: 5
-}, value: Number, defaultValue: {
-  type: Number,
-  default: null
-}, readonly: Boolean, size: {
-  type: [String, Number],
-  default: "medium"
-}, clearable: Boolean, color: String, onClear: Function, "onUpdate:value": [Function, Array], onUpdateValue: [Function, Array] });
+const rateProps = Object.assign(Object.assign({}, useTheme.props), {
+  allowHalf: Boolean,
+  count: {
+    type: Number,
+    default: 5
+  },
+  value: Number,
+  defaultValue: {
+    type: Number,
+    default: null
+  },
+  readonly: Boolean,
+  size: {
+    type: [String, Number],
+    default: "medium"
+  },
+  clearable: Boolean,
+  color: String,
+  onClear: Function,
+  "onUpdate:value": [Function, Array],
+  onUpdateValue: [Function, Array]
+});
 const NRate = defineComponent({
   name: "Rate",
   props: rateProps,
   setup(props) {
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Rate", "-rate", style$1, rateLight, props, mergedClsPrefixRef);
     const controlledValueRef = toRef(props, "value");
     const uncontrolledValueRef = ref(props.defaultValue);
@@ -6490,8 +7876,14 @@ const NRate = defineComponent({
     const formItem = useFormItem(props);
     const mergedValue = useMergedState(controlledValueRef, uncontrolledValueRef);
     function doUpdateValue(value) {
-      const { "onUpdate:value": _onUpdateValue, onUpdateValue } = props;
-      const { nTriggerFormChange, nTriggerFormInput } = formItem;
+      const {
+        "onUpdate:value": _onUpdateValue,
+        onUpdateValue
+      } = props;
+      const {
+        nTriggerFormChange,
+        nTriggerFormInput
+      } = formItem;
       if (_onUpdateValue) {
         call(_onUpdateValue, value);
       }
@@ -6524,7 +7916,9 @@ const NRate = defineComponent({
     }
     function handleClick(index, e) {
       var _a;
-      const { clearable } = props;
+      const {
+        clearable
+      } = props;
       const derivedValue = getDerivedValue(index, e);
       if (clearable && derivedValue === mergedValue.value) {
         cleared = true;
@@ -6539,8 +7933,12 @@ const NRate = defineComponent({
       cleared = false;
     }
     const mergedSizeRef = computed(() => {
-      const { size } = props;
-      const { self } = themeRef.value;
+      const {
+        size
+      } = props;
+      const {
+        self
+      } = themeRef.value;
       if (typeof size === "number") {
         return `${size}px`;
       } else {
@@ -6548,9 +7946,19 @@ const NRate = defineComponent({
       }
     });
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut }, self } = themeRef.value;
-      const { itemColor, itemColorActive } = self;
-      const { color } = props;
+      const {
+        common: {
+          cubicBezierEaseInOut
+        },
+        self
+      } = themeRef.value;
+      const {
+        itemColor,
+        itemColorActive
+      } = self;
+      const {
+        color
+      } = props;
       return {
         "--n-bezier": cubicBezierEaseInOut,
         "--n-item-color": itemColor,
@@ -6560,7 +7968,9 @@ const NRate = defineComponent({
     });
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("rate", computed(() => {
       const size = mergedSizeRef.value;
-      const { color } = props;
+      const {
+        color
+      } = props;
       let hash = "";
       if (size) {
         hash += size[0];
@@ -6584,35 +7994,47 @@ const NRate = defineComponent({
     };
   },
   render() {
-    const { readonly, hoverIndex, mergedValue, mergedClsPrefix, onRender, $slots: { default: defaultSlot } } = this;
+    const {
+      readonly,
+      hoverIndex,
+      mergedValue,
+      mergedClsPrefix,
+      onRender,
+      $slots: {
+        default: defaultSlot
+      }
+    } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h("div", { class: [
-      `${mergedClsPrefix}-rate`,
-      {
+    return h("div", {
+      class: [`${mergedClsPrefix}-rate`, {
         [`${mergedClsPrefix}-rate--readonly`]: readonly
-      },
-      this.themeClass
-    ], style: this.cssVars, onMouseleave: this.handleMouseLeave }, renderList(this.count, (_, index) => {
-      const icon = defaultSlot ? defaultSlot({ index }) : h(NBaseIcon, { clsPrefix: mergedClsPrefix }, { default: () => StarIcon });
+      }, this.themeClass],
+      style: this.cssVars,
+      onMouseleave: this.handleMouseLeave
+    }, renderList(this.count, (_, index) => {
+      const icon = defaultSlot ? defaultSlot({
+        index
+      }) : h(NBaseIcon, {
+        clsPrefix: mergedClsPrefix
+      }, {
+        default: () => StarIcon
+      });
       const entireStarActive = hoverIndex !== null ? index + 1 <= hoverIndex : index + 1 <= (mergedValue || 0);
-      return h(
-        "div",
-        { key: index, class: [
-          `${mergedClsPrefix}-rate__item`,
-          entireStarActive && `${mergedClsPrefix}-rate__item--active`
-        ], onClick: readonly ? void 0 : (e) => {
+      return h("div", {
+        key: index,
+        class: [`${mergedClsPrefix}-rate__item`, entireStarActive && `${mergedClsPrefix}-rate__item--active`],
+        onClick: readonly ? void 0 : (e) => {
           this.handleClick(index, e);
-        }, onMouseenter: this.handleMouseEnterSomeStar, onMousemove: readonly ? void 0 : (e) => {
+        },
+        onMouseenter: this.handleMouseEnterSomeStar,
+        onMousemove: readonly ? void 0 : (e) => {
           this.handleMouseMove(index, e);
-        } },
-        icon,
-        this.allowHalf ? h("div", { class: [
-          `${mergedClsPrefix}-rate__half`,
-          {
-            [`${mergedClsPrefix}-rate__half--active`]: !entireStarActive && hoverIndex !== null ? index + 0.5 <= hoverIndex : index + 0.5 <= (mergedValue || 0)
-          }
-        ] }, icon) : null
-      );
+        }
+      }, icon, this.allowHalf ? h("div", {
+        class: [`${mergedClsPrefix}-rate__half`, {
+          [`${mergedClsPrefix}-rate__half--active`]: !entireStarActive && hoverIndex !== null ? index + 0.5 <= hoverIndex : index + 0.5 <= (mergedValue || 0)
+        }]
+      }, icon) : null);
     }));
   }
 });
@@ -6621,31 +8043,210 @@ const uploadDraggerKey = "__UPLOAD_DRAGGER__";
 const NUploadDragger = defineComponent({
   name: "UploadDragger",
   [uploadDraggerKey]: true,
-  setup(_, { slots }) {
+  setup(_, {
+    slots
+  }) {
     const NUpload2 = inject(uploadInjectionKey, null);
     if (!NUpload2) {
       throwError("upload-dragger", "`n-upload-dragger` must be placed inside `n-upload`.");
     }
     return () => {
-      const { mergedClsPrefixRef: { value: mergedClsPrefix }, mergedDisabledRef: { value: mergedDisabled }, maxReachedRef: { value: maxReached } } = NUpload2;
-      return h("div", { class: [
-        `${mergedClsPrefix}-upload-dragger`,
-        (mergedDisabled || maxReached) && `${mergedClsPrefix}-upload-dragger--disabled`
-      ] }, slots);
+      const {
+        mergedClsPrefixRef: {
+          value: mergedClsPrefix
+        },
+        mergedDisabledRef: {
+          value: mergedDisabled
+        },
+        maxReachedRef: {
+          value: maxReached
+        }
+      } = NUpload2;
+      return h("div", {
+        class: [`${mergedClsPrefix}-upload-dragger`, (mergedDisabled || maxReached) && `${mergedClsPrefix}-upload-dragger--disabled`]
+      }, slots);
     };
   }
 });
+var __awaiter$2 = globalThis && globalThis.__awaiter || function(thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function(resolve) {
+      resolve(value);
+    });
+  }
+  return new (P || (P = Promise))(function(resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+const isImageFileType = (type) => type.includes("image/");
+const getExtname = (url = "") => {
+  const temp = url.split("/");
+  const filename = temp[temp.length - 1];
+  const filenameWithoutSuffix = filename.split(/#|\?/)[0];
+  return (/\.[^./\\]*$/.exec(filenameWithoutSuffix) || [""])[0];
+};
+const imageExtensionRegex = /(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico)$/i;
+const isImageFile = (file) => {
+  if (file.type) {
+    return isImageFileType(file.type);
+  }
+  const fileNameExtension = getExtname(file.name || "");
+  if (imageExtensionRegex.test(fileNameExtension)) {
+    return true;
+  }
+  const url = file.thumbnailUrl || file.url || "";
+  const urlExtension = getExtname(url);
+  if (/^data:image\//.test(url) || imageExtensionRegex.test(urlExtension)) {
+    return true;
+  }
+  return false;
+};
+function createImageDataUrl(file) {
+  return __awaiter$2(this, void 0, void 0, function* () {
+    return yield new Promise((resolve) => {
+      if (!file.type || !isImageFileType(file.type)) {
+        resolve("");
+        return;
+      }
+      resolve(window.URL.createObjectURL(file));
+    });
+  });
+}
+const environmentSupportFile = isBrowser && window.FileReader && window.File;
+function isFileSystemDirectoryEntry(item) {
+  return item.isDirectory;
+}
+function isFileSystemFileEntry(item) {
+  return item.isFile;
+}
+function getFilesFromEntries(entries, directory) {
+  return __awaiter$2(this, void 0, void 0, function* () {
+    const fileAndEntries = [];
+    function _getFilesFromEntries(entries2) {
+      return __awaiter$2(this, void 0, void 0, function* () {
+        for (const entry of entries2) {
+          if (!entry)
+            continue;
+          if (directory && isFileSystemDirectoryEntry(entry)) {
+            const directoryReader = entry.createReader();
+            try {
+              const entries3 = yield new Promise((resolve, reject) => {
+                directoryReader.readEntries(resolve, reject);
+              });
+              yield _getFilesFromEntries(entries3);
+            } catch (_a) {
+            }
+          } else if (isFileSystemFileEntry(entry)) {
+            try {
+              const file = yield new Promise((resolve, reject) => {
+                entry.file(resolve, reject);
+              });
+              fileAndEntries.push({
+                file,
+                entry,
+                source: "dnd"
+              });
+            } catch (_b) {
+            }
+          }
+        }
+      });
+    }
+    yield _getFilesFromEntries(entries);
+    return fileAndEntries;
+  });
+}
+function createSettledFileInfo(fileInfo) {
+  const {
+    id,
+    name,
+    percentage,
+    status,
+    url,
+    file,
+    thumbnailUrl,
+    type,
+    fullPath,
+    batchId
+  } = fileInfo;
+  return {
+    id,
+    name,
+    percentage: percentage !== null && percentage !== void 0 ? percentage : null,
+    status,
+    url: url !== null && url !== void 0 ? url : null,
+    file: file !== null && file !== void 0 ? file : null,
+    thumbnailUrl: thumbnailUrl !== null && thumbnailUrl !== void 0 ? thumbnailUrl : null,
+    type: type !== null && type !== void 0 ? type : null,
+    fullPath: fullPath !== null && fullPath !== void 0 ? fullPath : null,
+    batchId: batchId !== null && batchId !== void 0 ? batchId : null
+  };
+}
+function matchType(name, mimeType, accept) {
+  name = name.toLowerCase();
+  mimeType = mimeType.toLocaleLowerCase();
+  accept = accept.toLocaleLowerCase();
+  const acceptAtoms = accept.split(",").map((acceptAtom) => acceptAtom.trim()).filter(Boolean);
+  return acceptAtoms.some((acceptAtom) => {
+    if (acceptAtom.startsWith(".")) {
+      if (name.endsWith(acceptAtom))
+        return true;
+    } else if (acceptAtom.includes("/")) {
+      const [type, subtype] = mimeType.split("/");
+      const [acceptType, acceptSubtype] = acceptAtom.split("/");
+      if (acceptType === "*" || type && acceptType && acceptType === type) {
+        if (acceptSubtype === "*" || subtype && acceptSubtype && acceptSubtype === subtype) {
+          return true;
+        }
+      }
+    } else {
+      return true;
+    }
+    return false;
+  });
+}
 const NUploadTrigger = defineComponent({
   name: "UploadTrigger",
   props: {
     abstract: Boolean
   },
-  setup(props, { slots }) {
+  setup(props, {
+    slots
+  }) {
     const NUpload2 = inject(uploadInjectionKey, null);
     if (!NUpload2) {
       throwError("upload-trigger", "`n-upload-trigger` must be placed inside `n-upload`.");
     }
-    const { mergedClsPrefixRef, mergedDisabledRef, maxReachedRef, listTypeRef, dragOverRef, openOpenFileDialog, draggerInsideRef, handleFileAddition, mergedDirectoryDndRef, triggerStyleRef } = NUpload2;
+    const {
+      mergedClsPrefixRef,
+      mergedDisabledRef,
+      maxReachedRef,
+      listTypeRef,
+      dragOverRef,
+      openOpenFileDialog,
+      draggerInsideRef,
+      handleFileAddition,
+      mergedDirectoryDndRef,
+      triggerClassRef,
+      triggerStyleRef
+    } = NUpload2;
     const isImageCardTypeRef = computed(() => listTypeRef.value === "image-card");
     function handleTriggerClick() {
       if (mergedDisabledRef.value || maxReachedRef.value)
@@ -6684,21 +8285,29 @@ const NUploadTrigger = defineComponent({
     }
     return () => {
       var _a;
-      const { value: mergedClsPrefix } = mergedClsPrefixRef;
+      const {
+        value: mergedClsPrefix
+      } = mergedClsPrefixRef;
       return props.abstract ? (_a = slots.default) === null || _a === void 0 ? void 0 : _a.call(slots, {
         handleClick: handleTriggerClick,
         handleDrop: handleTriggerDrop,
         handleDragOver: handleTriggerDragOver,
         handleDragEnter: handleTriggerDragEnter,
         handleDragLeave: handleTriggerDragLeave
-      }) : h("div", { class: [
-        `${mergedClsPrefix}-upload-trigger`,
-        (mergedDisabledRef.value || maxReachedRef.value) && `${mergedClsPrefix}-upload-trigger--disabled`,
-        isImageCardTypeRef.value && `${mergedClsPrefix}-upload-trigger--image-card`
-      ], style: triggerStyleRef.value, onClick: handleTriggerClick, onDrop: handleTriggerDrop, onDragover: handleTriggerDragOver, onDragenter: handleTriggerDragEnter, onDragleave: handleTriggerDragLeave }, isImageCardTypeRef.value ? h(NUploadDragger, null, {
-        default: () => resolveSlot(slots.default, () => [
-          h(NBaseIcon, { clsPrefix: mergedClsPrefix }, { default: () => h(AddIcon, null) })
-        ])
+      }) : h("div", {
+        class: [`${mergedClsPrefix}-upload-trigger`, (mergedDisabledRef.value || maxReachedRef.value) && `${mergedClsPrefix}-upload-trigger--disabled`, isImageCardTypeRef.value && `${mergedClsPrefix}-upload-trigger--image-card`, triggerClassRef.value],
+        style: triggerStyleRef.value,
+        onClick: handleTriggerClick,
+        onDrop: handleTriggerDrop,
+        onDragover: handleTriggerDragOver,
+        onDragenter: handleTriggerDragEnter,
+        onDragleave: handleTriggerDragLeave
+      }, isImageCardTypeRef.value ? h(NUploadDragger, null, {
+        default: () => resolveSlot(slots.default, () => [h(NBaseIcon, {
+          clsPrefix: mergedClsPrefix
+        }, {
+          default: () => h(AddIcon, null)
+        })])
       }) : slots);
     };
   }
@@ -6724,28 +8333,36 @@ const NUploadProgress = defineComponent({
   },
   render() {
     return h(NFadeInExpandTransition, null, {
-      default: () => this.show ? h(NProgress, { type: "line", showIndicator: false, percentage: this.percentage, status: this.status, height: 2, theme: this.mergedTheme.peers.Progress, themeOverrides: this.mergedTheme.peerOverrides.Progress }) : null
+      default: () => this.show ? h(NProgress, {
+        type: "line",
+        showIndicator: false,
+        percentage: this.percentage,
+        status: this.status,
+        height: 2,
+        theme: this.mergedTheme.peers.Progress,
+        themeOverrides: this.mergedTheme.peerOverrides.Progress
+      }) : null
     });
   }
 });
-const imageIcon = h(
-  "svg",
-  { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 28 28" },
-  h(
-    "g",
-    { fill: "none" },
-    h("path", { d: "M21.75 3A3.25 3.25 0 0 1 25 6.25v15.5A3.25 3.25 0 0 1 21.75 25H6.25A3.25 3.25 0 0 1 3 21.75V6.25A3.25 3.25 0 0 1 6.25 3h15.5zm.583 20.4l-7.807-7.68a.75.75 0 0 0-.968-.07l-.084.07l-7.808 7.68c.183.065.38.1.584.1h15.5c.204 0 .4-.035.583-.1l-7.807-7.68l7.807 7.68zM21.75 4.5H6.25A1.75 1.75 0 0 0 4.5 6.25v15.5c0 .208.036.408.103.593l7.82-7.692a2.25 2.25 0 0 1 3.026-.117l.129.117l7.82 7.692c.066-.185.102-.385.102-.593V6.25a1.75 1.75 0 0 0-1.75-1.75zm-3.25 3a2.5 2.5 0 1 1 0 5a2.5 2.5 0 0 1 0-5zm0 1.5a1 1 0 1 0 0 2a1 1 0 0 0 0-2z", fill: "currentColor" })
-  )
-);
-const documentIcon = h(
-  "svg",
-  { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 28 28" },
-  h(
-    "g",
-    { fill: "none" },
-    h("path", { d: "M6.4 2A2.4 2.4 0 0 0 4 4.4v19.2A2.4 2.4 0 0 0 6.4 26h15.2a2.4 2.4 0 0 0 2.4-2.4V11.578c0-.729-.29-1.428-.805-1.944l-6.931-6.931A2.4 2.4 0 0 0 14.567 2H6.4zm-.9 2.4a.9.9 0 0 1 .9-.9H14V10a2 2 0 0 0 2 2h6.5v11.6a.9.9 0 0 1-.9.9H6.4a.9.9 0 0 1-.9-.9V4.4zm16.44 6.1H16a.5.5 0 0 1-.5-.5V4.06l6.44 6.44z", fill: "currentColor" })
-  )
-);
+const imageIcon = h("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 28 28"
+}, h("g", {
+  fill: "none"
+}, h("path", {
+  d: "M21.75 3A3.25 3.25 0 0 1 25 6.25v15.5A3.25 3.25 0 0 1 21.75 25H6.25A3.25 3.25 0 0 1 3 21.75V6.25A3.25 3.25 0 0 1 6.25 3h15.5zm.583 20.4l-7.807-7.68a.75.75 0 0 0-.968-.07l-.084.07l-7.808 7.68c.183.065.38.1.584.1h15.5c.204 0 .4-.035.583-.1l-7.807-7.68l7.807 7.68zM21.75 4.5H6.25A1.75 1.75 0 0 0 4.5 6.25v15.5c0 .208.036.408.103.593l7.82-7.692a2.25 2.25 0 0 1 3.026-.117l.129.117l7.82 7.692c.066-.185.102-.385.102-.593V6.25a1.75 1.75 0 0 0-1.75-1.75zm-3.25 3a2.5 2.5 0 1 1 0 5a2.5 2.5 0 0 1 0-5zm0 1.5a1 1 0 1 0 0 2a1 1 0 0 0 0-2z",
+  fill: "currentColor"
+})));
+const documentIcon = h("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 28 28"
+}, h("g", {
+  fill: "none"
+}, h("path", {
+  d: "M6.4 2A2.4 2.4 0 0 0 4 4.4v19.2A2.4 2.4 0 0 0 6.4 26h15.2a2.4 2.4 0 0 0 2.4-2.4V11.578c0-.729-.29-1.428-.805-1.944l-6.931-6.931A2.4 2.4 0 0 0 14.567 2H6.4zm-.9 2.4a.9.9 0 0 1 .9-.9H14V10a2 2 0 0 0 2 2h6.5v11.6a.9.9 0 0 1-.9.9H6.4a.9.9 0 0 1-.9-.9V4.4zm16.44 6.1H16a.5.5 0 0 1-.5-.5V4.06l6.44 6.44z",
+  fill: "currentColor"
+})));
 var __awaiter$1 = globalThis && globalThis.__awaiter || function(thisArg, _arguments, P, generator) {
   function adopt(value) {
     return value instanceof P ? value : new P(function(resolve) {
@@ -6799,7 +8416,9 @@ const NUploadFile = defineComponent({
     const imageRef = ref(null);
     const thumbnailUrlRef = ref("");
     const progressStatusRef = computed(() => {
-      const { file } = props;
+      const {
+        file
+      } = props;
       if (file.status === "finished")
         return "success";
       if (file.status === "error")
@@ -6807,37 +8426,49 @@ const NUploadFile = defineComponent({
       return "info";
     });
     const buttonTypeRef = computed(() => {
-      const { file } = props;
+      const {
+        file
+      } = props;
       if (file.status === "error")
         return "error";
       return void 0;
     });
     const showProgressRef = computed(() => {
-      const { file } = props;
+      const {
+        file
+      } = props;
       return file.status === "uploading";
     });
     const showCancelButtonRef = computed(() => {
       if (!NUpload2.showCancelButtonRef.value)
         return false;
-      const { file } = props;
+      const {
+        file
+      } = props;
       return ["uploading", "pending", "error"].includes(file.status);
     });
     const showRemoveButtonRef = computed(() => {
       if (!NUpload2.showRemoveButtonRef.value)
         return false;
-      const { file } = props;
+      const {
+        file
+      } = props;
       return ["finished"].includes(file.status);
     });
     const showDownloadButtonRef = computed(() => {
       if (!NUpload2.showDownloadButtonRef.value)
         return false;
-      const { file } = props;
+      const {
+        file
+      } = props;
       return ["finished"].includes(file.status);
     });
     const showRetryButtonRef = computed(() => {
       if (!NUpload2.showRetryButtonRef.value)
         return false;
-      const { file } = props;
+      const {
+        file
+      } = props;
       return ["error"].includes(file.status);
     });
     const mergedThumbnailUrlRef = useMemo(() => {
@@ -6846,7 +8477,12 @@ const NUploadFile = defineComponent({
     const showPreviewButtonRef = computed(() => {
       if (!NUpload2.showPreviewButtonRef.value)
         return false;
-      const { file: { status }, listType } = props;
+      const {
+        file: {
+          status
+        },
+        listType
+      } = props;
       return ["finished"].includes(status) && mergedThumbnailUrlRef.value && listType === "image-card";
     });
     function handleRetryClick() {
@@ -6854,7 +8490,9 @@ const NUploadFile = defineComponent({
     }
     function handleRemoveOrCancelClick(e) {
       e.preventDefault();
-      const { file } = props;
+      const {
+        file
+      } = props;
       if (["finished", "pending", "error"].includes(file.status)) {
         handleRemove(file);
       } else if (["uploading"].includes(file.status)) {
@@ -6868,7 +8506,16 @@ const NUploadFile = defineComponent({
       handleDownload(props.file);
     }
     function handleRemove(file) {
-      const { xhrMap, doChange, onRemoveRef: { value: onRemove }, mergedFileListRef: { value: mergedFileList } } = NUpload2;
+      const {
+        xhrMap,
+        doChange,
+        onRemoveRef: {
+          value: onRemove
+        },
+        mergedFileListRef: {
+          value: mergedFileList
+        }
+      } = NUpload2;
       void Promise.resolve(onRemove ? onRemove({
         file: Object.assign({}, file),
         fileList: mergedFileList
@@ -6885,7 +8532,11 @@ const NUploadFile = defineComponent({
       });
     }
     function handleDownload(file) {
-      const { onDownloadRef: { value: onDownload } } = NUpload2;
+      const {
+        onDownloadRef: {
+          value: onDownload
+        }
+      } = NUpload2;
       void Promise.resolve(onDownload ? onDownload(Object.assign({}, file)) : true).then((res) => {
         if (res !== false) {
           download(file.url, file.name);
@@ -6893,24 +8544,34 @@ const NUploadFile = defineComponent({
       });
     }
     function handleAbort(file) {
-      const { xhrMap } = NUpload2;
+      const {
+        xhrMap
+      } = NUpload2;
       const xhr = xhrMap.get(file.id);
       xhr === null || xhr === void 0 ? void 0 : xhr.abort();
       handleRemove(Object.assign({}, file));
     }
     function handlePreviewClick() {
-      const { onPreviewRef: { value: onPreview } } = NUpload2;
+      const {
+        onPreviewRef: {
+          value: onPreview
+        }
+      } = NUpload2;
       if (onPreview) {
         onPreview(props.file);
       } else if (props.listType === "image-card") {
-        const { value } = imageRef;
+        const {
+          value
+        } = imageRef;
         if (!value)
           return;
         value.click();
       }
     }
     const deriveFileThumbnailUrl = () => __awaiter$1(this, void 0, void 0, function* () {
-      const { listType } = props;
+      const {
+        listType
+      } = props;
       if (listType !== "image" && listType !== "image-card") {
         return;
       }
@@ -6943,90 +8604,186 @@ const NUploadFile = defineComponent({
     };
   },
   render() {
-    const { clsPrefix, mergedTheme, listType, file, renderIcon } = this;
+    const {
+      clsPrefix,
+      mergedTheme,
+      listType,
+      file,
+      renderIcon
+    } = this;
     let icon;
     const isImageType = listType === "image";
     const isImageCardType = listType === "image-card";
     if (isImageType || isImageCardType) {
-      icon = !this.shouldUseThumbnailUrl(file) || !this.mergedThumbnailUrl ? h("span", { class: `${clsPrefix}-upload-file-info__thumbnail` }, renderIcon ? renderIcon(file) : isImageFile(file) ? h(NBaseIcon, { clsPrefix }, { default: () => imageIcon }) : h(NBaseIcon, { clsPrefix }, { default: () => documentIcon })) : h("a", { rel: "noopener noreferer", target: "_blank", href: file.url || void 0, class: `${clsPrefix}-upload-file-info__thumbnail`, onClick: this.handlePreviewClick }, listType === "image-card" ? h(NImage, { src: this.mergedThumbnailUrl || void 0, previewSrc: file.url || void 0, alt: file.name, ref: "imageRef" }) : h("img", { src: this.mergedThumbnailUrl || void 0, alt: file.name }));
+      icon = !this.shouldUseThumbnailUrl(file) || !this.mergedThumbnailUrl ? h("span", {
+        class: `${clsPrefix}-upload-file-info__thumbnail`
+      }, renderIcon ? renderIcon(file) : isImageFile(file) ? h(NBaseIcon, {
+        clsPrefix
+      }, {
+        default: () => imageIcon
+      }) : h(NBaseIcon, {
+        clsPrefix
+      }, {
+        default: () => documentIcon
+      })) : h("a", {
+        rel: "noopener noreferer",
+        target: "_blank",
+        href: file.url || void 0,
+        class: `${clsPrefix}-upload-file-info__thumbnail`,
+        onClick: this.handlePreviewClick
+      }, listType === "image-card" ? h(NImage, {
+        src: this.mergedThumbnailUrl || void 0,
+        previewSrc: file.url || void 0,
+        alt: file.name,
+        ref: "imageRef"
+      }) : h("img", {
+        src: this.mergedThumbnailUrl || void 0,
+        alt: file.name
+      }));
     } else {
-      icon = h("span", { class: `${clsPrefix}-upload-file-info__thumbnail` }, renderIcon ? renderIcon(file) : h(NBaseIcon, { clsPrefix }, { default: () => h(AttachIcon, null) }));
+      icon = h("span", {
+        class: `${clsPrefix}-upload-file-info__thumbnail`
+      }, renderIcon ? renderIcon(file) : h(NBaseIcon, {
+        clsPrefix
+      }, {
+        default: () => h(AttachIcon, null)
+      }));
     }
-    const progress = h(NUploadProgress, { show: this.showProgress, percentage: file.percentage || 0, status: this.progressStatus });
+    const progress = h(NUploadProgress, {
+      show: this.showProgress,
+      percentage: file.percentage || 0,
+      status: this.progressStatus
+    });
     const showName = listType === "text" || listType === "image";
-    return h(
-      "div",
-      { class: [
-        `${clsPrefix}-upload-file`,
-        `${clsPrefix}-upload-file--${this.progressStatus}-status`,
-        file.url && file.status !== "error" && listType !== "image-card" && `${clsPrefix}-upload-file--with-url`,
-        `${clsPrefix}-upload-file--${listType}-type`
-      ] },
-      h(
-        "div",
-        { class: `${clsPrefix}-upload-file-info` },
-        icon,
-        h(
-          "div",
-          { class: `${clsPrefix}-upload-file-info__name` },
-          showName && (file.url && file.status !== "error" ? h("a", { rel: "noopener noreferer", target: "_blank", href: file.url || void 0, onClick: this.handlePreviewClick }, file.name) : h("span", { onClick: this.handlePreviewClick }, file.name)),
-          isImageType && progress
-        ),
-        h(
-          "div",
-          { class: [
-            `${clsPrefix}-upload-file-info__action`,
-            `${clsPrefix}-upload-file-info__action--${listType}-type`
-          ] },
-          this.showPreviewButton ? h(NButton, { key: "preview", quaternary: true, type: this.buttonType, onClick: this.handlePreviewClick, theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button, builtinThemeOverrides: buttonThemeOverrides }, {
-            icon: () => h(NBaseIcon, { clsPrefix }, { default: () => h(EyeIcon, null) })
-          }) : null,
-          (this.showRemoveButton || this.showCancelButton) && !this.disabled && h(NButton, { key: "cancelOrTrash", theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button, quaternary: true, builtinThemeOverrides: buttonThemeOverrides, type: this.buttonType, onClick: this.handleRemoveOrCancelClick }, {
-            icon: () => h(NIconSwitchTransition, null, {
-              default: () => this.showRemoveButton ? h(NBaseIcon, { clsPrefix, key: "trash" }, { default: () => h(TrashIcon, null) }) : h(NBaseIcon, { clsPrefix, key: "cancel" }, { default: () => h(CancelIcon, null) })
-            })
-          }),
-          this.showRetryButton && !this.disabled && h(NButton, { key: "retry", quaternary: true, type: this.buttonType, onClick: this.handleRetryClick, theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button, builtinThemeOverrides: buttonThemeOverrides }, {
-            icon: () => h(NBaseIcon, { clsPrefix }, { default: () => h(RetryIcon, null) })
-          }),
-          this.showDownloadButton ? h(NButton, { key: "download", quaternary: true, type: this.buttonType, onClick: this.handleDownloadClick, theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button, builtinThemeOverrides: buttonThemeOverrides }, {
-            icon: () => h(NBaseIcon, { clsPrefix }, { default: () => h(DownloadIcon, null) })
-          }) : null
-        )
-      ),
-      !isImageType && progress
-    );
+    return h("div", {
+      class: [`${clsPrefix}-upload-file`, `${clsPrefix}-upload-file--${this.progressStatus}-status`, file.url && file.status !== "error" && listType !== "image-card" && `${clsPrefix}-upload-file--with-url`, `${clsPrefix}-upload-file--${listType}-type`]
+    }, h("div", {
+      class: `${clsPrefix}-upload-file-info`
+    }, icon, h("div", {
+      class: `${clsPrefix}-upload-file-info__name`
+    }, showName && (file.url && file.status !== "error" ? h("a", {
+      rel: "noopener noreferer",
+      target: "_blank",
+      href: file.url || void 0,
+      onClick: this.handlePreviewClick
+    }, file.name) : h("span", {
+      onClick: this.handlePreviewClick
+    }, file.name)), isImageType && progress), h("div", {
+      class: [`${clsPrefix}-upload-file-info__action`, `${clsPrefix}-upload-file-info__action--${listType}-type`]
+    }, this.showPreviewButton ? h(NButton, {
+      key: "preview",
+      quaternary: true,
+      type: this.buttonType,
+      onClick: this.handlePreviewClick,
+      theme: mergedTheme.peers.Button,
+      themeOverrides: mergedTheme.peerOverrides.Button,
+      builtinThemeOverrides: buttonThemeOverrides
+    }, {
+      icon: () => h(NBaseIcon, {
+        clsPrefix
+      }, {
+        default: () => h(EyeIcon, null)
+      })
+    }) : null, (this.showRemoveButton || this.showCancelButton) && !this.disabled && h(NButton, {
+      key: "cancelOrTrash",
+      theme: mergedTheme.peers.Button,
+      themeOverrides: mergedTheme.peerOverrides.Button,
+      quaternary: true,
+      builtinThemeOverrides: buttonThemeOverrides,
+      type: this.buttonType,
+      onClick: this.handleRemoveOrCancelClick
+    }, {
+      icon: () => h(NIconSwitchTransition, null, {
+        default: () => this.showRemoveButton ? h(NBaseIcon, {
+          clsPrefix,
+          key: "trash"
+        }, {
+          default: () => h(TrashIcon, null)
+        }) : h(NBaseIcon, {
+          clsPrefix,
+          key: "cancel"
+        }, {
+          default: () => h(CancelIcon, null)
+        })
+      })
+    }), this.showRetryButton && !this.disabled && h(NButton, {
+      key: "retry",
+      quaternary: true,
+      type: this.buttonType,
+      onClick: this.handleRetryClick,
+      theme: mergedTheme.peers.Button,
+      themeOverrides: mergedTheme.peerOverrides.Button,
+      builtinThemeOverrides: buttonThemeOverrides
+    }, {
+      icon: () => h(NBaseIcon, {
+        clsPrefix
+      }, {
+        default: () => h(RetryIcon, null)
+      })
+    }), this.showDownloadButton ? h(NButton, {
+      key: "download",
+      quaternary: true,
+      type: this.buttonType,
+      onClick: this.handleDownloadClick,
+      theme: mergedTheme.peers.Button,
+      themeOverrides: mergedTheme.peerOverrides.Button,
+      builtinThemeOverrides: buttonThemeOverrides
+    }, {
+      icon: () => h(NBaseIcon, {
+        clsPrefix
+      }, {
+        default: () => h(DownloadIcon, null)
+      })
+    }) : null)), !isImageType && progress);
   }
 });
 const NUploadFileList = defineComponent({
   name: "UploadFileList",
-  setup(_, { slots }) {
+  setup(_, {
+    slots
+  }) {
     const NUpload2 = inject(uploadInjectionKey, null);
     if (!NUpload2) {
       throwError("upload-file-list", "`n-upload-file-list` must be placed inside `n-upload`.");
     }
-    const { abstractRef, mergedClsPrefixRef, listTypeRef, mergedFileListRef, fileListStyleRef, cssVarsRef, themeClassRef, maxReachedRef, showTriggerRef, imageGroupPropsRef } = NUpload2;
+    const {
+      abstractRef,
+      mergedClsPrefixRef,
+      listTypeRef,
+      mergedFileListRef,
+      fileListClassRef,
+      fileListStyleRef,
+      cssVarsRef,
+      themeClassRef,
+      maxReachedRef,
+      showTriggerRef,
+      imageGroupPropsRef
+    } = NUpload2;
     const isImageCardTypeRef = computed(() => listTypeRef.value === "image-card");
-    const renderFileList = () => mergedFileListRef.value.map((file) => h(NUploadFile, { clsPrefix: mergedClsPrefixRef.value, key: file.id, file, listType: listTypeRef.value }));
-    const renderUploadFileList = () => isImageCardTypeRef.value ? h(NImageGroup, Object.assign({}, imageGroupPropsRef.value), { default: renderFileList }) : h(NFadeInExpandTransition, { group: true }, {
+    const renderFileList = () => mergedFileListRef.value.map((file) => h(NUploadFile, {
+      clsPrefix: mergedClsPrefixRef.value,
+      key: file.id,
+      file,
+      listType: listTypeRef.value
+    }));
+    const renderUploadFileList = () => isImageCardTypeRef.value ? h(NImageGroup, Object.assign({}, imageGroupPropsRef.value), {
+      default: renderFileList
+    }) : h(NFadeInExpandTransition, {
+      group: true
+    }, {
       default: renderFileList
     });
     return () => {
-      const { value: mergedClsPrefix } = mergedClsPrefixRef;
-      const { value: abstract } = abstractRef;
-      return h(
-        "div",
-        { class: [
-          `${mergedClsPrefix}-upload-file-list`,
-          isImageCardTypeRef.value && `${mergedClsPrefix}-upload-file-list--grid`,
-          abstract ? themeClassRef === null || themeClassRef === void 0 ? void 0 : themeClassRef.value : void 0
-        ], style: [
-          abstract && cssVarsRef ? cssVarsRef.value : "",
-          fileListStyleRef.value
-        ] },
-        renderUploadFileList(),
-        showTriggerRef.value && !maxReachedRef.value && isImageCardTypeRef.value && h(NUploadTrigger, null, slots)
-      );
+      const {
+        value: mergedClsPrefix
+      } = mergedClsPrefixRef;
+      const {
+        value: abstract
+      } = abstractRef;
+      return h("div", {
+        class: [`${mergedClsPrefix}-upload-file-list`, isImageCardTypeRef.value && `${mergedClsPrefix}-upload-file-list--grid`, abstract ? themeClassRef === null || themeClassRef === void 0 ? void 0 : themeClassRef.value : void 0, fileListClassRef.value],
+        style: [abstract && cssVarsRef ? cssVarsRef.value : "", fileListStyleRef.value]
+      }, renderUploadFileList(), showTriggerRef.value && !maxReachedRef.value && isImageCardTypeRef.value && h(NUploadTrigger, null, slots));
     };
   }
 });
@@ -7246,7 +9003,7 @@ const style = c([cB("upload", "width: 100%;", [cM("dragger-inside", [cB("upload-
  color: inherit;
  text-decoration: underline;
  `)])])])]), cB("upload-file-input", `
- display: block;
+ display: none;
  width: 0;
  height: 0;
  opacity: 0;
@@ -7279,7 +9036,10 @@ var __awaiter = globalThis && globalThis.__awaiter || function(thisArg, _argumen
   });
 };
 function createXhrHandlers(inst, file, xhr) {
-  const { doChange, xhrMap } = inst;
+  const {
+    doChange,
+    xhrMap
+  } = inst;
   let percentage = 0;
   function handleXHRError(e) {
     var _a;
@@ -7288,7 +9048,10 @@ function createXhrHandlers(inst, file, xhr) {
       percentage
     });
     xhrMap.delete(file.id);
-    fileAfterChange = createSettledFileInfo(((_a = inst.onError) === null || _a === void 0 ? void 0 : _a.call(inst, { file: fileAfterChange, event: e })) || fileAfterChange);
+    fileAfterChange = createSettledFileInfo(((_a = inst.onError) === null || _a === void 0 ? void 0 : _a.call(inst, {
+      file: fileAfterChange,
+      event: e
+    })) || fileAfterChange);
     doChange(fileAfterChange, e);
   }
   function handleXHRLoad(e) {
@@ -7309,7 +9072,10 @@ function createXhrHandlers(inst, file, xhr) {
       percentage
     });
     xhrMap.delete(file.id);
-    fileAfterChange = createSettledFileInfo(((_a = inst.onFinish) === null || _a === void 0 ? void 0 : _a.call(inst, { file: fileAfterChange, event: e })) || fileAfterChange);
+    fileAfterChange = createSettledFileInfo(((_a = inst.onFinish) === null || _a === void 0 ? void 0 : _a.call(inst, {
+      file: fileAfterChange,
+      event: e
+    })) || fileAfterChange);
     doChange(fileAfterChange, e);
   }
   return {
@@ -7338,8 +9104,18 @@ function createXhrHandlers(inst, file, xhr) {
   };
 }
 function customSubmitImpl(options) {
-  const { inst, file, data, headers, withCredentials, action, customRequest } = options;
-  const { doChange } = options.inst;
+  const {
+    inst,
+    file,
+    data,
+    headers,
+    withCredentials,
+    action,
+    customRequest
+  } = options;
+  const {
+    doChange
+  } = options.inst;
   let percentage = 0;
   customRequest({
     file,
@@ -7362,7 +9138,9 @@ function customSubmitImpl(options) {
         status: "finished",
         percentage
       });
-      fileAfterChange = createSettledFileInfo(((_a = inst.onFinish) === null || _a === void 0 ? void 0 : _a.call(inst, { file: fileAfterChange })) || fileAfterChange);
+      fileAfterChange = createSettledFileInfo(((_a = inst.onFinish) === null || _a === void 0 ? void 0 : _a.call(inst, {
+        file: fileAfterChange
+      })) || fileAfterChange);
       doChange(fileAfterChange);
     },
     onError() {
@@ -7371,7 +9149,9 @@ function customSubmitImpl(options) {
         status: "error",
         percentage
       });
-      fileAfterChange = createSettledFileInfo(((_a = inst.onError) === null || _a === void 0 ? void 0 : _a.call(inst, { file: fileAfterChange })) || fileAfterChange);
+      fileAfterChange = createSettledFileInfo(((_a = inst.onError) === null || _a === void 0 ? void 0 : _a.call(inst, {
+        file: fileAfterChange
+      })) || fileAfterChange);
       doChange(fileAfterChange);
     }
   });
@@ -7387,7 +9167,9 @@ function registerHandler(inst, file, request) {
 }
 function unwrapFunctionValue(data, file) {
   if (typeof data === "function") {
-    return data({ file });
+    return data({
+      file
+    });
   }
   if (data)
     return data;
@@ -7409,14 +9191,23 @@ function appendData(formData, data, file) {
     formData.append(key, dataObject[key]);
   });
 }
-function submitImpl(inst, fieldName, file, { method, action, withCredentials, responseType, headers, data }) {
+function submitImpl(inst, fieldName, file, {
+  method,
+  action,
+  withCredentials,
+  responseType,
+  headers,
+  data
+}) {
   const request = new XMLHttpRequest();
   request.responseType = responseType;
   inst.xhrMap.set(file.id, request);
   request.withCredentials = withCredentials;
   const formData = new FormData();
   appendData(formData, data, file);
-  formData.append(fieldName, file.file);
+  if (file.file !== null) {
+    formData.append(fieldName, file.file);
+  }
   registerHandler(inst, file, request);
   if (action !== void 0) {
     request.open(method.toUpperCase(), action);
@@ -7437,7 +9228,10 @@ const uploadProps = Object.assign(Object.assign({}, useTheme.props), {
   action: String,
   customRequest: Function,
   directory: Boolean,
-  directoryDnd: { type: Boolean, default: void 0 },
+  directoryDnd: {
+    type: Boolean,
+    default: void 0
+  },
   method: {
     type: String,
     default: "POST"
@@ -7473,6 +9267,7 @@ const uploadProps = Object.assign(Object.assign({}, useTheme.props), {
   fileList: Array,
   "onUpdate:fileList": [Function, Array],
   onUpdateFileList: [Function, Array],
+  fileListClass: String,
   fileListStyle: [String, Object],
   defaultFileList: {
     type: Array,
@@ -7517,6 +9312,7 @@ const uploadProps = Object.assign(Object.assign({}, useTheme.props), {
   },
   imageGroupProps: Object,
   inputProps: Object,
+  triggerClass: String,
   triggerStyle: [String, Object],
   renderIcon: Function
 });
@@ -7527,11 +9323,16 @@ const NUpload = defineComponent({
     if (props.abstract && props.listType === "image-card") {
       throwError("upload", "when the list-type is image-card, abstract is not supported.");
     }
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Upload", "-upload", style, uploadLight, props, mergedClsPrefixRef);
     const formItem = useFormItem(props);
     const maxReachedRef = computed(() => {
-      const { max } = props;
+      const {
+        max
+      } = props;
       if (max !== void 0) {
         return mergedFileListRef.value.length >= max;
       }
@@ -7561,7 +9362,10 @@ const NUpload = defineComponent({
       target.value = "";
     }
     function doUpdateFileList(files) {
-      const { "onUpdate:fileList": _onUpdateFileList, onUpdateFileList } = props;
+      const {
+        "onUpdate:fileList": _onUpdateFileList,
+        onUpdateFileList
+      } = props;
       if (_onUpdateFileList)
         call(_onUpdateFileList, files);
       if (onUpdateFileList)
@@ -7572,10 +9376,18 @@ const NUpload = defineComponent({
     function handleFileAddition(fileAndEntries, e) {
       if (!fileAndEntries || fileAndEntries.length === 0)
         return;
-      const { onBeforeUpload } = props;
+      const {
+        onBeforeUpload
+      } = props;
       fileAndEntries = mergedMultipleRef.value ? fileAndEntries : [fileAndEntries[0]];
-      const { max, accept } = props;
-      fileAndEntries = fileAndEntries.filter(({ file, source }) => {
+      const {
+        max,
+        accept
+      } = props;
+      fileAndEntries = fileAndEntries.filter(({
+        file,
+        source
+      }) => {
         if (source === "dnd" && (accept === null || accept === void 0 ? void 0 : accept.trim())) {
           return matchType(file.name, file.type, accept);
         } else {
@@ -7586,7 +9398,10 @@ const NUpload = defineComponent({
         fileAndEntries = fileAndEntries.slice(0, max - mergedFileListRef.value.length);
       }
       const batchId = createId();
-      void Promise.all(fileAndEntries.map(({ file, entry }) => __awaiter(this, void 0, void 0, function* () {
+      void Promise.all(fileAndEntries.map(({
+        file,
+        entry
+      }) => __awaiter(this, void 0, void 0, function* () {
         var _a;
         const fileInfo = {
           id: createId(),
@@ -7624,11 +9439,20 @@ const NUpload = defineComponent({
       });
     }
     function submit(fileId) {
-      const { method, action, withCredentials, headers, data, name: fieldName } = props;
+      const {
+        method,
+        action,
+        withCredentials,
+        headers,
+        data,
+        name: fieldName
+      } = props;
       const filesToUpload = fileId !== void 0 ? mergedFileListRef.value.filter((file) => file.id === fileId) : mergedFileListRef.value;
       const shouldReupload = fileId !== void 0;
       filesToUpload.forEach((file) => {
-        const { status } = file;
+        const {
+          status
+        } = file;
         if (status === "pending" || status === "error" && shouldReupload) {
           if (props.customRequest) {
             customSubmitImpl({
@@ -7668,7 +9492,10 @@ const NUpload = defineComponent({
       append: false,
       remove: false
     }) => {
-      const { append, remove } = options;
+      const {
+        append,
+        remove
+      } = options;
       const fileListAfterChange = Array.from(mergedFileListRef.value);
       const fileIndex = fileListAfterChange.findIndex((file) => file.id === fileAfterChange.id);
       if (append || remove || ~fileIndex) {
@@ -7679,7 +9506,9 @@ const NUpload = defineComponent({
         } else {
           fileListAfterChange.splice(fileIndex, 1, fileAfterChange);
         }
-        const { onChange } = props;
+        const {
+          onChange
+        } = props;
         if (onChange) {
           onChange({
             file: fileAfterChange,
@@ -7694,7 +9523,9 @@ const NUpload = defineComponent({
       var _a;
       if (file.thumbnailUrl)
         return file.thumbnailUrl;
-      const { createThumbnailUrl } = props;
+      const {
+        createThumbnailUrl
+      } = props;
       if (createThumbnailUrl) {
         return (_a = createThumbnailUrl(file.file, file)) !== null && _a !== void 0 ? _a : file.url || "";
       }
@@ -7706,7 +9537,28 @@ const NUpload = defineComponent({
       return "";
     }
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut }, self: { draggerColor, draggerBorder, draggerBorderHover, itemColorHover, itemColorHoverError, itemTextColorError, itemTextColorSuccess, itemTextColor, itemIconColor, itemDisabledOpacity, lineHeight, borderRadius, fontSize, itemBorderImageCardError, itemBorderImageCard } } = themeRef.value;
+      const {
+        common: {
+          cubicBezierEaseInOut
+        },
+        self: {
+          draggerColor,
+          draggerBorder,
+          draggerBorderHover,
+          itemColorHover,
+          itemColorHoverError,
+          itemTextColorError,
+          itemTextColorSuccess,
+          itemTextColor,
+          itemIconColor,
+          itemDisabledOpacity,
+          lineHeight,
+          borderRadius,
+          fontSize,
+          itemBorderImageCardError,
+          itemBorderImageCard
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut,
         "--n-border-radius": borderRadius,
@@ -7737,6 +9589,7 @@ const NUpload = defineComponent({
       onRemoveRef: toRef(props, "onRemove"),
       onDownloadRef: toRef(props, "onDownload"),
       mergedFileListRef,
+      triggerClassRef: toRef(props, "triggerClass"),
       triggerStyleRef: toRef(props, "triggerStyle"),
       shouldUseThumbnailUrlRef: toRef(props, "shouldUseThumbnailUrl"),
       renderIconRef: toRef(props, "renderIcon"),
@@ -7753,6 +9606,7 @@ const NUpload = defineComponent({
       handleFileAddition,
       mergedDisabledRef: formItem.mergedDisabledRef,
       maxReachedRef,
+      fileListClassRef: toRef(props, "fileListClass"),
       fileListStyleRef: toRef(props, "fileListStyle"),
       abstractRef: toRef(props, "abstract"),
       acceptRef: toRef(props, "accept"),
@@ -7788,7 +9642,13 @@ const NUpload = defineComponent({
   },
   render() {
     var _a, _b;
-    const { draggerInsideRef, mergedClsPrefix, $slots, directory, onRender } = this;
+    const {
+      draggerInsideRef,
+      mergedClsPrefix,
+      $slots,
+      directory,
+      onRender
+    } = this;
     if ($slots.default && !this.abstract) {
       const firstChild = $slots.default()[0];
       if ((_a = firstChild === null || firstChild === void 0 ? void 0 : firstChild.type) === null || _a === void 0 ? void 0 : _a[uploadDraggerKey]) {
@@ -7807,26 +9667,15 @@ const NUpload = defineComponent({
       directory: directory || void 0
     }));
     if (this.abstract) {
-      return h(
-        Fragment,
-        null,
-        (_b = $slots.default) === null || _b === void 0 ? void 0 : _b.call($slots),
-        h(Teleport, { to: "body" }, inputNode)
-      );
+      return h(Fragment, null, (_b = $slots.default) === null || _b === void 0 ? void 0 : _b.call($slots), h(Teleport, {
+        to: "body"
+      }, inputNode));
     }
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-upload`,
-        draggerInsideRef.value && `${mergedClsPrefix}-upload--dragger-inside`,
-        this.dragOver && `${mergedClsPrefix}-upload--drag-over`,
-        this.themeClass
-      ], style: this.cssVars },
-      inputNode,
-      this.showTrigger && this.listType !== "image-card" && h(NUploadTrigger, null, $slots),
-      this.showFileList && h(NUploadFileList, null, $slots)
-    );
+    return h("div", {
+      class: [`${mergedClsPrefix}-upload`, draggerInsideRef.value && `${mergedClsPrefix}-upload--dragger-inside`, this.dragOver && `${mergedClsPrefix}-upload--drag-over`, this.themeClass],
+      style: this.cssVars
+    }, inputNode, this.showTrigger && this.listType !== "image-card" && h(NUploadTrigger, null, $slots), this.showFileList && h(NUploadFileList, null, $slots));
   }
 });
 const _hoisted_1$b = {
@@ -8286,10 +10135,11 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     }
   },
   emits: ["imgClick"],
-  setup(__props, { emit }) {
-    const props = __props;
+  setup(__props, { emit: __emit }) {
     const settings = useSettings();
     const filterOverride = ref(false);
+    const props = __props;
+    const emit = __emit;
     function convertToShortValue(count) {
       if (count < 1e3)
         return count;
@@ -8922,10 +10772,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     showModal: { type: Boolean }
   },
   emits: ["update:showModal"],
-  setup(__props, { emit }) {
-    const props = __props;
+  setup(__props, { emit: __emit }) {
     const message = useMessage();
     const settings = useSettings();
+    const props = __props;
+    const emit = __emit;
     const tabValue = ref("");
     const tabsInstRef = ref(null);
     const selectedModel = reactive(/* @__PURE__ */ new Map());

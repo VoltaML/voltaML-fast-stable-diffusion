@@ -1,4 +1,4 @@
-import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, a as useState, u as useSettings, y as ref, $ as onMounted, p as onUnmounted, s as serverUrl, c as createBlock, w as withCtx, e as createVNode, f as unref, q as NGi, z as NButton, A as NIcon, k as createTextVNode, r as NGrid, bK as NAlert, h as createCommentVNode, N as NCard } from "./index.js";
+import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, a as useState, u as useSettings, y as ref, $ as onMounted, p as onUnmounted, s as serverUrl, c as createBlock, w as withCtx, e as createVNode, f as unref, q as NGi, z as NButton, A as NIcon, k as createTextVNode, r as NGrid, bM as NAlert, h as createCommentVNode, N as NCard } from "./index.js";
 const _hoisted_1$1 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -56,7 +56,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const global = useState();
     const settings = useSettings();
     const generateButton = ref(null);
@@ -89,6 +88,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
       });
     }
+    const props = __props;
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NCard), { style: { "margin-bottom": "12px" } }, {
         default: withCtx(() => {

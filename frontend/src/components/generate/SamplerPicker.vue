@@ -121,10 +121,7 @@ type SliderSettings = {
 
 type SelectSettings = {
   componentType: "select";
-  options: {
-    label: string;
-    value: string;
-  };
+  options: SelectMixedOption[];
 };
 
 type BooleanSettings = {
@@ -178,12 +175,12 @@ function resolveComponent(settings: SamplerSetting, param: string) {
         onUpdateChecked: (value: boolean) => setValue(param, value),
       });
     case "number":
-      // @ts-ignore, some random bullshit
       return h(NInputNumber, {
         min: settings.min,
         max: settings.max,
         step: settings.step,
         value: getValue(param),
+        // @ts-ignore
         onUpdateValue: (value: number) => setValue(param, value),
       });
   }

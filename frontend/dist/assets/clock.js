@@ -93,8 +93,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const settings = useSettings();
+    const props = __props;
     return (_ctx, _cache) => {
       return unref(settings).data.settings.aitDim.batch_size ? (openBlock(), createElementBlock("div", _hoisted_1$1, [
         createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -177,8 +177,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const settings = useSettings();
+    const props = __props;
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
         unref(settings).data.settings.aitDim.width ? (openBlock(), createElementBlock("div", _hoisted_1, [
@@ -264,9 +264,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const settings = useSettings();
     const state = useState();
+    const props = __props;
     const promptCount = computed(() => {
       return settings.data.settings[props.tab].prompt.split(spaceRegex).length - 1;
     });

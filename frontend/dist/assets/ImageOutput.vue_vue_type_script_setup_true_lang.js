@@ -14,9 +14,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const showDeleteModal = ref(false);
     const global = useState();
+    const props = __props;
     function downloadImage() {
       const a = document.createElement("a");
       a.href = props.base64image;

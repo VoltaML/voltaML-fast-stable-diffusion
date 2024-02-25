@@ -1,4 +1,4 @@
-import { V as inject, bF as getCurrentInstance, J as watch, a0 as onBeforeUnmount, a1 as cB, a4 as cM, a3 as c, U as createInjectionKey, d as defineComponent, X as useConfig, ab as useTheme, y as ref, T as provide, t as h, bG as formLight, au as keysOf, i as computed, aT as formatLength, aY as get, bH as commonVariables, a2 as cE, a7 as toRef, ba as createId, bI as formItemInjectionKey, $ as onMounted, aD as createKey, ac as useThemeClass, ai as Transition, aQ as resolveWrappedSlot, b1 as warn, u as useSettings, o as openBlock, g as createElementBlock, b as createBaseVNode, e as createVNode, f as unref, c as createBlock, w as withCtx, k as createTextVNode, l as NTooltip, bJ as isDev, j as NSpace, h as createCommentVNode, F as Fragment, bK as NAlert, N as NCard, m as NSelect, a as useState, K as upscalerOptions, C as NTabPane, D as NTabs, L as renderList, z as NButton, B as toDisplayString, bB as convertToTextString, bL as resolveDynamicComponent, bu as NModal, A as NIcon } from "./index.js";
+import { V as inject, bH as getCurrentInstance, J as watch, a0 as onBeforeUnmount, a1 as cB, a4 as cM, a3 as c, U as createInjectionKey, d as defineComponent, X as useConfig, ab as useTheme, y as ref, T as provide, t as h, bI as formLight, au as keysOf, i as computed, aT as formatLength, aY as get, bJ as commonVariables, a2 as cE, a7 as toRef, ba as createId, bK as formItemInjectionKey, $ as onMounted, aD as createKey, ac as useThemeClass, ai as Transition, aQ as resolveWrappedSlot, b1 as warn, u as useSettings, o as openBlock, g as createElementBlock, b as createBaseVNode, e as createVNode, f as unref, c as createBlock, w as withCtx, k as createTextVNode, l as NTooltip, bL as isDev, j as NSpace, h as createCommentVNode, F as Fragment, bM as NAlert, N as NCard, m as NSelect, a as useState, K as upscalerOptions, C as NTabPane, D as NTabs, L as renderList, z as NButton, B as toDisplayString, bD as convertToTextString, bN as resolveDynamicComponent, bw as NModal, A as NIcon } from "./index.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSlider } from "./Slider.js";
@@ -15,6 +15,8 @@ function useInjectionInstanceCollection(injectionName, collectionKey, registerKe
     registerInstance(void 0, registerKeyRef.value);
   });
   function registerInstance(key, oldKey) {
+    if (!injection)
+      return;
     const collection = injection[collectionKey];
     if (oldKey !== void 0)
       removeInstance(collection, oldKey);
@@ -74,33 +76,50 @@ var __awaiter$1 = globalThis && globalThis.__awaiter || function(thisArg, _argum
     step((generator = generator.apply(thisArg, _arguments || [])).next());
   });
 };
-const formProps = Object.assign(Object.assign({}, useTheme.props), { inline: Boolean, labelWidth: [Number, String], labelAlign: String, labelPlacement: {
-  type: String,
-  default: "top"
-}, model: {
-  type: Object,
-  default: () => {
-  }
-}, rules: Object, disabled: Boolean, size: String, showRequireMark: {
-  type: Boolean,
-  default: void 0
-}, requireMarkPlacement: String, showFeedback: {
-  type: Boolean,
-  default: true
-}, onSubmit: {
-  type: Function,
-  default: (e) => {
-    e.preventDefault();
-  }
-}, showLabel: {
-  type: Boolean,
-  default: void 0
-}, validateMessages: Object });
+const formProps = Object.assign(Object.assign({}, useTheme.props), {
+  inline: Boolean,
+  labelWidth: [Number, String],
+  labelAlign: String,
+  labelPlacement: {
+    type: String,
+    default: "top"
+  },
+  model: {
+    type: Object,
+    default: () => {
+    }
+  },
+  rules: Object,
+  disabled: Boolean,
+  size: String,
+  showRequireMark: {
+    type: Boolean,
+    default: void 0
+  },
+  requireMarkPlacement: String,
+  showFeedback: {
+    type: Boolean,
+    default: true
+  },
+  onSubmit: {
+    type: Function,
+    default: (e) => {
+      e.preventDefault();
+    }
+  },
+  showLabel: {
+    type: Boolean,
+    default: void 0
+  },
+  validateMessages: Object
+});
 const NForm = defineComponent({
   name: "Form",
   props: formProps,
   setup(props) {
-    const { mergedClsPrefixRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef
+    } = useConfig(props);
     useTheme("Form", "-form", style$1, formLight, props, mergedClsPrefixRef);
     const formItems = {};
     const maxChildLabelWidthRef = ref(void 0);
@@ -112,7 +131,7 @@ const NForm = defineComponent({
     };
     function validate(validateCallback, shouldRuleBeApplied = () => true) {
       return __awaiter$1(this, void 0, void 0, function* () {
-        yield new Promise((resolve, reject) => {
+        return yield new Promise((resolve, reject) => {
           const formItemValidationPromises = [];
           for (const key of keysOf(formItems)) {
             const formItemInstances = formItems[key];
@@ -123,16 +142,29 @@ const NForm = defineComponent({
             }
           }
           void Promise.all(formItemValidationPromises).then((results) => {
-            if (results.some((result) => !result.valid)) {
-              const errors = results.filter((result) => result.errors).map((result) => result.errors);
-              if (validateCallback) {
-                validateCallback(errors);
+            const formInvalid = results.some((result) => !result.valid);
+            const errors = [];
+            const warnings = [];
+            results.forEach((result) => {
+              var _a, _b;
+              if ((_a = result.errors) === null || _a === void 0 ? void 0 : _a.length) {
+                errors.push(result.errors);
               }
-              reject(errors);
+              if ((_b = result.warnings) === null || _b === void 0 ? void 0 : _b.length) {
+                warnings.push(result.warnings);
+              }
+            });
+            if (validateCallback) {
+              validateCallback(errors.length ? errors : void 0, {
+                warnings: warnings.length ? warnings : void 0
+              });
+            }
+            if (formInvalid) {
+              reject(errors.length ? errors : void 0);
             } else {
-              if (validateCallback)
-                validateCallback();
-              resolve();
+              resolve({
+                warnings: warnings.length ? warnings : void 0
+              });
             }
           });
         });
@@ -151,7 +183,9 @@ const NForm = defineComponent({
       maxChildLabelWidthRef,
       deriveMaxChildLabelWidth
     });
-    provide(formItemInstsInjectionKey, { formItems });
+    provide(formItemInstsInjectionKey, {
+      formItems
+    });
     const formExposedMethod = {
       validate,
       restoreValidation
@@ -161,11 +195,13 @@ const NForm = defineComponent({
     });
   },
   render() {
-    const { mergedClsPrefix } = this;
-    return h("form", { class: [
-      `${mergedClsPrefix}-form`,
-      this.inline && `${mergedClsPrefix}-form--inline`
-    ], onSubmit: this.onSubmit }, this.$slots);
+    const {
+      mergedClsPrefix
+    } = this;
+    return h("form", {
+      class: [`${mergedClsPrefix}-form`, this.inline && `${mergedClsPrefix}-form--inline`],
+      onSubmit: this.onSubmit
+    }, this.$slots);
   }
 });
 function _extends() {
@@ -1236,7 +1272,9 @@ function formItemSize(props) {
 function formItemMisc(props) {
   const NForm2 = inject(formInjectionKey, null);
   const mergedLabelPlacementRef = computed(() => {
-    const { labelPlacement } = props;
+    const {
+      labelPlacement
+    } = props;
     if (labelPlacement !== void 0)
       return labelPlacement;
     if (NForm2 === null || NForm2 === void 0 ? void 0 : NForm2.props.labelPlacement)
@@ -1249,7 +1287,9 @@ function formItemMisc(props) {
   const mergedLabelWidthRef = computed(() => {
     if (mergedLabelPlacementRef.value === "top")
       return;
-    const { labelWidth } = props;
+    const {
+      labelWidth
+    } = props;
     if (labelWidth !== void 0 && labelWidth !== "auto") {
       return formatLength(labelWidth);
     }
@@ -1267,7 +1307,9 @@ function formItemMisc(props) {
     return void 0;
   });
   const mergedLabelAlignRef = computed(() => {
-    const { labelAlign } = props;
+    const {
+      labelAlign
+    } = props;
     if (labelAlign)
       return labelAlign;
     if (NForm2 === null || NForm2 === void 0 ? void 0 : NForm2.props.labelAlign)
@@ -1276,37 +1318,44 @@ function formItemMisc(props) {
   });
   const mergedLabelStyleRef = computed(() => {
     var _a;
-    return [
-      (_a = props.labelProps) === null || _a === void 0 ? void 0 : _a.style,
-      props.labelStyle,
-      {
-        width: mergedLabelWidthRef.value
-      }
-    ];
+    return [(_a = props.labelProps) === null || _a === void 0 ? void 0 : _a.style, props.labelStyle, {
+      width: mergedLabelWidthRef.value
+    }];
   });
   const mergedShowRequireMarkRef = computed(() => {
-    const { showRequireMark } = props;
+    const {
+      showRequireMark
+    } = props;
     if (showRequireMark !== void 0)
       return showRequireMark;
     return NForm2 === null || NForm2 === void 0 ? void 0 : NForm2.props.showRequireMark;
   });
   const mergedRequireMarkPlacementRef = computed(() => {
-    const { requireMarkPlacement } = props;
+    const {
+      requireMarkPlacement
+    } = props;
     if (requireMarkPlacement !== void 0)
       return requireMarkPlacement;
     return (NForm2 === null || NForm2 === void 0 ? void 0 : NForm2.props.requireMarkPlacement) || "right";
   });
   const validationErroredRef = ref(false);
+  const validationWarnedRef = ref(false);
   const mergedValidationStatusRef = computed(() => {
-    const { validationStatus } = props;
+    const {
+      validationStatus
+    } = props;
     if (validationStatus !== void 0)
       return validationStatus;
     if (validationErroredRef.value)
       return "error";
+    if (validationWarnedRef.value)
+      return "warning";
     return void 0;
   });
   const mergedShowFeedbackRef = computed(() => {
-    const { showFeedback } = props;
+    const {
+      showFeedback
+    } = props;
     if (showFeedback !== void 0)
       return showFeedback;
     if ((NForm2 === null || NForm2 === void 0 ? void 0 : NForm2.props.showFeedback) !== void 0)
@@ -1314,7 +1363,9 @@ function formItemMisc(props) {
     return true;
   });
   const mergedShowLabelRef = computed(() => {
-    const { showLabel } = props;
+    const {
+      showLabel
+    } = props;
     if (showLabel !== void 0)
       return showLabel;
     if ((NForm2 === null || NForm2 === void 0 ? void 0 : NForm2.props.showLabel) !== void 0)
@@ -1323,6 +1374,7 @@ function formItemMisc(props) {
   });
   return {
     validationErrored: validationErroredRef,
+    validationWarned: validationWarnedRef,
     mergedLabelStyle: mergedLabelStyleRef,
     mergedLabelPlacement: mergedLabelPlacementRef,
     mergedLabelAlign: mergedLabelAlignRef,
@@ -1337,17 +1389,23 @@ function formItemMisc(props) {
 function formItemRule(props) {
   const NForm2 = inject(formInjectionKey, null);
   const compatibleRulePathRef = computed(() => {
-    const { rulePath } = props;
+    const {
+      rulePath
+    } = props;
     if (rulePath !== void 0)
       return rulePath;
-    const { path } = props;
+    const {
+      path
+    } = props;
     if (path !== void 0)
       return path;
     return void 0;
   });
   const mergedRulesRef = computed(() => {
     const rules2 = [];
-    const { rule } = props;
+    const {
+      rule
+    } = props;
     if (rule !== void 0) {
       if (Array.isArray(rule))
         rules2.push(...rule);
@@ -1355,8 +1413,12 @@ function formItemRule(props) {
         rules2.push(rule);
     }
     if (NForm2) {
-      const { rules: formRules } = NForm2.props;
-      const { value: rulePath } = compatibleRulePathRef;
+      const {
+        rules: formRules
+      } = NForm2.props;
+      const {
+        value: rulePath
+      } = compatibleRulePathRef;
       if (formRules !== void 0 && rulePath !== void 0) {
         const formRule = get(formRules, rulePath);
         if (formRule !== void 0) {
@@ -1439,7 +1501,7 @@ const style = cB("form-item", `
  "label feedback";
  grid-template-columns: auto minmax(0, 1fr);
  grid-template-rows: auto 1fr;
- align-items: start;
+ align-items: flex-start;
  `, [cB("form-item-label", `
  display: grid;
  grid-template-columns: 1fr auto;
@@ -1536,16 +1598,36 @@ var __awaiter = globalThis && globalThis.__awaiter || function(thisArg, _argumen
     step((generator = generator.apply(thisArg, _arguments || [])).next());
   });
 };
-const formItemProps = Object.assign(Object.assign({}, useTheme.props), { label: String, labelWidth: [Number, String], labelStyle: [String, Object], labelAlign: String, labelPlacement: String, path: String, first: Boolean, rulePath: String, required: Boolean, showRequireMark: {
-  type: Boolean,
-  default: void 0
-}, requireMarkPlacement: String, showFeedback: {
-  type: Boolean,
-  default: void 0
-}, rule: [Object, Array], size: String, ignorePathChange: Boolean, validationStatus: String, feedback: String, showLabel: {
-  type: Boolean,
-  default: void 0
-}, labelProps: Object });
+const formItemProps = Object.assign(Object.assign({}, useTheme.props), {
+  label: String,
+  labelWidth: [Number, String],
+  labelStyle: [String, Object],
+  labelAlign: String,
+  labelPlacement: String,
+  path: String,
+  first: Boolean,
+  rulePath: String,
+  required: Boolean,
+  showRequireMark: {
+    type: Boolean,
+    default: void 0
+  },
+  requireMarkPlacement: String,
+  showFeedback: {
+    type: Boolean,
+    default: void 0
+  },
+  rule: [Object, Array],
+  size: String,
+  ignorePathChange: Boolean,
+  validationStatus: String,
+  feedback: String,
+  showLabel: {
+    type: Boolean,
+    default: void 0
+  },
+  labelProps: Object
+});
 function wrapValidator(validator, async) {
   return (...args) => {
     try {
@@ -1571,14 +1653,29 @@ const NFormItem = defineComponent({
   props: formItemProps,
   setup(props) {
     useInjectionInstanceCollection(formItemInstsInjectionKey, "formItems", toRef(props, "path"));
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const NForm2 = inject(formInjectionKey, null);
     const formItemSizeRefs = formItemSize(props);
     const formItemMiscRefs = formItemMisc(props);
-    const { validationErrored: validationErroredRef } = formItemMiscRefs;
-    const { mergedRequired: mergedRequiredRef, mergedRules: mergedRulesRef } = formItemRule(props);
-    const { mergedSize: mergedSizeRef } = formItemSizeRefs;
-    const { mergedLabelPlacement: labelPlacementRef, mergedLabelAlign: labelTextAlignRef, mergedRequireMarkPlacement: mergedRequireMarkPlacementRef } = formItemMiscRefs;
+    const {
+      validationErrored: validationErroredRef,
+      validationWarned: validationWarnedRef
+    } = formItemMiscRefs;
+    const {
+      mergedRequired: mergedRequiredRef,
+      mergedRules: mergedRulesRef
+    } = formItemRule(props);
+    const {
+      mergedSize: mergedSizeRef
+    } = formItemSizeRefs;
+    const {
+      mergedLabelPlacement: labelPlacementRef,
+      mergedLabelAlign: labelTextAlignRef,
+      mergedRequireMarkPlacement: mergedRequireMarkPlacementRef
+    } = formItemMiscRefs;
     const renderExplainsRef = ref([]);
     const feedbackIdRef = ref(createId());
     const mergedDisabledRef = NForm2 ? toRef(NForm2.props, "disabled") : ref(false);
@@ -1591,6 +1688,7 @@ const NFormItem = defineComponent({
     function restoreValidation() {
       renderExplainsRef.value = [];
       validationErroredRef.value = false;
+      validationWarnedRef.value = false;
       if (props.feedback) {
         feedbackIdRef.value = createId();
       }
@@ -1622,16 +1720,26 @@ const NFormItem = defineComponent({
           shouldRuleBeApplied = options.shouldRuleBeApplied;
           asyncValidatorOptions = options.options;
         }
-        yield new Promise((resolve, reject) => {
-          void internalValidate(trigger, shouldRuleBeApplied, asyncValidatorOptions).then(({ valid, errors }) => {
+        return yield new Promise((resolve, reject) => {
+          void internalValidate(trigger, shouldRuleBeApplied, asyncValidatorOptions).then(({
+            valid,
+            errors,
+            warnings
+          }) => {
             if (valid) {
               if (validateCallback) {
-                validateCallback();
+                validateCallback(void 0, {
+                  warnings
+                });
               }
-              resolve();
+              resolve({
+                warnings
+              });
             } else {
               if (validateCallback) {
-                validateCallback(errors);
+                validateCallback(errors, {
+                  warnings
+                });
               }
               reject(errors);
             }
@@ -1642,14 +1750,18 @@ const NFormItem = defineComponent({
     const internalValidate = (trigger = null, shouldRuleBeApplied = () => true, options = {
       suppressWarning: true
     }) => __awaiter(this, void 0, void 0, function* () {
-      const { path } = props;
+      const {
+        path
+      } = props;
       if (!options) {
         options = {};
       } else {
         if (!options.first)
           options.first = props.first;
       }
-      const { value: rules2 } = mergedRulesRef;
+      const {
+        value: rules2
+      } = mergedRulesRef;
       const value = NForm2 ? get(NForm2.props.model, path || "") : void 0;
       const messageRenderers = {};
       const originalMessageRendersMessage = {};
@@ -1675,51 +1787,76 @@ const NFormItem = defineComponent({
         }
         return shallowClonedRule;
       });
-      if (!activeRules.length) {
-        return {
-          valid: true
-        };
-      }
+      const activeErrorRules = activeRules.filter((r) => r.level !== "warning");
+      const activeWarningRules = activeRules.filter((r) => r.level === "warning");
       const mergedPath = path !== null && path !== void 0 ? path : "__n_no_path__";
-      const validator = new Schema({ [mergedPath]: activeRules });
-      const { validateMessages } = (NForm2 === null || NForm2 === void 0 ? void 0 : NForm2.props) || {};
+      const validator = new Schema({
+        [mergedPath]: activeErrorRules
+      });
+      const warningValidator = new Schema({
+        [mergedPath]: activeWarningRules
+      });
+      const {
+        validateMessages
+      } = (NForm2 === null || NForm2 === void 0 ? void 0 : NForm2.props) || {};
       if (validateMessages) {
         validator.messages(validateMessages);
+        warningValidator.messages(validateMessages);
       }
-      return yield new Promise((resolve) => {
-        void validator.validate({ [mergedPath]: value }, options, (errors) => {
-          if (errors === null || errors === void 0 ? void 0 : errors.length) {
-            renderExplainsRef.value = errors.map((error) => {
-              const transformedMessage = (error === null || error === void 0 ? void 0 : error.message) || "";
-              return {
-                key: transformedMessage,
-                render: () => {
-                  if (transformedMessage.startsWith("__renderMessage__")) {
-                    return messageRenderers[transformedMessage]();
-                  }
-                  return transformedMessage;
-                }
-              };
-            });
-            errors.forEach((error) => {
-              var _a;
-              if ((_a = error.message) === null || _a === void 0 ? void 0 : _a.startsWith("__renderMessage__")) {
-                error.message = originalMessageRendersMessage[error.message];
+      const renderMessages = (errors) => {
+        renderExplainsRef.value = errors.map((error) => {
+          const transformedMessage = (error === null || error === void 0 ? void 0 : error.message) || "";
+          return {
+            key: transformedMessage,
+            render: () => {
+              if (transformedMessage.startsWith("__renderMessage__")) {
+                return messageRenderers[transformedMessage]();
               }
-            });
-            validationErroredRef.value = true;
-            resolve({
-              valid: false,
-              errors
-            });
-          } else {
-            restoreValidation();
-            resolve({
-              valid: true
-            });
+              return transformedMessage;
+            }
+          };
+        });
+        errors.forEach((error) => {
+          var _a;
+          if ((_a = error.message) === null || _a === void 0 ? void 0 : _a.startsWith("__renderMessage__")) {
+            error.message = originalMessageRendersMessage[error.message];
           }
         });
-      });
+      };
+      const validationResult = {
+        valid: true,
+        errors: void 0,
+        warnings: void 0
+      };
+      if (activeErrorRules.length) {
+        const errors = yield new Promise((resolve) => {
+          void validator.validate({
+            [mergedPath]: value
+          }, options, resolve);
+        });
+        if (errors === null || errors === void 0 ? void 0 : errors.length) {
+          validationErroredRef.value = true;
+          validationResult.valid = false;
+          validationResult.errors = errors;
+          renderMessages(errors);
+        }
+      }
+      if (activeWarningRules.length && !validationResult.errors) {
+        const warnings = yield new Promise((resolve) => {
+          void warningValidator.validate({
+            [mergedPath]: value
+          }, options, resolve);
+        });
+        if (warnings === null || warnings === void 0 ? void 0 : warnings.length) {
+          renderMessages(warnings);
+          validationWarnedRef.value = true;
+          validationResult.warnings = warnings;
+        }
+      }
+      if (activeErrorRules.length + activeWarningRules.length > 0 && !validationResult.errors && !validationResult.warnings) {
+        restoreValidation();
+      }
+      return validationResult;
     });
     provide(formItemInjectionKey, {
       path: toRef(props, "path"),
@@ -1752,10 +1889,35 @@ const NFormItem = defineComponent({
     });
     const cssVarsRef = computed(() => {
       var _a;
-      const { value: size } = mergedSizeRef;
-      const { value: labelPlacement } = labelPlacementRef;
+      const {
+        value: size
+      } = mergedSizeRef;
+      const {
+        value: labelPlacement
+      } = labelPlacementRef;
       const direction = labelPlacement === "top" ? "vertical" : "horizontal";
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { labelTextColor, asteriskColor, lineHeight, feedbackTextColor, feedbackTextColorWarning, feedbackTextColorError, feedbackPadding, labelFontWeight, [createKey("labelHeight", size)]: labelHeight, [createKey("blankHeight", size)]: blankHeight, [createKey("feedbackFontSize", size)]: feedbackFontSize, [createKey("feedbackHeight", size)]: feedbackHeight, [createKey("labelPadding", direction)]: labelPadding, [createKey("labelTextAlign", direction)]: labelTextAlign, [createKey(createKey("labelFontSize", labelPlacement), size)]: labelFontSize } } = themeRef.value;
+      const {
+        common: {
+          cubicBezierEaseInOut: cubicBezierEaseInOut2
+        },
+        self: {
+          labelTextColor,
+          asteriskColor,
+          lineHeight,
+          feedbackTextColor,
+          feedbackTextColorWarning,
+          feedbackTextColorError,
+          feedbackPadding,
+          labelFontWeight,
+          [createKey("labelHeight", size)]: labelHeight,
+          [createKey("blankHeight", size)]: blankHeight,
+          [createKey("feedbackFontSize", size)]: feedbackFontSize,
+          [createKey("feedbackHeight", size)]: feedbackHeight,
+          [createKey("labelPadding", direction)]: labelPadding,
+          [createKey("labelTextAlign", direction)]: labelTextAlign,
+          [createKey(createKey("labelFontSize", labelPlacement), size)]: labelFontSize
+        }
+      } = themeRef.value;
       let mergedLabelTextAlign = (_a = labelTextAlignRef.value) !== null && _a !== void 0 ? _a : labelTextAlign;
       if (labelPlacement === "top") {
         mergedLabelTextAlign = mergedLabelTextAlign === "right" ? "flex-end" : "flex-start";
@@ -1787,57 +1949,98 @@ const NFormItem = defineComponent({
     const reverseColSpaceRef = computed(() => {
       return labelPlacementRef.value === "left" && mergedRequireMarkPlacementRef.value === "left" && labelTextAlignRef.value === "left";
     });
-    return Object.assign(Object.assign(Object.assign(Object.assign({ labelElementRef, mergedClsPrefix: mergedClsPrefixRef, mergedRequired: mergedRequiredRef, feedbackId: feedbackIdRef, renderExplains: renderExplainsRef, reverseColSpace: reverseColSpaceRef }, formItemMiscRefs), formItemSizeRefs), exposedRef), { cssVars: inlineThemeDisabled ? void 0 : cssVarsRef, themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass, onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender });
+    return Object.assign(Object.assign(Object.assign(Object.assign({
+      labelElementRef,
+      mergedClsPrefix: mergedClsPrefixRef,
+      mergedRequired: mergedRequiredRef,
+      feedbackId: feedbackIdRef,
+      renderExplains: renderExplainsRef,
+      reverseColSpace: reverseColSpaceRef
+    }, formItemMiscRefs), formItemSizeRefs), exposedRef), {
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    });
   },
   render() {
-    const { $slots, mergedClsPrefix, mergedShowLabel, mergedShowRequireMark, mergedRequireMarkPlacement, onRender } = this;
+    const {
+      $slots,
+      mergedClsPrefix,
+      mergedShowLabel,
+      mergedShowRequireMark,
+      mergedRequireMarkPlacement,
+      onRender
+    } = this;
     const renderedShowRequireMark = mergedShowRequireMark !== void 0 ? mergedShowRequireMark : this.mergedRequired;
     onRender === null || onRender === void 0 ? void 0 : onRender();
     const renderLabel = () => {
       const labelText = this.$slots.label ? this.$slots.label() : this.label;
       if (!labelText)
         return null;
-      const textNode = h("span", { class: `${mergedClsPrefix}-form-item-label__text` }, labelText);
-      const markNode = renderedShowRequireMark ? h("span", { class: `${mergedClsPrefix}-form-item-label__asterisk` }, mergedRequireMarkPlacement !== "left" ? " *" : "* ") : mergedRequireMarkPlacement === "right-hanging" && h("span", { class: `${mergedClsPrefix}-form-item-label__asterisk-placeholder` }, " *");
-      const { labelProps } = this;
-      return h("label", Object.assign({}, labelProps, { class: [
-        labelProps === null || labelProps === void 0 ? void 0 : labelProps.class,
-        `${mergedClsPrefix}-form-item-label`,
-        `${mergedClsPrefix}-form-item-label--${mergedRequireMarkPlacement}-mark`,
-        this.reverseColSpace && `${mergedClsPrefix}-form-item-label--reverse-columns-space`
-      ], style: this.mergedLabelStyle, ref: "labelElementRef" }), mergedRequireMarkPlacement === "left" ? [markNode, textNode] : [textNode, markNode]);
+      const textNode = h("span", {
+        class: `${mergedClsPrefix}-form-item-label__text`
+      }, labelText);
+      const markNode = renderedShowRequireMark ? h("span", {
+        class: `${mergedClsPrefix}-form-item-label__asterisk`
+      }, mergedRequireMarkPlacement !== "left" ? " *" : "* ") : mergedRequireMarkPlacement === "right-hanging" && h("span", {
+        class: `${mergedClsPrefix}-form-item-label__asterisk-placeholder`
+      }, " *");
+      const {
+        labelProps
+      } = this;
+      return h("label", Object.assign({}, labelProps, {
+        class: [labelProps === null || labelProps === void 0 ? void 0 : labelProps.class, `${mergedClsPrefix}-form-item-label`, `${mergedClsPrefix}-form-item-label--${mergedRequireMarkPlacement}-mark`, this.reverseColSpace && `${mergedClsPrefix}-form-item-label--reverse-columns-space`],
+        style: this.mergedLabelStyle,
+        ref: "labelElementRef"
+      }), mergedRequireMarkPlacement === "left" ? [markNode, textNode] : [textNode, markNode]);
     };
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-form-item`,
-        this.themeClass,
-        `${mergedClsPrefix}-form-item--${this.mergedSize}-size`,
-        `${mergedClsPrefix}-form-item--${this.mergedLabelPlacement}-labelled`,
-        this.isAutoLabelWidth && `${mergedClsPrefix}-form-item--auto-label-width`,
-        !mergedShowLabel && `${mergedClsPrefix}-form-item--no-label`
-      ], style: this.cssVars },
-      mergedShowLabel && renderLabel(),
-      h("div", { class: [
-        `${mergedClsPrefix}-form-item-blank`,
-        this.mergedValidationStatus && `${mergedClsPrefix}-form-item-blank--${this.mergedValidationStatus}`
-      ] }, $slots),
-      this.mergedShowFeedback ? h(
-        "div",
-        { key: this.feedbackId, class: `${mergedClsPrefix}-form-item-feedback-wrapper` },
-        h(Transition, { name: "fade-down-transition", mode: "out-in" }, {
-          default: () => {
-            const { mergedValidationStatus } = this;
-            return resolveWrappedSlot($slots.feedback, (children) => {
-              var _a;
-              const { feedback } = this;
-              const feedbackNodes = children || feedback ? h("div", { key: "__feedback__", class: `${mergedClsPrefix}-form-item-feedback__line` }, children || feedback) : this.renderExplains.length ? (_a = this.renderExplains) === null || _a === void 0 ? void 0 : _a.map(({ key, render }) => h("div", { key, class: `${mergedClsPrefix}-form-item-feedback__line` }, render())) : null;
-              return feedbackNodes ? mergedValidationStatus === "warning" ? h("div", { key: "controlled-warning", class: `${mergedClsPrefix}-form-item-feedback ${mergedClsPrefix}-form-item-feedback--warning` }, feedbackNodes) : mergedValidationStatus === "error" ? h("div", { key: "controlled-error", class: `${mergedClsPrefix}-form-item-feedback ${mergedClsPrefix}-form-item-feedback--error` }, feedbackNodes) : mergedValidationStatus === "success" ? h("div", { key: "controlled-success", class: `${mergedClsPrefix}-form-item-feedback ${mergedClsPrefix}-form-item-feedback--success` }, feedbackNodes) : h("div", { key: "controlled-default", class: `${mergedClsPrefix}-form-item-feedback` }, feedbackNodes) : null;
-            });
-          }
-        })
-      ) : null
-    );
+    return h("div", {
+      class: [`${mergedClsPrefix}-form-item`, this.themeClass, `${mergedClsPrefix}-form-item--${this.mergedSize}-size`, `${mergedClsPrefix}-form-item--${this.mergedLabelPlacement}-labelled`, this.isAutoLabelWidth && `${mergedClsPrefix}-form-item--auto-label-width`, !mergedShowLabel && `${mergedClsPrefix}-form-item--no-label`],
+      style: this.cssVars
+    }, mergedShowLabel && renderLabel(), h("div", {
+      class: [`${mergedClsPrefix}-form-item-blank`, this.mergedValidationStatus && `${mergedClsPrefix}-form-item-blank--${this.mergedValidationStatus}`]
+    }, $slots), this.mergedShowFeedback ? h("div", {
+      key: this.feedbackId,
+      class: `${mergedClsPrefix}-form-item-feedback-wrapper`
+    }, h(Transition, {
+      name: "fade-down-transition",
+      mode: "out-in"
+    }, {
+      default: () => {
+        const {
+          mergedValidationStatus
+        } = this;
+        return resolveWrappedSlot($slots.feedback, (children) => {
+          var _a;
+          const {
+            feedback
+          } = this;
+          const feedbackNodes = children || feedback ? h("div", {
+            key: "__feedback__",
+            class: `${mergedClsPrefix}-form-item-feedback__line`
+          }, children || feedback) : this.renderExplains.length ? (_a = this.renderExplains) === null || _a === void 0 ? void 0 : _a.map(({
+            key,
+            render
+          }) => h("div", {
+            key,
+            class: `${mergedClsPrefix}-form-item-feedback__line`
+          }, render())) : null;
+          return feedbackNodes ? mergedValidationStatus === "warning" ? h("div", {
+            key: "controlled-warning",
+            class: `${mergedClsPrefix}-form-item-feedback ${mergedClsPrefix}-form-item-feedback--warning`
+          }, feedbackNodes) : mergedValidationStatus === "error" ? h("div", {
+            key: "controlled-error",
+            class: `${mergedClsPrefix}-form-item-feedback ${mergedClsPrefix}-form-item-feedback--error`
+          }, feedbackNodes) : mergedValidationStatus === "success" ? h("div", {
+            key: "controlled-success",
+            class: `${mergedClsPrefix}-form-item-feedback ${mergedClsPrefix}-form-item-feedback--success`
+          }, feedbackNodes) : h("div", {
+            key: "controlled-default",
+            class: `${mergedClsPrefix}-form-item-feedback`
+          }, feedbackNodes) : null;
+        });
+      }
+    })) : null);
   }
 });
 const _hoisted_1$7 = { class: "flex-container" };
@@ -1876,8 +2079,8 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const settings = useSettings();
+    const props = __props;
     const target = computed(() => {
       if (props.target === "settings") {
         return settings.data.settings;
@@ -2115,7 +2318,6 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const settings = useSettings();
     const cfgMax = computed(() => {
       var scale = 30;
@@ -2124,6 +2326,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
         settings.defaultSettings.api.cfg_rescale_threshold == "off" ? 0 : 30
       );
     });
+    const props = __props;
     const settingsTarget = computed(() => {
       let t;
       if (props.target === "settings") {
@@ -2204,7 +2407,6 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const settings = useSettings();
     const latentUpscalerOptions = [
       { label: "Nearest", value: "nearest" },
@@ -2214,6 +2416,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
       { label: "Bicubic", value: "bicubic" },
       { label: "Bislerp", value: "bislerp" }
     ];
+    const props = __props;
     const target = computed(() => {
       if (props.target === "settings") {
         return settings.data.settings;
@@ -2400,9 +2603,9 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const settings = useSettings();
     const global = useState();
+    const props = __props;
     const target = computed(() => {
       if (props.target === "settings") {
         return settings.data.settings;
@@ -2691,8 +2894,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const settings = useSettings();
+    const props = __props;
     const settingsTarget = computed(() => {
       let t;
       if (props.target === "settings") {
@@ -2761,7 +2964,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const settings = useSettings();
     const showModal = ref(false);
     function getValue2(param) {
@@ -2798,6 +3000,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             max: settings2.max,
             step: settings2.step,
             value: getValue2(param),
+            // @ts-ignore
             onUpdateValue: (value) => setValue(param, value)
           });
       }
@@ -2821,6 +3024,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }
       return settings.defaultSettings;
     });
+    const props = __props;
     const computedSettings = computed(() => {
       return sigmasTarget.value.sampler_config[settingsTarget.value.sampler] ?? {};
     });
@@ -2990,8 +3194,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const settings = useSettings();
+    const props = __props;
     const target = computed(() => {
       if (props.target === "settings") {
         return settings.data.settings;
@@ -3085,9 +3289,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const global = useState();
     const settings = useSettings();
+    const props = __props;
     const target = computed(() => {
       if (props.target === "settings") {
         return settings.data.settings;

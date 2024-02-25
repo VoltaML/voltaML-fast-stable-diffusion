@@ -1,12 +1,17 @@
-import { d as defineComponent, t as h, a3 as c, a1 as cB, X as useConfig, ab as useTheme, aB as useLocale, aN as useFormItem, y as ref, a7 as toRef, a6 as useMergedState, aO as useMemo, J as watch, aC as useRtl, i as computed, bZ as rgba, I as NInput, aQ as resolveWrappedSlot, b_ as inputNumberLight, al as on, aE as resolveSlot, aF as NBaseIcon, b$ as XButton, bf as AddIcon, at as call, aa as nextTick } from "./index.js";
+import { d as defineComponent, t as h, a3 as c, a1 as cB, X as useConfig, ab as useTheme, aB as useLocale, aN as useFormItem, y as ref, a7 as toRef, a6 as useMergedState, aO as useMemo, J as watch, aC as useRtl, i as computed, b_ as rgba, I as NInput, aQ as resolveWrappedSlot, b$ as inputNumberLight, al as on, aE as resolveSlot, aF as NBaseIcon, c0 as XButton, bh as AddIcon, at as call, aa as nextTick } from "./index.js";
 const RemoveIcon = defineComponent({
   name: "Remove",
   render() {
-    return h(
-      "svg",
-      { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 512 512" },
-      h("line", { x1: "400", y1: "256", x2: "112", y2: "256", style: "\n        fill: none;\n        stroke: currentColor;\n        stroke-linecap: round;\n        stroke-linejoin: round;\n        stroke-width: 32px;\n      " })
-    );
+    return h("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      viewBox: "0 0 512 512"
+    }, h("line", {
+      x1: "400",
+      y1: "256",
+      x2: "112",
+      y2: "256",
+      style: "\n        fill: none;\n        stroke: currentColor;\n        stroke-linecap: round;\n        stroke-linejoin: round;\n        stroke-width: 32px;\n      "
+    }));
   }
 });
 function parse(value) {
@@ -89,6 +94,7 @@ const inputNumberProps = Object.assign(Object.assign({}, useTheme.props), {
     type: String,
     default: "right"
   },
+  inputProps: Object,
   readonly: Boolean,
   clearable: Boolean,
   keyboard: {
@@ -115,11 +121,21 @@ const NInputNumber = defineComponent({
   name: "InputNumber",
   props: inputNumberProps,
   setup(props) {
-    const { mergedBorderedRef, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
+    const {
+      mergedBorderedRef,
+      mergedClsPrefixRef,
+      mergedRtlRef
+    } = useConfig(props);
     const themeRef = useTheme("InputNumber", "-input-number", style, inputNumberLight, props, mergedClsPrefixRef);
-    const { localeRef } = useLocale("InputNumber");
+    const {
+      localeRef
+    } = useLocale("InputNumber");
     const formItem = useFormItem(props);
-    const { mergedSizeRef, mergedDisabledRef, mergedStatusRef } = formItem;
+    const {
+      mergedSizeRef,
+      mergedDisabledRef,
+      mergedStatusRef
+    } = formItem;
     const inputInstRef = ref(null);
     const minusButtonInstRef = ref(null);
     const addButtonInstRef = ref(null);
@@ -140,7 +156,9 @@ const NInputNumber = defineComponent({
       return Math.max(...precisions);
     };
     const mergedPlaceholderRef = useMemo(() => {
-      const { placeholder } = props;
+      const {
+        placeholder
+      } = props;
       if (placeholder !== void 0)
         return placeholder;
       return localeRef.value.placeholder;
@@ -167,13 +185,22 @@ const NInputNumber = defineComponent({
         return null;
     });
     const doUpdateValue = (value) => {
-      const { value: mergedValue } = mergedValueRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
       if (value === mergedValue) {
         deriveDisplayedValueFromValue();
         return;
       }
-      const { "onUpdate:value": _onUpdateValue, onUpdateValue, onChange } = props;
-      const { nTriggerFormInput, nTriggerFormChange } = formItem;
+      const {
+        "onUpdate:value": _onUpdateValue,
+        onUpdateValue,
+        onChange
+      } = props;
+      const {
+        nTriggerFormInput,
+        nTriggerFormChange
+      } = formItem;
       if (onChange)
         call(onChange, value);
       if (onUpdateValue)
@@ -184,8 +211,15 @@ const NInputNumber = defineComponent({
       nTriggerFormInput();
       nTriggerFormChange();
     };
-    const deriveValueFromDisplayedValue = ({ offset, doUpdateIfValid, fixPrecision, isInputing }) => {
-      const { value: displayedValue } = displayedValueRef;
+    const deriveValueFromDisplayedValue = ({
+      offset,
+      doUpdateIfValid,
+      fixPrecision,
+      isInputing
+    }) => {
+      const {
+        value: displayedValue
+      } = displayedValueRef;
       if (isInputing && isWipValue(displayedValue)) {
         return false;
       }
@@ -197,14 +231,20 @@ const NInputNumber = defineComponent({
       }
       if (validator(parsedValue)) {
         const currentPrecision = getPrecision(parsedValue);
-        const { precision } = props;
+        const {
+          precision
+        } = props;
         if (precision !== void 0 && precision < currentPrecision && !fixPrecision) {
           return false;
         }
         let nextValue = parseFloat((parsedValue + offset).toFixed(precision !== null && precision !== void 0 ? precision : getMaxPrecision(parsedValue)));
         if (validator(nextValue)) {
-          const { value: mergedMax } = mergedMaxRef;
-          const { value: mergedMin } = mergedMinRef;
+          const {
+            value: mergedMax
+          } = mergedMaxRef;
+          const {
+            value: mergedMin
+          } = mergedMinRef;
           if (mergedMax !== null && nextValue > mergedMax) {
             if (!doUpdateIfValid || isInputing)
               return false;
@@ -225,9 +265,14 @@ const NInputNumber = defineComponent({
       return false;
     };
     const deriveDisplayedValueFromValue = () => {
-      const { value: mergedValue } = mergedValueRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
       if (validator(mergedValue)) {
-        const { format: formatProp, precision } = props;
+        const {
+          format: formatProp,
+          precision
+        } = props;
         if (formatProp) {
           displayedValueRef.value = formatProp(mergedValue);
         } else {
@@ -253,11 +298,15 @@ const NInputNumber = defineComponent({
       return derivedValue === false;
     });
     const minusableRef = useMemo(() => {
-      const { value: mergedValue } = mergedValueRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
       if (props.validator && mergedValue === null) {
         return false;
       }
-      const { value: mergedStep } = mergedStepRef;
+      const {
+        value: mergedStep
+      } = mergedStepRef;
       const derivedNextValue = deriveValueFromDisplayedValue({
         offset: -mergedStep,
         doUpdateIfValid: false,
@@ -267,11 +316,15 @@ const NInputNumber = defineComponent({
       return derivedNextValue !== false;
     });
     const addableRef = useMemo(() => {
-      const { value: mergedValue } = mergedValueRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
       if (props.validator && mergedValue === null) {
         return false;
       }
-      const { value: mergedStep } = mergedStepRef;
+      const {
+        value: mergedStep
+      } = mergedStepRef;
       const derivedNextValue = deriveValueFromDisplayedValue({
         offset: +mergedStep,
         doUpdateIfValid: false,
@@ -281,8 +334,12 @@ const NInputNumber = defineComponent({
       return derivedNextValue !== false;
     });
     function doFocus(e) {
-      const { onFocus } = props;
-      const { nTriggerFormFocus } = formItem;
+      const {
+        onFocus
+      } = props;
+      const {
+        nTriggerFormFocus
+      } = formItem;
       if (onFocus)
         call(onFocus, e);
       nTriggerFormFocus();
@@ -309,8 +366,12 @@ const NInputNumber = defineComponent({
       } else {
         deriveDisplayedValueFromValue();
       }
-      const { onBlur } = props;
-      const { nTriggerFormBlur } = formItem;
+      const {
+        onBlur
+      } = props;
+      const {
+        nTriggerFormBlur
+      } = formItem;
       if (onBlur)
         call(onBlur, e);
       nTriggerFormBlur();
@@ -319,23 +380,31 @@ const NInputNumber = defineComponent({
       });
     }
     function doClear(e) {
-      const { onClear } = props;
+      const {
+        onClear
+      } = props;
       if (onClear)
         call(onClear, e);
     }
     function doAdd() {
-      const { value: addable } = addableRef;
+      const {
+        value: addable
+      } = addableRef;
       if (!addable) {
         clearAddHoldTimeout();
         return;
       }
-      const { value: mergedValue } = mergedValueRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
       if (mergedValue === null) {
         if (!props.validator) {
           doUpdateValue(createValidValue());
         }
       } else {
-        const { value: mergedStep } = mergedStepRef;
+        const {
+          value: mergedStep
+        } = mergedStepRef;
         deriveValueFromDisplayedValue({
           offset: mergedStep,
           doUpdateIfValid: true,
@@ -345,18 +414,24 @@ const NInputNumber = defineComponent({
       }
     }
     function doMinus() {
-      const { value: minusable } = minusableRef;
+      const {
+        value: minusable
+      } = minusableRef;
       if (!minusable) {
         clearMinusHoldTimeout();
         return;
       }
-      const { value: mergedValue } = mergedValueRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
       if (mergedValue === null) {
         if (!props.validator) {
           doUpdateValue(createValidValue());
         }
       } else {
-        const { value: mergedStep } = mergedStepRef;
+        const {
+          value: mergedStep
+        } = mergedStepRef;
         deriveValueFromDisplayedValue({
           offset: -mergedStep,
           doUpdateIfValid: true,
@@ -370,8 +445,12 @@ const NInputNumber = defineComponent({
     function createValidValue() {
       if (props.validator)
         return null;
-      const { value: mergedMin } = mergedMinRef;
-      const { value: mergedMax } = mergedMaxRef;
+      const {
+        value: mergedMin
+      } = mergedMinRef;
+      const {
+        value: mergedMax
+      } = mergedMaxRef;
       if (mergedMin !== null) {
         return Math.max(0, mergedMin);
       } else if (mergedMax !== null) {
@@ -561,7 +640,11 @@ const NInputNumber = defineComponent({
         paddingLarge: "0 8px 0 14px"
       },
       buttonThemeOverrides: computed(() => {
-        const { self: { iconColorDisabled } } = themeRef.value;
+        const {
+          self: {
+            iconColorDisabled
+          }
+        } = themeRef.value;
         const [r, g, b, a] = rgba(iconColorDisabled);
         return {
           textColorTextDisabled: `rgb(${r}, ${g}, ${b})`,
@@ -571,59 +654,98 @@ const NInputNumber = defineComponent({
     });
   },
   render() {
-    const { mergedClsPrefix, $slots } = this;
+    const {
+      mergedClsPrefix,
+      $slots
+    } = this;
     const renderMinusButton = () => {
-      return h(XButton, { text: true, disabled: !this.minusable || this.mergedDisabled || this.readonly, focusable: false, theme: this.mergedTheme.peers.Button, themeOverrides: this.mergedTheme.peerOverrides.Button, builtinThemeOverrides: this.buttonThemeOverrides, onClick: this.handleMinusClick, onMousedown: this.handleMinusMousedown, ref: "minusButtonInstRef" }, {
-        icon: () => resolveSlot($slots["minus-icon"], () => [
-          h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
-            default: () => h(RemoveIcon, null)
-          })
-        ])
+      return h(XButton, {
+        text: true,
+        disabled: !this.minusable || this.mergedDisabled || this.readonly,
+        focusable: false,
+        theme: this.mergedTheme.peers.Button,
+        themeOverrides: this.mergedTheme.peerOverrides.Button,
+        builtinThemeOverrides: this.buttonThemeOverrides,
+        onClick: this.handleMinusClick,
+        onMousedown: this.handleMinusMousedown,
+        ref: "minusButtonInstRef"
+      }, {
+        icon: () => resolveSlot($slots["minus-icon"], () => [h(NBaseIcon, {
+          clsPrefix: mergedClsPrefix
+        }, {
+          default: () => h(RemoveIcon, null)
+        })])
       });
     };
     const renderAddButton = () => {
-      return h(XButton, { text: true, disabled: !this.addable || this.mergedDisabled || this.readonly, focusable: false, theme: this.mergedTheme.peers.Button, themeOverrides: this.mergedTheme.peerOverrides.Button, builtinThemeOverrides: this.buttonThemeOverrides, onClick: this.handleAddClick, onMousedown: this.handleAddMousedown, ref: "addButtonInstRef" }, {
-        icon: () => resolveSlot($slots["add-icon"], () => [
-          h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
-            default: () => h(AddIcon, null)
-          })
-        ])
+      return h(XButton, {
+        text: true,
+        disabled: !this.addable || this.mergedDisabled || this.readonly,
+        focusable: false,
+        theme: this.mergedTheme.peers.Button,
+        themeOverrides: this.mergedTheme.peerOverrides.Button,
+        builtinThemeOverrides: this.buttonThemeOverrides,
+        onClick: this.handleAddClick,
+        onMousedown: this.handleAddMousedown,
+        ref: "addButtonInstRef"
+      }, {
+        icon: () => resolveSlot($slots["add-icon"], () => [h(NBaseIcon, {
+          clsPrefix: mergedClsPrefix
+        }, {
+          default: () => h(AddIcon, null)
+        })])
       });
     };
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-input-number`,
-        this.rtlEnabled && `${mergedClsPrefix}-input-number--rtl`
-      ] },
-      h(NInput, { ref: "inputInstRef", autofocus: this.autofocus, status: this.mergedStatus, bordered: this.mergedBordered, loading: this.loading, value: this.displayedValue, onUpdateValue: this.handleUpdateDisplayedValue, theme: this.mergedTheme.peers.Input, themeOverrides: this.mergedTheme.peerOverrides.Input, builtinThemeOverrides: this.inputThemeOverrides, size: this.mergedSize, placeholder: this.mergedPlaceholder, disabled: this.mergedDisabled, readonly: this.readonly, textDecoration: this.displayedValueInvalid ? "line-through" : void 0, onFocus: this.handleFocus, onBlur: this.handleBlur, onKeydown: this.handleKeyDown, onMousedown: this.handleMouseDown, onClear: this.handleClear, clearable: this.clearable, internalLoadingBeforeSuffix: true }, {
-        prefix: () => {
-          var _a;
-          return this.showButton && this.buttonPlacement === "both" ? [
-            renderMinusButton(),
-            resolveWrappedSlot($slots.prefix, (children) => {
-              if (children) {
-                return h("span", { class: `${mergedClsPrefix}-input-number-prefix` }, children);
-              }
-              return null;
-            })
-          ] : (_a = $slots.prefix) === null || _a === void 0 ? void 0 : _a.call($slots);
-        },
-        suffix: () => {
-          var _a;
-          return this.showButton ? [
-            resolveWrappedSlot($slots.suffix, (children) => {
-              if (children) {
-                return h("span", { class: `${mergedClsPrefix}-input-number-suffix` }, children);
-              }
-              return null;
-            }),
-            this.buttonPlacement === "right" ? renderMinusButton() : null,
-            renderAddButton()
-          ] : (_a = $slots.suffix) === null || _a === void 0 ? void 0 : _a.call($slots);
-        }
-      })
-    );
+    return h("div", {
+      class: [`${mergedClsPrefix}-input-number`, this.rtlEnabled && `${mergedClsPrefix}-input-number--rtl`]
+    }, h(NInput, {
+      ref: "inputInstRef",
+      autofocus: this.autofocus,
+      status: this.mergedStatus,
+      bordered: this.mergedBordered,
+      loading: this.loading,
+      value: this.displayedValue,
+      onUpdateValue: this.handleUpdateDisplayedValue,
+      theme: this.mergedTheme.peers.Input,
+      themeOverrides: this.mergedTheme.peerOverrides.Input,
+      builtinThemeOverrides: this.inputThemeOverrides,
+      size: this.mergedSize,
+      placeholder: this.mergedPlaceholder,
+      disabled: this.mergedDisabled,
+      readonly: this.readonly,
+      textDecoration: this.displayedValueInvalid ? "line-through" : void 0,
+      onFocus: this.handleFocus,
+      onBlur: this.handleBlur,
+      onKeydown: this.handleKeyDown,
+      onMousedown: this.handleMouseDown,
+      onClear: this.handleClear,
+      clearable: this.clearable,
+      inputProps: this.inputProps,
+      internalLoadingBeforeSuffix: true
+    }, {
+      prefix: () => {
+        var _a;
+        return this.showButton && this.buttonPlacement === "both" ? [renderMinusButton(), resolveWrappedSlot($slots.prefix, (children) => {
+          if (children) {
+            return h("span", {
+              class: `${mergedClsPrefix}-input-number-prefix`
+            }, children);
+          }
+          return null;
+        })] : (_a = $slots.prefix) === null || _a === void 0 ? void 0 : _a.call($slots);
+      },
+      suffix: () => {
+        var _a;
+        return this.showButton ? [resolveWrappedSlot($slots.suffix, (children) => {
+          if (children) {
+            return h("span", {
+              class: `${mergedClsPrefix}-input-number-suffix`
+            }, children);
+          }
+          return null;
+        }), this.buttonPlacement === "right" ? renderMinusButton() : null, renderAddButton()] : (_a = $slots.suffix) === null || _a === void 0 ? void 0 : _a.call($slots);
+      }
+    }));
   }
 });
 export {

@@ -1,49 +1,73 @@
-import { R as replaceable, t as h, d as defineComponent, bS as isBrowser, ab as useTheme, U as createInjectionKey, a3 as c, a1 as cB, bT as fadeInTransition, b6 as fadeInScaleUpTransition, aA as cNotM, a7 as toRef, bU as imageLight, y as ref, aB as useLocale, J as watch, al as on, am as off, a0 as onBeforeUnmount, V as inject, i as computed, X as useConfig, ac as useThemeClass, bV as isMounted, bW as LazyTeleport, ag as withDirectives, bX as zindexable, ai as Transition, F as Fragment, aF as NBaseIcon, ah as vShow, aj as normalizeStyle, bY as kebabCase, l as NTooltip, b5 as beforeNextFrameOnce, ba as createId, T as provide, bF as getCurrentInstance, $ as onMounted, a8 as watchEffect, o as openBlock, g as createElementBlock, b as createBaseVNode } from "./index.js";
-const RotateClockwiseIcon = replaceable("rotateClockwise", h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10C17 12.7916 15.3658 15.2026 13 16.3265V14.5C13 14.2239 12.7761 14 12.5 14C12.2239 14 12 14.2239 12 14.5V17.5C12 17.7761 12.2239 18 12.5 18H15.5C15.7761 18 16 17.7761 16 17.5C16 17.2239 15.7761 17 15.5 17H13.8758C16.3346 15.6357 18 13.0128 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 10.2761 2.22386 10.5 2.5 10.5C2.77614 10.5 3 10.2761 3 10Z", fill: "currentColor" }),
-  h("path", { d: "M10 12C11.1046 12 12 11.1046 12 10C12 8.89543 11.1046 8 10 8C8.89543 8 8 8.89543 8 10C8 11.1046 8.89543 12 10 12ZM10 11C9.44772 11 9 10.5523 9 10C9 9.44772 9.44772 9 10 9C10.5523 9 11 9.44772 11 10C11 10.5523 10.5523 11 10 11Z", fill: "currentColor" })
-));
-const RotateCounterclockwiseIcon = replaceable("rotateClockwise", h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M17 10C17 6.13401 13.866 3 10 3C6.13401 3 3 6.13401 3 10C3 12.7916 4.63419 15.2026 7 16.3265V14.5C7 14.2239 7.22386 14 7.5 14C7.77614 14 8 14.2239 8 14.5V17.5C8 17.7761 7.77614 18 7.5 18H4.5C4.22386 18 4 17.7761 4 17.5C4 17.2239 4.22386 17 4.5 17H6.12422C3.66539 15.6357 2 13.0128 2 10C2 5.58172 5.58172 2 10 2C14.4183 2 18 5.58172 18 10C18 10.2761 17.7761 10.5 17.5 10.5C17.2239 10.5 17 10.2761 17 10Z", fill: "currentColor" }),
-  h("path", { d: "M10 12C8.89543 12 8 11.1046 8 10C8 8.89543 8.89543 8 10 8C11.1046 8 12 8.89543 12 10C12 11.1046 11.1046 12 10 12ZM10 11C10.5523 11 11 10.5523 11 10C11 9.44772 10.5523 9 10 9C9.44772 9 9 9.44772 9 10C9 10.5523 9.44772 11 10 11Z", fill: "currentColor" })
-));
-const ZoomInIcon = replaceable("zoomIn", h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M11.5 8.5C11.5 8.22386 11.2761 8 11 8H9V6C9 5.72386 8.77614 5.5 8.5 5.5C8.22386 5.5 8 5.72386 8 6V8H6C5.72386 8 5.5 8.22386 5.5 8.5C5.5 8.77614 5.72386 9 6 9H8V11C8 11.2761 8.22386 11.5 8.5 11.5C8.77614 11.5 9 11.2761 9 11V9H11C11.2761 9 11.5 8.77614 11.5 8.5Z", fill: "currentColor" }),
-  h("path", { d: "M8.5 3C11.5376 3 14 5.46243 14 8.5C14 9.83879 13.5217 11.0659 12.7266 12.0196L16.8536 16.1464C17.0488 16.3417 17.0488 16.6583 16.8536 16.8536C16.68 17.0271 16.4106 17.0464 16.2157 16.9114L16.1464 16.8536L12.0196 12.7266C11.0659 13.5217 9.83879 14 8.5 14C5.46243 14 3 11.5376 3 8.5C3 5.46243 5.46243 3 8.5 3ZM8.5 4C6.01472 4 4 6.01472 4 8.5C4 10.9853 6.01472 13 8.5 13C10.9853 13 13 10.9853 13 8.5C13 6.01472 10.9853 4 8.5 4Z", fill: "currentColor" })
-));
-const ZoomOutIcon = replaceable("zoomOut", h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M11 8C11.2761 8 11.5 8.22386 11.5 8.5C11.5 8.77614 11.2761 9 11 9H6C5.72386 9 5.5 8.77614 5.5 8.5C5.5 8.22386 5.72386 8 6 8H11Z", fill: "currentColor" }),
-  h("path", { d: "M14 8.5C14 5.46243 11.5376 3 8.5 3C5.46243 3 3 5.46243 3 8.5C3 11.5376 5.46243 14 8.5 14C9.83879 14 11.0659 13.5217 12.0196 12.7266L16.1464 16.8536L16.2157 16.9114C16.4106 17.0464 16.68 17.0271 16.8536 16.8536C17.0488 16.6583 17.0488 16.3417 16.8536 16.1464L12.7266 12.0196C13.5217 11.0659 14 9.83879 14 8.5ZM4 8.5C4 6.01472 6.01472 4 8.5 4C10.9853 4 13 6.01472 13 8.5C13 10.9853 10.9853 13 8.5 13C6.01472 13 4 10.9853 4 8.5Z", fill: "currentColor" })
-));
+import { R as replaceable, t as h, d as defineComponent, bg as isBrowser, ab as useTheme, U as createInjectionKey, a3 as c, a1 as cB, bU as fadeInTransition, b6 as fadeInScaleUpTransition, aA as cNotM, a7 as toRef, bV as imageLight, y as ref, aB as useLocale, J as watch, al as on, am as off, a0 as onBeforeUnmount, V as inject, i as computed, X as useConfig, ac as useThemeClass, bW as isMounted, bX as LazyTeleport, ag as withDirectives, bY as zindexable, ai as Transition, F as Fragment, aF as NBaseIcon, ah as vShow, bc as download, aj as normalizeStyle, bZ as kebabCase, l as NTooltip, b5 as beforeNextFrameOnce, ba as createId, T as provide, bH as getCurrentInstance, $ as onMounted, a8 as watchEffect, o as openBlock, g as createElementBlock, b as createBaseVNode } from "./index.js";
+const RotateClockwiseIcon = replaceable("rotateClockwise", h("svg", {
+  viewBox: "0 0 20 20",
+  fill: "none",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("path", {
+  d: "M3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10C17 12.7916 15.3658 15.2026 13 16.3265V14.5C13 14.2239 12.7761 14 12.5 14C12.2239 14 12 14.2239 12 14.5V17.5C12 17.7761 12.2239 18 12.5 18H15.5C15.7761 18 16 17.7761 16 17.5C16 17.2239 15.7761 17 15.5 17H13.8758C16.3346 15.6357 18 13.0128 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 10.2761 2.22386 10.5 2.5 10.5C2.77614 10.5 3 10.2761 3 10Z",
+  fill: "currentColor"
+}), h("path", {
+  d: "M10 12C11.1046 12 12 11.1046 12 10C12 8.89543 11.1046 8 10 8C8.89543 8 8 8.89543 8 10C8 11.1046 8.89543 12 10 12ZM10 11C9.44772 11 9 10.5523 9 10C9 9.44772 9.44772 9 10 9C10.5523 9 11 9.44772 11 10C11 10.5523 10.5523 11 10 11Z",
+  fill: "currentColor"
+})));
+const RotateCounterclockwiseIcon = replaceable("rotateClockwise", h("svg", {
+  viewBox: "0 0 20 20",
+  fill: "none",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("path", {
+  d: "M17 10C17 6.13401 13.866 3 10 3C6.13401 3 3 6.13401 3 10C3 12.7916 4.63419 15.2026 7 16.3265V14.5C7 14.2239 7.22386 14 7.5 14C7.77614 14 8 14.2239 8 14.5V17.5C8 17.7761 7.77614 18 7.5 18H4.5C4.22386 18 4 17.7761 4 17.5C4 17.2239 4.22386 17 4.5 17H6.12422C3.66539 15.6357 2 13.0128 2 10C2 5.58172 5.58172 2 10 2C14.4183 2 18 5.58172 18 10C18 10.2761 17.7761 10.5 17.5 10.5C17.2239 10.5 17 10.2761 17 10Z",
+  fill: "currentColor"
+}), h("path", {
+  d: "M10 12C8.89543 12 8 11.1046 8 10C8 8.89543 8.89543 8 10 8C11.1046 8 12 8.89543 12 10C12 11.1046 11.1046 12 10 12ZM10 11C10.5523 11 11 10.5523 11 10C11 9.44772 10.5523 9 10 9C9.44772 9 9 9.44772 9 10C9 10.5523 9.44772 11 10 11Z",
+  fill: "currentColor"
+})));
+const ZoomInIcon = replaceable("zoomIn", h("svg", {
+  viewBox: "0 0 20 20",
+  fill: "none",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("path", {
+  d: "M11.5 8.5C11.5 8.22386 11.2761 8 11 8H9V6C9 5.72386 8.77614 5.5 8.5 5.5C8.22386 5.5 8 5.72386 8 6V8H6C5.72386 8 5.5 8.22386 5.5 8.5C5.5 8.77614 5.72386 9 6 9H8V11C8 11.2761 8.22386 11.5 8.5 11.5C8.77614 11.5 9 11.2761 9 11V9H11C11.2761 9 11.5 8.77614 11.5 8.5Z",
+  fill: "currentColor"
+}), h("path", {
+  d: "M8.5 3C11.5376 3 14 5.46243 14 8.5C14 9.83879 13.5217 11.0659 12.7266 12.0196L16.8536 16.1464C17.0488 16.3417 17.0488 16.6583 16.8536 16.8536C16.68 17.0271 16.4106 17.0464 16.2157 16.9114L16.1464 16.8536L12.0196 12.7266C11.0659 13.5217 9.83879 14 8.5 14C5.46243 14 3 11.5376 3 8.5C3 5.46243 5.46243 3 8.5 3ZM8.5 4C6.01472 4 4 6.01472 4 8.5C4 10.9853 6.01472 13 8.5 13C10.9853 13 13 10.9853 13 8.5C13 6.01472 10.9853 4 8.5 4Z",
+  fill: "currentColor"
+})));
+const ZoomOutIcon = replaceable("zoomOut", h("svg", {
+  viewBox: "0 0 20 20",
+  fill: "none",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("path", {
+  d: "M11 8C11.2761 8 11.5 8.22386 11.5 8.5C11.5 8.77614 11.2761 9 11 9H6C5.72386 9 5.5 8.77614 5.5 8.5C5.5 8.22386 5.72386 8 6 8H11Z",
+  fill: "currentColor"
+}), h("path", {
+  d: "M14 8.5C14 5.46243 11.5376 3 8.5 3C5.46243 3 3 5.46243 3 8.5C3 11.5376 5.46243 14 8.5 14C9.83879 14 11.0659 13.5217 12.0196 12.7266L16.1464 16.8536L16.2157 16.9114C16.4106 17.0464 16.68 17.0271 16.8536 16.8536C17.0488 16.6583 17.0488 16.3417 16.8536 16.1464L12.7266 12.0196C13.5217 11.0659 14 9.83879 14 8.5ZM4 8.5C4 6.01472 6.01472 4 8.5 4C10.9853 4 13 6.01472 13 8.5C13 10.9853 10.9853 13 8.5 13C6.01472 13 4 10.9853 4 8.5Z",
+  fill: "currentColor"
+})));
 const ResizeSmallIcon = defineComponent({
   name: "ResizeSmall",
   render() {
-    return h(
-      "svg",
-      { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 20 20" },
-      h(
-        "g",
-        { fill: "none" },
-        h("path", { d: "M5.5 4A1.5 1.5 0 0 0 4 5.5v1a.5.5 0 0 1-1 0v-1A2.5 2.5 0 0 1 5.5 3h1a.5.5 0 0 1 0 1h-1zM16 5.5A1.5 1.5 0 0 0 14.5 4h-1a.5.5 0 0 1 0-1h1A2.5 2.5 0 0 1 17 5.5v1a.5.5 0 0 1-1 0v-1zm0 9a1.5 1.5 0 0 1-1.5 1.5h-1a.5.5 0 0 0 0 1h1a2.5 2.5 0 0 0 2.5-2.5v-1a.5.5 0 0 0-1 0v1zm-12 0A1.5 1.5 0 0 0 5.5 16h1.25a.5.5 0 0 1 0 1H5.5A2.5 2.5 0 0 1 3 14.5v-1.25a.5.5 0 0 1 1 0v1.25zM8.5 7A1.5 1.5 0 0 0 7 8.5v3A1.5 1.5 0 0 0 8.5 13h3a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 11.5 7h-3zM8 8.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-3z", fill: "currentColor" })
-      )
-    );
+    return h("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      viewBox: "0 0 20 20"
+    }, h("g", {
+      fill: "none"
+    }, h("path", {
+      d: "M5.5 4A1.5 1.5 0 0 0 4 5.5v1a.5.5 0 0 1-1 0v-1A2.5 2.5 0 0 1 5.5 3h1a.5.5 0 0 1 0 1h-1zM16 5.5A1.5 1.5 0 0 0 14.5 4h-1a.5.5 0 0 1 0-1h1A2.5 2.5 0 0 1 17 5.5v1a.5.5 0 0 1-1 0v-1zm0 9a1.5 1.5 0 0 1-1.5 1.5h-1a.5.5 0 0 0 0 1h1a2.5 2.5 0 0 0 2.5-2.5v-1a.5.5 0 0 0-1 0v1zm-12 0A1.5 1.5 0 0 0 5.5 16h1.25a.5.5 0 0 1 0 1H5.5A2.5 2.5 0 0 1 3 14.5v-1.25a.5.5 0 0 1 1 0v1.25zM8.5 7A1.5 1.5 0 0 0 7 8.5v3A1.5 1.5 0 0 0 8.5 13h3a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 11.5 7h-3zM8 8.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-3z",
+      fill: "currentColor"
+    })));
   }
 });
 const isImageSupportNativeLazy = isBrowser && "loading" in document.createElement("img");
 const resolveOptionsAndHash = (options = {}) => {
   var _a;
-  const { root = null } = options;
+  const {
+    root = null
+  } = options;
   return {
     hash: `${options.rootMargin || "0px 0px 0px 0px"}-${Array.isArray(options.threshold) ? options.threshold.join(",") : (_a = options.threshold) !== null && _a !== void 0 ? _a : "0"}`,
-    options: Object.assign(Object.assign({}, options), { root: (typeof root === "string" ? document.querySelector(root) : root) || document.documentElement })
+    options: Object.assign(Object.assign({}, options), {
+      root: (typeof root === "string" ? document.querySelector(root) : root) || document.documentElement
+    })
   };
 };
 const observers = /* @__PURE__ */ new WeakMap();
@@ -54,7 +78,9 @@ const observeIntersection = (el, options, shouldStartLoadingRef) => {
     return () => {
     };
   const resolvedOptionsAndHash = resolveOptionsAndHash(options);
-  const { root } = resolvedOptionsAndHash.options;
+  const {
+    root
+  } = resolvedOptionsAndHash.options;
   let rootObservers;
   const _rootObservers = observers.get(root);
   if (_rootObservers) {
@@ -113,193 +139,49 @@ const observeIntersection = (el, options, shouldStartLoadingRef) => {
   shouldStartLoadingRefMap.set(el, shouldStartLoadingRef);
   return unobserve;
 };
-const imagePreviewSharedProps = Object.assign(Object.assign({}, useTheme.props), { onPreviewPrev: Function, onPreviewNext: Function, showToolbar: { type: Boolean, default: true }, showToolbarTooltip: Boolean });
+const imagePreviewSharedProps = Object.assign(Object.assign({}, useTheme.props), {
+  onPreviewPrev: Function,
+  onPreviewNext: Function,
+  showToolbar: {
+    type: Boolean,
+    default: true
+  },
+  showToolbarTooltip: Boolean
+});
 const imageContextKey = createInjectionKey("n-image");
-var __awaiter = globalThis && globalThis.__awaiter || function(thisArg, _arguments, P, generator) {
-  function adopt(value) {
-    return value instanceof P ? value : new P(function(resolve) {
-      resolve(value);
-    });
-  }
-  return new (P || (P = Promise))(function(resolve, reject) {
-    function fulfilled(value) {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    }
-    function rejected(value) {
-      try {
-        step(generator["throw"](value));
-      } catch (e) {
-        reject(e);
-      }
-    }
-    function step(result) {
-      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
-    }
-    step((generator = generator.apply(thisArg, _arguments || [])).next());
-  });
-};
-const isImageFileType = (type) => type.includes("image/");
-const getExtname = (url = "") => {
-  const temp = url.split("/");
-  const filename = temp[temp.length - 1];
-  const filenameWithoutSuffix = filename.split(/#|\?/)[0];
-  return (/\.[^./\\]*$/.exec(filenameWithoutSuffix) || [""])[0];
-};
-const imageExtensionRegex = /(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico)$/i;
-const isImageFile = (file) => {
-  if (file.type) {
-    return isImageFileType(file.type);
-  }
-  const fileNameExtension = getExtname(file.name || "");
-  if (imageExtensionRegex.test(fileNameExtension)) {
-    return true;
-  }
-  const url = file.thumbnailUrl || file.url || "";
-  const urlExtension = getExtname(url);
-  if (/^data:image\//.test(url) || imageExtensionRegex.test(urlExtension)) {
-    return true;
-  }
-  return false;
-};
-function createImageDataUrl(file) {
-  return __awaiter(this, void 0, void 0, function* () {
-    return yield new Promise((resolve) => {
-      if (!file.type || !isImageFileType(file.type)) {
-        resolve("");
-        return;
-      }
-      resolve(window.URL.createObjectURL(file));
-    });
-  });
-}
-const environmentSupportFile = isBrowser && window.FileReader && window.File;
-function isFileSystemDirectoryEntry(item) {
-  return item.isDirectory;
-}
-function isFileSystemFileEntry(item) {
-  return item.isFile;
-}
-function getFilesFromEntries(entries, directory) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const fileAndEntries = [];
-    let _resolve;
-    let requestCallbackCount = 0;
-    function lock() {
-      requestCallbackCount++;
-    }
-    function unlock() {
-      requestCallbackCount--;
-      if (!requestCallbackCount) {
-        _resolve(fileAndEntries);
-      }
-    }
-    function _getFilesFromEntries(entries2) {
-      entries2.forEach((entry) => {
-        if (!entry)
-          return;
-        lock();
-        if (directory && isFileSystemDirectoryEntry(entry)) {
-          const directoryReader = entry.createReader();
-          lock();
-          directoryReader.readEntries((entries3) => {
-            _getFilesFromEntries(entries3);
-            unlock();
-          }, () => {
-            unlock();
-          });
-        } else if (isFileSystemFileEntry(entry)) {
-          lock();
-          entry.file((file) => {
-            fileAndEntries.push({ file, entry, source: "dnd" });
-            unlock();
-          }, () => {
-            unlock();
-          });
-        }
-        unlock();
-      });
-    }
-    yield new Promise((resolve) => {
-      _resolve = resolve;
-      _getFilesFromEntries(entries);
-    });
-    return fileAndEntries;
-  });
-}
-function createSettledFileInfo(fileInfo) {
-  const { id, name, percentage, status, url, file, thumbnailUrl, type, fullPath, batchId } = fileInfo;
-  return {
-    id,
-    name,
-    percentage: percentage !== null && percentage !== void 0 ? percentage : null,
-    status,
-    url: url !== null && url !== void 0 ? url : null,
-    file: file !== null && file !== void 0 ? file : null,
-    thumbnailUrl: thumbnailUrl !== null && thumbnailUrl !== void 0 ? thumbnailUrl : null,
-    type: type !== null && type !== void 0 ? type : null,
-    fullPath: fullPath !== null && fullPath !== void 0 ? fullPath : null,
-    batchId: batchId !== null && batchId !== void 0 ? batchId : null
-  };
-}
-function matchType(name, mimeType, accept) {
-  name = name.toLowerCase();
-  mimeType = mimeType.toLocaleLowerCase();
-  accept = accept.toLocaleLowerCase();
-  const acceptAtoms = accept.split(",").map((acceptAtom) => acceptAtom.trim()).filter(Boolean);
-  return acceptAtoms.some((acceptAtom) => {
-    if (acceptAtom.startsWith(".")) {
-      if (name.endsWith(acceptAtom))
-        return true;
-    } else if (acceptAtom.includes("/")) {
-      const [type, subtype] = mimeType.split("/");
-      const [acceptType, acceptSubtype] = acceptAtom.split("/");
-      if (acceptType === "*" || type && acceptType && acceptType === type) {
-        if (acceptSubtype === "*" || subtype && acceptSubtype && acceptSubtype === subtype) {
-          return true;
-        }
-      }
-    } else {
-      return true;
-    }
-    return false;
-  });
-}
-const download = (url, name) => {
-  if (!url)
-    return;
-  const a = document.createElement("a");
-  a.href = url;
-  if (name !== void 0) {
-    a.download = name;
-  }
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-};
-const prevIcon = h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M6 5C5.75454 5 5.55039 5.17688 5.50806 5.41012L5.5 5.5V14.5C5.5 14.7761 5.72386 15 6 15C6.24546 15 6.44961 14.8231 6.49194 14.5899L6.5 14.5V5.5C6.5 5.22386 6.27614 5 6 5ZM13.8536 5.14645C13.68 4.97288 13.4106 4.9536 13.2157 5.08859L13.1464 5.14645L8.64645 9.64645C8.47288 9.82001 8.4536 10.0894 8.58859 10.2843L8.64645 10.3536L13.1464 14.8536C13.3417 15.0488 13.6583 15.0488 13.8536 14.8536C14.0271 14.68 14.0464 14.4106 13.9114 14.2157L13.8536 14.1464L9.70711 10L13.8536 5.85355C14.0488 5.65829 14.0488 5.34171 13.8536 5.14645Z", fill: "currentColor" })
-);
-const nextIcon = h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M13.5 5C13.7455 5 13.9496 5.17688 13.9919 5.41012L14 5.5V14.5C14 14.7761 13.7761 15 13.5 15C13.2545 15 13.0504 14.8231 13.0081 14.5899L13 14.5V5.5C13 5.22386 13.2239 5 13.5 5ZM5.64645 5.14645C5.82001 4.97288 6.08944 4.9536 6.28431 5.08859L6.35355 5.14645L10.8536 9.64645C11.0271 9.82001 11.0464 10.0894 10.9114 10.2843L10.8536 10.3536L6.35355 14.8536C6.15829 15.0488 5.84171 15.0488 5.64645 14.8536C5.47288 14.68 5.4536 14.4106 5.58859 14.2157L5.64645 14.1464L9.79289 10L5.64645 5.85355C5.45118 5.65829 5.45118 5.34171 5.64645 5.14645Z", fill: "currentColor" })
-);
-const closeIcon = h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M4.089 4.216l.057-.07a.5.5 0 0 1 .638-.057l.07.057L10 9.293l5.146-5.147a.5.5 0 0 1 .638-.057l.07.057a.5.5 0 0 1 .057.638l-.057.07L10.707 10l5.147 5.146a.5.5 0 0 1 .057.638l-.057.07a.5.5 0 0 1-.638.057l-.07-.057L10 10.707l-5.146 5.147a.5.5 0 0 1-.638.057l-.07-.057a.5.5 0 0 1-.057-.638l.057-.07L9.293 10L4.146 4.854a.5.5 0 0 1-.057-.638l.057-.07l-.057.07z", fill: "currentColor" })
-);
-const downloadIcon = h(
-  "svg",
-  { xmlns: "http://www.w3.org/2000/svg", width: "32", height: "32", viewBox: "0 0 1024 1024" },
-  h("path", { fill: "currentColor", d: "M505.7 661a8 8 0 0 0 12.6 0l112-141.7c4.1-5.2.4-12.9-6.3-12.9h-74.1V168c0-4.4-3.6-8-8-8h-60c-4.4 0-8 3.6-8 8v338.3H400c-6.7 0-10.4 7.7-6.3 12.9l112 141.8zM878 626h-60c-4.4 0-8 3.6-8 8v154H214V634c0-4.4-3.6-8-8-8h-60c-4.4 0-8 3.6-8 8v198c0 17.7 14.3 32 32 32h684c17.7 0 32-14.3 32-32V634c0-4.4-3.6-8-8-8z" })
-);
+const prevIcon = h("svg", {
+  viewBox: "0 0 20 20",
+  fill: "none",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("path", {
+  d: "M6 5C5.75454 5 5.55039 5.17688 5.50806 5.41012L5.5 5.5V14.5C5.5 14.7761 5.72386 15 6 15C6.24546 15 6.44961 14.8231 6.49194 14.5899L6.5 14.5V5.5C6.5 5.22386 6.27614 5 6 5ZM13.8536 5.14645C13.68 4.97288 13.4106 4.9536 13.2157 5.08859L13.1464 5.14645L8.64645 9.64645C8.47288 9.82001 8.4536 10.0894 8.58859 10.2843L8.64645 10.3536L13.1464 14.8536C13.3417 15.0488 13.6583 15.0488 13.8536 14.8536C14.0271 14.68 14.0464 14.4106 13.9114 14.2157L13.8536 14.1464L9.70711 10L13.8536 5.85355C14.0488 5.65829 14.0488 5.34171 13.8536 5.14645Z",
+  fill: "currentColor"
+}));
+const nextIcon = h("svg", {
+  viewBox: "0 0 20 20",
+  fill: "none",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("path", {
+  d: "M13.5 5C13.7455 5 13.9496 5.17688 13.9919 5.41012L14 5.5V14.5C14 14.7761 13.7761 15 13.5 15C13.2545 15 13.0504 14.8231 13.0081 14.5899L13 14.5V5.5C13 5.22386 13.2239 5 13.5 5ZM5.64645 5.14645C5.82001 4.97288 6.08944 4.9536 6.28431 5.08859L6.35355 5.14645L10.8536 9.64645C11.0271 9.82001 11.0464 10.0894 10.9114 10.2843L10.8536 10.3536L6.35355 14.8536C6.15829 15.0488 5.84171 15.0488 5.64645 14.8536C5.47288 14.68 5.4536 14.4106 5.58859 14.2157L5.64645 14.1464L9.79289 10L5.64645 5.85355C5.45118 5.65829 5.45118 5.34171 5.64645 5.14645Z",
+  fill: "currentColor"
+}));
+const closeIcon = h("svg", {
+  viewBox: "0 0 20 20",
+  fill: "none",
+  xmlns: "http://www.w3.org/2000/svg"
+}, h("path", {
+  d: "M4.089 4.216l.057-.07a.5.5 0 0 1 .638-.057l.07.057L10 9.293l5.146-5.147a.5.5 0 0 1 .638-.057l.07.057a.5.5 0 0 1 .057.638l-.057.07L10.707 10l5.147 5.146a.5.5 0 0 1 .057.638l-.057.07a.5.5 0 0 1-.638.057l-.07-.057L10 10.707l-5.146 5.147a.5.5 0 0 1-.638.057l-.07-.057a.5.5 0 0 1-.057-.638l.057-.07L9.293 10L4.146 4.854a.5.5 0 0 1-.057-.638l.057-.07l-.057.07z",
+  fill: "currentColor"
+}));
+const downloadIcon = h("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  width: "32",
+  height: "32",
+  viewBox: "0 0 1024 1024"
+}, h("path", {
+  fill: "currentColor",
+  d: "M505.7 661a8 8 0 0 0 12.6 0l112-141.7c4.1-5.2.4-12.9-6.3-12.9h-74.1V168c0-4.4-3.6-8-8-8h-60c-4.4 0-8 3.6-8 8v338.3H400c-6.7 0-10.4 7.7-6.3 12.9l112 141.8zM878 626h-60c-4.4 0-8 3.6-8 8v154H214V634c0-4.4-3.6-8-8-8h-60c-4.4 0-8 3.6-8 8v198c0 17.7 14.3 32 32 32h684c17.7 0 32-14.3 32-32V634c0-4.4-3.6-8-8-8z"
+}));
 const style = c([c("body >", [cB("image-container", "position: fixed;")]), cB("image-preview-container", `
  position: fixed;
  left: 0;
@@ -362,10 +244,14 @@ const style = c([c("body >", [cB("image-container", "position: fixed;")]), cB("i
 const BLEEDING = 32;
 const NImagePreview = defineComponent({
   name: "ImagePreview",
-  props: Object.assign(Object.assign({}, imagePreviewSharedProps), { onNext: Function, onPrev: Function, clsPrefix: {
-    type: String,
-    required: true
-  } }),
+  props: Object.assign(Object.assign({}, imagePreviewSharedProps), {
+    onNext: Function,
+    onPrev: Function,
+    clsPrefix: {
+      type: String,
+      required: true
+    }
+  }),
   setup(props) {
     const themeRef = useTheme("Image", "-image", style, imageLight, props, toRef(props, "clsPrefix"));
     let thumbnailEl = null;
@@ -374,12 +260,18 @@ const NImagePreview = defineComponent({
     const previewSrcRef = ref(void 0);
     const showRef = ref(false);
     const displayedRef = ref(false);
-    const { localeRef } = useLocale("Image");
+    const {
+      localeRef
+    } = useLocale("Image");
     function syncTransformOrigin() {
-      const { value: previewWrapper } = previewWrapperRef;
+      const {
+        value: previewWrapper
+      } = previewWrapperRef;
       if (!thumbnailEl || !previewWrapper)
         return;
-      const { style: style2 } = previewWrapper;
+      const {
+        style: style2
+      } = previewWrapper;
       const tbox = thumbnailEl.getBoundingClientRect();
       const tx = tbox.left + tbox.width / 2;
       const ty = tbox.top + tbox.height / 2;
@@ -421,13 +313,21 @@ const NImagePreview = defineComponent({
     let mouseDownClientY = 0;
     let dragging = false;
     function handleMouseMove(e) {
-      const { clientX, clientY } = e;
+      const {
+        clientX,
+        clientY
+      } = e;
       offsetX = clientX - startX;
       offsetY = clientY - startY;
       beforeNextFrameOnce(derivePreviewStyle);
     }
     function getMoveStrategy(opts) {
-      const { mouseUpClientX, mouseUpClientY, mouseDownClientX: mouseDownClientX2, mouseDownClientY: mouseDownClientY2 } = opts;
+      const {
+        mouseUpClientX,
+        mouseUpClientY,
+        mouseDownClientX: mouseDownClientX2,
+        mouseDownClientY: mouseDownClientY2
+      } = opts;
       const deltaHorizontal = mouseDownClientX2 - mouseUpClientX;
       const deltaVertical = mouseDownClientY2 - mouseUpClientY;
       const moveVerticalDirection = `vertical${deltaVertical > 0 ? "Top" : "Bottom"}`;
@@ -440,11 +340,21 @@ const NImagePreview = defineComponent({
       };
     }
     function getDerivedOffset(moveStrategy) {
-      const { value: preview } = previewRef;
+      const {
+        value: preview
+      } = previewRef;
       if (!preview)
-        return { offsetX: 0, offsetY: 0 };
+        return {
+          offsetX: 0,
+          offsetY: 0
+        };
       const pbox = preview.getBoundingClientRect();
-      const { moveVerticalDirection, moveHorizontalDirection, deltaHorizontal, deltaVertical } = moveStrategy || {};
+      const {
+        moveVerticalDirection,
+        moveHorizontalDirection,
+        deltaHorizontal,
+        deltaVertical
+      } = moveStrategy || {};
       let nextOffsetX = 0;
       let nextOffsetY = 0;
       if (pbox.width <= window.innerWidth) {
@@ -477,7 +387,10 @@ const NImagePreview = defineComponent({
     function handleMouseUp(e) {
       off("mousemove", document, handleMouseMove);
       off("mouseup", document, handleMouseUp);
-      const { clientX: mouseUpClientX, clientY: mouseUpClientY } = e;
+      const {
+        clientX: mouseUpClientX,
+        clientY: mouseUpClientY
+      } = e;
       dragging = false;
       const moveStrategy = getMoveStrategy({
         mouseUpClientX,
@@ -496,7 +409,10 @@ const NImagePreview = defineComponent({
       (_b = (_a = imageContext === null || imageContext === void 0 ? void 0 : imageContext.previewedImgPropsRef.value) === null || _a === void 0 ? void 0 : _a.onMousedown) === null || _b === void 0 ? void 0 : _b.call(_a, e);
       if (e.button !== 0)
         return;
-      const { clientX, clientY } = e;
+      const {
+        clientX,
+        clientY
+      } = e;
       dragging = true;
       startX = clientX - offsetX;
       startY = clientY - offsetY;
@@ -544,19 +460,29 @@ const NImagePreview = defineComponent({
       derivePreviewStyle();
     }
     function getMaxScale() {
-      const { value: preview } = previewRef;
+      const {
+        value: preview
+      } = previewRef;
       if (!preview)
         return 1;
-      const { innerWidth, innerHeight } = window;
+      const {
+        innerWidth,
+        innerHeight
+      } = window;
       const heightMaxScale = Math.max(1, preview.naturalHeight / (innerHeight - BLEEDING));
       const widthMaxScale = Math.max(1, preview.naturalWidth / (innerWidth - BLEEDING));
       return Math.max(3, heightMaxScale * 2, widthMaxScale * 2);
     }
     function getOrignalImageSizeScale() {
-      const { value: preview } = previewRef;
+      const {
+        value: preview
+      } = previewRef;
       if (!preview)
         return 1;
-      const { innerWidth, innerHeight } = window;
+      const {
+        innerWidth,
+        innerHeight
+      } = window;
       const heightScale = preview.naturalHeight / (innerHeight - BLEEDING);
       const widthScale = preview.naturalWidth / (innerWidth - BLEEDING);
       if (heightScale < 1 && widthScale < 1) {
@@ -596,10 +522,14 @@ const NImagePreview = defineComponent({
     }
     function derivePreviewStyle(transition = true) {
       var _a;
-      const { value: preview } = previewRef;
+      const {
+        value: preview
+      } = previewRef;
       if (!preview)
         return;
-      const { style: style2 } = preview;
+      const {
+        style: style2
+      } = preview;
       const controlledStyle = normalizeStyle((_a = imageContext === null || imageContext === void 0 ? void 0 : imageContext.previewedImgPropsRef.value) === null || _a === void 0 ? void 0 : _a.style);
       let controlledStyleString = "";
       if (typeof controlledStyle === "string") {
@@ -641,8 +571,15 @@ const NImagePreview = defineComponent({
     };
     function withTooltip(node, tooltipKey) {
       if (props.showToolbarTooltip) {
-        const { value: theme } = themeRef;
-        return h(NTooltip, { to: false, theme: theme.peers.Tooltip, themeOverrides: theme.peerOverrides.Tooltip, keepAliveOnHover: false }, {
+        const {
+          value: theme
+        } = themeRef;
+        return h(NTooltip, {
+          to: false,
+          theme: theme.peers.Tooltip,
+          themeOverrides: theme.peerOverrides.Tooltip,
+          keepAliveOnHover: false
+        }, {
           default: () => {
             return localeRef.value[tooltipKey];
           },
@@ -653,7 +590,17 @@ const NImagePreview = defineComponent({
       }
     }
     const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut }, self: { toolbarIconColor, toolbarBorderRadius, toolbarBoxShadow, toolbarColor } } = themeRef.value;
+      const {
+        common: {
+          cubicBezierEaseInOut
+        },
+        self: {
+          toolbarIconColor,
+          toolbarBorderRadius,
+          toolbarBoxShadow,
+          toolbarColor
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut,
         "--n-toolbar-icon-color": toolbarIconColor,
@@ -662,7 +609,9 @@ const NImagePreview = defineComponent({
         "--n-toolbar-box-shadow": toolbarBoxShadow
       };
     });
-    const { inlineThemeDisabled } = useConfig();
+    const {
+      inlineThemeDisabled
+    } = useConfig();
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("image-preview", void 0, cssVarsRef, props) : void 0;
     return Object.assign({
       previewRef,
@@ -704,85 +653,124 @@ const NImagePreview = defineComponent({
   },
   render() {
     var _a, _b;
-    const { clsPrefix } = this;
-    return h(
-      Fragment,
-      null,
-      (_b = (_a = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a),
-      h(LazyTeleport, { show: this.show }, {
-        default: () => {
-          var _a2;
-          if (!(this.show || this.displayed)) {
-            return null;
-          }
-          (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-          return withDirectives(h(
-            "div",
-            { class: [
-              `${clsPrefix}-image-preview-container`,
-              this.themeClass
-            ], style: this.cssVars, onWheel: this.handleWheel },
-            h(Transition, { name: "fade-in-transition", appear: this.appear }, {
-              default: () => this.show ? h("div", { class: `${clsPrefix}-image-preview-overlay`, onClick: this.toggleShow }) : null
-            }),
-            this.showToolbar ? h(Transition, { name: "fade-in-transition", appear: this.appear }, {
-              default: () => {
-                if (!this.show)
-                  return null;
-                const { withTooltip } = this;
-                return h(
-                  "div",
-                  { class: `${clsPrefix}-image-preview-toolbar` },
-                  this.onPrev ? h(
-                    Fragment,
-                    null,
-                    withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.handleSwitchPrev }, { default: () => prevIcon }), "tipPrevious"),
-                    withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.handleSwitchNext }, { default: () => nextIcon }), "tipNext")
-                  ) : null,
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.rotateCounterclockwise }, {
-                    default: () => h(RotateCounterclockwiseIcon, null)
-                  }), "tipCounterclockwise"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.rotateClockwise }, {
-                    default: () => h(RotateClockwiseIcon, null)
-                  }), "tipClockwise"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.resizeToOrignalImageSize }, {
-                    default: () => {
-                      return h(ResizeSmallIcon, null);
-                    }
-                  }), "tipOriginalSize"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.zoomOut }, { default: () => h(ZoomOutIcon, null) }), "tipZoomOut"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.zoomIn }, { default: () => h(ZoomInIcon, null) }), "tipZoomIn"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.handleDownloadClick }, { default: () => downloadIcon }), "tipDownload"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.toggleShow }, { default: () => closeIcon }), "tipClose")
-                );
-              }
-            }) : null,
-            h(Transition, {
-              name: "fade-in-scale-up-transition",
-              onAfterLeave: this.handleAfterLeave,
-              appear: this.appear,
-              // BUG:
-              // onEnter will be called twice, I don't know why
-              // Maybe it is a bug of vue
-              onEnter: this.syncTransformOrigin,
-              onBeforeLeave: this.syncTransformOrigin
+    const {
+      clsPrefix
+    } = this;
+    return h(Fragment, null, (_b = (_a = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a), h(LazyTeleport, {
+      show: this.show
+    }, {
+      default: () => {
+        var _a2;
+        if (!(this.show || this.displayed)) {
+          return null;
+        }
+        (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
+        return withDirectives(h("div", {
+          class: [`${clsPrefix}-image-preview-container`, this.themeClass],
+          style: this.cssVars,
+          onWheel: this.handleWheel
+        }, h(Transition, {
+          name: "fade-in-transition",
+          appear: this.appear
+        }, {
+          default: () => this.show ? h("div", {
+            class: `${clsPrefix}-image-preview-overlay`,
+            onClick: this.toggleShow
+          }) : null
+        }), this.showToolbar ? h(Transition, {
+          name: "fade-in-transition",
+          appear: this.appear
+        }, {
+          default: () => {
+            if (!this.show)
+              return null;
+            const {
+              withTooltip
+            } = this;
+            return h("div", {
+              class: `${clsPrefix}-image-preview-toolbar`
+            }, this.onPrev ? h(Fragment, null, withTooltip(h(NBaseIcon, {
+              clsPrefix,
+              onClick: this.handleSwitchPrev
+            }, {
+              default: () => prevIcon
+            }), "tipPrevious"), withTooltip(h(NBaseIcon, {
+              clsPrefix,
+              onClick: this.handleSwitchNext
+            }, {
+              default: () => nextIcon
+            }), "tipNext")) : null, withTooltip(h(NBaseIcon, {
+              clsPrefix,
+              onClick: this.rotateCounterclockwise
+            }, {
+              default: () => h(RotateCounterclockwiseIcon, null)
+            }), "tipCounterclockwise"), withTooltip(h(NBaseIcon, {
+              clsPrefix,
+              onClick: this.rotateClockwise
+            }, {
+              default: () => h(RotateClockwiseIcon, null)
+            }), "tipClockwise"), withTooltip(h(NBaseIcon, {
+              clsPrefix,
+              onClick: this.resizeToOrignalImageSize
             }, {
               default: () => {
-                const { previewedImgProps = {} } = this;
-                return withDirectives(h(
-                  "div",
-                  { class: `${clsPrefix}-image-preview-wrapper`, ref: "previewWrapperRef" },
-                  h("img", Object.assign({}, previewedImgProps, { draggable: false, onMousedown: this.handlePreviewMousedown, onDblclick: this.handlePreviewDblclick, class: [
-                    `${clsPrefix}-image-preview`,
-                    previewedImgProps.class
-                  ], key: this.previewSrc, src: this.previewSrc, ref: "previewRef", onDragstart: this.handleDragStart }))
-                ), [[vShow, this.show]]);
+                return h(ResizeSmallIcon, null);
               }
-            })
-          ), [[zindexable, { enabled: this.show }]]);
-        }
-      })
-    );
+            }), "tipOriginalSize"), withTooltip(h(NBaseIcon, {
+              clsPrefix,
+              onClick: this.zoomOut
+            }, {
+              default: () => h(ZoomOutIcon, null)
+            }), "tipZoomOut"), withTooltip(h(NBaseIcon, {
+              clsPrefix,
+              onClick: this.zoomIn
+            }, {
+              default: () => h(ZoomInIcon, null)
+            }), "tipZoomIn"), withTooltip(h(NBaseIcon, {
+              clsPrefix,
+              onClick: this.handleDownloadClick
+            }, {
+              default: () => downloadIcon
+            }), "tipDownload"), withTooltip(h(NBaseIcon, {
+              clsPrefix,
+              onClick: this.toggleShow
+            }, {
+              default: () => closeIcon
+            }), "tipClose"));
+          }
+        }) : null, h(Transition, {
+          name: "fade-in-scale-up-transition",
+          onAfterLeave: this.handleAfterLeave,
+          appear: this.appear,
+          // BUG:
+          // onEnter will be called twice, I don't know why
+          // Maybe it is a bug of vue
+          onEnter: this.syncTransformOrigin,
+          onBeforeLeave: this.syncTransformOrigin
+        }, {
+          default: () => {
+            const {
+              previewedImgProps = {}
+            } = this;
+            return withDirectives(h("div", {
+              class: `${clsPrefix}-image-preview-wrapper`,
+              ref: "previewWrapperRef"
+            }, h("img", Object.assign({}, previewedImgProps, {
+              draggable: false,
+              onMousedown: this.handlePreviewMousedown,
+              onDblclick: this.handlePreviewDblclick,
+              class: [`${clsPrefix}-image-preview`, previewedImgProps.class],
+              key: this.previewSrc,
+              src: this.previewSrc,
+              ref: "previewRef",
+              onDragstart: this.handleDragStart
+            }))), [[vShow, this.show]]);
+          }
+        })), [[zindexable, {
+          enabled: this.show
+        }]]);
+      }
+    }));
   }
 });
 const imageGroupInjectionKey = createInjectionKey("n-image-group");
@@ -792,7 +780,9 @@ const NImageGroup = defineComponent({
   props: imageGroupProps,
   setup(props) {
     let currentSrc;
-    const { mergedClsPrefixRef } = useConfig(props);
+    const {
+      mergedClsPrefixRef
+    } = useConfig(props);
     const groupId = `c${createId()}`;
     const vm = getCurrentInstance();
     const setPreviewSrc = (src) => {
@@ -842,13 +832,38 @@ const NImageGroup = defineComponent({
     };
   },
   render() {
-    return h(NImagePreview, { theme: this.theme, themeOverrides: this.themeOverrides, clsPrefix: this.mergedClsPrefix, ref: "previewInstRef", onPrev: this.prev, onNext: this.next, showToolbar: this.showToolbar, showToolbarTooltip: this.showToolbarTooltip }, this.$slots);
+    return h(NImagePreview, {
+      theme: this.theme,
+      themeOverrides: this.themeOverrides,
+      clsPrefix: this.mergedClsPrefix,
+      ref: "previewInstRef",
+      onPrev: this.prev,
+      onNext: this.next,
+      showToolbar: this.showToolbar,
+      showToolbarTooltip: this.showToolbarTooltip
+    }, this.$slots);
   }
 });
-const imageProps = Object.assign({ alt: String, height: [String, Number], imgProps: Object, previewedImgProps: Object, lazy: Boolean, intersectionObserverOptions: Object, objectFit: {
-  type: String,
-  default: "fill"
-}, previewSrc: String, fallbackSrc: String, width: [String, Number], src: String, previewDisabled: Boolean, loadDescription: String, onError: Function, onLoad: Function }, imagePreviewSharedProps);
+const imageProps = Object.assign({
+  alt: String,
+  height: [String, Number],
+  imgProps: Object,
+  previewedImgProps: Object,
+  lazy: Boolean,
+  intersectionObserverOptions: Object,
+  objectFit: {
+    type: String,
+    default: "fill"
+  },
+  previewSrc: String,
+  fallbackSrc: String,
+  width: [String, Number],
+  src: String,
+  previewDisabled: Boolean,
+  loadDescription: String,
+  onError: Function,
+  onLoad: Function
+}, imagePreviewSharedProps);
 const NImage = defineComponent({
   name: "Image",
   props: imageProps,
@@ -858,7 +873,9 @@ const NImage = defineComponent({
     const showErrorRef = ref(false);
     const previewInstRef = ref(null);
     const imageGroupHandle = inject(imageGroupInjectionKey, null);
-    const { mergedClsPrefixRef } = imageGroupHandle || useConfig(props);
+    const {
+      mergedClsPrefixRef
+    } = imageGroupHandle || useConfig(props);
     const exposedMethods = {
       click: () => {
         if (props.previewDisabled || showErrorRef.value)
@@ -870,7 +887,9 @@ const NImage = defineComponent({
           imageGroupHandle.toggleShow();
           return;
         }
-        const { value: previewInst } = previewInstRef;
+        const {
+          value: previewInst
+        } = previewInstRef;
         if (!previewInst)
           return;
         previewInst.setPreviewSrc(mergedPreviewSrc);
@@ -899,8 +918,7 @@ const NImage = defineComponent({
     });
     watchEffect(() => {
       var _a;
-      void props.src;
-      void ((_a = props.imgProps) === null || _a === void 0 ? void 0 : _a.src);
+      void (props.src || ((_a = props.imgProps) === null || _a === void 0 ? void 0 : _a.src));
       showErrorRef.value = false;
     });
     const loadedRef = ref(false);
@@ -924,12 +942,22 @@ const NImage = defineComponent({
         if (!shouldStartLoadingRef.value)
           return;
         showErrorRef.value = true;
-        const { onError, imgProps: { onError: imgPropsOnError } = {} } = props;
+        const {
+          onError,
+          imgProps: {
+            onError: imgPropsOnError
+          } = {}
+        } = props;
         onError === null || onError === void 0 ? void 0 : onError(e);
         imgPropsOnError === null || imgPropsOnError === void 0 ? void 0 : imgPropsOnError(e);
       },
       mergedOnLoad: (e) => {
-        const { onLoad, imgProps: { onLoad: imgPropsOnLoad } = {} } = props;
+        const {
+          onLoad,
+          imgProps: {
+            onLoad: imgPropsOnLoad
+          } = {}
+        } = props;
         onLoad === null || onLoad === void 0 ? void 0 : onLoad(e);
         imgPropsOnLoad === null || imgPropsOnLoad === void 0 ? void 0 : imgPropsOnLoad(e);
         loadedRef.value = true;
@@ -938,7 +966,13 @@ const NImage = defineComponent({
   },
   render() {
     var _a, _b;
-    const { mergedClsPrefix, imgProps = {}, loaded, $attrs, lazy } = this;
+    const {
+      mergedClsPrefix,
+      imgProps = {},
+      loaded,
+      $attrs,
+      lazy
+    } = this;
     const placeholderNode = (_b = (_a = this.$slots).placeholder) === null || _b === void 0 ? void 0 : _b.call(_a);
     const loadSrc = this.src || imgProps.src;
     const imgNode = h("img", Object.assign(Object.assign({}, imgProps), {
@@ -953,26 +987,29 @@ const NImage = defineComponent({
       onLoad: this.mergedOnLoad,
       // If interseciton observer options is set, do not use native lazy
       loading: isImageSupportNativeLazy && lazy && !this.intersectionObserverOptions ? "lazy" : "eager",
-      style: [
-        imgProps.style || "",
-        placeholderNode && !loaded ? { height: "0", width: "0", visibility: "hidden" } : "",
-        { objectFit: this.objectFit }
-      ],
+      style: [imgProps.style || "", placeholderNode && !loaded ? {
+        height: "0",
+        width: "0",
+        visibility: "hidden"
+      } : "", {
+        objectFit: this.objectFit
+      }],
       "data-error": this.showError,
       "data-preview-src": this.previewSrc || this.src
     }));
-    return h(
-      "div",
-      Object.assign({}, $attrs, { role: "none", class: [
-        $attrs.class,
-        `${mergedClsPrefix}-image`,
-        (this.previewDisabled || this.showError) && `${mergedClsPrefix}-image--preview-disabled`
-      ] }),
-      this.groupId ? imgNode : h(NImagePreview, { theme: this.theme, themeOverrides: this.themeOverrides, clsPrefix: mergedClsPrefix, ref: "previewInstRef", showToolbar: this.showToolbar, showToolbarTooltip: this.showToolbarTooltip }, {
-        default: () => imgNode
-      }),
-      !loaded && placeholderNode
-    );
+    return h("div", Object.assign({}, $attrs, {
+      role: "none",
+      class: [$attrs.class, `${mergedClsPrefix}-image`, (this.previewDisabled || this.showError) && `${mergedClsPrefix}-image--preview-disabled`]
+    }), this.groupId ? imgNode : h(NImagePreview, {
+      theme: this.theme,
+      themeOverrides: this.themeOverrides,
+      clsPrefix: mergedClsPrefix,
+      ref: "previewInstRef",
+      showToolbar: this.showToolbar,
+      showToolbarTooltip: this.showToolbarTooltip
+    }, {
+      default: () => imgNode
+    }), !loaded && placeholderNode);
   }
 });
 const _hoisted_1 = {
@@ -1015,12 +1052,5 @@ const TrashBin = defineComponent({
 export {
   NImage as N,
   TrashBin as T,
-  NImageGroup as a,
-  createImageDataUrl as b,
-  createSettledFileInfo as c,
-  download as d,
-  environmentSupportFile as e,
-  getFilesFromEntries as g,
-  isImageFile as i,
-  matchType as m
+  NImageGroup as a
 };

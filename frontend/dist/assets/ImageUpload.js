@@ -1,4 +1,4 @@
-import { d as defineComponent, y as ref, i as computed, $ as onMounted, o as openBlock, c as createBlock, w as withCtx, b as createBaseVNode, br as withModifiers, g as createElementBlock, e as createVNode, f as unref, A as NIcon, B as toDisplayString, N as NCard, v as pushScopeId, x as popScopeId, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, y as ref, i as computed, $ as onMounted, o as openBlock, c as createBlock, w as withCtx, b as createBaseVNode, bt as withModifiers, g as createElementBlock, e as createVNode, f as unref, A as NIcon, B as toDisplayString, N as NCard, v as pushScopeId, x as popScopeId, _ as _export_sfc } from "./index.js";
 import { C as CloudUpload } from "./CloudUpload.js";
 const _withScopeId = (n) => (pushScopeId("data-v-9ed1514f"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "image-container" };
@@ -6,14 +6,13 @@ const _hoisted_2 = {
   for: "file-upload",
   style: { "width": "100%", "height": "100%", "cursor": "pointer" }
 };
-const _hoisted_3 = ["onDrop"];
-const _hoisted_4 = ["src"];
-const _hoisted_5 = {
+const _hoisted_3 = ["src"];
+const _hoisted_4 = {
   key: 1,
   style: { "margin-bottom": "12px", "display": "flex", "align-items": "center", "justify-content": "center", "height": "100%", "widows": "100%", "border": "1px dashed #666" }
 };
-const _hoisted_6 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-left": "12px" } }, "Drag and drop or click to upload", -1));
-const _hoisted_7 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center", "justify-content": "space-between" } };
+const _hoisted_5 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-left": "12px" } }, "Drag and drop or click to upload", -1));
+const _hoisted_6 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center", "justify-content": "space-between" } };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageUpload",
   props: {
@@ -25,7 +24,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
   },
   emits: ["file-dropped"],
-  setup(__props, { emit }) {
+  setup(__props, { emit: __emit }) {
     const props = __props;
     const image = ref();
     const width = computed(() => {
@@ -58,6 +57,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         reader.readAsDataURL(input.files[0]);
       }
     }
+    const emit = __emit;
     function onDrop(e) {
       var _a;
       if ((_a = e.dataTransfer) == null ? void 0 : _a.files) {
@@ -102,7 +102,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   key: 0,
                   src: _ctx.$props.preview,
                   style: { "width": "100%" }
-                }, null, 8, _hoisted_4)) : (openBlock(), createElementBlock("div", _hoisted_5, [
+                }, null, 8, _hoisted_3)) : (openBlock(), createElementBlock("div", _hoisted_4, [
                   createVNode(unref(NIcon), {
                     size: "48",
                     depth: 3
@@ -112,12 +112,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     ]),
                     _: 1
                   }),
-                  _hoisted_6
+                  _hoisted_5
                 ]))
-              ], 40, _hoisted_3)
+              ], 32)
             ])
           ]),
-          createBaseVNode("div", _hoisted_7, [
+          createBaseVNode("div", _hoisted_6, [
             createBaseVNode("p", null, toDisplayString(width.value) + "x" + toDisplayString(height.value), 1)
           ]),
           createBaseVNode("input", {

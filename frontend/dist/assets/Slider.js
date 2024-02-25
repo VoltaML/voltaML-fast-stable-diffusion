@@ -1,14 +1,14 @@
-import { y as ref, Y as onBeforeUpdate, a3 as c, a1 as cB, a4 as cM, a2 as cE, b6 as fadeInScaleUpTransition, b8 as insideModal, b9 as insidePopover, d as defineComponent, X as useConfig, ab as useTheme, aN as useFormItem, i as computed, a7 as toRef, a6 as useMergedState, J as watch, aa as nextTick, a0 as onBeforeUnmount, ac as useThemeClass, bV as isMounted, aG as useAdjustedTo, t as h, c0 as VBinder, c1 as VTarget, aE as resolveSlot, c2 as VFollower, ai as Transition, c3 as sliderLight, al as on, am as off, at as call } from "./index.js";
+import { Y as onBeforeUpdate, a3 as c, a1 as cB, a4 as cM, a2 as cE, b6 as fadeInScaleUpTransition, b8 as insideModal, b9 as insidePopover, d as defineComponent, X as useConfig, ab as useTheme, y as ref, aN as useFormItem, i as computed, a7 as toRef, a6 as useMergedState, J as watch, aa as nextTick, a0 as onBeforeUnmount, ac as useThemeClass, bW as isMounted, aG as useAdjustedTo, t as h, c1 as VBinder, c2 as VTarget, aE as resolveSlot, c3 as VFollower, ai as Transition, c4 as sliderLight, at as call, al as on, am as off } from "./index.js";
 function isTouchEvent(e) {
   return window.TouchEvent && e instanceof window.TouchEvent;
 }
 function useRefs() {
-  const refs = ref(/* @__PURE__ */ new Map());
+  const refs = /* @__PURE__ */ new Map();
   const setRefs = (index) => (el) => {
-    refs.value.set(index, el);
+    refs.set(index, el);
   };
   onBeforeUpdate(() => {
-    refs.value.clear();
+    refs.clear();
   });
   return [refs, setRefs];
 }
@@ -183,45 +183,74 @@ const style = c([cB("slider", `
  margin-right: 12px;
  `), fadeInScaleUpTransition()]), insideModal(cB("slider", [cB("slider-dot", "background-color: var(--n-dot-color-modal);")])), insidePopover(cB("slider", [cB("slider-dot", "background-color: var(--n-dot-color-popover);")]))]);
 const eventButtonLeft = 0;
-const sliderProps = Object.assign(Object.assign({}, useTheme.props), { to: useAdjustedTo.propTo, defaultValue: {
-  type: [Number, Array],
-  default: 0
-}, marks: Object, disabled: {
-  type: Boolean,
-  default: void 0
-}, formatTooltip: Function, keyboard: {
-  type: Boolean,
-  default: true
-}, min: {
-  type: Number,
-  default: 0
-}, max: {
-  type: Number,
-  default: 100
-}, step: {
-  type: [Number, String],
-  default: 1
-}, range: Boolean, value: [Number, Array], placement: String, showTooltip: {
-  type: Boolean,
-  default: void 0
-}, tooltip: {
-  type: Boolean,
-  default: true
-}, vertical: Boolean, reverse: Boolean, "onUpdate:value": [Function, Array], onUpdateValue: [Function, Array] });
+const sliderProps = Object.assign(Object.assign({}, useTheme.props), {
+  to: useAdjustedTo.propTo,
+  defaultValue: {
+    type: [Number, Array],
+    default: 0
+  },
+  marks: Object,
+  disabled: {
+    type: Boolean,
+    default: void 0
+  },
+  formatTooltip: Function,
+  keyboard: {
+    type: Boolean,
+    default: true
+  },
+  min: {
+    type: Number,
+    default: 0
+  },
+  max: {
+    type: Number,
+    default: 100
+  },
+  step: {
+    type: [Number, String],
+    default: 1
+  },
+  range: Boolean,
+  value: [Number, Array],
+  placement: String,
+  showTooltip: {
+    type: Boolean,
+    default: void 0
+  },
+  tooltip: {
+    type: Boolean,
+    default: true
+  },
+  vertical: Boolean,
+  reverse: Boolean,
+  "onUpdate:value": [Function, Array],
+  onUpdateValue: [Function, Array],
+  onDragstart: [Function],
+  onDragend: [Function]
+});
 const NSlider = defineComponent({
   name: "Slider",
   props: sliderProps,
   setup(props) {
-    const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
+    const {
+      mergedClsPrefixRef,
+      namespaceRef,
+      inlineThemeDisabled
+    } = useConfig(props);
     const themeRef = useTheme("Slider", "-slider", style, sliderLight, props, mergedClsPrefixRef);
     const handleRailRef = ref(null);
     const [handleRefs, setHandleRefs] = useRefs();
     const [followerRefs, setFollowerRefs] = useRefs();
     const followerEnabledIndexSetRef = ref(/* @__PURE__ */ new Set());
     const formItem = useFormItem(props);
-    const { mergedDisabledRef } = formItem;
+    const {
+      mergedDisabledRef
+    } = formItem;
     const precisionRef = computed(() => {
-      const { step } = props;
+      const {
+        step
+      } = props;
       if (Number(step) <= 0 || step === "mark")
         return 0;
       const stepString = step.toString();
@@ -235,7 +264,9 @@ const NSlider = defineComponent({
     const controlledValueRef = toRef(props, "value");
     const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
     const arrifiedValueRef = computed(() => {
-      const { value: mergedValue } = mergedValueRef;
+      const {
+        value: mergedValue
+      } = mergedValueRef;
       return (props.range ? mergedValue : [mergedValue]).map(clampValue);
     });
     const handleCountExceeds2Ref = computed(() => arrifiedValueRef.value.length > 2);
@@ -243,7 +274,9 @@ const NSlider = defineComponent({
       return props.placement === void 0 ? props.vertical ? "right" : "top" : props.placement;
     });
     const markValuesRef = computed(() => {
-      const { marks } = props;
+      const {
+        marks
+      } = props;
       return marks ? Object.keys(marks).map(parseFloat) : null;
     });
     const activeIndexRef = ref(-1);
@@ -252,7 +285,10 @@ const NSlider = defineComponent({
     const draggingRef = ref(false);
     const dotTransitionDisabledRef = ref(false);
     const styleDirectionRef = computed(() => {
-      const { vertical, reverse } = props;
+      const {
+        vertical,
+        reverse
+      } = props;
       const left = reverse ? "right" : "left";
       const bottom = reverse ? "top" : "bottom";
       return vertical ? bottom : left;
@@ -263,7 +299,9 @@ const NSlider = defineComponent({
       const values = arrifiedValueRef.value;
       const start = valueToPercentage(props.range ? Math.min(...values) : props.min);
       const end = valueToPercentage(props.range ? Math.max(...values) : values[0]);
-      const { value: styleDirection } = styleDirectionRef;
+      const {
+        value: styleDirection
+      } = styleDirectionRef;
       return props.vertical ? {
         [styleDirection]: `${start}%`,
         height: `${end - start}%`
@@ -274,13 +312,21 @@ const NSlider = defineComponent({
     });
     const markInfosRef = computed(() => {
       const mergedMarks = [];
-      const { marks } = props;
+      const {
+        marks
+      } = props;
       if (marks) {
         const orderValues = arrifiedValueRef.value.slice();
         orderValues.sort((a, b) => a - b);
-        const { value: styleDirection } = styleDirectionRef;
-        const { value: handleCountExceeds2 } = handleCountExceeds2Ref;
-        const { range } = props;
+        const {
+          value: styleDirection
+        } = styleDirectionRef;
+        const {
+          value: handleCountExceeds2
+        } = handleCountExceeds2Ref;
+        const {
+          range
+        } = props;
         const isActive = handleCountExceeds2 ? () => false : (num) => range ? num >= orderValues[0] && num <= orderValues[orderValues.length - 1] : num <= orderValues[0];
         for (const key of Object.keys(marks)) {
           const num = Number(key);
@@ -297,7 +343,9 @@ const NSlider = defineComponent({
     });
     function getHandleStyle(value, index) {
       const percentage = valueToPercentage(value);
-      const { value: styleDirection } = styleDirectionRef;
+      const {
+        value: styleDirection
+      } = styleDirectionRef;
       return {
         [styleDirection]: `${percentage}%`,
         zIndex: index === activeIndexRef.value ? 1 : 0
@@ -315,18 +363,24 @@ const NSlider = defineComponent({
       var _a;
       if (~index) {
         activeIndexRef.value = index;
-        (_a = handleRefs.value.get(index)) === null || _a === void 0 ? void 0 : _a.focus();
+        (_a = handleRefs.get(index)) === null || _a === void 0 ? void 0 : _a.focus();
       }
     }
     function syncPosition() {
-      followerRefs.value.forEach((inst, index) => {
+      followerRefs.forEach((inst, index) => {
         if (isShowTooltip(index))
           inst.syncPosition();
       });
     }
     function doUpdateValue(value) {
-      const { "onUpdate:value": _onUpdateValue, onUpdateValue } = props;
-      const { nTriggerFormInput, nTriggerFormChange } = formItem;
+      const {
+        "onUpdate:value": _onUpdateValue,
+        onUpdateValue
+      } = props;
+      const {
+        nTriggerFormInput,
+        nTriggerFormChange
+      } = formItem;
       if (onUpdateValue)
         call(onUpdateValue, value);
       if (_onUpdateValue)
@@ -336,10 +390,14 @@ const NSlider = defineComponent({
       nTriggerFormChange();
     }
     function dispatchValueUpdate(value) {
-      const { range } = props;
+      const {
+        range
+      } = props;
       if (range) {
         if (Array.isArray(value)) {
-          const { value: oldValues } = arrifiedValueRef;
+          const {
+            value: oldValues
+          } = arrifiedValueRef;
           if (value.join() !== oldValues.join()) {
             doUpdateValue(value);
           }
@@ -366,25 +424,25 @@ const NSlider = defineComponent({
         stepBuffer = value - currentValue > 0 ? 1 : -1;
       }
       const markValues = markValuesRef.value || [];
-      const { step } = props;
+      const {
+        step
+      } = props;
       if (step === "mark") {
         const closestMark2 = getClosestMark(value, markValues.concat(currentValue), stepping ? stepBuffer : void 0);
         return closestMark2 ? closestMark2.value : currentValue;
       }
       if (step <= 0)
         return currentValue;
-      const { value: precision } = precisionRef;
+      const {
+        value: precision
+      } = precisionRef;
       let closestMark;
       if (stepping) {
         const currentStep = Number((currentValue / step).toFixed(precision));
         const actualStep = Math.floor(currentStep);
         const leftStep = currentStep > actualStep ? actualStep : actualStep - 1;
         const rightStep = currentStep < actualStep ? actualStep : actualStep + 1;
-        closestMark = getClosestMark(currentValue, [
-          Number((leftStep * step).toFixed(precision)),
-          Number((rightStep * step).toFixed(precision)),
-          ...markValues
-        ], stepBuffer);
+        closestMark = getClosestMark(currentValue, [Number((leftStep * step).toFixed(precision)), Number((rightStep * step).toFixed(precision)), ...markValues], stepBuffer);
       } else {
         const roundValue = getRoundValue(value);
         closestMark = getClosestMark(value, [...markValues, roundValue]);
@@ -395,15 +453,24 @@ const NSlider = defineComponent({
       return Math.min(props.max, Math.max(props.min, value));
     }
     function valueToPercentage(value) {
-      const { max, min } = props;
+      const {
+        max,
+        min
+      } = props;
       return (value - min) / (max - min) * 100;
     }
     function percentageToValue(percentage) {
-      const { max, min } = props;
+      const {
+        max,
+        min
+      } = props;
       return min + (max - min) * percentage;
     }
     function getRoundValue(value) {
-      const { step, min } = props;
+      const {
+        step,
+        min
+      } = props;
       if (Number(step) <= 0 || step === "mark")
         return value;
       const newValue = Math.round((value - min) / step) * step + min;
@@ -450,7 +517,10 @@ const NSlider = defineComponent({
     function handleRailKeyDown(e) {
       if (mergedDisabledRef.value || !props.keyboard)
         return;
-      const { vertical, reverse } = props;
+      const {
+        vertical,
+        reverse
+      } = props;
       switch (e.key) {
         case "ArrowUp":
           e.preventDefault();
@@ -474,7 +544,9 @@ const NSlider = defineComponent({
       const activeIndex = activeIndexRef.value;
       if (activeIndex === -1)
         return;
-      const { step } = props;
+      const {
+        step
+      } = props;
       const currentValue = arrifiedValueRef.value[activeIndex];
       const nextValue = Number(step) <= 0 || step === "mark" ? currentValue : currentValue + step * ratio;
       doDispatchValue(
@@ -505,6 +577,8 @@ const NSlider = defineComponent({
     function startDragging() {
       if (!draggingRef.value) {
         draggingRef.value = true;
+        if (props.onDragstart)
+          call(props.onDragstart);
         on("touchend", document, handleMouseUp);
         on("mouseup", document, handleMouseUp);
         on("touchmove", document, handleMouseMove);
@@ -514,6 +588,8 @@ const NSlider = defineComponent({
     function stopDragging() {
       if (draggingRef.value) {
         draggingRef.value = false;
+        if (props.onDragend)
+          call(props.onDragend);
         off("touchend", document, handleMouseUp);
         off("mouseup", document, handleMouseUp);
         off("touchmove", document, handleMouseMove);
@@ -521,12 +597,16 @@ const NSlider = defineComponent({
       }
     }
     function handleMouseMove(event) {
-      const { value: activeIndex } = activeIndexRef;
+      const {
+        value: activeIndex
+      } = activeIndexRef;
       if (!draggingRef.value || activeIndex === -1) {
         stopDragging();
         return;
       }
       const pointValue = getPointValue(event);
+      if (pointValue === void 0)
+        return;
       doDispatchValue(sanitizeValue(pointValue, arrifiedValueRef.value[activeIndex]), activeIndex);
     }
     function handleMouseUp() {
@@ -571,7 +651,37 @@ const NSlider = defineComponent({
       stopDragging();
     });
     const cssVarsRef = computed(() => {
-      const { self: { markFontSize, railColor, railColorHover, fillColor, fillColorHover, handleColor, opacityDisabled, dotColor, dotColorModal, handleBoxShadow, handleBoxShadowHover, handleBoxShadowActive, handleBoxShadowFocus, dotBorder, dotBoxShadow, railHeight, railWidthVertical, handleSize, dotHeight, dotWidth, dotBorderRadius, fontSize, dotBorderActive, dotColorPopover }, common: { cubicBezierEaseInOut } } = themeRef.value;
+      const {
+        self: {
+          markFontSize,
+          railColor,
+          railColorHover,
+          fillColor,
+          fillColorHover,
+          handleColor,
+          opacityDisabled,
+          dotColor,
+          dotColorModal,
+          handleBoxShadow,
+          handleBoxShadowHover,
+          handleBoxShadowActive,
+          handleBoxShadowFocus,
+          dotBorder,
+          dotBoxShadow,
+          railHeight,
+          railWidthVertical,
+          handleSize,
+          dotHeight,
+          dotWidth,
+          dotBorderRadius,
+          fontSize,
+          dotBorderActive,
+          dotColorPopover
+        },
+        common: {
+          cubicBezierEaseInOut
+        }
+      } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut,
         "--n-dot-border": dotBorder,
@@ -602,7 +712,15 @@ const NSlider = defineComponent({
     });
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("slider", void 0, cssVarsRef, props) : void 0;
     const indicatorCssVarsRef = computed(() => {
-      const { self: { fontSize, indicatorColor, indicatorBoxShadow, indicatorTextColor, indicatorBorderRadius } } = themeRef.value;
+      const {
+        self: {
+          fontSize,
+          indicatorColor,
+          indicatorBoxShadow,
+          indicatorTextColor,
+          indicatorBorderRadius
+        }
+      } = themeRef.value;
       return {
         "--n-font-size": fontSize,
         "--n-indicator-border-radius": indicatorBorderRadius,
@@ -649,77 +767,105 @@ const NSlider = defineComponent({
   },
   render() {
     var _a;
-    const { mergedClsPrefix, themeClass, formatTooltip } = this;
+    const {
+      mergedClsPrefix,
+      themeClass,
+      formatTooltip
+    } = this;
     (_a = this.onRender) === null || _a === void 0 ? void 0 : _a.call(this);
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-slider`,
-        themeClass,
-        {
-          [`${mergedClsPrefix}-slider--disabled`]: this.mergedDisabled,
-          [`${mergedClsPrefix}-slider--active`]: this.activeIndex !== -1,
-          [`${mergedClsPrefix}-slider--with-mark`]: this.marks,
-          [`${mergedClsPrefix}-slider--vertical`]: this.vertical,
-          [`${mergedClsPrefix}-slider--reverse`]: this.reverse
-        }
-      ], style: this.cssVars, onKeydown: this.handleRailKeyDown, onMousedown: this.handleRailMouseDown, onTouchstart: this.handleRailMouseDown },
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-slider-rail` },
-        h("div", { class: `${mergedClsPrefix}-slider-rail__fill`, style: this.fillStyle }),
-        this.marks ? h("div", { class: [
-          `${mergedClsPrefix}-slider-dots`,
-          this.dotTransitionDisabled && `${mergedClsPrefix}-slider-dots--transition-disabled`
-        ] }, this.markInfos.map((mark) => h("div", { key: mark.label, class: [
-          `${mergedClsPrefix}-slider-dot`,
-          {
-            [`${mergedClsPrefix}-slider-dot--active`]: mark.active
-          }
-        ], style: mark.style }))) : null,
-        h("div", { ref: "handleRailRef", class: `${mergedClsPrefix}-slider-handles` }, this.arrifiedValues.map((value, index) => {
-          const showTooltip = this.isShowTooltip(index);
-          return h(VBinder, null, {
-            default: () => [
-              h(VTarget, null, {
-                default: () => h("div", { ref: this.setHandleRefs(index), class: `${mergedClsPrefix}-slider-handle-wrapper`, tabindex: this.mergedDisabled ? -1 : 0, style: this.getHandleStyle(value, index), onFocus: () => {
-                  this.handleHandleFocus(index);
-                }, onBlur: () => {
-                  this.handleHandleBlur(index);
-                }, onMouseenter: () => {
-                  this.handleHandleMouseEnter(index);
-                }, onMouseleave: () => {
-                  this.handleHandleMouseLeave(index);
-                } }, resolveSlot(this.$slots.thumb, () => [
-                  h("div", { class: `${mergedClsPrefix}-slider-handle` })
-                ]))
-              }),
-              this.tooltip && h(VFollower, { ref: this.setFollowerRefs(index), show: showTooltip, to: this.adjustedTo, enabled: this.showTooltip && !this.range || this.followerEnabledIndexSet.has(index), teleportDisabled: this.adjustedTo === useAdjustedTo.tdkey, placement: this.mergedPlacement, containerClass: this.namespace }, {
-                default: () => h(Transition, { name: "fade-in-scale-up-transition", appear: this.isMounted, css: this.shouldKeepTooltipTransition(index), onEnter: () => {
-                  this.followerEnabledIndexSet.add(index);
-                }, onAfterLeave: () => {
-                  this.followerEnabledIndexSet.delete(index);
-                } }, {
-                  default: () => {
-                    var _a2;
-                    if (showTooltip) {
-                      (_a2 = this.indicatorOnRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-                      return h("div", { class: [
-                        `${mergedClsPrefix}-slider-handle-indicator`,
-                        this.indicatorThemeClass,
-                        `${mergedClsPrefix}-slider-handle-indicator--${this.mergedPlacement}`
-                      ], style: this.indicatorCssVars }, typeof formatTooltip === "function" ? formatTooltip(value) : value);
-                    }
-                    return null;
-                  }
-                })
-              })
-            ]
-          });
-        })),
-        this.marks ? h("div", { class: `${mergedClsPrefix}-slider-marks` }, this.markInfos.map((mark) => h("div", { key: mark.label, class: `${mergedClsPrefix}-slider-mark`, style: mark.style }, mark.label))) : null
-      )
-    );
+    return h("div", {
+      class: [`${mergedClsPrefix}-slider`, themeClass, {
+        [`${mergedClsPrefix}-slider--disabled`]: this.mergedDisabled,
+        [`${mergedClsPrefix}-slider--active`]: this.activeIndex !== -1,
+        [`${mergedClsPrefix}-slider--with-mark`]: this.marks,
+        [`${mergedClsPrefix}-slider--vertical`]: this.vertical,
+        [`${mergedClsPrefix}-slider--reverse`]: this.reverse
+      }],
+      style: this.cssVars,
+      onKeydown: this.handleRailKeyDown,
+      onMousedown: this.handleRailMouseDown,
+      onTouchstart: this.handleRailMouseDown
+    }, h("div", {
+      class: `${mergedClsPrefix}-slider-rail`
+    }, h("div", {
+      class: `${mergedClsPrefix}-slider-rail__fill`,
+      style: this.fillStyle
+    }), this.marks ? h("div", {
+      class: [`${mergedClsPrefix}-slider-dots`, this.dotTransitionDisabled && `${mergedClsPrefix}-slider-dots--transition-disabled`]
+    }, this.markInfos.map((mark) => h("div", {
+      key: mark.label,
+      class: [`${mergedClsPrefix}-slider-dot`, {
+        [`${mergedClsPrefix}-slider-dot--active`]: mark.active
+      }],
+      style: mark.style
+    }))) : null, h("div", {
+      ref: "handleRailRef",
+      class: `${mergedClsPrefix}-slider-handles`
+    }, this.arrifiedValues.map((value, index) => {
+      const showTooltip = this.isShowTooltip(index);
+      return h(VBinder, null, {
+        default: () => [h(VTarget, null, {
+          default: () => h("div", {
+            ref: this.setHandleRefs(index),
+            class: `${mergedClsPrefix}-slider-handle-wrapper`,
+            tabindex: this.mergedDisabled ? -1 : 0,
+            style: this.getHandleStyle(value, index),
+            onFocus: () => {
+              this.handleHandleFocus(index);
+            },
+            onBlur: () => {
+              this.handleHandleBlur(index);
+            },
+            onMouseenter: () => {
+              this.handleHandleMouseEnter(index);
+            },
+            onMouseleave: () => {
+              this.handleHandleMouseLeave(index);
+            }
+          }, resolveSlot(this.$slots.thumb, () => [h("div", {
+            class: `${mergedClsPrefix}-slider-handle`
+          })]))
+        }), this.tooltip && h(VFollower, {
+          ref: this.setFollowerRefs(index),
+          show: showTooltip,
+          to: this.adjustedTo,
+          enabled: this.showTooltip && !this.range || this.followerEnabledIndexSet.has(index),
+          teleportDisabled: this.adjustedTo === useAdjustedTo.tdkey,
+          placement: this.mergedPlacement,
+          containerClass: this.namespace
+        }, {
+          default: () => h(Transition, {
+            name: "fade-in-scale-up-transition",
+            appear: this.isMounted,
+            css: this.shouldKeepTooltipTransition(index),
+            onEnter: () => {
+              this.followerEnabledIndexSet.add(index);
+            },
+            onAfterLeave: () => {
+              this.followerEnabledIndexSet.delete(index);
+            }
+          }, {
+            default: () => {
+              var _a2;
+              if (showTooltip) {
+                (_a2 = this.indicatorOnRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
+                return h("div", {
+                  class: [`${mergedClsPrefix}-slider-handle-indicator`, this.indicatorThemeClass, `${mergedClsPrefix}-slider-handle-indicator--${this.mergedPlacement}`],
+                  style: this.indicatorCssVars
+                }, typeof formatTooltip === "function" ? formatTooltip(value) : value);
+              }
+              return null;
+            }
+          })
+        })]
+      });
+    })), this.marks ? h("div", {
+      class: `${mergedClsPrefix}-slider-marks`
+    }, this.markInfos.map((mark) => h("div", {
+      key: mark.label,
+      class: `${mergedClsPrefix}-slider-mark`,
+      style: mark.style
+    }, mark.label))) : null));
   }
 });
 export {

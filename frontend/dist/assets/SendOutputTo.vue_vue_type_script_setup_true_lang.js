@@ -1,4 +1,4 @@
-import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, bP as useRouter, u as useSettings, a as useState, y as ref, bp as reactive, J as watch, i as computed, e as createVNode, w as withCtx, f as unref, N as NCard, z as NButton, k as createTextVNode, M as NScrollbar, F as Fragment, L as renderList, B as toDisplayString, bv as NDivider, bu as NModal, c as createBlock, q as NGi, r as NGrid, h as createCommentVNode } from "./index.js";
+import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, bR as useRouter, u as useSettings, a as useState, y as ref, br as reactive, J as watch, i as computed, e as createVNode, w as withCtx, f as unref, N as NCard, z as NButton, k as createTextVNode, M as NScrollbar, F as Fragment, L as renderList, B as toDisplayString, bx as NDivider, bw as NModal, c as createBlock, q as NGi, r as NGrid, h as createCommentVNode } from "./index.js";
 import { N as NSwitch } from "./Switch.js";
 const _hoisted_1$3 = {
   xmlns: "http://www.w3.org/2000/svg",
@@ -139,7 +139,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
   },
   setup(__props) {
-    const props = __props;
     const router = useRouter();
     const settings = useSettings();
     const state = useState();
@@ -153,6 +152,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       upscale: "imageProcessing",
       tagger: "tagger"
     };
+    const props = __props;
     function handleClick(target) {
       if (props.data) {
         maybeTarget.value = target;

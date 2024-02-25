@@ -1,4 +1,4 @@
-import { a1 as cB, a4 as cM, a3 as c, a2 as cE, b7 as iconSwitchTransition, aA as cNotM, d as defineComponent, X as useConfig, aC as useRtl, ab as useTheme, T as provide, t as h, ad as flatten, aR as getSlot, U as createInjectionKey, by as stepsLight, V as inject, W as throwError, i as computed, aD as createKey, ac as useThemeClass, at as call, aQ as resolveWrappedSlot, aE as resolveSlot, aZ as NIconSwitchTransition, aF as NBaseIcon, bz as FinishedIcon, bA as ErrorIcon, n as useMessage, a as useState, y as ref, o as openBlock, g as createElementBlock, e as createVNode, w as withCtx, f as unref, j as NSpace, N as NCard, b as createBaseVNode, m as NSelect, z as NButton, k as createTextVNode, bu as NModal, s as serverUrl, u as useSettings, c as createBlock, C as NTabPane, D as NTabs } from "./index.js";
+import { a1 as cB, a4 as cM, a3 as c, a2 as cE, b7 as iconSwitchTransition, aA as cNotM, d as defineComponent, X as useConfig, aC as useRtl, ab as useTheme, T as provide, t as h, ad as flatten, aR as getSlot, U as createInjectionKey, bA as stepsLight, V as inject, W as throwError, i as computed, aD as createKey, ac as useThemeClass, at as call, aQ as resolveWrappedSlot, aE as resolveSlot, aZ as NIconSwitchTransition, aF as NBaseIcon, bB as FinishedIcon, bC as ErrorIcon, n as useMessage, a as useState, y as ref, o as openBlock, g as createElementBlock, e as createVNode, w as withCtx, f as unref, j as NSpace, N as NCard, b as createBaseVNode, m as NSelect, z as NButton, k as createTextVNode, bw as NModal, s as serverUrl, u as useSettings, c as createBlock, C as NTabPane, D as NTabs } from "./index.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
@@ -101,19 +101,31 @@ function stepWithIndex(step, i) {
 function stepsWithIndex(steps) {
   return steps.map((step, i) => stepWithIndex(step, i));
 }
-const stepsProps = Object.assign(Object.assign({}, useTheme.props), { current: Number, status: {
-  type: String,
-  default: "process"
-}, size: {
-  type: String,
-  default: "medium"
-}, vertical: Boolean, "onUpdate:current": [Function, Array], onUpdateCurrent: [Function, Array] });
+const stepsProps = Object.assign(Object.assign({}, useTheme.props), {
+  current: Number,
+  status: {
+    type: String,
+    default: "process"
+  },
+  size: {
+    type: String,
+    default: "medium"
+  },
+  vertical: Boolean,
+  "onUpdate:current": [Function, Array],
+  onUpdateCurrent: [Function, Array]
+});
 const stepsInjectionKey = createInjectionKey("n-steps");
 const NSteps = defineComponent({
   name: "Steps",
   props: stepsProps,
-  setup(props, { slots }) {
-    const { mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
+  setup(props, {
+    slots
+  }) {
+    const {
+      mergedClsPrefixRef,
+      mergedRtlRef
+    } = useConfig(props);
     const rtlEnabledRef = useRtl("Steps", mergedRtlRef, mergedClsPrefixRef);
     const themeRef = useTheme("Steps", "-steps", style, stepsLight, props, mergedClsPrefixRef);
     provide(stepsInjectionKey, {
@@ -128,12 +140,12 @@ const NSteps = defineComponent({
     };
   },
   render() {
-    const { mergedClsPrefix } = this;
-    return h("div", { class: [
-      `${mergedClsPrefix}-steps`,
-      this.rtlEnabled && `${mergedClsPrefix}-steps--rtl`,
-      this.vertical && `${mergedClsPrefix}-steps--vertical`
-    ] }, stepsWithIndex(flatten(getSlot(this))));
+    const {
+      mergedClsPrefix
+    } = this;
+    return h("div", {
+      class: [`${mergedClsPrefix}-steps`, this.rtlEnabled && `${mergedClsPrefix}-steps--rtl`, this.vertical && `${mergedClsPrefix}-steps--vertical`]
+    }, stepsWithIndex(flatten(getSlot(this))));
   }
 });
 const stepProps = {
@@ -154,18 +166,31 @@ const NStep = defineComponent({
     const NSteps2 = inject(stepsInjectionKey, null);
     if (!NSteps2)
       throwError("step", "`n-step` must be placed inside `n-steps`.");
-    const { inlineThemeDisabled } = useConfig();
-    const { props: stepsProps2, mergedThemeRef, mergedClsPrefixRef, stepsSlots } = NSteps2;
+    const {
+      inlineThemeDisabled
+    } = useConfig();
+    const {
+      props: stepsProps2,
+      mergedThemeRef,
+      mergedClsPrefixRef,
+      stepsSlots
+    } = NSteps2;
     const verticalRef = computed(() => {
       return stepsProps2.vertical;
     });
     const mergedStatusRef = computed(() => {
-      const { status } = props;
+      const {
+        status
+      } = props;
       if (status) {
         return status;
       } else {
-        const { internalIndex } = props;
-        const { current } = stepsProps2;
+        const {
+          internalIndex
+        } = props;
+        const {
+          current
+        } = stepsProps2;
         if (current === void 0)
           return "process";
         if (internalIndex < current) {
@@ -179,9 +204,30 @@ const NStep = defineComponent({
       return "process";
     });
     const cssVarsRef = computed(() => {
-      const { value: status } = mergedStatusRef;
-      const { size } = stepsProps2;
-      const { common: { cubicBezierEaseInOut }, self: { stepHeaderFontWeight, [createKey("stepHeaderFontSize", size)]: stepHeaderFontSize, [createKey("indicatorIndexFontSize", size)]: indicatorIndexFontSize, [createKey("indicatorSize", size)]: indicatorSize, [createKey("indicatorIconSize", size)]: indicatorIconSize, [createKey("indicatorTextColor", status)]: indicatorTextColor, [createKey("indicatorBorderColor", status)]: indicatorBorderColor, [createKey("headerTextColor", status)]: headerTextColor, [createKey("splitorColor", status)]: splitorColor, [createKey("indicatorColor", status)]: indicatorColor, [createKey("descriptionTextColor", status)]: descriptionTextColor } } = mergedThemeRef.value;
+      const {
+        value: status
+      } = mergedStatusRef;
+      const {
+        size
+      } = stepsProps2;
+      const {
+        common: {
+          cubicBezierEaseInOut
+        },
+        self: {
+          stepHeaderFontWeight,
+          [createKey("stepHeaderFontSize", size)]: stepHeaderFontSize,
+          [createKey("indicatorIndexFontSize", size)]: indicatorIndexFontSize,
+          [createKey("indicatorSize", size)]: indicatorSize,
+          [createKey("indicatorIconSize", size)]: indicatorIconSize,
+          [createKey("indicatorTextColor", status)]: indicatorTextColor,
+          [createKey("indicatorBorderColor", status)]: indicatorBorderColor,
+          [createKey("headerTextColor", status)]: headerTextColor,
+          [createKey("splitorColor", status)]: splitorColor,
+          [createKey("indicatorColor", status)]: indicatorColor,
+          [createKey("descriptionTextColor", status)]: descriptionTextColor
+        }
+      } = mergedThemeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut,
         "--n-description-text-color": descriptionTextColor,
@@ -198,14 +244,21 @@ const NStep = defineComponent({
       };
     });
     const themeClassHandle = inlineThemeDisabled ? useThemeClass("step", computed(() => {
-      const { value: status } = mergedStatusRef;
-      const { size } = stepsProps2;
+      const {
+        value: status
+      } = mergedStatusRef;
+      const {
+        size
+      } = stepsProps2;
       return `${status[0]}${size[0]}`;
     }), cssVarsRef, stepsProps2) : void 0;
     const handleStepClick = computed(() => {
       if (props.disabled)
         return void 0;
-      const { onUpdateCurrent, "onUpdate:current": _onUpdateCurrent } = stepsProps2;
+      const {
+        onUpdateCurrent,
+        "onUpdate:current": _onUpdateCurrent
+      } = stepsProps2;
       return onUpdateCurrent || _onUpdateCurrent ? () => {
         if (onUpdateCurrent) {
           call(onUpdateCurrent, props.internalIndex);
@@ -227,62 +280,64 @@ const NStep = defineComponent({
     };
   },
   render() {
-    const { mergedClsPrefix, onRender, handleStepClick, disabled } = this;
+    const {
+      mergedClsPrefix,
+      onRender,
+      handleStepClick,
+      disabled
+    } = this;
     const descriptionNode = resolveWrappedSlot(this.$slots.default, (children) => {
       const mergedDescription = children || this.description;
       if (mergedDescription) {
-        return h("div", { class: `${mergedClsPrefix}-step-content__description` }, mergedDescription);
+        return h("div", {
+          class: `${mergedClsPrefix}-step-content__description`
+        }, mergedDescription);
       }
       return null;
     });
     onRender === null || onRender === void 0 ? void 0 : onRender();
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-step`,
-        disabled && `${mergedClsPrefix}-step--disabled`,
-        !disabled && handleStepClick && `${mergedClsPrefix}-step--clickable`,
-        this.themeClass,
-        descriptionNode && `${mergedClsPrefix}-step--show-description`,
-        `${mergedClsPrefix}-step--${this.mergedStatus}-status`
-      ], style: this.cssVars, onClick: handleStepClick },
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-step-indicator` },
-        h(
-          "div",
-          { class: `${mergedClsPrefix}-step-indicator-slot` },
-          h(NIconSwitchTransition, null, {
-            default: () => {
-              return resolveWrappedSlot(this.$slots.icon, (icon) => {
-                const { mergedStatus, stepsSlots } = this;
-                return !(mergedStatus === "finish" || mergedStatus === "error") ? icon || h("div", { key: this.internalIndex, class: `${mergedClsPrefix}-step-indicator-slot__index` }, this.internalIndex) : mergedStatus === "finish" ? h(NBaseIcon, { clsPrefix: mergedClsPrefix, key: "finish" }, {
-                  default: () => resolveSlot(stepsSlots["finish-icon"], () => [
-                    h(FinishedIcon, null)
-                  ])
-                }) : mergedStatus === "error" ? h(NBaseIcon, { clsPrefix: mergedClsPrefix, key: "error" }, {
-                  default: () => resolveSlot(stepsSlots["error-icon"], () => [
-                    h(ErrorIcon, null)
-                  ])
-                }) : null;
-              });
-            }
-          })
-        ),
-        this.vertical ? h("div", { class: `${mergedClsPrefix}-step-splitor` }) : null
-      ),
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-step-content` },
-        h(
-          "div",
-          { class: `${mergedClsPrefix}-step-content-header` },
-          h("div", { class: `${mergedClsPrefix}-step-content-header__title` }, resolveSlot(this.$slots.title, () => [this.title])),
-          !this.vertical ? h("div", { class: `${mergedClsPrefix}-step-splitor` }) : null
-        ),
-        descriptionNode
-      )
-    );
+    return h("div", {
+      class: [`${mergedClsPrefix}-step`, disabled && `${mergedClsPrefix}-step--disabled`, !disabled && handleStepClick && `${mergedClsPrefix}-step--clickable`, this.themeClass, descriptionNode && `${mergedClsPrefix}-step--show-description`, `${mergedClsPrefix}-step--${this.mergedStatus}-status`],
+      style: this.cssVars,
+      onClick: handleStepClick
+    }, h("div", {
+      class: `${mergedClsPrefix}-step-indicator`
+    }, h("div", {
+      class: `${mergedClsPrefix}-step-indicator-slot`
+    }, h(NIconSwitchTransition, null, {
+      default: () => {
+        return resolveWrappedSlot(this.$slots.icon, (icon) => {
+          const {
+            mergedStatus,
+            stepsSlots
+          } = this;
+          return !(mergedStatus === "finish" || mergedStatus === "error") ? icon || h("div", {
+            key: this.internalIndex,
+            class: `${mergedClsPrefix}-step-indicator-slot__index`
+          }, this.internalIndex) : mergedStatus === "finish" ? h(NBaseIcon, {
+            clsPrefix: mergedClsPrefix,
+            key: "finish"
+          }, {
+            default: () => resolveSlot(stepsSlots["finish-icon"], () => [h(FinishedIcon, null)])
+          }) : mergedStatus === "error" ? h(NBaseIcon, {
+            clsPrefix: mergedClsPrefix,
+            key: "error"
+          }, {
+            default: () => resolveSlot(stepsSlots["error-icon"], () => [h(ErrorIcon, null)])
+          }) : null;
+        });
+      }
+    })), this.vertical ? h("div", {
+      class: `${mergedClsPrefix}-step-splitor`
+    }) : null), h("div", {
+      class: `${mergedClsPrefix}-step-content`
+    }, h("div", {
+      class: `${mergedClsPrefix}-step-content-header`
+    }, h("div", {
+      class: `${mergedClsPrefix}-step-content-header__title`
+    }, resolveSlot(this.$slots.title, () => [this.title])), !this.vertical ? h("div", {
+      class: `${mergedClsPrefix}-step-splitor`
+    }) : null), descriptionNode));
   }
 });
 const _hoisted_1$1 = { style: { "margin": "16px" } };
