@@ -20,7 +20,11 @@ renamed_requirements = {
     "HyperTile": "hyper-tile",
     "stable-fast": "sfast",
     "sentry-sdk[fastapi]": "sentry_sdk",
+    "pyyaml": "yaml",
+    "tb-nightly": "tensorboard",
+    "basicsr-volta": "basicsr",
 }
+importlib_metadata_overwrite = {"basicsr": "basicsr-volta"}
 logger = logging.getLogger(__name__)
 
 
@@ -28,12 +32,17 @@ class NoModuleSpecFound(Exception):
     "Exception raised when no module spec is found"
 
 
+class ImportErrorNoDeps(Exception):
+    "Import can't find module, or can't find name in module - shall not install dependencies"
+
+
 def install_requirements(path_to_requirements: str = "requirements.txt"):
     "Check if requirements are installed, if not, install them"
 
     with open(path_to_requirements, encoding="utf-8", mode="r") as f:
         requirements = {}
-        for line in [r.strip() for r in f.read().splitlines()]:
+        do_deps_requirements = {}
+        for line in [x for x in [r.strip() for r in f.read().splitlines()] if x != ""]:
             split = line.split(";")
             i: str = split[0].strip()
 
@@ -42,10 +51,22 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
             else:
                 check = ""
 
+            # OS specific checks
             if check == 'platform_system == "Linux"':
                 logger.debug("Install check for Linux only")
                 if platform.system() != "Linux":
                     continue
+            elif check == 'platform_system == "Windows"':
+                logger.debug("Install check for Windows only")
+                if platform.system() != "Windows":
+                    continue
+            elif check == 'platform_system == "Darwin"':
+                logger.debug("Install check for MacOS only")
+                if platform.system() != "Darwin":
+                    continue
+
+            # No dependencies
+            target = requirements if check != "no_deps" else do_deps_requirements
 
             if "git+http" in i:
                 tmp = i.split("@")[0].split("/")[-1].replace(".git", "").strip()
@@ -58,13 +79,19 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
                 i = tmp
 
             if "==" in i:
-                requirements[i.split("==")[0]] = i.replace(i.split("==")[0], "").strip()
+                target[i.split("==")[0]] = (
+                    i.replace(i.split("==")[0], "").replace("#", "").strip()
+                )
             elif ">=" in i:
-                requirements[i.split(">=")[0]] = i.replace(i.split(">=")[0], "").strip()
+                target[i.split(">=")[0]] = (
+                    i.replace(i.split(">=")[0], "").replace("#", "").strip()
+                )
             elif "<=" in i:
-                requirements[i.split("<=")[0]] = i.replace(i.split("<=")[0], "").strip()
+                target[i.split("<=")[0]] = (
+                    i.replace(i.split("<=")[0], "").replace("#", "").strip()
+                )
             else:
-                requirements[i] = None
+                target[i] = None
 
         try:
             for requirement in requirements:
@@ -86,6 +113,25 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
                     logger.debug(f"Requirement {requirement_name} is not installed")
                     raise ImportError
 
+            for requirement in do_deps_requirements:
+                # Skip extra commands for pip and comments
+                if requirement.startswith("#") or requirement.startswith("--"):
+                    continue
+
+                if requirement in renamed_requirements:
+                    logger.debug(
+                        f"Requirement {requirement} is renamed to {renamed_requirements[requirement]}"
+                    )
+                    requirement_name = renamed_requirements[requirement]
+                else:
+                    requirement_name = requirement
+
+                logger.debug(f"Checking requirement: {requirement}")
+                fixed_name = requirement_name.replace("-", "_").lower()
+                if not is_installed(fixed_name, do_deps_requirements[requirement]):
+                    logger.debug(f"Requirement {requirement_name} is not installed")
+                    raise ImportErrorNoDeps
+
         except ImportError as e:
             logger.debug(
                 f"Installing requirements: {path_to_requirements}, because: {e} ({e.__class__.__name__})"
@@ -97,6 +143,26 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
                         "-m",
                         "pip",
                         "install",
+                        "-r",
+                        path_to_requirements,
+                    ]
+                )
+            except subprocess.CalledProcessError:
+                logger.error(f"Failed to install requirements: {path_to_requirements}")
+                sys.exit(1)
+
+        except ImportErrorNoDeps as e:
+            logger.debug(
+                f"Installing requirements: {path_to_requirements}, because: {e} ({e.__class__.__name__})"
+            )
+            try:
+                subprocess.check_call(
+                    [
+                        sys.executable,
+                        "-m",
+                        "pip",
+                        "install",
+                        "--no-deps",
                         "-r",
                         path_to_requirements,
                     ]
@@ -321,9 +387,13 @@ def is_installed(package: str, version: Optional[str] = None):
                 version_number = version.split("=")[-1]
                 version_type = version[:2]
                 required_version = packaging_version.parse(version_number)
-                current_version = packaging_version.parse(
-                    importlib.metadata.version(package)
+
+                importlib_found_version = importlib.metadata.version(
+                    package
+                    if package not in importlib_metadata_overwrite
+                    else importlib_metadata_overwrite[package]
                 )
+                current_version = packaging_version.parse(importlib_found_version)
                 logger.debug(
                     f"Required version: {required_version} - Current version: {current_version} - version type: {version_type}"
                 )

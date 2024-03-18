@@ -14,7 +14,6 @@ pytorch-lightning==2.1.1
 gpustat==1.1.1
 opencv-contrib-python-headless==4.7.0.72
 controlnet-aux==0.0.7
-realesrgan==0.3.0
 timm==0.9.10
 boto3==1.28.83
 tomesd==0.1.3
@@ -25,3 +24,16 @@ piexif==1.1.3
 git+https://github.com/tfernd/HyperTile@2ef64b2800d007d305755c33550537410310d7df # 0.1.5
 k-diffusion==0.1.1
 asdff==0.2.1
+
+# RealESRGAN workaround
+realesrgan==0.3.0 #; no_deps
+gfpgan==1.3.8 #; no_deps
+facexlib==0.3.0
+lmdb==1.4.1
+pyyaml
+scipy
+numpy
+tb-nightly
+tqdm
+yapf
+basicsr-volta==1.4.4

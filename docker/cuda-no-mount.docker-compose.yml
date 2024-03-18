@@ -10,7 +10,7 @@ services:
       - EXTRA_ARGS=${EXTRA_ARGS:-}
 
       # Extra api keys
-      - FASTAPI_ANALYTICS_KEY=${FASTAPI_ANALYTICS_KEY:-}
+      - SENTRY_DSN=${SENTRY_DSN:-}
       - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
 
       # R2

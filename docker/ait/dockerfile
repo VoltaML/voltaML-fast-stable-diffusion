@@ -31,6 +31,9 @@ RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirem
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/pytorch.txt
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/interrogation.txt
 
+# Overwrite the default BasicSR package with our fixed version
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install --force-reinstall --no-deps basicsr-volta==1.4.4
+
 COPY . /app
 
 # Install frontend dependencies and build the frontend
