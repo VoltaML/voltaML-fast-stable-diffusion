@@ -1,14 +1,14 @@
+import math
+import os
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
-import os
-import yaml
-import math
 from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
-from diffusers.models.unet_2d_condition import UNet2DConditionModel
-import torch
 import scipy
+import torch
+import yaml
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
 
 
 @dataclass
@@ -29,7 +29,7 @@ class ScalecrafterSettings:
     base: str = "sd15"
 
 
-SCALECRAFTER_DIR = Path("data/scalecrafter")
+SCALECRAFTER_DIR = Path("scalecrafter")
 
 
 _unet_inflate, _unet_inflate_vanilla = None, None

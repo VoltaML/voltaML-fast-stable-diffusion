@@ -14,7 +14,6 @@ pyproject.toml
 !/data/themes/dark_flat.json
 !/data/themes/light.json
 !/data/themes/light_flat.json
-!/data/scalecrafter
 /engine
 /onnx
 /traced_unet
